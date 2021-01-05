@@ -1,0 +1,5 @@
+import Character.Something
+
+main : Bool -> List Int
+main a =
+    Character.Something.cool 93

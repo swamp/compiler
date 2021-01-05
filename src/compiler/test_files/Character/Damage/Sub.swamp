@@ -1,0 +1,14 @@
+type DamageType
+    = Fire Int
+    | UnBlockable
+    | Lightning Int
+
+
+damageCalculator : DamageType -> Int -> Int
+damageCalculator dmgType baseAmount =
+    case dmgType of
+        Fire amount -> baseAmount + amount * 4
+
+        UnBlockable -> baseAmount
+
+        Lightning amount -> baseAmount + amount * 10

@@ -1,0 +1,11 @@
+import Character.Damage.Sub
+
+
+cool : Int -> List Int
+cool a =
+    141 :: [ Character.Damage.Sub.damageCalculator (Character.Damage.Sub.Fire 10) (99 - a) ] ++ [2, 3, 4]
+
+
+unused : String -> String -> Int
+unused a b =
+    99

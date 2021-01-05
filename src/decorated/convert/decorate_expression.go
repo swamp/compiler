@@ -1,0 +1,69 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Peter Bjorklund. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+package decorator
+
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/decshared"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
+)
+
+func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+	if e == nil {
+		panic("expression is nil")
+	}
+
+	switch v := e.(type) {
+	case *ast.Let:
+		return decorateLet(d, v, context)
+	case *ast.IfExpression:
+		return decorateIf(d, v, context)
+	case *ast.Case:
+		return decorateCase(d, v, context)
+	case *ast.VariableIdentifier:
+		return decorateIdentifier(d, v, context)
+	case *ast.IntegerLiteral:
+		return decorateInteger(d, v)
+	case *ast.FixedLiteral:
+		return decorateFixed(d, v)
+	case *ast.StringLiteral:
+		return decorateString(d, v)
+	case *ast.BooleanLiteral:
+		return decorateBoolean(d, v)
+	case *ast.ListLiteral:
+		return decorateListLiteral(d, v, context)
+	case *ast.UnaryExpression:
+		return decorateUnary(d, v, context)
+	case *ast.FunctionCall:
+		return decorateFunctionCall(d, v, context)
+	case *ast.ConstructorCall:
+		return decorateConstructorCall(d, v, context)
+	case *ast.RecordLiteral:
+		return decorateRecordLiteral(d, v, context)
+	case *ast.Lookups:
+		return decorateLookups(d, v, context)
+	case *ast.Asm:
+		return decorateAsm(d, v)
+	case *ast.BinaryOperator:
+		return decorateBinaryOperator(d, v, context)
+	default:
+		return nil, decorated.NewInternalError(fmt.Errorf("unknown decoration %v %T", e, e))
+	}
+}
+
+func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+	expr, exprErr := internalDecorateExpression(d, e, context)
+	if exprErr != nil {
+		return nil, exprErr
+	}
+
+	if expr == nil {
+		return nil, decorated.NewInternalError(fmt.Errorf("expr is nil:%v", e))
+	}
+	return expr, nil
+}

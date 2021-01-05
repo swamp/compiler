@@ -1,0 +1,44 @@
+name: Release Executables
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  build:
+    name: Build Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install target go version
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.6
+
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Fetch Gox
+        run: go get github.com/mitchellh/gox
+
+      - name: debug
+        run: echo "rev ${GITHUB_SHA} version:${{steps.get_version.version}}"
+
+      - name: Compile for all platforms
+        uses: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -output="build/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-X main.Version=${{steps.get_version.version}}" -verbose ./...
+
+      - name: Upload executables
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: build/
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: "New Release"
+          files: build/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
