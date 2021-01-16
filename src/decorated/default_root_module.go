@@ -47,6 +47,12 @@ map2 x y z =
     __asm callexternal 00 coreListMap2 01 02 03
 
 
+__externalfn coreListIndexedMap 2
+indexedMap : (Int -> a -> b) -> List a -> List b
+indexedMap x y =
+    __asm callexternal 00 coreListIndexedMap 01 02
+
+
 any : (a -> Bool) -> List a -> Bool
 any pred coll =
     __asm callexternal 00 coreListAny 01 02
