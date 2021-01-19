@@ -80,7 +80,7 @@ another a =
 func(Fixed -> Int) : [func  [primitive Fixed] [primitive Int]]
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 
-another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 230]]]]
+another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 2300]]]]
 first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]		
 `)
 }
@@ -102,11 +102,10 @@ another a =
     x
 `,
 		`
-func(Fixed -> Int) : [func  [primitive Fixed] [primitive Int]]
-func(Int -> Int) : [func  [primitive Int] [primitive Int]]
+func(Int -> Fixed) : [func  [primitive Int] [primitive Fixed]]
 
-another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 230]]]]
-first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]		
+another = [functionvalue ([[arg $a = [primitive Int]]]) -> [let [[letassign $x = [fcall [getvar $first [primitive Fixed]] [[integer 2]]]]] in [getvar $x [primitive Fixed]]]]
+first = [functionvalue ([[arg $a = [primitive Int]]]) -> [integer 300]]		
 `)
 }
 
@@ -123,13 +122,13 @@ another a =
     let
         state = { playerX = 0 }
     in
-    { state | playerX = 2.2 }
+    { state | playerX = 22 }
 `,
 		`
 func(Fixed -> Int) : [func  [primitive Fixed] [primitive Int]]
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 
-another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 230]]]]
+another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 2300]]]]
 first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]		
 `)
 }
@@ -272,7 +271,7 @@ someFunc name =
     Unknown
 `,
 		`
-Unknown : [variantconstr [variant $Unknown []]]
+Unknown : [variantconstr [variant $Unknown]]
 Something : [variantconstr [variant $Something [[primitive Int]]]]
 Status : [custom-type  [variant $Unknown] [variant $Something]]
 func(String -> Status) : [func  [primitive String] [custom-type  [variant $Unknown] [variant $Something]]]
@@ -299,7 +298,7 @@ someFunc : String -> Status
 someFunc name =
     Something 42
 `, `
-Unknown : [variantconstr [variant $Unknown []]]
+Unknown : [variantconstr [variant $Unknown]]
 Something : [variantconstr [variant $Something [[primitive Int]]]]
 Status : [custom-type  [variant $Unknown] [variant $Something]]
 func(String -> Status) : [func  [primitive String] [custom-type  [variant $Unknown] [variant $Something]]]
@@ -324,6 +323,7 @@ type alias Sprite =
 
 someFunc : Lister Sprite Int -> Int
 `, `
+{another:u;fake:t} : [record-type  [record-field another [localtype u]] [record-field fake [localtype t]]]
 {x:Int} : [record-type  [record-field x [primitive Int]]]
 Sprite : [alias Sprite {x:Int}]
 func(Lister<Sprite,Int> -> Int) : [func  Lister<Sprite,Int> [primitive Int]]
@@ -374,7 +374,7 @@ sample a =
 `, `
 func(Int -> String) : [func  [primitive Int] [primitive String]]
 
-sample = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [str hello ] APPEND [fcall [getvar Debug.$toString [primitive String]] [[getvar $a [primitive Int]]]])]
+sample = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [str hello ] APPEND [fcall [getvar $Debug.toString [primitive String]] [[getvar $a [primitive Int]]]])]
 `)
 }
 
@@ -407,7 +407,10 @@ map : (a -> b) -> List a -> List b
 map x y =
     __asm callexternal 00 coreListMap 01 02
 	`, `
-map = [templator [func-type [wrapped-type [type-param-context [$a $b]] [func-type [local-type: [type-param $a]] -> [local-type: [type-param $b]]]] -> [type-reference $List [[local-type: [type-param $a]]]] -> [type-reference $List [[local-type: [type-param $b]]]]] [a b]]
+func(a -> b) : [func  [localtype a] [localtype b]]
+func(func(a -> b) -> List<a> -> List<b>) : [func  [func  [localtype a] [localtype b]] List<a> List<b>]
+
+map = [functionvalue ([[arg $x = [functype [[localtype a] [localtype b]]]] [arg $y = List<a>]]) -> [asm callexternal 00 coreListMap 01 02]]
 `)
 }
 
@@ -817,8 +820,8 @@ type Chore =
 `, `
 Meeting : [variantconstr [variant $Meeting [[primitive String]]]]
 Running : [variantconstr [variant $Running [[primitive Int]]]]
-Unknown : [variantconstr [variant $Unknown []]]
-Chore : [custom-type  [variant $Meeting] [variant $Running] [variant $Unknown]]
+Unknown : [variantconstr [variant $Unknown]]
+Chore : [custom-type  [variant $Meeting [primitive String]] [variant $Running [primitive Int]] [variant $Unknown
 `)
 }
 
@@ -831,7 +834,7 @@ type Perhaps a =
 `, `
 None : [variantconstr [variant $None]]
 Actual : [variantconstr [variant $Actual [[localtype a]]]]
-Perhaps : [custom-type  [variant $None] [variant $Actual [[localtype a]]]]
+Perhaps : [custom-type  [variant $None] [variant $Actual [localtype a]]]
 `)
 }
 
@@ -1020,7 +1023,7 @@ type alias Cool =
 a : Bool -> List Cool
 a x =
     [ Cool "2" ]
-`, &decorated.InternalError{})
+`, &decorated.WrongTypeForRecordConstructorField{})
 }
 
 func TestCaseDefault(t *testing.T) {

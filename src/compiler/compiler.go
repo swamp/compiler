@@ -11,8 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fatih/color"
-
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -115,7 +113,7 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 		return packedErr
 	}
 	ioutil.WriteFile(outputFilename, packed, 0o644)
-	color.Cyan("wrote output file '%v'\n", outputFilename)
+	//color.Cyan("wrote output file '%v'\n", outputFilename)
 	return nil
 }
 

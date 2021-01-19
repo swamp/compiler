@@ -7,15 +7,11 @@ package loader
 
 import (
 	"fmt"
-	"os"
-
-	"github.com/fatih/color"
 
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/pathutil"
 )
 
 type RunesToModuleConverter interface {
@@ -48,9 +44,9 @@ func (r *ModuleReaderAndDecorator) ReadModule(repository deccy.ModuleRepository,
 		return nil, loadErr
 	}
 
-	green := color.New(color.FgHiGreen)
-	filepathToShow := pathutil.TryToMakeRelativePath(absoluteFilename)
-	green.Fprintf(os.Stderr, "* compiling module '%v' %v\n", filepathToShow, fullyQualifiedName)
+	//green := color.New(color.FgHiGreen)
+	//filepathToShow := pathutil.TryToMakeRelativePath(absoluteFilename)
+	// green.Fprintf(os.Stderr, "* compiling module '%v' %v\n", filepathToShow, fullyQualifiedName)
 
 	return r.runesToModule.RunesToModule(repository, fullyQualifiedName, absoluteFilename, runes)
 }

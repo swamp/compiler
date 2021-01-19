@@ -12,8 +12,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fatih/color"
-
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -95,8 +93,8 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *World, repository d
 	moduleReader := NewModuleReaderAndDecorator(fileLoader, worldDecorator)
 	newRepository := NewModuleRepository(world, namespacePrefix, moduleReader)
 
-	green := color.New(color.FgHiGreen)
-	green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
+	//green := color.New(color.FgHiGreen)
+	//green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
 
 	return newRepository.FetchMainModuleInPackage(verboseFlag)
 }
