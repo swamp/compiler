@@ -77,6 +77,14 @@ a
 }
 
 
+func TestResourceName(t *testing.T) {
+	testParseExpression(t,
+		`
+@some/name/here2.png
+`,
+		`@some/name/here2.png`)
+}
+
 func TestSingleLineComment(t *testing.T) {
 	testParseExpression(t,
 		`--   another comment

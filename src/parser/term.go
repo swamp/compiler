@@ -32,6 +32,9 @@ func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.E
 			}
 			return parseIntegerLiteral(p.stream, t)
 		}
+		case token.ResourceName: {
+			return parseResourceNameLiteral(p.stream, t)
+		}
 		case token.BooleanToken: {
 			return parseBoolLiteral(p.stream, t)
 		}

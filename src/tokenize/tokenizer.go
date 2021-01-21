@@ -578,6 +578,8 @@ func (t *Tokenizer) internalGuessNext() (token.Token, error) {
 	} else if isDigit(r) {
 		t.unreadRune()
 		return t.ParseNumber("")
+	} else if r == '@' {
+		return t.parseResourceName(posToken)
 	} else if isStartString(r) {
 		return t.ParseString(r, posToken)
 	} else if isOperator(r) {

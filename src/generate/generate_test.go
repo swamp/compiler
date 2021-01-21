@@ -11,6 +11,22 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
+
+func TestResourceName(t *testing.T) {
+	testGenerate(t,
+		`
+a : Bool -> List ResourceName
+a x =
+    [ @this/is/cool, @as/well/as/that ]
+`, `
+func [function a 3 1 [[constant1 @this/is/cool #4] [constant2 @as/well/as/that #5]]]
+00: lr 2,4
+03: lr 3,5
+06: crl 0 [2 3]
+0b: ret
+`)
+}
+
 func TestListLiteral(t *testing.T) {
 	testGenerate(t,
 		`

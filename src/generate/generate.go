@@ -496,6 +496,13 @@ func generateFixedLiteral(code *assembler.Code, target assembler.TargetVariable,
 	return nil
 }
 
+func generateResourceNameLiteral(code *assembler.Code, target assembler.TargetVariable, resourceName *decorated.ResourceNameLiteral, context *assembler.Context) error {
+	constant := context.Constants().AllocateResourceNameConstant(resourceName.Value())
+	code.CopyVariable(target, constant)
+	return nil
+}
+
+
 func generateGetVariable(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.GetVariableOrReferenceFunction, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.Identifier().Name())
 	variable := context.FindVariable(varName)
@@ -756,6 +763,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	case *decorated.FixedLiteral:
 		return generateFixedLiteral(code, target, e, context)
 
+	case *decorated.ResourceNameLiteral:
+		return generateResourceNameLiteral(code, target, e, context)
+
 	case *decorated.BooleanLiteral:
 		return generateBoolConstant(code, target, e, context)
 
@@ -821,7 +831,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariab
 	signature, lookupErr := lookup.Lookup(f.Type())
 	if lookupErr != nil {
 		signature = -1
-		// return nil, lookupErr
+		return nil, lookupErr
 	}
 	functionConstant := NewFunction(fullyQualifiedVariableName, swamppack.TypeRef(signature), parameterCount, uint(root.Layouter().HighestUsedRegisterValue()), root.Constants().Constants(), opcodes)
 	return functionConstant, nil

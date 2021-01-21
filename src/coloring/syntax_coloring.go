@@ -31,6 +31,10 @@ func ColorVariableSymbol(t token.VariableSymbolToken) string {
 	return color.HiMagentaString(t.Raw())
 }
 
+func ColorResourceNameSymbol(t token.ResourceName) string {
+	return color.HiMagentaString(t.Raw())
+}
+
 func ColorDefinition(t token.VariableSymbolToken) string {
 	return color.HiBlueString(t.Raw())
 }
@@ -125,6 +129,8 @@ func colorToken(t token.Token) string {
 		return colorBooleanLiteral(v)
 	case token.VariableSymbolToken:
 		return ColorVariableSymbol(v)
+	case token.ResourceName:
+		return ColorResourceNameSymbol(v)
 	case token.TypeSymbolToken:
 		return ColorTypeSymbol(v)
 	case token.NumberToken:

@@ -27,6 +27,28 @@ first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a 
 `)
 }
 
+func TestResourceName(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+--| ignore this
+first : ResourceName -> Int
+first a =
+    2
+
+
+main : Bool -> Int
+main ignore =
+    first @this/is/something.txt
+`,
+		`
+func(ResourceName -> Int) : [func  [primitive ResourceName] [primitive Int]]
+func(Bool -> Int) : [func  [primitive Bool] [primitive Int]]
+
+first = [functionvalue ([[arg $a = [primitive ResourceName]]]) -> [integer 2]]
+main = [functionvalue ([[arg $ignore = [primitive Bool]]]) -> [fcall [getvar $first [primitive Int]] [[resource name this/is/something.txt]]]]
+`)
+}
+
 func TestFixed(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`

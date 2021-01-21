@@ -25,6 +25,7 @@ const (
 	SwtiTypeFixed
 	SwtiTypeBoolean
 	SwtiTypeBlob
+	SwtiTypeResourceName
 )
 
 func writeUint8(writer io.Writer, v byte) error {
@@ -178,6 +179,8 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		return writePrimitive(writer, SwtiTypeInt)
 	case *StringType:
 		return writePrimitive(writer, SwtiTypeString)
+	case *ResourceNameType:
+		return writePrimitive(writer, SwtiTypeResourceName)
 	case *FixedType:
 		return writePrimitive(writer, SwtiTypeFixed)
 	case *BoolType:

@@ -53,6 +53,7 @@ const (
 	Let
 	In
 	VariableSymbol
+	ResourceNameSymbol
 	TypeSymbol
 	Lambda
 	Import
