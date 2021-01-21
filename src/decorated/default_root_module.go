@@ -58,6 +58,18 @@ any pred coll =
     __asm callexternal 00 coreListAny 01 02
 
 
+__externalfn coreListFind 2
+find : (a -> Bool) -> List a -> Maybe a
+find pred coll =
+    __asm callexternal 00 coreListFind 01 02
+
+
+__externalfn coreListMember 2
+member : a -> List a -> Bool
+member pred coll =
+    __asm callexternal 00 coreListMember 01 02
+
+
 filterMap : (a -> Maybe b) -> List a -> List b
 filterMap pred coll =
     __asm callexternal 00 coreListFilterMap 01 02
