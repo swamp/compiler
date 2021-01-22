@@ -52,6 +52,8 @@ func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfo
 			switch subConstant.ConstantType() {
 			case assembler.ConstantTypeInteger:
 				packConstant = constantRepo.AddInteger(subConstant.IntegerValue())
+			case assembler.ConstantTypeResourceName:
+				packConstant = constantRepo.AddResourceName(subConstant.StringValue())
 			case assembler.ConstantTypeString:
 				packConstant = constantRepo.AddString(subConstant.StringValue())
 			case assembler.ConstantTypeBoolean:
