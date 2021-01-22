@@ -23,7 +23,7 @@ func (t *Tokenizer) parseResourceName(startPos token.PositionToken) (token.Token
 
 	for {
 		ch := t.nextRune()
-		if !isLowerCaseLetter(ch) && ch != '/' && !isDigit(ch) && ch != '.' {
+		if !isLowerCaseLetter(ch) && ch != '/' && !isDigit(ch) && ch != '.' && ch != '_' {
 			t.unreadRune()
 			break
 		}
