@@ -46,6 +46,20 @@ func (t *BoolType) HumanReadable() string {
 	return "Bool"
 }
 
+type LocalType struct {
+	Type
+	name string
+}
+
+func (t *LocalType) String() string {
+	return t.name
+}
+
+func (t *LocalType) HumanReadable() string {
+	return t.name
+}
+
+
 type BlobType struct {
 	Type
 }
@@ -750,6 +764,14 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 	return nil, fmt.Errorf("unknown primitive %v", primitive)
 }
 
+
+func (c *Chunk) consumeLocalType(localType *dectype.LocalType) (InfoType, error) {
+	return &LocalType{
+		Type: Type{},
+		name: localType.Identifier().Name(),
+	}, nil
+}
+
 func (c *Chunk) consumeAlias(alias *dectype.Alias) (InfoType, error) {
 	consumedType, err := c.Consume(alias.Next())
 	if err != nil {
@@ -790,8 +812,9 @@ func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 	case *dectype.PrimitiveAtom:
 		return c.consumePrimitive(t)
 	case *dectype.LocalType:
-		return nil, fmt.Errorf("local types not supported")
+		return c.consumeLocalType(t)
 	}
+
 
 	return nil, fmt.Errorf("unknown atom %T", a)
 }
