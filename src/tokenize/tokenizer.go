@@ -7,6 +7,7 @@ package tokenize
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/swamp/compiler/src/runestream"
@@ -36,13 +37,24 @@ type Tokenizer struct {
 	enforceStyleGuide     bool
 }
 
-func verifyOctets(octets []byte) TokenError {
+func verifyOctets(octets []byte, relativeFilename string) TokenError {
 	pos := token.NewPositionTopLeft()
 	for _, octet := range octets {
 		r := rune(octet)
 		if r != 0 && r != 10 && (r < 32 || r > 126) {
 			posLength := token.NewPositionLength(pos, 1, -1)
 			return NewUnexpectedEatTokenError(posLength, ' ', r)
+		}
+		if r == '\n' || r == 0 {
+			const maxColumn = 120
+			const recommendedMaxColumn = 100
+			if pos.Column() > maxColumn {
+				fmt.Fprintf(os.Stderr, "%v:%d:%d: Warning: line is too long (%v of max %v).\n", relativeFilename, pos.Line()+1, pos.Column()+1,
+					pos.Column(), maxColumn)
+			} else if pos.Column() > recommendedMaxColumn {
+				fmt.Fprintf(os.Stderr, "%v:%d:%d: Note: exceeds recommended line length (%v of recommended %v).\n", relativeFilename, pos.Line()+1, pos.Column()+1,
+					pos.Column(), recommendedMaxColumn)
+			}
 		}
 		pos = nextPosition(pos, r)
 	}
@@ -55,7 +67,7 @@ func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, T
 		position:              token.NewPositionToken(token.NewPositionTopLeft(), 0),
 		lastTokenWasDelimiter: true,
 		enforceStyleGuide:     exactWhitespace}
-	verifyErr := verifyOctets(r.Octets())
+	verifyErr := verifyOctets(r.Octets(), r.RelativeFilename())
 	if verifyErr != nil {
 		return t, verifyErr
 	}
