@@ -164,6 +164,33 @@ func writeCase(caseExpression *ast.Case, colorer coloring.Colorer, indentation i
 	//colorer.NewLine(indentation)
 }
 
+
+func writeGuard(guardExpression *ast.GuardExpression, colorer coloring.Colorer, indentation int) {
+	for index, item := range guardExpression.Items() {
+		if index > 0 {
+			colorer.NewLine(indentation + 1)
+		}
+		colorer.KeywordString("|")
+		colorer.OneSpace()
+
+		writeExpression(item.Condition, colorer, 0)
+		colorer.OneSpace()
+		colorer.RightArrow()
+		colorer.OneSpace()
+		writeExpression(item.Consequence, colorer, 0)
+	}
+
+	colorer.NewLine(indentation + 1)
+	colorer.KeywordString("|")
+	colorer.OneSpace()
+	colorer.OperatorString("_")
+	colorer.OneSpace()
+	colorer.RightArrow()
+	colorer.OneSpace()
+	writeExpression(guardExpression.DefaultExpression(), colorer, 0)
+}
+
+
 func writeGetVariable(identifier *ast.VariableIdentifier, colorer coloring.Colorer, indentation int) {
 	moduleReference := identifier.ModuleReference()
 	if moduleReference != nil {
@@ -525,6 +552,10 @@ func writeExpression(expression ast.Expression, colorer coloring.Colorer, indent
 	case *ast.IfExpression:
 		{
 			writeIf(t, colorer, indentation)
+		}
+	case *ast.GuardExpression:
+		{
+			writeGuard(t, colorer, indentation)
 		}
 	case *ast.RecordLiteral:
 		{

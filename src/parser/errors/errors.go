@@ -8,6 +8,7 @@ package parerr
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/tokenize"
 )
@@ -580,4 +581,38 @@ func NewParseAliasError(subError ParseError) ParseAliasError {
 
 func (e ParseAliasError) Error() string {
 	return fmt.Sprintf("problem parsing alias %v", e.SubParserError)
+}
+
+
+type ExpectedDefaultLastError struct {
+	expression ast.Expression
+}
+
+func NewExpectedDefaultLastError(expression ast.Expression) ExpectedDefaultLastError {
+	return ExpectedDefaultLastError{expression: expression}
+}
+
+func (e ExpectedDefaultLastError) Error() string {
+	return fmt.Sprintf("default '_' must come last of the conditions. %v", e.expression)
+}
+
+func (e ExpectedDefaultLastError) FetchPositionLength() token.PositionLength {
+	return e.expression.PositionLength()
+}
+
+
+type MustHaveDefaultInConditionsError struct {
+	expression ast.Expression
+}
+
+func NewMustHaveDefaultInConditionsError(expression ast.Expression) MustHaveDefaultInConditionsError {
+	return MustHaveDefaultInConditionsError{expression: expression}
+}
+
+func (e MustHaveDefaultInConditionsError) Error() string {
+	return fmt.Sprintf("must include a default '_' in conditions. %v", e.expression)
+}
+
+func (e MustHaveDefaultInConditionsError) FetchPositionLength() token.PositionLength {
+	return e.expression.PositionLength()
 }

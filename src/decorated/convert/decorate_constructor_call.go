@@ -52,7 +52,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 			}
 
 			if len(decoratedExpressions) != len(e.ParseOrderedFields()) {
-				return nil, decorated.NewInternalError(fmt.Errorf("wrong number of fields in constructor"))
+				return nil, decorated.NewWrongNumberOfFieldsInConstructor(e, call)
 			}
 
 			if len(e.ParseOrderedFields()) > 4 {

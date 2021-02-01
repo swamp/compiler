@@ -37,6 +37,7 @@ func (s *RecordAtom) HumanReadable() string {
 
 
 func (s *RecordAtom) ShortString() string {
+	/*
 	str := "[record-type "
 	for _, field := range s.sortedFields {
 		str += " " + field.ShortString()
@@ -44,6 +45,10 @@ func (s *RecordAtom) ShortString() string {
 	str += "]"
 
 	return str
+
+	 */
+
+	return s.DecoratedName()
 }
 
 func (s *RecordAtom) DecoratedName() string {

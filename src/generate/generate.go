@@ -406,6 +406,60 @@ func generateIf(code *assembler.Code, target assembler.TargetVariable, ifExpr *d
 	return nil
 }
 
+
+
+func generateGuard(code *assembler.Code, target assembler.TargetVariable, guardExpr *decorated.Guard, context *assembler.Context, definitions *decorator.VariableContext) error {
+	type codeItem struct {
+		ConditionVariable assembler.SourceVariable
+		ConditionCode *assembler.Code
+		ConsequenceCode *assembler.Code
+		EndOfConsequenceLabel *assembler.Label
+	}
+
+	defaultCode := assembler.NewCode()
+	// defaultLabel := defaultCode.Label(nil, "guard-default")
+	defaultContext := context.MakeScopeContext()
+	altErr := generateExpression(defaultCode, target, guardExpr.DefaultGuard(), defaultContext, definitions)
+	if altErr != nil {
+		return altErr
+	}
+	endLabel := defaultCode.Label(nil, "guard-end")
+
+	var codeItems []codeItem
+	for _, item := range guardExpr.Items() {
+		conditionCode := assembler.NewCode()
+		conditionCodeContext := context.MakeScopeContext()
+		conditionVar, testErr := generateExpressionWithSourceVar(conditionCode, item.Condition(), conditionCodeContext, definitions, "guard-condition")
+		if testErr != nil {
+			return testErr
+		}
+
+		consequenceCode := assembler.NewCode()
+		consequenceContext := context.MakeScopeContext()
+		consErr := generateExpression(consequenceCode, target, item.Expression(), consequenceContext, definitions)
+		if consErr != nil {
+			return consErr
+		}
+		consequenceCode.Jump(endLabel)
+		endOfConsequenceLabel := consequenceCode.Label(nil, "guard-end")
+		consequenceContext.Free()
+		codeItem := codeItem{ConditionCode: conditionCode, ConditionVariable: conditionVar, ConsequenceCode: consequenceCode,
+			EndOfConsequenceLabel: endOfConsequenceLabel}
+		codeItems = append(codeItems, codeItem)
+	}
+
+	for _, codeItem := range codeItems {
+		code.Copy(codeItem.ConditionCode)
+		code.BranchFalse(codeItem.ConditionVariable, codeItem.EndOfConsequenceLabel)
+		context.FreeVariableIfNeeded(codeItem.ConditionVariable)
+		code.Copy(codeItem.ConsequenceCode)
+	}
+
+	code.Copy(defaultCode)
+
+	return nil
+}
+
 func generateCase(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.Case, context *assembler.Context, definitions *decorator.VariableContext) error {
 	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), context, definitions, "cast-test")
 	if testErr != nil {
@@ -755,6 +809,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.If:
 		return generateIf(code, target, e, context, definitions)
+
+	case *decorated.Guard:
+		return generateGuard(code, target, e, context, definitions)
 
 	case *decorated.StringLiteral:
 		return generateStringLiteral(code, target, e, context)

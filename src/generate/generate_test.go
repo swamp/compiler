@@ -27,6 +27,49 @@ func [function a 3 1 [[constant1 @this/is/cool #4] [constant2 @as/well/as/that #
 `)
 }
 
+func TestGuard(t *testing.T) {
+	testGenerate(t,
+		`
+isBeautiful : String -> Bool
+isBeautiful name =
+    | name == "Rebecca" -> True
+    | _ -> False
+`, `
+func [function isBeautiful 2 1 [[constant1 False #3] [constant2 Rebecca #4] [constant3 True #5]]]
+00: cpeq 2,1,4
+04: brne 2 [label @0c]
+07: lr 0,5
+0a: jmp [label @0f]
+0c: lr 0,3
+0f: ret
+`)
+}
+
+func TestGuardMultiple(t *testing.T) {
+	testGenerate(t,
+		`
+howGreat : Int -> String
+howGreat value =
+    | value == 0 -> "Zero"
+    | value > 100 || value == 40 -> "Crisis"
+    | _ -> "No idea"
+`, `
+func [function howGreat 2 1 [[constant1 No idea #4] [constant2 int:0 #5] [constant3 Zero #6] [constant4 int:100 #7] [constant5 int:40 #8] [constant6 Crisis #9]]]
+00: cpeq 2,1,5
+04: brne 2 [label @0c]
+07: lr 0,6
+0a: jmp [label @22]
+0c: cpg 3,1,7
+10: brne 3 [label @17]
+13: cpeq 3,1,8
+17: brne 3 [label @1f]
+1a: lr 0,9
+1d: jmp [label @22]
+1f: lr 0,4
+22: ret
+`)
+}
+
 func TestListLiteral(t *testing.T) {
 	testGenerate(t,
 		`

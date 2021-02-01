@@ -23,6 +23,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateLet(d, v, context)
 	case *ast.IfExpression:
 		return decorateIf(d, v, context)
+	case *ast.GuardExpression:
+		return decorateGuard(d, v, context)
 	case *ast.Case:
 		return decorateCase(d, v, context)
 	case *ast.VariableIdentifier:

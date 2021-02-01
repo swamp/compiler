@@ -25,6 +25,10 @@ func (p *Parser) parsePrefix(t token.Token, startIndentation int) (ast.Expressio
 		if opType == token.OperatorNot {
 			return parseUnary(p.stream, startIndentation, operator)
 		}
+
+		if opType == token.OperatorUpdateOrGuard {
+			return parseGuard(p.stream, startIndentation, operator)
+		}
 	}
 
 	if lambdaToken, isLambda := t.(token.LambdaToken); isLambda {

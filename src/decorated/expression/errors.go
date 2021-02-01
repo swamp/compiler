@@ -390,6 +390,31 @@ func (e *WrongTypeForRecordConstructorField) FetchPositionLength() token.Positio
 	return e.call.TypeIdentifier().Symbol().FetchPositionLength()
 }
 
+
+
+type WrongNumberOfFieldsInConstructor struct {
+	call               *ast.ConstructorCall
+	record        *dectype.RecordAtom
+	expectedExpression DecoratedExpression
+	err                error
+}
+
+
+func NewWrongNumberOfFieldsInConstructor(record *dectype.RecordAtom, call *ast.ConstructorCall) *WrongNumberOfFieldsInConstructor {
+	return &WrongNumberOfFieldsInConstructor{
+		call:                 call,
+		record: record}
+}
+
+func (e *WrongNumberOfFieldsInConstructor) Error() string {
+	return fmt.Sprintf("wrong number of fields in constructor %v, %v", e.record, e.call)
+}
+
+func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.PositionLength {
+	return e.call.TypeIdentifier().Symbol().FetchPositionLength()
+}
+
+
 type UnhandledCustomTypeVariants struct {
 	unhandledVariants []*dectype.CustomTypeVariant
 	caseExpression    *ast.Case

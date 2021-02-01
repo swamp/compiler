@@ -32,7 +32,7 @@ const (
 	OperatorCons
 	Colon
 	OperatorAssign
-	OperatorUpdate
+	OperatorUpdateOrGuard
 	Accessor
 	RightParen
 	LeftParen

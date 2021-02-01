@@ -74,7 +74,7 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			debugString = "OR"
 			operatorType = token.OperatorOr
 		} else {
-			operatorType = token.OperatorUpdate
+			operatorType = token.OperatorUpdateOrGuard
 			t.unreadRune()
 		}
 	case '-':

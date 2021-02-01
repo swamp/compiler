@@ -77,6 +77,40 @@ a
 }
 
 
+func TestGuard(t *testing.T) {
+	testParseExpression(t,
+		`
+let
+    a =
+        | y > 3 -> y
+        | y == 4 -> 45
+        | _ -> "hello"
+in
+a
+`,
+
+		`
+[let: [[letassign $a = [guard: [{($y > #3) $y} {($y == #4) #45}] 'hello']]] in $a]
+`)
+}
+
+
+func TestGuardExpression(t *testing.T) {
+	testParse(t,
+		`
+fn : Int -> Int
+fn x =
+    | x < 2 -> 42
+    | x == 4 -> 45
+    | _ -> -1
+`,
+
+		`
+[annotation: $fn [func-type [type-reference $Int] -> [type-reference $Int]]]
+[definition: $fn = [func ([$x]) -> [guard: [{($x < #2) #42} {($x == #4) #45}] #-1]]]
+`)
+}
+
 func TestResourceName(t *testing.T) {
 	testParseExpression(t,
 		`

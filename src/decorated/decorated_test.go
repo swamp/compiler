@@ -295,10 +295,10 @@ someFunc name =
 		`
 Unknown : [variantconstr [variant $Unknown]]
 Something : [variantconstr [variant $Something [[primitive Int]]]]
-Status : [custom-type  [variant $Unknown] [variant $Something]]
-func(String -> Status) : [func  [primitive String] [custom-type  [variant $Unknown] [variant $Something]]]
+Status : [custom-type  [variant $Unknown] [variant $Something [primitive Int]]]
+func(String -> Status) : [func  [primitive String] [custom-type  [variant $Unknown] [variant $Something [primitive Int]]]]
 
-someFunc = [functionvalue ([[arg $name = [primitive String]]]) -> [variant-constructor [variant $Unknown []] []]]
+someFunc = [functionvalue ([[arg $name = [primitive String]]]) -> [variant-constructor [variant $Unknown] []]]
 `)
 }
 
@@ -777,6 +777,19 @@ isBeautiful name =
 func(String -> Bool) : [func  [primitive String] [primitive Bool]]
 
 isBeautiful = [functionvalue ([[arg $name = [primitive String]]]) -> [if (boolop [getvar $name [primitive String]] EQ [str Rebecca]) then [bool true] else [bool false]]]`)
+}
+
+func TestGuard(t *testing.T) {
+	testDecorate(t,
+		`
+isBeautiful : String -> Bool
+isBeautiful name =
+    | name == "Rebecca" -> True
+    | _ -> False
+`, `
+func(String -> Bool) : [func  [primitive String] [primitive Bool]]
+
+isBeautiful = [functionvalue ([[arg $name = [primitive String]]]) -> [dguard: [dguarditem (boolop [getvar $name [primitive String]] EQ [str Rebecca]) [bool true]] default: [bool false]]]`)
 }
 
 func TestBoolPerson(t *testing.T) {
@@ -1292,7 +1305,8 @@ intConvert : MyList Int -> Bool
 intConvert intList =
     True
 `, `
-MyList : [alias MyList RecordType([t])]
+{someType:t} : {someType:t}
+MyList : [alias MyList {someType:t}]
 func(MyList<Int> -> Bool) : [func  MyList<Int> [primitive Bool]]
 
 intConvert = [functionvalue ([[arg $intList = MyList<Int>]]) -> [bool true]]
@@ -1312,11 +1326,11 @@ main : Bool -> Int
 main ignored =
     simple [ 1, 2, 3 ]
 `, `
+func(List<a> -> a) : [func  List<a> [localtype a]]
 func(Bool -> Int) : [func  [primitive Bool] [primitive Int]]
-func(List<Int> -> Int) : [func  [concrcolltypes List [primitive Int]] [primitive Int]]
 
-simple = [templator [func-type [type-reference $List [[local-type: [type-param $a]]]] -> [local-type: [type-param $a]]] [a]]
 main = [functionvalue ([[arg $ignored = [primitive Bool]]]) -> [fcall [getvar $simple [primitive Int]] [[ListLiteral List<Int> [[integer 1] [integer 2] [integer 3]]]]]]
+simple = [functionvalue ([[arg $lst = List<a>]]) -> [integer 2]]	
  
 `)
 }
