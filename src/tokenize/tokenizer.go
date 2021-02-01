@@ -522,6 +522,50 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 	return token.NewStringToken(raw, a, posLen), nil
 }
 
+func (t *Tokenizer) isTriple(ch rune, startStringRune rune) (bool, error) {
+	if ch == startStringRune {
+		if t.nextRune() == startStringRune {
+			if t.nextRune() == startStringRune {
+				return true, nil
+			} else {
+				t.unreadRune()
+				t.unreadRune()
+			}
+		} else {
+			t.unreadRune()
+		}
+	} else if ch == 0 {
+		return false, fmt.Errorf("unexpected end while finding end of triple string")
+	}
+
+	return false, nil
+}
+
+
+func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, error) {
+	var a string
+	raw := string(startStringRune+startStringRune+startStringRune)
+	for {
+		ch := t.nextRune()
+		raw += string(ch)
+		if ch == 0 {
+			return token.StringToken{}, fmt.Errorf("unexpected end while finding end of triple string")
+		}
+
+		wasEnd, err := t.isTriple(ch, startStringRune)
+		if err != nil {
+			return token.StringToken{}, err
+		}
+
+		if wasEnd {
+			break
+		}
+		a += string(ch)
+	}
+	posLen := t.MakePositionLength(startPosition)
+	return token.NewStringToken(raw, a, posLen), nil
+}
+
 func (t *Tokenizer) ReadStringUntilEndOfLine() string {
 	s := ""
 	for {
@@ -619,6 +663,9 @@ func (t *Tokenizer) internalGuessNext() (token.Token, error) {
 	} else if r == '@' {
 		return t.parseResourceName(posToken)
 	} else if isStartString(r) {
+		if wasTriple, _ := t.isTriple(r, r); wasTriple {
+			return t.parseTripleString(r, posToken)
+		}
 		return t.ParseString(r, posToken)
 	} else if isOperator(r) {
 		t.unreadRune()

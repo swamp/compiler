@@ -21,26 +21,13 @@ func TestNumber(t *testing.T) {
 func TestFixedNumber(t *testing.T) {
 	testParseExpression(t,
 		`2.03`,
-		`#!203`)
+		`#!2030`)
 }
 
 func TestFixedNumberSmall(t *testing.T) {
 	testParseExpression(t,
 		`0.4`,
-		`#!40`)
-}
-
-func TestFixedNumberSmall2(t *testing.T) {
-	testParseExpressionNoStyle(t,
-		`
-let
-    a = gamepad.a != 0 && (oldGamepad.a == 0)
-
-    b = True
-in
-a
-`,
-		`#!40`)
+		`#!400`)
 }
 
 func TestMultilineCommentOnOneLine(t *testing.T) {
@@ -143,6 +130,17 @@ func TestStringContinuation(t *testing.T) {
 		`"hello, world!
   .next line"`,
 		`'hello, world!  .next line'`)
+}
+
+func TestStringTriple(t *testing.T) {
+	testParseExpression(t,
+		`
+"""x
+hello, world!
+   .next line"""`,
+		`'x
+hello, world!
+   .next line'`)
 }
 
 func TestStringContinuationWithIndentation(t *testing.T) {
