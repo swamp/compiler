@@ -597,6 +597,10 @@ func (p *ParseStreamImpl) eatCommaSeparatorOrTermination(expectedIndentation int
 	}
 	wasComma := p.tokenizer.MaybeRune(',')
 	if wasComma {
+		wasNextLineOrNoSpaceBeforeComma := tokenize.LegalSameIndentationOrNoSpace(report, expectedIndentation, !p.disableEnforceStyle)
+		if !wasNextLineOrNoSpaceBeforeComma {
+			return false, report, tokenize.NewUnexpectedIndentationError(report.PositionLength, expectedIndentation, report.CloseIndentation)
+		}
 		spaceAfterCommaReport, eatErr := p.eatOneSpace("space after comma")
 		if eatErr != nil {
 			return true, spaceAfterCommaReport, eatErr
@@ -606,7 +610,7 @@ func (p *ParseStreamImpl) eatCommaSeparatorOrTermination(expectedIndentation int
 			return true, report, nil
 		}
 
-		wasNextLineOrNoSpace := tokenize.LegalSameIndentationOrNoSpace(report, expectedIndentation, !p.disableEnforceStyle)
+		wasNextLineOrNoSpace := tokenize.LegalSameIndentationOrNoSpace(report, report.ExactIndentation, !p.disableEnforceStyle)
 		if wasNextLineOrNoSpace {
 			return true, report, nil
 		}
@@ -620,7 +624,6 @@ func (p *ParseStreamImpl) eatCommaSeparatorOrTermination(expectedIndentation int
 			return false, report, nil
 		}
 		fmt.Printf("%d\n", report.SpacesUntilMaybeNewline)
-		p.debugInfo("wasnt a space indentation")
 	} else {
 		wasNextLineOrOneSpace := tokenize.LegalSameIndentationOrOptionalOneSpace(report, expectedIndentation, !p.disableEnforceStyle)
 		if wasNextLineOrOneSpace {

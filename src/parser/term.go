@@ -53,7 +53,7 @@ func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.E
 	case token.LeftParen:
 		return parseParenExpression(p.stream, startIndentation, someParenToken)
 	case token.LeftCurlyBrace:
-		return parseRecordLiteral(p.stream, someParenToken.FetchIndentation(), someParenToken)
+		return parseRecordLiteral(p.stream, startIndentation, someParenToken)
 	case token.LeftBracket:
 		return parseListLiteral(p.stream, someParenToken, startIndentation)
 	default:

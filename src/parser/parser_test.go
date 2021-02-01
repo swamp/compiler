@@ -138,6 +138,20 @@ func TestString(t *testing.T) {
 		`'hello, world!'`)
 }
 
+func TestStringContinuation(t *testing.T) {
+	testParseExpression(t,
+		`"hello, world!
+  .next line"`,
+		`'hello, world!  .next line'`)
+}
+
+func TestStringContinuationWithIndentation(t *testing.T) {
+	testParseExpression(t,
+		`"hello, world!  \
+               .next line"`,
+		`'hello, world!  .next line'`)
+}
+
 func TestBool(t *testing.T) {
 	testParseExpression(t,
 		`True`,

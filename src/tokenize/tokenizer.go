@@ -254,7 +254,7 @@ func LegalSameIndentationOrOptionalOneSpace(report token.IndentationReport, inde
 	}
 
 	if enforceStyle {
-		if report.NewLineCount == 1 && report.ExactIndentation == indentation {
+		if report.NewLineCount == 1 && (report.ExactIndentation == indentation || report.ExactIndentation == indentation + 1) {
 			return true
 		}
 	} else {
@@ -478,6 +478,16 @@ func (t *Tokenizer) unreadRune() {
 	t.reversePosition(ch)
 }
 
+func (t *Tokenizer) skipSpaces() {
+	for {
+		r := t.nextRune()
+		if !isIndentation(r) || r == 0 {
+			t.unreadRune()
+			break
+		}
+	}
+}
+
 func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, error) {
 	var a string
 	raw := string(startStringRune)
@@ -490,6 +500,22 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 		if ch == 0 {
 			return token.StringToken{}, fmt.Errorf("unexpected end while finding end of string")
 		}
+
+		if ch == '\\' {
+			next := t.nextRune()
+			if next == '\n' || next == '\r' {
+				t.skipSpaces()
+				continue
+			} else {
+				t.unreadRune()
+			}
+		}
+
+		if ch == '\n' || ch == '\r' {
+			// we ignore new line (LF) in normal string literals. See verbatim strings (triple quote strings) for other behavior.
+			continue
+		}
+
 		a += string(ch)
 	}
 	posLen := t.MakePositionLength(startPosition)

@@ -35,8 +35,7 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 			}
 			assignment := ast.NewRecordLiteralFieldAssignment(varIdent, exp)
 			recordFieldAssignments = append(recordFieldAssignments, assignment)
-
-			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(indentation,  false)
+			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(indentation, false)
 			if commaErr != nil {
 				return nil, commaErr
 			}
