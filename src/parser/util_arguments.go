@@ -17,19 +17,21 @@ func parseArgumentExpression(p ParseStream, startIndentation int) (ast.Expressio
 
 func parseFunctionCallArguments(p ParseStream, startIndentation int) ([]ast.Expression, parerr.ParseError) {
 	var arguments []ast.Expression
-	for i := 0; i < 99; i++ {
-		e, eErr := parseArgumentExpression(p, startIndentation)
-		if eErr != nil {
-			return nil, eErr
-		}
-		if e == nil {
-			break
-		}
-		arguments = append(arguments, e)
 
-		wasEnd, _, _ := p.eatArgumentSpaceOrDetectEndOfArguments(startIndentation)
-		if wasEnd {
-			break
+	if !p.maybeEmptyParen() {
+		for i := 0; i < 99; i++ {
+			e, eErr := parseArgumentExpression(p, startIndentation)
+			if eErr != nil {
+				return nil, eErr
+			}
+			if e == nil {
+				break
+			}
+			arguments = append(arguments, e)
+			wasEnd, _, _ := p.eatArgumentSpaceOrDetectEndOfArguments(startIndentation)
+			if wasEnd {
+				break
+			}
 		}
 	}
 

@@ -65,5 +65,11 @@ func parseTypeReferenceFunc(p ParseStream, keywordIndentation int,
 		return nil, tErr
 	}
 
+	// hack
+	_, isFunc := t.(*ast.FunctionType)
+	if !isFunc {
+		t = ast.NewFunctionType([]ast.Type{t})
+	}
+
 	return t, nil
 }

@@ -74,6 +74,8 @@ type ParseStream interface {
 	maybeAssign() bool
 	maybeAccessor() bool
 	maybeRightBracket() bool
+	maybeRightParen() bool
+	maybeEmptyParen() bool
 	maybeColon() bool
 	maybePipeLeft() bool
 	maybeRightArrow() bool

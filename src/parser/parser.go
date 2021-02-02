@@ -143,15 +143,17 @@ func (p *Parser) peekIsCall() bool {
 	}
 
 	anyToken, anyTokenErr := p.stream.guessToken()
-	p.stream.tokenizer.Seek(saveInfo)
-
 	if anyTokenErr != nil {
 		return false
 	}
+	p.stream.tokenizer.Seek(saveInfo)
 	parenToken, wasParen := anyToken.(token.ParenToken)
+	isLeftParen := false
 	if wasParen {
-		isLeftParen := parenIsLeft(parenToken)
-		return isLeftParen
+		isLeftParen = parenIsLeft(parenToken)
+	}
+	if isLeftParen {
+		return true
 	}
 	wasLeaf := tokenIsLeaf(anyToken)
 	return wasLeaf

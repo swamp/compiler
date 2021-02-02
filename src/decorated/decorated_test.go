@@ -27,6 +27,26 @@ first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a 
 `)
 }
 
+func TestConstant(t *testing.T) {
+	testDecorateWithoutDefault(t,`
+fn : String
+fn =
+    "Hello"
+
+
+another : String
+another =
+    fn()
+
+
+`, `
+func(String) : [func  [primitive String]]
+
+another = [functionvalue ([]) -> [fcall [getvar $fn [primitive String]] []]]
+fn = [functionvalue ([]) -> [str Hello]]
+`)
+}
+
 func TestResourceName(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`

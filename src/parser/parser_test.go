@@ -49,6 +49,21 @@ func TestMultilineComment(t *testing.T) {
 }
 
 
+
+func TestConstant(t *testing.T) {
+	testParse(t,
+		`
+fn : String
+fn =
+    "Hello"
+`,
+		`
+[annotation: $fn [type-reference $String]]
+[definition: $fn = [func ([]) -> 'Hello']]
+`)
+}
+
+
 func TestStringInterpolation(t *testing.T) {
 	testParseExpression(t,
 		`

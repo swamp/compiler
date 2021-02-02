@@ -204,6 +204,8 @@ func (p *ParseStreamImpl) maybeLeftParen() bool {
 	return p.tokenizer.MaybeRune('(')
 }
 
+
+
 func (p *ParseStreamImpl) maybeLeftCurly() bool {
 	return p.tokenizer.MaybeString("{")
 }
@@ -525,6 +527,12 @@ func (p *ParseStreamImpl) maybeNewLine() bool {
 func (p *ParseStreamImpl) maybeRightParen() bool {
 	return p.tokenizer.MaybeRune(')')
 }
+
+
+func (p *ParseStreamImpl) maybeEmptyParen() bool {
+	return p.tokenizer.MaybeString("()")
+}
+
 
 // ---------------------------------------------------------------------------------
 // EAT
