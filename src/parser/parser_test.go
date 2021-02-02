@@ -485,6 +485,15 @@ import Character.Damage.Sub
 `)
 }
 
+func TestImportExposingEllipsis(t *testing.T) {
+	testParse(t,
+		`
+import First exposing (..)
+`, `
+[import [$First] exposing (..)]
+`)
+}
+
 func TestImportFail(t *testing.T) {
 	testParseError(t,
 		`

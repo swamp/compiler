@@ -28,8 +28,8 @@ func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module) *
 	return d
 }
 
-func (d *Decorator) Import(source *decorated.Module, relativeName dectype.PackageRelativeModuleName) error {
-	 return ImportModuleToModule(d.module, source, relativeName)
+func (d *Decorator) Import(source *decorated.Module, relativeName dectype.PackageRelativeModuleName, exposeAll bool) error {
+	 return ImportModuleToModule(d.module, source, relativeName, exposeAll)
 }
 
 func (d *Decorator) TypeRepo() *dectype.TypeRepo {
@@ -52,7 +52,7 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 	return decorator.NewVariableContext(d.module.LocalAndImportedDefinitions())
 }
 
-func (d *Decorator) AddImport(relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, verboseFlag bool) decshared.DecoratedError {
+func (d *Decorator) AddImport(relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) decshared.DecoratedError {
 	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(relativeModuleName, verboseFlag)
 	if importErr != nil {
 		return importErr
@@ -63,7 +63,7 @@ func (d *Decorator) AddImport(relativeModuleName dectype.PackageRelativeModuleNa
 	if !alias.IsEmpty() {
 		relativeModuleName = dectype.MakePackageRelativeModuleName(alias.Path())
 	}
-	importModuleErr := d.Import(moduleToImport, relativeModuleName)
+	importModuleErr := d.Import(moduleToImport, relativeModuleName, exposeAll)
 	if importModuleErr != nil {
 		return decorated.NewInternalError(importModuleErr)
 	}

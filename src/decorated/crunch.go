@@ -82,7 +82,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 			panic("importModule is nil")
 		}
 		relativeModuleName := dectype.MakePackageRelativeModuleName(importModule.FullyQualifiedModuleName().Path())
-		importErr := ImportModuleToModule(module, importModule, relativeModuleName)
+		importErr := ImportModuleToModule(module, importModule, relativeModuleName, false)
 		if importErr != nil {
 			return nil, decorated.NewInternalError(importErr)
 		}
@@ -101,7 +101,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	return module, nil
 }
 
-func ImportModuleToModule(target *decorated.Module, source *decorated.Module, sourceMountedModuleName dectype.PackageRelativeModuleName) error {
+func ImportModuleToModule(target *decorated.Module, source *decorated.Module, sourceMountedModuleName dectype.PackageRelativeModuleName, exposeAll bool) error {
 	if target == nil {
 		panic("no target")
 	}
@@ -111,12 +111,18 @@ func ImportModuleToModule(target *decorated.Module, source *decorated.Module, so
 	}
 
 	exposedTypes := source.ExposedTypes().AllExposedTypes()
+	exposedDefinitions := source.ExposedDefinitions().ReferencedDefinitions()
 
 	target.ImportedTypes().AddTypesWithModulePrefix(exposedTypes, sourceMountedModuleName)
 
 	importErr := target.ImportedDefinitions().AddDefinitionsWithModulePrefix(source.ExposedDefinitions().ReferencedDefinitions(), sourceMountedModuleName)
 	if importErr != nil {
 		return importErr
+	}
+
+	if exposeAll {
+		target.ImportedTypes().AddTypes(exposedTypes)
+		target.ImportedDefinitions().AddDefinitions(exposedDefinitions)
 	}
 
 	return nil

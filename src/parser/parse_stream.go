@@ -41,6 +41,7 @@ type ParseStream interface {
 
 	eatOperatorUpdate() parerr.ParseError
 	eatRightArrow() parerr.ParseError
+	eatLeftParen() parerr.ParseError
 	eatRightParen() parerr.ParseError
 	eatRightCurly() parerr.ParseError
 	eatRightBracket() parerr.ParseError
@@ -72,6 +73,7 @@ type ParseStream interface {
 	maybeKeywordAs() bool
 
 	maybeAssign() bool
+	maybeEllipsis() bool
 	maybeAccessor() bool
 	maybeRightBracket() bool
 	maybeRightParen() bool

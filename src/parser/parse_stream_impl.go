@@ -492,32 +492,54 @@ func (p *ParseStreamImpl) wasTypeIdentifier() (*ast.TypeIdentifier, bool) {
 // MAYBE
 // ---------------------------------------------------------------------------------
 func (p *ParseStreamImpl) maybeKeywordAlias() bool {
+	pos := p.tokenizer.Tell()
 	variableIdentifier, wasVariable := p.wasVariableIdentifier()
 	if !wasVariable {
+		p.tokenizer.Seek(pos)
 		return false
 	}
-	return variableIdentifier.Name() == "alias"
+	wasFound := variableIdentifier.Name() == "alias"
+	if !wasFound {
+		p.tokenizer.Seek(pos)
+	}
+	return wasFound
 }
 
 func (p *ParseStreamImpl) maybeKeywordExposing() bool {
+	pos := p.tokenizer.Tell()
 	variableIdentifier, wasVariable := p.wasVariableIdentifier()
 	if !wasVariable {
+		p.tokenizer.Seek(pos)
 		return false
 	}
-	return variableIdentifier.Name() == "exposing"
+	wasFound := variableIdentifier.Name() == "exposing"
+	if !wasFound {
+		p.tokenizer.Seek(pos)
+	}
+	return wasFound
 }
 
 func (p *ParseStreamImpl) maybeKeywordAs() bool {
+	pos := p.tokenizer.Tell()
 	variableIdentifier, wasVariable := p.wasVariableIdentifier()
 	if !wasVariable {
+		p.tokenizer.Seek(pos)
 		return false
 	}
-	return variableIdentifier.Name() == "as"
+	wasFound := variableIdentifier.Name() == "as"
+	if !wasFound {
+		p.tokenizer.Seek(pos)
+	}
+	return wasFound
 }
 
 
 func (p *ParseStreamImpl) maybeAssign() bool {
 	return p.tokenizer.MaybeAssign()
+}
+
+func (p *ParseStreamImpl) maybeEllipsis() bool {
+	return p.tokenizer.MaybeString("..")
 }
 
 func (p *ParseStreamImpl) maybeNewLine() bool {
@@ -820,6 +842,11 @@ func (p *ParseStreamImpl) eatRightArrow() parerr.ParseError {
 func (p *ParseStreamImpl) eatRightParen() parerr.ParseError {
 	return p.eatRune(')')
 }
+
+func (p *ParseStreamImpl) eatLeftParen() parerr.ParseError {
+	return p.eatRune('(')
+}
+
 
 func (p *ParseStreamImpl) eatRightCurly() parerr.ParseError {
 	return p.eatRune('}')

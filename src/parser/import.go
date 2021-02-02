@@ -33,7 +33,7 @@ func parseModuleName(p ParseStream) ([]*ast.TypeIdentifier, parerr.ParseError) {
 }
 
 func parseImport(p ParseStream, keyword token.VariableSymbolToken,
-	precedingComments token.CommentBlock) (ast.Expression, parerr.ParseError) {
+	indentation int, precedingComments token.CommentBlock) (ast.Expression, parerr.ParseError) {
 	_, spaceAfterKeywordErr := p.eatOneSpace("space after IMPORT")
 	if spaceAfterKeywordErr != nil {
 		return nil, spaceAfterKeywordErr
@@ -47,12 +47,15 @@ func parseImport(p ParseStream, keyword token.VariableSymbolToken,
 	var alias *ast.TypeIdentifier
 
 	wasNewLine := p.detectNewLine()
+	exposeAll := false
+	var identifiersToExpose []*ast.VariableIdentifier
+	var typesToExpose []*ast.TypeIdentifier
+
 	if !wasNewLine {
 		_, spaceAfterModuleReferenceErr := p.eatOneSpace("space after IMPORT")
 		if spaceAfterModuleReferenceErr != nil {
 			return nil, spaceAfterModuleReferenceErr
 		}
-
 		if p.maybeKeywordAs() {
 			_, spaceAfterAliasErr := p.eatOneSpace("space after alias")
 			if spaceAfterAliasErr != nil {
@@ -69,14 +72,36 @@ func parseImport(p ParseStream, keyword token.VariableSymbolToken,
 				p.addWarning("it is advised to use the last part of the import as alias. `import Some.Long.Name as Name`", p.positionLength())
 			}
 
-			wasNewLine := p.detectNewLine()
-			if !wasNewLine {
-				return nil, parerr.NewExpectedContinuationLineOrOneSpace(p.positionLength())
+		} else if p.maybeKeywordExposing() {
+			if _, spaceErr := p.eatOneSpace("after exposing"); spaceErr != nil {
+				return nil, spaceErr
 			}
-		} else {
-			return nil, parerr.NewExpectedContinuationLineOrOneSpace(p.positionLength())
+			if missingLeftParenErr := p.eatLeftParen(); missingLeftParenErr != nil {
+				return nil, missingLeftParenErr
+			}
+			for !p.maybeRightParen() {
+				if p.maybeEllipsis() {
+					p.eatRightParen()
+					exposeAll = true
+					identifiersToExpose = nil
+					typesToExpose = nil
+					break
+				}
+				variableToExpose, variableErr := p.readVariableIdentifier()
+				if variableErr != nil {
+					typeToExpose, typeErr := p.readTypeIdentifier()
+					if typeErr != nil {
+						return nil, typeErr
+					}
+					typesToExpose = append(typesToExpose, typeToExpose)
+				} else {
+					identifiersToExpose = append(identifiersToExpose, variableToExpose)
+				}
+				p.eatCommaSeparatorOrTermination(indentation, false)
+			}
 		}
+		wasNewLine = p.detectNewLine()
 	}
 
-	return ast.NewImport(keyword, moduleReference, alias, precedingComments), nil
+	return ast.NewImport(keyword, moduleReference, alias, typesToExpose, identifiersToExpose, exposeAll, precedingComments), nil
 }

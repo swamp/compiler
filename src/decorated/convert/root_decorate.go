@@ -135,7 +135,7 @@ func (g *Definer) handleImport(d DecorateStream, importAst *ast.Import) decshare
 		alias = dectype.MakeSingleModuleName(importAst.Alias())
 	}
 	packageRelative := dectype.MakePackageRelativeModuleName(importAst.ModuleName())
-	return d.AddImport(packageRelative, alias, g.verboseFlag)
+	return d.AddImport(packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
 }
 
 func (g *Definer) handleExternalFunction(d DecorateStream, externalFunction *ast.ExternalFunction) decshared.DecoratedError {

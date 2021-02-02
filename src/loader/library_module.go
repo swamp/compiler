@@ -57,7 +57,7 @@ func (r *LibraryReaderAndDecorator) checkSettings(world *World, repository deccy
 
 		rootNamespace := dectype.MakePackageRootModuleNameFromString(packageRootModuleNameString)
 		if !file.IsDir(dependencyFilePrefix) {
-			panic(fmt.Sprintf("not supported yet with dependency file %v %v", swampDirectory, packagePath))
+			panic(fmt.Sprintf("could not find directory '%v' '%v'", swampDirectory, packagePath))
 			// moduleNameToFetch = dectype.MakePackageRelativeModuleName(nil)
 		}
 		_, moduleErr := r.ReadLibraryModule(world, repository, dependencyFilePrefix, rootNamespace)

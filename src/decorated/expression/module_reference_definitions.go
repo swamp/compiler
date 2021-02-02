@@ -76,6 +76,9 @@ func (d *ModuleReferenceDefinitions) ReferencedDefinitions() []*ModuleDefinition
 
 func (d *ModuleReferenceDefinitions) AddDefinitions(definitions []*ModuleDefinition) error {
 	for _, def := range definitions {
+		if def == nil {
+			panic("not allowed with empty definitions")
+		}
 		addErr := d.AddDefinition(def.Identifier(), def)
 		if addErr != nil {
 			return addErr

@@ -37,7 +37,7 @@ func (p *Parser) parseExpressionStatement(precedingComments token.CommentBlock) 
 	case "type":
 		return parseCustomType(p.stream, variableSymbol, precedingComments)
 	case "import":
-		return parseImport(p.stream, variableSymbol, precedingComments)
+		return parseImport(p.stream, variableSymbol, 0, precedingComments)
 	case "module":
 		p.stream.tokenizer.ReadStringUntilEndOfLine()
 		p.stream.tokenizer.MaybeOneNewLine()

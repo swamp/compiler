@@ -47,6 +47,7 @@ fn = [functionvalue ([]) -> [str Hello]]
 `)
 }
 
+
 func TestResourceName(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
