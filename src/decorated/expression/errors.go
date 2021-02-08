@@ -487,14 +487,15 @@ type FunctionCallTypeMismatch struct {
 	expected    *dectype.FunctionAtom
 	encountered *dectype.FunctionAtom
 	call        *ast.FunctionCall
+	err error
 }
 
-func NewFunctionCallTypeMismatch(call *ast.FunctionCall, expected *dectype.FunctionAtom, encountered *dectype.FunctionAtom) *FunctionCallTypeMismatch {
-	return &FunctionCallTypeMismatch{call: call, expected: expected, encountered: encountered}
+func NewFunctionCallTypeMismatch(err error, call *ast.FunctionCall, expected *dectype.FunctionAtom, encountered *dectype.FunctionAtom) *FunctionCallTypeMismatch {
+	return &FunctionCallTypeMismatch{err: err, call: call, expected: expected, encountered: encountered}
 }
 
 func (e *FunctionCallTypeMismatch) Error() string {
-	return fmt.Sprintf("mismatch function type %v vs %v\n%v\n", e.expected, e.encountered, e.call)
+	return fmt.Sprintf("mismatch function type %v\n %v vs %v\n%v\n", e.err, e.expected, e.encountered, e.call)
 }
 
 func (e *FunctionCallTypeMismatch) FetchPositionLength() token.PositionLength {

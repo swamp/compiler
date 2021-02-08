@@ -126,6 +126,15 @@ func (u *FunctionAtom) ShortName() string {
 	return s
 }
 
+type FunctionAtomMismatch struct {
+	Expected dtype.Atom
+	Encountered dtype.Atom
+}
+
+func (e FunctionAtomMismatch) Error() string {
+	return fmt.Sprintf("expected %v, but encountered %v", e.Expected, e.Encountered)
+}
+
 func (u *FunctionAtom) IsEqual(other_ dtype.Atom) error {
 	other, wasFunctionAtom := other_.(*FunctionAtom)
 	if !wasFunctionAtom {
@@ -149,7 +158,7 @@ func (u *FunctionAtom) IsEqual(other_ dtype.Atom) error {
 
 		equalErr := param.IsEqual(otherParam)
 		if equalErr != nil {
-			return fmt.Errorf("not function param equal %w", equalErr)
+			return FunctionAtomMismatch{param, otherParam}
 		}
 	}
 

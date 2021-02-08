@@ -108,7 +108,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 
 	functionCompatibleErr := dectype.CompatibleTypes(functionType, completeCalledFunction)
 	if functionCompatibleErr != nil {
-		return nil, decorated.NewFunctionCallTypeMismatch(call, functionType, completeCalledFunction)
+		return nil, decorated.NewFunctionCallTypeMismatch(functionCompatibleErr, call, functionType, completeCalledFunction)
 	} else {
 		// fmt.Printf("was compatible:\n%v\n%v\n", functionType, completeCalledFunction)
 	}
