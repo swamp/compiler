@@ -54,6 +54,7 @@ const (
 	In
 	VariableSymbol
 	ResourceNameSymbol
+	TypeIdSymbol
 	TypeSymbol
 	Lambda
 	Import

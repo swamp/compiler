@@ -65,7 +65,7 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 	var allExternalFunctions []*generate.ExternalFunction
 	fakeMod := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(nil))
 
-	_, lookup, err := typeinfo.Generate(world)
+	typeInformationChunk, err := typeinfo.Generate(world)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 			fmt.Printf("============================================== generating for module %v\n", module)
 		}
 		context := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
-		functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, lookup, verboseFlag)
+		functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, verboseFlag)
 		if genErr != nil {
 			return genErr
 		}
@@ -103,12 +103,12 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 		fmt.Println(assemblerOutput)
 	}
 
-	typeInformationOctets, typeLookup, typeInformationErr := typeinfo.Generate(world)
+	typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(typeInformationChunk)
 	if typeInformationErr != nil {
 		return typeInformationErr
 	}
 
-	packed, packedErr := generate.Pack(allFunctions, allExternalFunctions, typeInformationOctets, typeLookup)
+	packed, packedErr := generate.Pack(allFunctions, allExternalFunctions, typeInformationOctets, typeInformationChunk)
 	if packedErr != nil {
 		return packedErr
 	}

@@ -38,7 +38,10 @@ func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.E
 		case token.BooleanToken: {
 			return parseBoolLiteral(p.stream, t)
 		}
-
+		case token.TypeId:
+			{
+				return parseTypeId(p.stream, t, startIndentation)
+			}
 	}
 
 	// ---------------------------------------------------------------

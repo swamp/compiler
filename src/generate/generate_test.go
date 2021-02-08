@@ -27,6 +27,66 @@ func [function a 3 1 [[constant1 @this/is/cool #4] [constant2 @as/well/as/that #
 `)
 }
 
+
+
+func TestTypeIdRef(t *testing.T) {
+	testGenerate(t,
+		`
+__externalfn someLoad 1
+
+
+load : TypeRef a -> a
+load ignore =
+    __asm callexternal 00 someLoad 01
+
+
+main : Bool -> List Int
+main x =
+    load $(List Int)
+`, `
+func [function load 1 1 [[constant1 funcExternal:someLoad #2]]]
+00: callexternal 0 2 ([1])
+05: ret
+
+func [function main 5 1 [[constant1 int:6 #3] [constant2 func:load #4]]]
+00: lr 2,3
+03: call 0 4 ([2])
+08: ret
+`)
+}
+
+
+func TestRecordTypeGenerics(t *testing.T) {
+	testGenerate(t,
+		`
+type alias MyTypeRef a =
+    { ignore : a
+    }
+
+
+__externalfn someLoad 1
+
+
+load : MyTypeRef a -> a
+load ignore =
+    __asm callexternal 00 someLoad 01
+
+
+main : MyTypeRef Int -> Int
+main x =
+    load x
+`, `
+func [function load 1 1 [[constant1 funcExternal:someLoad #2]]]
+00: callexternal 0 2 ([1])
+05: ret
+
+func [function main 3 1 [[constant1 func:load #2]]]
+00: call 0 2 ([1])
+05: ret
+`)
+}
+
+
 func TestGuard(t *testing.T) {
 	testGenerate(t,
 		`

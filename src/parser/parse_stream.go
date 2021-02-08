@@ -33,7 +33,7 @@ type ParseStream interface {
 	eatCommaSeparatorOrTermination(indentation int, allowComments bool) (bool, token.IndentationReport, parerr.ParseError)
 
 	eatNewLineContinuation(indentation int) (token.IndentationReport, parerr.ParseError)
-	eatTwoNewLineContinuationOrDedent(indentation int) (bool, token.IndentationReport, parerr.ParseError)
+	eatOneOrTwoNewLineContinuationOrDedent(indentation int) (bool, token.IndentationReport, parerr.ParseError)
 
 	// Block spacing is a helper function for when you both allow single space and new line continuations.
 	eatBlockSpacing(isBlock bool, keywordIndentation int) (token.IndentationReport, parerr.ParseError)

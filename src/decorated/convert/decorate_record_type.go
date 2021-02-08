@@ -26,8 +26,16 @@ func DecorateRecordType(info *ast.Record, t *dectype.TypeRepo) (*dectype.RecordA
 		}
 	}
 
-	genericTypeArgumentNames := AstParametersToArgumentNames(info.TypeParameters())
+	var convertedParameters []dtype.Type
+	for _, a := range info.TypeParameters() {
+		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
+		if convertedParameterErr != nil {
+			return nil, convertedParameterErr
+		}
+		convertedParameters = append(convertedParameters, convertedParameter)
+	}
 
-	record := dectype.NewRecordType(convertedFields, genericTypeArgumentNames) // TODO: FIX
+	record := dectype.NewRecordType(convertedFields, convertedParameters)
+
 	return t.DeclareRecordType(record), nil
 }

@@ -23,6 +23,9 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 		if newTypeErr != nil {
 			return nil, newTypeErr
 		}
+		if newType == nil {
+			panic(fmt.Sprintf("couldn't lookup %v", info.identifier.Name()))
+		}
 		return newType, nil
 	case *PrimitiveAtom:
 		var convertedTypes []dtype.Type
@@ -39,10 +42,15 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 		return replaceRecordFromContext(info, lookup)
 	case *InvokerType:
 		return replaceInvokerTypeFromContext(info, lookup)
+	default:
+		//fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
 	}
 
 	// fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
 
+	if target == nil {
+		panic("not sure how target could be nil")
+	}
 	return target, nil
 }
 
@@ -53,6 +61,9 @@ func replaceRecordFromContext(record *RecordAtom, lookup Lookup) (*RecordAtom, e
 		converted, convertedErr := ReplaceTypeFromContext(field.Type(), lookup)
 		if convertedErr != nil {
 			return nil, convertedErr
+		}
+		if converted ==  nil {
+			panic("converted is nil")
 		}
 
 		newField := NewRecordField(field.name, converted)
@@ -70,6 +81,9 @@ func replaceInvokerTypeFromContext(invoker *InvokerType, lookup Lookup) (*Invoke
 		converted, convertedErr := ReplaceTypeFromContext(param, lookup)
 		if convertedErr != nil {
 			return nil, convertedErr
+		}
+		if converted == nil {
+			panic(fmt.Sprintf("couldn't replace from context %v %T", param, param))
 		}
 
 		convertedTypes = append(convertedTypes, converted)
@@ -100,21 +114,38 @@ func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*C
 }
 
 func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, error) {
-	argumentNames := record.genericLocalTypeNames
-	if len(argumentNames) == 0 {
+	genericTypes := record.GenericTypes()
+	if len(arguments) == 0 {
 		return nil, fmt.Errorf("no arguments for type %v", record)
 	}
 
-	if len(argumentNames) != len(arguments) {
-		return nil, fmt.Errorf("illegal count %v %v", arguments, argumentNames)
+	if len(genericTypes) != len(arguments) {
+		return nil, fmt.Errorf("illegal count %v %v", genericTypes, arguments)
 	}
 
-	context := NewTypeParameterContextDynamic(argumentNames)
-	for index, name := range argumentNames {
-		context.SpecialSet(name.Name(), arguments[index])
+	var convertedTypes []dtype.Type
+
+	foundLocal := false
+	for index, foundType := range genericTypes {
+		_, wasLocal := foundType.(*LocalType)
+		argument := arguments[index]
+		convertedType := foundType
+		if wasLocal {
+			convertedType = argument
+			foundLocal = true
+		} else {
+			if compatibleErr := CompatibleTypes(foundType, argument); compatibleErr != nil {
+				return nil, compatibleErr
+			}
+		}
+		convertedTypes = append(convertedTypes, convertedType)
 	}
 
-	return replaceRecordFromContext(record, context)
+	if !foundLocal {
+		return nil, fmt.Errorf("no local types, why did you call it? %v", record)
+	}
+
+	return NewRecordType(record.SortedFields(), convertedTypes), nil
 }
 
 func callCustomType(customType *CustomTypeAtom, arguments []dtype.Type) (dtype.Type, error) {

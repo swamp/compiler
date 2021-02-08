@@ -16,11 +16,15 @@ type RecordAtom struct {
 	nameToField  map[string]*RecordField
 	parsedOrderFields []*RecordField
 	sortedFields []*RecordField
-	genericLocalTypeNames []*dtype.TypeArgumentName
+	genericTypes []dtype.Type
+}
+
+func (s *RecordAtom) GenericTypes() []dtype.Type {
+	return s.genericTypes
 }
 
 func (s *RecordAtom) String() string {
-	return fmt.Sprintf("record-type %v%v]", s.sortedFields, TypeArgumentNamesSuffix(s.genericLocalTypeNames))
+	return fmt.Sprintf("record-type %v%v]", s.sortedFields, s.genericTypes)
 }
 
 func (s *RecordAtom) HumanReadable() string {
@@ -78,7 +82,7 @@ func (a ByFieldName) Len() int           { return len(a) }
 func (a ByFieldName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByFieldName) Less(i, j int) bool { return a[i].Name() < a[j].Name() }
 
-func NewRecordType(fields []*RecordField, genericLocalTypeNames []*dtype.TypeArgumentName) *RecordAtom {
+func NewRecordType(fields []*RecordField, genericTypes []dtype.Type) *RecordAtom {
 	sortedFields := make([]*RecordField, len(fields))
 	copy(sortedFields, fields)
 	sort.Sort(ByFieldName(sortedFields))
@@ -93,7 +97,7 @@ func NewRecordType(fields []*RecordField, genericLocalTypeNames []*dtype.TypeArg
 		nameToField[name] = field
 	}
 
-	return &RecordAtom{sortedFields: sortedFields, parsedOrderFields: fields, nameToField: nameToField, genericLocalTypeNames:genericLocalTypeNames}
+	return &RecordAtom{sortedFields: sortedFields, parsedOrderFields: fields, nameToField: nameToField, genericTypes: genericTypes}
 }
 
 func (s *RecordAtom) SortedFields() []*RecordField {
@@ -118,7 +122,7 @@ func (s *RecordAtom) FindField(name string) *RecordField {
 }
 
 func (s *RecordAtom) ParameterCount() int {
-	return len(s.genericLocalTypeNames)
+	return len(s.genericTypes)
 }
 
 func (u *RecordAtom) Apply(params []dtype.Type) (dtype.Type, error) {

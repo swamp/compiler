@@ -143,7 +143,7 @@ func ColorAtom(atomType dtype.Atom, indentation int, inside bool, colorer colori
 	case *dectype.LocalType:
 		colorLocalType(t, indentation, inside, colorer)
 	default:
-		panic(fmt.Sprintf("unknown type %T", atomType))
+		panic(fmt.Sprintf("ColorAtom: unknown type %T", atomType))
 	}
 }
 
@@ -160,7 +160,7 @@ func ColorType(dType dtype.Type, indentation int, inside bool, colorer coloring.
 			if wasAtom {
 				ColorAtom(atom, indentation, inside, colorer)
 			} else {
-				panic(fmt.Sprintf("unknown type %v %T", dType, dType))
+				panic(fmt.Sprintf("ColorType: unknown type %v %T", dType, dType))
 			}
 		}
 	}

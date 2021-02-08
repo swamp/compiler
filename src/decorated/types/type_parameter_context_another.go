@@ -70,6 +70,7 @@ type DecoratedTypeError interface {
 
 func NewTypeParameterContext(names []*dtype.TypeArgumentName, resolvedArguments []dtype.Type) (*TypeParameterContext, DecoratedTypeError) {
 	if len(names) != len(resolvedArguments) {
+		panic(fmt.Sprintf("mismatch type parameter context count"))
 		return nil, fmt.Errorf("mismatch type parameter context count %v vs %v", names, resolvedArguments)
 	}
 

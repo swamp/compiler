@@ -54,7 +54,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 		newLetAssignment := ast.NewLetAssignment(letVariableIdentifier, letExpr)
 		assignments = append(assignments, newLetAssignment)
 
-		expectingNewLetAssignment, _, posLengthErr := p.eatTwoNewLineContinuationOrDedent(expectedIndentation)
+		expectingNewLetAssignment, _, posLengthErr := p.eatOneOrTwoNewLineContinuationOrDedent(expectedIndentation)
 		if posLengthErr != nil {
 			return nil, posLengthErr
 		}

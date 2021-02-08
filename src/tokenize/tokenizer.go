@@ -662,6 +662,8 @@ func (t *Tokenizer) internalGuessNext() (token.Token, error) {
 		return t.ParseNumber("")
 	} else if r == '@' {
 		return t.parseResourceName(posToken)
+	} else if r == '$' {
+		return t.parseTypeId(posToken)
 	} else if isStartString(r) {
 		if wasTriple, _ := t.isTriple(r, r); wasTriple {
 			return t.parseTripleString(r, posToken)

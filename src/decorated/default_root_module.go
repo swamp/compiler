@@ -214,6 +214,12 @@ __externalfn coreBlobIsEmpty 1
 isEmpty : Blob -> Bool
 isEmpty x =
     __asm callexternal 00 coreBlobIsEmpty 01
+
+
+__externalfn coreBlobFromList 1
+fromList : List Int -> Blob
+fromList x =
+    __asm callexternal 00 coreBlobFromList 01
 `
 
 const arrayCode = `
@@ -301,6 +307,10 @@ round a =
 
 `
 
+
+const typeIdCode = `
+`
+
 const globalCode = `
 
 
@@ -348,6 +358,12 @@ func addCores(m *decorated.Module, globalModule *decorated.Module) ([]*decorated
 		return nil, intModuleErr
 	}
 	importModules = append(importModules, intModule)
+
+	typeId, typeIdErr := compileToGlobal(m, globalModule, "TypeRef", typeIdCode)
+	if typeIdErr != nil {
+		return nil, typeIdErr
+	}
+	importModules = append(importModules, typeId)
 
 	arrayModule, arrayModuleErr := compileToGlobal(m, globalModule, "Array", arrayCode)
 	if arrayModuleErr != nil {
@@ -410,6 +426,11 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	arrayType := dectype.NewPrimitiveType(arrayIdentifier, []dtype.Type{localType})
 	r.DeclareType(arrayType)
 	r.DeclareAlias(arrayIdentifier, arrayType, nil)
+
+	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.PositionLength{}, 0))
+	typeRefType := dectype.NewPrimitiveType(arrayIdentifier, []dtype.Type{localType})
+	r.DeclareType(typeRefType)
+	r.DeclareAlias(typeRefIdentifier, typeRefType, nil)
 
 	const verbose = true
 

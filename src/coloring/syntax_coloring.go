@@ -35,6 +35,10 @@ func ColorResourceNameSymbol(t token.ResourceName) string {
 	return color.HiMagentaString(t.Raw())
 }
 
+func ColorTypeIdSymbol(t token.TypeId) string {
+	return color.WhiteString(t.Raw())
+}
+
 func ColorDefinition(t token.VariableSymbolToken) string {
 	return color.HiBlueString(t.Raw())
 }
@@ -131,6 +135,8 @@ func colorToken(t token.Token) string {
 		return ColorVariableSymbol(v)
 	case token.ResourceName:
 		return ColorResourceNameSymbol(v)
+	case token.TypeId:
+		return ColorTypeIdSymbol(v)
 	case token.TypeSymbolToken:
 		return ColorTypeSymbol(v)
 	case token.NumberToken:
@@ -154,7 +160,7 @@ func colorToken(t token.Token) string {
 	case token.LambdaToken:
 		return colorLambda(v)
 	}
-	panic(fmt.Sprintf("unknown type %T", t))
+	panic(fmt.Sprintf("ColorToken: unknown type %T", t))
 }
 
 func SyntaxColor(code string) (string, error) {

@@ -120,7 +120,7 @@ func (p *Parser) peekUpcomingPrecedence(indentation int) (Precedence, bool) {
 
 func tokenIsLeaf(tok token.Token) bool {
 	t := tok.Type()
-	return t == token.VariableSymbol || t == token.TypeSymbol || t == token.NumberInteger || t == token.NumberFixed || t == token.BooleanType || t == token.StringConstant || t == token.ResourceNameSymbol
+	return t == token.VariableSymbol || t == token.TypeSymbol || t == token.NumberInteger || t == token.NumberFixed || t == token.BooleanType || t == token.StringConstant || t == token.ResourceNameSymbol || t == token.TypeIdSymbol
 }
 
 func parenIsLeft(parenToken token.ParenToken) bool {

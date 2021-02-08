@@ -210,6 +210,7 @@ func (p *ParseStreamImpl) maybeLeftCurly() bool {
 	return p.tokenizer.MaybeString("{")
 }
 
+
 func (p *ParseStreamImpl) maybeAccessor() bool {
 	return p.tokenizer.MaybeAccessor()
 }
@@ -695,7 +696,7 @@ func (p *ParseStreamImpl) eatContinuationReturnIndentation(indentation int) (int
 	return -1, report, parerr.NewExpectedOneSpaceOrExtraIndent(tokenErr)
 }
 
-func (p *ParseStreamImpl) eatTwoNewLineContinuationOrDedent(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
+func (p *ParseStreamImpl) eatOneOrTwoNewLineContinuationOrDedent(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
 	report, err := p.tokenizer.SkipWhitespaceToNextIndentation()
 	if err != nil {
 		return false, report, err
@@ -706,7 +707,7 @@ func (p *ParseStreamImpl) eatTwoNewLineContinuationOrDedent(currentIndentation i
 		return wasContinuation, report, nil
 	}
 
-	if report.NewLineCount == 2 && report.ExactIndentation == currentIndentation {
+	if (report.NewLineCount == 1 || report.NewLineCount == 2) && report.ExactIndentation == currentIndentation {
 		wasContinuation := report.ExactIndentation == currentIndentation
 		return wasContinuation, report, nil
 	}

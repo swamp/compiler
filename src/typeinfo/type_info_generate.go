@@ -21,7 +21,7 @@ func generateModuleToChunk(module *decorated.Module, chunk *Chunk, verboseFlag b
 	for _, exposedDef := range module.Definitions().Definitions() {
 		exposedType := exposedDef.Expression().Type()
 		if verboseFlag {
-			fmt.Println(exposedType.DecoratedName())
+			fmt.Printf("generateModuleToChunkTypeInfo definition: %s\n", exposedType.DecoratedName())
 		}
 		convertedType, err := chunk.ConsumeType(exposedType)
 		if err != nil {
@@ -35,7 +35,7 @@ func generateModuleToChunk(module *decorated.Module, chunk *Chunk, verboseFlag b
 	return nil
 }
 
-func chunkToOctets(chunk *Chunk) ([]byte, error) {
+func ChunkToOctets(chunk *Chunk) ([]byte, error) {
 	octets, serializeErr := SerializeToOctets(chunk)
 	if serializeErr != nil {
 		return nil, serializeErr
@@ -53,7 +53,7 @@ func GenerateModule(module *decorated.Module) ([]byte, TypeLookup, error) {
 		return nil, nil, err
 	}
 
-	octets, octetsErr := chunkToOctets(chunk)
+	octets, octetsErr := ChunkToOctets(chunk)
 	if octetsErr != nil {
 		return nil, nil, octetsErr
 	}
@@ -61,21 +61,17 @@ func GenerateModule(module *decorated.Module) ([]byte, TypeLookup, error) {
 	return octets, chunk, nil
 }
 
-func Generate(world *loader.World) ([]byte, TypeLookup, error) {
+func Generate(world *loader.World) (*Chunk, error) {
 	const verboseFlag = false
 
 	chunk := &Chunk{}
 
 	for _, module := range world.AllModules() {
 		if err := generateModuleToChunk(module, chunk, verboseFlag); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
-	octets, octetsErr := chunkToOctets(chunk)
-	if octetsErr != nil {
-		return nil, nil, octetsErr
-	}
 
-	return octets, chunk, nil
+	return chunk, nil
 }

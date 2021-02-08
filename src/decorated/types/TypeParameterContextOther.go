@@ -46,7 +46,9 @@ func (t *TypeParameterContextOther) DecoratedName() string {
 
 
 func NewTypeParameterContextOther() *TypeParameterContextOther {
-	return &TypeParameterContextOther{ resolvedArguments: make(map[string]dtype.Type)}
+	t := &TypeParameterContextOther{ resolvedArguments: make(map[string]dtype.Type)}
+
+	return t
 }
 
 func (t *TypeParameterContextOther) LookupTypeFromName(name string) dtype.Type {
@@ -54,7 +56,13 @@ func (t *TypeParameterContextOther) LookupTypeFromName(name string) dtype.Type {
 }
 
 func (t *TypeParameterContextOther) LookupType(name string) (dtype.Type, error) {
-	return t.LookupTypeFromName(name), nil
+	found := t.LookupTypeFromName(name)
+	if found == nil {
+		fmt.Printf("%p couldn't find '%v' count:%d \n%v", t, name, len(t.resolvedArguments), t.DebugString())
+		return nil, fmt.Errorf("couldn't find '%v' name", name)
+	}
+
+	return found, nil
 }
 
 func (t *TypeParameterContextOther) SpecialSet(name string, resolved dtype.Type) (dtype.Type, error) {

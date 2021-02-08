@@ -86,9 +86,17 @@ func (t *TypeParameterContextDynamic) FillOutTheRestWithAny() {
 }
 
 func (t *TypeParameterContextDynamic) LookupTypeFromName(name string) dtype.Type {
+	if len(t.argumentNames) == 0 {
+		panic("strange, you can not lookup if it is empty")
+	}
 	for index, foundParam := range t.argumentNames {
 		if foundParam.Name() == name {
-			return t.resolvedArguments[index]
+			existing := t.resolvedArguments[index]
+			if existing == nil {
+				panic("how can existing be nil")
+			}
+
+			return existing
 		}
 	}
 	return nil
@@ -97,6 +105,7 @@ func (t *TypeParameterContextDynamic) LookupTypeFromName(name string) dtype.Type
 func (t *TypeParameterContextDynamic) LookupType(name string) (dtype.Type, error) {
 	foundType := t.LookupTypeFromName(name)
 	if foundType == nil {
+		fmt.Printf("couldn't find '%v'\n%v", name, t.DebugString())
 		return nil, fmt.Errorf("couldn't find the name %v", name)
 	}
 
@@ -110,10 +119,13 @@ func (t *TypeParameterContextDynamic) SpecialSet(name string, resolved dtype.Typ
 			if existing != nil {
 				compatibleErr := CompatibleTypes(existing, resolved)
 				if compatibleErr != nil {
+					fmt.Printf("not compatible!!!\n")
 					return fmt.Errorf("it didn't work %w", compatibleErr)
 				}
 			}
+
 			t.resolvedArguments[index] = resolved
+
 			return nil
 		}
 	}

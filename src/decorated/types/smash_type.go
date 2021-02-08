@@ -65,6 +65,34 @@ func fillContextFromPrimitive(context *TypeParameterContextOther, original *Prim
 	return NewPrimitiveType(other.name, converted), nil
 }
 
+
+func fillContextFromRecordType(context *TypeParameterContextOther, original *RecordAtom, other *RecordAtom) (*RecordAtom, error) {
+	var converted []dtype.Type
+
+	wasConverted := false
+	for index, funcParam := range original.GenericTypes() {
+		otherType := other.GenericTypes()[index]
+		convertedType, convertErr := smashTypes(context, funcParam, otherType)
+		if convertErr != nil {
+			return nil, convertErr
+		}
+		if convertedType != funcParam {
+			wasConverted = true
+		}
+
+		if convertedType == nil {
+			panic("strange")
+		}
+		converted = append(converted, convertedType)
+	}
+
+	if !wasConverted {
+		return original, nil
+	}
+
+	return NewRecordType(other.SortedFields(), converted), nil
+}
+
 func fillContextFromCustomType(context *TypeParameterContextOther, original *CustomTypeAtom, other *CustomTypeAtom) (*CustomTypeAtom, error) {
 	if len(original.Variants()) != len(other.Variants()) {
 		return nil, fmt.Errorf("not the same number of variants")
@@ -117,6 +145,10 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 		if convertErr != nil {
 			return nil, convertErr
 		}
+		if convertedType == nil {
+			panic("converted was nil")
+			return nil, fmt.Errorf("returned nil")
+		}
 
 		converted = append(converted, convertedType)
 	}
@@ -126,6 +158,9 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 		convertedType, replaceErr := ReplaceTypeFromContext(originalParam, context)
 		if replaceErr != nil {
 			return nil, replaceErr
+		}
+		if convertedType == nil {
+			panic(fmt.Sprintf("conversion is not working %v %T", originalParam, originalParam))
 		}
 		converted = append(converted, convertedType)
 	}
@@ -140,6 +175,7 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 	if otherUnchanged == nil {
 		panic("other was nil")
 	}
+
 	original = UnaliasWithResolveInvoker(original)
 	other := UnaliasWithResolveInvoker(otherUnchanged)
 
@@ -189,12 +225,17 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 			fmt.Printf("\n\nFOUND CUSTOM TYPE ATOM variant:%v\n\n", t)
 		}
 	case *RecordAtom:
-		return t, nil
+		{
+			otherRecordType := other.(*RecordAtom)
+			return fillContextFromRecordType(context, t, otherRecordType)
+		}
 	case *InvokerType:
 		resolved, resolveErr := CallType(t.typeToInvoke, t.params)
 		if resolveErr != nil {
 			return nil, resolveErr
 		}
+
+		fmt.Printf("\n\nafter invoker %v %v\n %T and %T\n", resolved, other, resolved, other)
 		return smashTypes(context, resolved, other)
 	default:
 		return nil, fmt.Errorf("Not handled:%T %v\n", t, t)
@@ -205,6 +246,8 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 
 func SmashFunctions(original *FunctionAtom, otherFunc *FunctionAtom) (*FunctionAtom, error) {
 	context := NewTypeParameterContextOther()
+
+	fmt.Sprintf("smash %v and %v\n", original, otherFunc)
 
 	result, resultErr := fillContextFromFunctions(context, original, otherFunc)
 	if resultErr != nil {

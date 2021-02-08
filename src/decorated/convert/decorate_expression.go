@@ -37,6 +37,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateResourceName(d, v)
 	case *ast.StringLiteral:
 		return decorateString(d, v)
+	case *ast.TypeId:
+		return decorateTypeId(d, v)
 	case *ast.BooleanLiteral:
 		return decorateBoolean(d, v)
 	case *ast.ListLiteral:
@@ -56,7 +58,7 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 	case *ast.BinaryOperator:
 		return decorateBinaryOperator(d, v, context)
 	default:
-		return nil, decorated.NewInternalError(fmt.Errorf("unknown decoration %v %T", e, e))
+		return nil, decorated.NewInternalError(fmt.Errorf("don't know how to decorate %v %T", e, e))
 	}
 }
 
