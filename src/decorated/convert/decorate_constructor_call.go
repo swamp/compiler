@@ -59,11 +59,11 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				return nil, decorated.NewInternalError(fmt.Errorf("maximum of 4 constructor arguments"))
 			}
 
-			orderedAssignments := make([]*decorated.RecordLiteralAssignment, len(decoratedExpressions))
+			alphaOrderedAssignments := make([]*decorated.RecordLiteralAssignment, len(decoratedExpressions))
 			for index, expr := range decoratedExpressions {
 				field := e.ParseOrderedFields()[index]
 				targetIndex := field.Index()
-				orderedAssignments[targetIndex] = decorated.NewRecordLiteralAssignment(targetIndex, field.Name(), expr)
+				alphaOrderedAssignments[targetIndex] = decorated.NewRecordLiteralAssignment(targetIndex, field.Name(), expr)
 				unaliasedFieldType := dectype.Unalias(field.Type())
 				unaliasedExprType := dectype.Unalias(expr.Type())
 				compatibleErr := dectype.CompatibleTypes(unaliasedFieldType, unaliasedExprType)
@@ -72,7 +72,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				}
 			}
 
-			return decorated.NewRecordConstructor(call.TypeIdentifier(), e, orderedAssignments), nil
+			return decorated.NewRecordConstructor(call.TypeIdentifier(), e, alphaOrderedAssignments), nil
 		}
 	default:
 		return nil, decorated.NewExpectedCustomTypeVariantConstructor(call)

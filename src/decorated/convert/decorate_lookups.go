@@ -27,7 +27,7 @@ func decorateLookups(d DecorateStream, lookups *ast.Lookups, context *VariableCo
 	for _, lookupIdentifier := range lookups.FieldNames() {
 		recordTypeToCheck, lookupErr := dectype.ResolveToRecordType(typeToLookup)
 		if lookupErr != nil {
-			fmt.Printf("this is not a record!_!!? %T %v\n%v\n", typeToLookup, typeToLookup, expressionToLookup)
+			fmt.Printf("this is not a record!_!!? %T %v\n\n%v\n", typeToLookup, typeToLookup, lookups)
 			return nil, decorated.NewUnMatchingTypes(nil, nil, nil, nil)
 		}
 

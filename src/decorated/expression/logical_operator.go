@@ -10,6 +10,7 @@ import (
 
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -29,12 +30,12 @@ func NewLogicalOperator(left DecoratedExpression, right DecoratedExpression, ope
 	a := &LogicalOperator{operatorType: operatorType}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
-	if left.Type() != booleanType {
-		return nil, NewLogicalOperatorLeftMustBeBoolean(a, left)
+	if err := dectype.CompatibleTypes(left.Type(), booleanType); err != nil {
+		return nil, NewLogicalOperatorLeftMustBeBoolean(a, left, booleanType)
 	}
 
-	if right.Type() != booleanType {
-		return nil, NewLogicalOperatorRightMustBeBoolean(a, right)
+	if err := dectype.CompatibleTypes(right.Type(), booleanType); err != nil{
+		return nil, NewLogicalOperatorRightMustBeBoolean(a, right, booleanType)
 	}
 
 	a.BinaryOperator.DecoratedExpressionNode.decoratedType = left.Type()

@@ -124,14 +124,15 @@ func (e *UnknownBinaryOperator) FetchPositionLength() token.PositionLength {
 type LogicalOperatorLeftMustBeBoolean struct {
 	typeA    DecoratedExpression
 	operator *LogicalOperator
+	booleanType dtype.Type
 }
 
-func NewLogicalOperatorLeftMustBeBoolean(operator *LogicalOperator, typeA DecoratedExpression) *LogicalOperatorLeftMustBeBoolean {
-	return &LogicalOperatorLeftMustBeBoolean{operator: operator, typeA: typeA}
+func NewLogicalOperatorLeftMustBeBoolean(operator *LogicalOperator, typeA DecoratedExpression, booleanType dtype.Type) *LogicalOperatorLeftMustBeBoolean {
+	return &LogicalOperatorLeftMustBeBoolean{operator: operator, typeA: typeA, booleanType: booleanType}
 }
 
 func (e *LogicalOperatorLeftMustBeBoolean) Error() string {
-	return fmt.Sprintf("logical operator %v  must have left boolean %v", e.operator, e.typeA)
+	return fmt.Sprintf("logical operator %v  must have left boolean %v  %v  %v  %p vs %p ", e.operator, e.typeA, e.typeA.Type(), e.booleanType, e.typeA.Type(), e.booleanType)
 }
 
 func (e *LogicalOperatorLeftMustBeBoolean) FetchPositionLength() token.PositionLength {
@@ -149,7 +150,7 @@ func NewLogicalOperatorsMustBeBoolean(operator *ast.BinaryOperator, typeA Decora
 }
 
 func (e *LogicalOperatorsMustBeBoolean) Error() string {
-	return fmt.Sprintf("logical operator %v  must have booleans %v vs %v", e.operator, e.typeA, e.typeB)
+	return fmt.Sprintf("logical operator %v  must have booleans %v vs %v. %v vs %v", e.operator, e.typeA, e.typeB, e.typeA.Type(), e.typeB.Type())
 }
 
 func (e *LogicalOperatorsMustBeBoolean) FetchPositionLength() token.PositionLength {
@@ -161,7 +162,7 @@ type LogicalOperatorRightMustBeBoolean struct {
 	operator *LogicalOperator
 }
 
-func NewLogicalOperatorRightMustBeBoolean(operator *LogicalOperator, typeA DecoratedExpression) *LogicalOperatorRightMustBeBoolean {
+func NewLogicalOperatorRightMustBeBoolean(operator *LogicalOperator, typeA DecoratedExpression, booleanType dtype.Type) *LogicalOperatorRightMustBeBoolean {
 	return &LogicalOperatorRightMustBeBoolean{operator: operator, typeA: typeA}
 }
 
@@ -223,7 +224,7 @@ type UnMatchingTypesExpression struct {
 
 func NewUnMatchingTypes(expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *UnMatchingTypesExpression {
 	if expectedType == nil || hasType == nil {
-		panic("not allowed")
+		panic("unmatching types. types are nil! not allowed")
 	}
 	return &UnMatchingTypesExpression{
 		expression:           expression,

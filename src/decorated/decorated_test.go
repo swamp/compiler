@@ -48,6 +48,24 @@ fn = [functionvalue ([]) -> [str Hello]]
 }
 
 
+func TestBooleanLookup(t *testing.T) {
+	testDecorateWithoutDefault(t,`
+another : Bool
+another =
+    let
+        a = True
+        b = False
+    in
+    a && b
+`, `
+TypeRef : [alias TypeRef [primitive Array<[localtype a]>]]
+func(Bool) : [func  [primitive Bool]]
+
+another = [functionvalue ([]) -> [let [[letassign $a = [bool true]] [letassign $b = [bool false]]] in [logical [getvar $a [primitive Bool]] [getvar $b [primitive Bool]] 0]]]
+`)
+}
+
+
 func TestResourceName(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`

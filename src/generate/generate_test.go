@@ -48,13 +48,36 @@ func [function load 1 1 [[constant1 funcExternal:someLoad #2]]]
 00: callexternal 0 2 ([1])
 05: ret
 
-func [function main 5 1 [[constant1 int:6 #3] [constant2 func:load #4]]]
+func [function main 5 1 [[constant1 int:4 #3] [constant2 func:load #4]]]
 00: lr 2,3
 03: call 0 4 ([2])
 08: ret
 `)
 }
 
+
+
+func TestBooleanOperator(t *testing.T) {
+	testGenerate(t,
+		`
+main : Int -> Bool
+main x =
+    let
+        a = True
+        b = False
+    in
+    a && b
+`, `
+func [function load 1 1 [[constant1 funcExternal:someLoad #2]]]
+00: callexternal 0 2 ([1])
+05: ret
+
+func [function main 5 1 [[constant1 int:4 #3] [constant2 func:load #4]]]
+00: lr 2,3
+03: call 0 4 ([2])
+08: ret
+`)
+}
 
 func TestRecordTypeGenerics(t *testing.T) {
 	testGenerate(t,

@@ -220,6 +220,67 @@ __externalfn coreBlobFromList 1
 fromList : List Int -> Blob
 fromList x =
     __asm callexternal 00 coreBlobFromList 01
+
+
+__externalfn coreBlobMap 2
+map : (Int -> Int) -> Blob -> Blob
+map fn blob =
+    __asm callexternal 00 coreBlobMap 01 02
+
+
+__externalfn coreBlobIndexedMap 2
+indexedMap : (Int -> Int -> Int) -> Blob -> Blob
+indexedMap fn blob =
+    __asm callexternal 00 coreBlobIndexedMap 01 02
+
+
+__externalfn coreBlobLength 1
+length : Blob -> Int
+length blob =
+    __asm callexternal 00 coreBlobLength 01
+
+
+__externalfn coreBlobGet 2
+get : Int -> Blob -> Maybe Int
+get index blob =
+    __asm callexternal 00 coreBlobGet 01 02
+
+
+__externalfn coreBlobGrab 2
+grab : Int -> Blob -> Int
+grab index blob =
+    __asm callexternal 00 coreBlobGrab 01 02
+
+
+__externalfn coreBlobGet2d 3
+get2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Maybe Int
+get2d position size blob =
+    __asm callexternal 00 coreBlobGet2d 01 02 03
+
+
+__externalfn coreBlobGrab2d 3
+grab2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Int
+grab2d position size blob =
+    __asm callexternal 00 coreBlobGrab2d 01 02 03
+
+
+__externalfn coreBlobSet 3
+set : Int -> Int -> Blob -> Blob
+set index item blob =
+    __asm callexternal 00 coreBlobSet 01 02 03
+
+
+__externalfn coreBlobSet2d 4
+set2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Int -> Blob -> Blob
+set2d position size item blob =
+    __asm callexternal 00 coreBlobSet2d 01 02 03 04
+
+
+__externalfn coreBlobToString2d 2
+toString2d : { width : Int, height : Int } -> Blob -> String
+toString2d size blob =
+    __asm callexternal 00 coreBlobToString2d 01 02
+
 `
 
 const arrayCode = `
