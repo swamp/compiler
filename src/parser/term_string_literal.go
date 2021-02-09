@@ -77,7 +77,7 @@ func replaceInterpolationString( s string) string {
 func replaceInterpolationStringToExpression(s string) (ast.Expression, parerr.ParseError) {
 	replaced := replaceInterpolationString(s)
 	reader := strings.NewReader(replaced)
-	runeReader, _ := runestream.NewRuneReader(reader, "")
+	runeReader, _ := runestream.NewRuneReader(reader, "internal interpolation string")
 
 	const exactWhitespace = true
 	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, exactWhitespace)

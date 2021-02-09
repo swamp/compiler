@@ -500,7 +500,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	defaultImportName := ast.NewTypeIdentifier(token.NewTypeSymbolToken("DefaultImport", token.PositionLength{}, 0))
 
 	globalModule, globalModuleErr := InternalCompileToModule(nil, nil, nil,
-		dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{defaultImportName}), "",
+		dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{defaultImportName}), "(internal root)",
 		strings.TrimSpace(globalCode), enforceStyle, verbose, false)
 	if globalModuleErr != nil {
 		return nil, nil, globalModuleErr

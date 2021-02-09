@@ -10,7 +10,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/swamp/assembler v0.0.0-20210121235131-24dd2ee5d6d0
 	github.com/swamp/disassembler v0.0.0-20210104195128-3b679a9bd815
-	github.com/swamp/opcodes v0.0.0-20210209154538-a2247ae732a8
+	github.com/swamp/opcodes v0.0.0-20210209202601-5e4feabb2e21
 	github.com/swamp/pack v0.0.0-20210122130807-560a9bc9af01
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 )

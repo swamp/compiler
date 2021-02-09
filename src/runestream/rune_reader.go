@@ -35,6 +35,9 @@ type RuneReader struct {
 
 // NewRuneReader :
 func NewRuneReader(r io.Reader, relativeFilename string) (*RuneReader, error) {
+	if len(relativeFilename) == 0 {
+		panic("relative filename can not be null")
+	}
 	octets, octetsErr := ioutil.ReadAll(r)
 	if octetsErr != nil {
 		return nil, octetsErr

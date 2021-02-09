@@ -393,27 +393,24 @@ func generateIf(code *assembler.Code, target assembler.TargetVariable, ifExpr *d
 	}
 
 	consequenceCode := assembler.NewCode()
-	consequenceContext := genContext.context.MakeScopeContext()
-	consequenceContext2 := genContext
-	consequenceContext2.context = consequenceContext
-	consErr := generateExpression(consequenceCode, target, ifExpr.Consequence(), consequenceContext2)
+	consequenceContext2 := *genContext
+	consequenceContext2.context = genContext.context.MakeScopeContext()
+	consErr := generateExpression(consequenceCode, target, ifExpr.Consequence(), &consequenceContext2)
 	if consErr != nil {
 		return consErr
 	}
-	consequenceContext.Free()
+	consequenceContext2.context.Free()
 
 	alternativeCode := assembler.NewCode()
-
 	alternativeLabel := alternativeCode.Label(nil, "if-alternative")
-	alternativeContext := genContext.context.MakeScopeContext()
-	alternativeContext2 := genContext
-	alternativeContext2.context = alternativeContext
-	altErr := generateExpression(alternativeCode, target, ifExpr.Alternative(), alternativeContext2)
+	alternativeContext2 := *genContext
+	alternativeContext2.context = genContext.context.MakeScopeContext()
+	altErr := generateExpression(alternativeCode, target, ifExpr.Alternative(), &alternativeContext2)
 	if altErr != nil {
 		return altErr
 	}
 	endLabel := alternativeCode.Label(nil, "if-end")
-	alternativeContext.Free()
+	alternativeContext2.context.Free()
 
 	code.BranchFalse(conditionVar, alternativeLabel)
 	genContext.context.FreeVariableIfNeeded(conditionVar)

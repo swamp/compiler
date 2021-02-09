@@ -39,6 +39,9 @@ type Tokenizer struct {
 
 func verifyOctets(octets []byte, relativeFilename string) TokenError {
 	pos := token.NewPositionTopLeft()
+	if len(relativeFilename) == 0 {
+		panic("must have relative filename")
+	}
 	for _, octet := range octets {
 		r := rune(octet)
 		if r != 0 && r != 10 && (r < 32 || r > 126) {
