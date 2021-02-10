@@ -165,7 +165,7 @@ func colorToken(t token.Token) string {
 
 func SyntaxColor(code string) (string, error) {
 	ioReader := strings.NewReader(code)
-	runeReader, err := runestream.NewRuneReader(ioReader, "")
+	runeReader, err := runestream.NewRuneReader(ioReader, "for coloring")
 	if err != nil {
 		return "", err
 	}

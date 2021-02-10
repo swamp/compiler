@@ -108,6 +108,20 @@ func (t *StringType) HumanReadable() string {
 	return "String"
 }
 
+
+type CharacterType struct {
+	Type
+}
+
+func (t *CharacterType) String() string {
+	return "Char"
+}
+
+func (t *CharacterType) HumanReadable() string {
+	return "Char"
+}
+
+
 type ResourceNameType struct {
 	Type
 }
@@ -496,6 +510,17 @@ func (c *Chunk) doWeHaveString() int {
 	return -1
 }
 
+func (c *Chunk) doWeHaveCharacter() int {
+	for index, infoType := range c.infoTypes {
+		_, isInt := infoType.(*CharacterType)
+		if isInt {
+			return index
+		}
+	}
+
+	return -1
+}
+
 func (c *Chunk) doWeHaveResourceName() int {
 	for index, infoType := range c.infoTypes {
 		_, isResourceName := infoType.(*ResourceNameType)
@@ -699,6 +724,20 @@ func (c *Chunk) consumeString() (InfoType, error) {
 	return proposedNewInt, nil
 }
 
+func (c *Chunk) consumeCharacter() (InfoType, error) {
+	indexArray := c.doWeHaveCharacter()
+	if indexArray != -1 {
+		return c.infoTypes[indexArray].(*CharacterType), nil
+	}
+
+	proposedNewInt := &CharacterType{}
+
+	proposedNewInt.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, proposedNewInt)
+
+	return proposedNewInt, nil
+}
+
 func (c *Chunk) consumeResourceName() (InfoType, error) {
 	indexArray := c.doWeHaveResourceName()
 	if indexArray != -1 {
@@ -755,6 +794,8 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 		return c.consumeBool()
 	} else if name == "String" {
 		return c.consumeString()
+	} else if name == "Char" {
+		return c.consumeCharacter()
 	} else if name == "ResourceName" {
 		return c.consumeResourceName()
 	} else if name == "Blob" {

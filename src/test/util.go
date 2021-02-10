@@ -15,7 +15,7 @@ import (
 func Setup(x string) (*tokenize.Tokenizer, tokenize.TokenError) {
 	x = strings.TrimSpace(x)
 	ioReader := strings.NewReader(x)
-	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "")
+	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "for test")
 	if runeReaderErr != nil {
 		return nil, tokenize.NewInternalError(runeReaderErr)
 	}

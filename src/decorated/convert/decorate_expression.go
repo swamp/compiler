@@ -37,6 +37,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateResourceName(d, v)
 	case *ast.StringLiteral:
 		return decorateString(d, v)
+	case *ast.CharacterLiteral:
+		return decorateCharacter(d, v)
 	case *ast.TypeId:
 		return decorateTypeId(d, v)
 	case *ast.BooleanLiteral:

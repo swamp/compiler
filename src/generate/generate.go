@@ -561,6 +561,12 @@ func generateStringLiteral(code *assembler.Code, target assembler.TargetVariable
 	return nil
 }
 
+func generateCharacterLiteral(code *assembler.Code, target assembler.TargetVariable, str *decorated.CharacterLiteral, context *assembler.Context) error {
+	constant := context.Constants().AllocateIntegerConstant(str.Value())
+	code.CopyVariable(target, constant)
+	return nil
+}
+
 func generateTypeIdLiteral(code *assembler.Code, target assembler.TargetVariable, typeId *decorated.TypeIdLiteral, genContext* generateContext) error {
 	indexIntoTypeInformationChunk, err := genContext.lookup.Lookup(typeId.ContainedType())
 	if err != nil {
@@ -846,6 +852,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.StringLiteral:
 		return generateStringLiteral(code, target, e, genContext.context)
+
+	case *decorated.CharacterLiteral:
+		return generateCharacterLiteral(code, target, e, genContext.context)
 
 	case *decorated.TypeIdLiteral:
 		return generateTypeIdLiteral(code, target, e, genContext)

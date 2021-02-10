@@ -27,6 +27,18 @@ func [function a 3 1 [[constant1 @this/is/cool #4] [constant2 @as/well/as/that #
 `)
 }
 
+func TestCharacter(t *testing.T) {
+	testGenerate(t,
+		`
+a : Bool -> Char
+a x =
+    'A'
+`, `
+func [function a 2 1 [[constant1 int:65 #2]]]
+00: lr 0,2
+03: ret
+`)
+}
 
 
 func TestTypeIdRef(t *testing.T) {

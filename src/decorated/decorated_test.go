@@ -103,6 +103,30 @@ first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> (arithmetic [getvar $
 `)
 }
 
+
+func TestChar(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+--| ignore this
+first : Char -> Int
+first a =
+    2
+
+
+main : Bool -> Int
+main ignore =
+    first 'c'
+`,
+		`
+TypeRef : [alias TypeRef [primitive Array<[localtype a]>]]
+func(Char -> Int) : [func  [primitive Char] [primitive Int]]
+func(Bool -> Int) : [func  [primitive Bool] [primitive Int]]
+
+first = [functionvalue ([[arg $a = [primitive Char]]]) -> [integer 2]]
+main = [functionvalue ([[arg $ignore = [primitive Bool]]]) -> [fcall [getvar $first [primitive Int]] [[char 99]]]]
+`)
+}
+
 func TestFixedConvert(t *testing.T) {
 	testDecorate(t,
 		`

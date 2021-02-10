@@ -368,6 +368,27 @@ round a =
 
 `
 
+const charCode = `
+__externalfn coreCharOrd 1
+ord : Char -> Int
+ord a =
+    __asm callexternal 00 coreCharOrd 01
+
+
+__externalfn coreCharToCode 1
+toCode : Char -> Int
+toCode a =
+    __asm callexternal 00 coreCharToCode 01
+
+
+__externalfn coreCharFromCode 1
+fromCode : Int -> Char
+fromCode a =
+    __asm callexternal 00 coreCharFromCode 01
+
+`
+
+
 
 const typeIdCode = `
 `
@@ -420,6 +441,13 @@ func addCores(m *decorated.Module, globalModule *decorated.Module) ([]*decorated
 	}
 	importModules = append(importModules, intModule)
 
+	charModule, charModuleErr := compileToGlobal(m, globalModule, "Char", charCode)
+	if charModuleErr != nil {
+		return nil, charModuleErr
+	}
+	importModules = append(importModules, charModule)
+
+
 	typeId, typeIdErr := compileToGlobal(m, globalModule, "TypeRef", typeIdCode)
 	if typeIdErr != nil {
 		return nil, typeIdErr
@@ -463,6 +491,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	fixedType := dectype.NewPrimitiveType(createTypeIdentifier("Fixed"), nil)
 	resourceNameType := dectype.NewPrimitiveType(createTypeIdentifier("ResourceName"), nil)
 	stringType := dectype.NewPrimitiveType(createTypeIdentifier("String"), nil)
+	charType := dectype.NewPrimitiveType(createTypeIdentifier("Char"), nil)
 	boolType := dectype.NewPrimitiveType(createTypeIdentifier("Bool"), nil)
 	blobType := dectype.NewPrimitiveType(createTypeIdentifier("Blob"), nil)
 
@@ -470,6 +499,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	r.DeclareType(fixedType)
 	r.DeclareType(resourceNameType)
 	r.DeclareType(stringType)
+	r.DeclareType(charType)
 	r.DeclareType(boolType)
 	r.DeclareType(blobType)
 

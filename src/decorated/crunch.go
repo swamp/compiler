@@ -34,7 +34,7 @@ func CompileToModuleOnce(x string, useCores bool, errorsAsWarnings bool) (*decor
 	importRepository := &NoImportModuleRepository{}
 	const verbose = true
 	const enforceStyle = true
-	return InternalCompileToModule(importRepository, rootModules, importModules, dectype.MakeArtifactFullyQualifiedModuleName(nil), "", x,
+	return InternalCompileToModule(importRepository, rootModules, importModules, dectype.MakeArtifactFullyQualifiedModuleName(nil), "for test", x,
 		enforceStyle, verbose, errorsAsWarnings)
 }
 

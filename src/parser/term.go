@@ -26,6 +26,9 @@ func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.E
 		case token.StringToken: {
 			return parseStringLiteral(p.stream, t)
 		}
+		case token.CharacterToken: {
+			return parseCharacterLiteral(p.stream, t)
+		}
 		case token.NumberToken: {
 			if t.Type() == token.NumberFixed {
 				return parseFixedLiteral(p.stream, t)

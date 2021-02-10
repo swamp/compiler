@@ -491,6 +491,19 @@ func (t *Tokenizer) skipSpaces() {
 	}
 }
 
+func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.CharacterToken, error) {
+	ch := t.nextRune()
+	if ch == 0 {
+		return token.CharacterToken{}, fmt.Errorf("unexpected end of character")
+	}
+	terminator := t.nextRune()
+	if terminator != '\'' {
+		return token.CharacterToken{}, fmt.Errorf("expected ' after character")
+	}
+	posLen := t.MakePositionLength(startPosition)
+	return token.NewCharacterToken("'" + string(ch) + "'", ch, posLen), nil
+}
+
 func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, error) {
 	var a string
 	raw := string(startStringRune)
@@ -667,6 +680,8 @@ func (t *Tokenizer) internalGuessNext() (token.Token, error) {
 		return t.parseResourceName(posToken)
 	} else if r == '$' {
 		return t.parseTypeId(posToken)
+	} else if r == '\'' {
+		return t.ParseCharacter(posToken)
 	} else if isStartString(r) {
 		if wasTriple, _ := t.isTriple(r, r); wasTriple {
 			return t.parseTripleString(r, posToken)

@@ -50,6 +50,14 @@ func TestMultilineComment(t *testing.T) {
 
 
 
+func TestChar(t *testing.T) {
+	testParseExpression(t,
+		`'c'
+`,
+		`'c'`)
+}
+
+
 func TestConstant(t *testing.T) {
 	testParse(t,
 		`

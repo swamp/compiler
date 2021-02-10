@@ -26,6 +26,7 @@ const (
 	SwtiTypeBoolean
 	SwtiTypeBlob
 	SwtiTypeResourceName
+	SwtiTypeChar
 )
 
 func writeUint8(writer io.Writer, v byte) error {
@@ -179,6 +180,8 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		return writePrimitive(writer, SwtiTypeInt)
 	case *StringType:
 		return writePrimitive(writer, SwtiTypeString)
+	case *CharacterType:
+		return writePrimitive(writer, SwtiTypeChar)
 	case *ResourceNameType:
 		return writePrimitive(writer, SwtiTypeResourceName)
 	case *FixedType:
@@ -197,7 +200,7 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		return writeCustom(writer, t)
 	}
 
-	return fmt.Errorf("strange, unknown info type")
+	return fmt.Errorf("strange, unknown info type %v %T", entry, entry)
 }
 
 func writeVersion(writer io.Writer) error {
