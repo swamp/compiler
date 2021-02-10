@@ -496,6 +496,14 @@ func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.Cha
 	if ch == 0 {
 		return token.CharacterToken{}, fmt.Errorf("unexpected end of character")
 	}
+
+	if ch == '\\' {
+		// Escape character
+		ch = t.nextRune()
+		if ch == 0 {
+			return token.CharacterToken{}, fmt.Errorf("unexpected end of character")
+		}
+	}
 	terminator := t.nextRune()
 	if terminator != '\'' {
 		return token.CharacterToken{}, fmt.Errorf("expected ' after character")
