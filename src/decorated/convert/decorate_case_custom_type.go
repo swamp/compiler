@@ -14,19 +14,19 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type FakeExpression struct {
+type FakeLiteral struct {
 	storedType dtype.Type
 }
 
-func NewFakeExpression(storedType dtype.Type) *FakeExpression {
-	return &FakeExpression{storedType: storedType}
+func NewFakeLiteral(storedType dtype.Type) *FakeLiteral {
+	return &FakeLiteral{storedType: storedType}
 }
 
-func (f *FakeExpression) Type() dtype.Type {
+func (f *FakeLiteral) Type() dtype.Type {
 	return f.storedType
 }
 
-func (f *FakeExpression) FetchPositionAndLength() token.PositionLength {
+func (f *FakeLiteral) FetchPositionAndLength() token.PositionLength {
 	return token.PositionLength{}
 }
 
