@@ -344,6 +344,15 @@ callSomething a
 		`[call $nextLine [[call $callSomething [$a]]]]`)
 }
 
+func TestContinueOnNextLine2(t *testing.T) {
+	testParseExpression(t,
+		`
+callSomething a
+    nextLine
+`,
+		`[call $callSomething [$a $nextLine]]`)
+}
+
 func TestRecordLiteralSeveralLinesHex(t *testing.T) {
 	testParseExpression(t,
 		`

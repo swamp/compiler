@@ -18,10 +18,6 @@ func isNewLine(ch rune) bool {
 	return ch == '\n'
 }
 
-func IsNewLineOrEndOfFile(ch rune) bool {
-	return ch == '\n' || ch == 0
-}
-
 func isAllowedWhitespace(ch rune) bool {
 	return isNewLine(ch) || isIndentation(ch)
 }

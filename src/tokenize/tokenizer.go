@@ -294,7 +294,7 @@ func (t *Tokenizer) EatOneSpace() (token.IndentationReport, TokenError) {
 
 	if t.enforceStyleGuide {
 		if report.SpacesUntilMaybeNewline != 1 {
-			return report, NewExpectedOneSpaceError(err)
+			return report, NewExpectedOneSpaceError(NewInternalError(fmt.Errorf("need one space")))
 		}
 	}
 

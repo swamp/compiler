@@ -737,7 +737,8 @@ func (p *ParseStreamImpl) eatArgumentSpaceOrDetectEndOfArguments(currentIndentat
 	}
 
 	if p.disableEnforceStyle {
-		if report.NewLineCount > 0 { // Arguments end even if they are indented
+		wasLegalContinuation := tokenize.LegalContinuationSpaceIndentation(report, currentIndentation, !p.disableEnforceStyle)
+		if !wasLegalContinuation { // report.NewLineCount > 0 { // Arguments end even if they are indented
 			p.tokenizer.Seek(saveInfo)
 			return true, report, nil
 		}
@@ -748,7 +749,7 @@ func (p *ParseStreamImpl) eatArgumentSpaceOrDetectEndOfArguments(currentIndentat
 		return wasEnd, report, nil
 	} else {
 		if report.NewLineCount == 1 && report.ExactIndentation == currentIndentation+1 {
-			return true, report, nil
+			return false, report, nil
 		}
 		if report.NewLineCount == 0 && (report.SpacesUntilMaybeNewline == 1 || report.SpacesUntilMaybeNewline == 0) {
 			wasEnd := p.detectEndOfCallOperator()

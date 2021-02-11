@@ -23,7 +23,7 @@ import (
 
 func compileToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.Program, decshared.DecoratedError) {
 	ioReader := strings.NewReader(x)
-	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "")
+	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "style test")
 	if runeReaderErr != nil {
 		return nil, nil, decorated.NewInternalError(runeReaderErr)
 	}
