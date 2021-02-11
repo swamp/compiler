@@ -39,6 +39,10 @@ func ColorTypeIdSymbol(t token.TypeId) string {
 	return color.WhiteString(t.Raw())
 }
 
+func ColorCharacterToken(t token.CharacterToken) string {
+	return color.GreenString(t.Raw())
+}
+
 func ColorDefinition(t token.VariableSymbolToken) string {
 	return color.HiBlueString(t.Raw())
 }
@@ -137,6 +141,8 @@ func colorToken(t token.Token) string {
 		return ColorResourceNameSymbol(v)
 	case token.TypeId:
 		return ColorTypeIdSymbol(v)
+	case token.CharacterToken:
+		return ColorCharacterToken(v)
 	case token.TypeSymbolToken:
 		return ColorTypeSymbol(v)
 	case token.NumberToken:

@@ -174,7 +174,7 @@ func isTypeToIgnoreForDebugOutput(repoType dtype.Type) bool {
 		return true
 	}
 
-	if stringInSlice(repoType.DecoratedName(), []string{"Nothing", "Just", "Maybe(a)", "Maybe", "List", "Array", "{test:", "{atest:"}) {
+	if stringInSlice(repoType.DecoratedName(), []string{"Nothing", "Just", "Maybe(a)", "Maybe", "List", "Array", "TypeRef", "{test:", "{atest:"}) {
 		return true
 	}
 	return false

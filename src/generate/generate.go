@@ -479,7 +479,7 @@ func generateGuard(code *assembler.Code, target assembler.TargetVariable, guardE
 	return nil
 }
 
-func generateCase(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.Case, genContext* generateContext) error {
+func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.CaseCustomType, genContext* generateContext) error {
 	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), genContext, "cast-test")
 	if testErr != nil {
 		return testErr
@@ -549,6 +549,81 @@ func generateCase(code *assembler.Code, target assembler.TargetVariable, caseExp
 	}
 
 	code.Case(target, testVar, consequences, defaultCase)
+	genContext.context.FreeVariableIfNeeded(testVar)
+	code.Copy(consequencesBlockCode)
+
+	return nil
+}
+
+func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.CasePatternMatching, genContext* generateContext) error {
+	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), genContext, "cast-test")
+	if testErr != nil {
+		return testErr
+	}
+
+	var consequences []*assembler.CaseConsequencePatternMatching
+	var consequencesCodes []*assembler.Code
+
+	for _, consequence := range caseExpr.Consequences() {
+		consequenceContext := *genContext
+		consequenceContext.context = genContext.context.MakeScopeContext()
+
+		consequencesCode := assembler.NewCode()
+
+		literalVariable, literalVariableErr := generateExpressionWithSourceVar(consequencesCode, consequence.Literal(), genContext, "literal")
+		if literalVariableErr != nil {
+			return literalVariableErr
+		}
+
+		labelVariableName := assembler.NewVariableName("a1")
+		caseLabel := consequencesCode.Label(labelVariableName, "case")
+		caseExprErr := generateExpression(consequencesCode, target, consequence.Expression(), &consequenceContext)
+		if caseExprErr != nil {
+			return caseExprErr
+		}
+		asmConsequence := assembler.NewCaseConsequencePatternMatching(literalVariable, caseLabel)
+		consequences = append(consequences, asmConsequence)
+
+		consequencesCodes = append(consequencesCodes, consequencesCode)
+
+		consequenceContext.context.Free()
+	}
+
+	var defaultCase *assembler.CaseConsequencePatternMatching
+	if caseExpr.DefaultCase() != nil {
+		consequencesCode := assembler.NewCode()
+		defaultContext := *genContext
+		defaultContext.context = genContext.context.MakeScopeContext()
+
+		decoratedDefault := caseExpr.DefaultCase()
+		defaultLabel := consequencesCode.Label(nil, "default")
+		caseExprErr := generateExpression(consequencesCode, target, decoratedDefault, &defaultContext)
+		if caseExprErr != nil {
+			return caseExprErr
+		}
+		defaultCase = assembler.NewCaseConsequencePatternMatching(nil, defaultLabel)
+		consequencesCodes = append(consequencesCodes, consequencesCode)
+		//		endLabel := consequencesBlockCode.Label(nil, "if-end")
+		defaultContext.context.Free()
+	}
+
+	consequencesBlockCode := assembler.NewCode()
+
+	lastConsequnce := consequencesCodes[len(consequencesCodes)-1]
+
+	labelVariableEndName := assembler.NewVariableName("case end")
+	endLabel := lastConsequnce.Label(labelVariableEndName, "caseend")
+	for index, consequenceCode := range consequencesCodes {
+		if index != len(consequencesCodes)-1 {
+			consequenceCode.Jump(endLabel)
+		}
+	}
+
+	for _, consequenceCode := range consequencesCodes {
+		consequencesBlockCode.Copy(consequenceCode)
+	}
+
+	code.CasePatternMatching(target, testVar, consequences, defaultCase)
 	genContext.context.FreeVariableIfNeeded(testVar)
 	code.Copy(consequencesBlockCode)
 
@@ -792,6 +867,13 @@ func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Decora
 		return constant, nil
 	}
 
+	characterLiteralConstant, _ := expr.(*decorated.CharacterLiteral)
+	if characterLiteralConstant != nil {
+		constant := genContext.context.Constants().AllocateIntegerConstant(characterLiteralConstant.Value())
+		return constant, nil
+	}
+
+
 	booleanConstant, _ := expr.(*decorated.BooleanLiteral)
 	if booleanConstant != nil {
 		constant := genContext.context.Constants().AllocateBooleanConstant(booleanConstant.Value())
@@ -838,8 +920,11 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	case *decorated.Lookups:
 		return generateLookups(code, target, e, genContext)
 
-	case *decorated.Case:
-		return generateCase(code, target, e, genContext)
+	case *decorated.CaseCustomType:
+		return generateCaseCustomType(code, target, e, genContext)
+
+	case *decorated.CasePatternMatching:
+		return generateCasePatternMatching(code, target, e, genContext)
 
 	case *decorated.RecordLiteral:
 		return generateRecordLiteral(code, target, e, genContext)

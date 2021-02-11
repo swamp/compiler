@@ -215,6 +215,13 @@ func (p *ParseStreamImpl) maybeAccessor() bool {
 	return p.tokenizer.MaybeAccessor()
 }
 
+func (p *ParseStreamImpl) detectTypeIdentifier() bool {
+	pos := p.tokenizer.Tell()
+	_, typeSymbolErr := p.tokenizer.ParseTypeSymbol()
+	p.tokenizer.Seek(pos)
+	return typeSymbolErr == nil
+}
+
 func (p *ParseStreamImpl) readVariableIdentifierAssignOrUpdate() (*ast.VariableIdentifier, bool, parerr.ParseError) {
 	ident, identErr := p.readVariableIdentifier()
 	if identErr != nil {
@@ -903,5 +910,9 @@ func (p *ParseStreamImpl) parseExpressionNormal(startIndentation int) (ast.Expre
 }
 
 func (p *ParseStreamImpl) parseTerm(startIndentation int) (ast.Expression, parerr.ParseError) {
+	return p.parser.parseTerm(startIndentation)
+}
+
+func (p *ParseStreamImpl) parseLiteral(startIndentation int) (ast.Literal, parerr.ParseError) {
 	return p.parser.parseTerm(startIndentation)
 }

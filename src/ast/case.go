@@ -11,33 +11,33 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type CaseConsequence struct {
+type CaseConsequenceCustomType struct {
 	variantName *TypeIdentifier
 	arguments   []*VariableIdentifier
 	expression  Expression
 }
 
-func NewCaseConsequence(variantName *TypeIdentifier, arguments []*VariableIdentifier, expression Expression) *CaseConsequence {
-	return &CaseConsequence{variantName: variantName, arguments: arguments, expression: expression}
+func NewCaseConsequenceForCustomType(variantName *TypeIdentifier, arguments []*VariableIdentifier, expression Expression) *CaseConsequenceCustomType {
+	return &CaseConsequenceCustomType{variantName: variantName, arguments: arguments, expression: expression}
 }
 
-func (c *CaseConsequence) Identifier() *TypeIdentifier {
+func (c *CaseConsequenceCustomType) Identifier() *TypeIdentifier {
 	return c.variantName
 }
 
-func (c *CaseConsequence) Arguments() []*VariableIdentifier {
+func (c *CaseConsequenceCustomType) Arguments() []*VariableIdentifier {
 	return c.arguments
 }
 
-func (c *CaseConsequence) Expression() Expression {
+func (c *CaseConsequenceCustomType) Expression() Expression {
 	return c.expression
 }
 
-func (c *CaseConsequence) String() string {
+func (c *CaseConsequenceCustomType) String() string {
 	return fmt.Sprintf("[casecons %v (%v) => %v]", c.variantName, c.arguments, c.expression)
 }
 
-func caseConsequenceArrayToStringEx(expressions []*CaseConsequence, ch string) string {
+func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceCustomType, ch string) string {
 	var out bytes.Buffer
 
 	for index, expression := range expressions {
@@ -49,35 +49,35 @@ func caseConsequenceArrayToStringEx(expressions []*CaseConsequence, ch string) s
 	return out.String()
 }
 
-type Case struct {
+type CaseCustomType struct {
 	test    Expression
-	cases   []*CaseConsequence
+	cases   []*CaseConsequenceCustomType
 	keyword token.Keyword
 }
 
-func NewCase(keyword token.Keyword, test Expression, cases []*CaseConsequence) *Case {
-	return &Case{keyword: keyword, test: test, cases: cases}
+func NewCaseForCustomType(keyword token.Keyword, test Expression, cases []*CaseConsequenceCustomType) *CaseCustomType {
+	return &CaseCustomType{keyword: keyword, test: test, cases: cases}
 }
 
-func (i *Case) String() string {
+func (i *CaseCustomType) String() string {
 	return fmt.Sprintf("[case: %v of %v]", i.test, caseConsequenceArrayToStringEx(i.cases, ";"))
 }
 
-func (i *Case) Test() Expression {
+func (i *CaseCustomType) Test() Expression {
 	return i.test
 }
-func (i *Case) Keyword() token.Keyword {
+func (i *CaseCustomType) Keyword() token.Keyword {
 	return i.keyword
 }
 
-func (i *Case) PositionLength() token.PositionLength {
+func (i *CaseCustomType) PositionLength() token.PositionLength {
 	return i.keyword.PositionLength
 }
 
-func (i *Case) Consequences() []*CaseConsequence {
+func (i *CaseCustomType) Consequences() []*CaseConsequenceCustomType {
 	return i.cases
 }
 
-func (i *Case) DebugString() string {
+func (i *CaseCustomType) DebugString() string {
 	return fmt.Sprintf("[case]")
 }

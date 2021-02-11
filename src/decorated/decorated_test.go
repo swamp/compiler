@@ -1196,6 +1196,24 @@ func(Child -> String) : [func  [custom-type  [variant $Aron] [variant $Alexandra
 some = [functionvalue ([[arg $child = [custom-type [[variant $Aron [[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]] [variant $Alexandra []] [variant $Alma [[alias Studying record-type [[record-type-field subject [primitive String] (0)]]]]]] [variant $Isabelle [[alias Work record-type [[record-type-field web [primitive Int] (0)]]]]]]]]]]) -> [dcase: [getvar $child [custom-type [[variant $Aron [[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]] [variant $Alexandra []] [variant $Alma [[alias Studying record-type [[record-type-field subject [primitive String] (0)]]]]]] [variant $Isabelle [[alias Work record-type [[record-type-field web [primitive Int] (0)]]]]]]]]] of [dcasecons $Aron ([[dcaseparm $x type:[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]]) => [str Aron]];[dcasecons $Alexandra ([]) => [str Alexandris]] default: [str ]]]`)
 }
 
+
+func TestCaseStringAndDefault(t *testing.T) {
+	testDecorate(t, // -- just a comment
+		`
+some : String -> Int
+some a =
+    case a of
+        "hello" -> 0
+
+        _ -> -1
+`, `
+func(String -> Int) : [func  [primitive String] [primitive Int]]
+
+some = [functionvalue ([[arg $a = [primitive String]]]) -> [dpmcase: [getvar $a [primitive String]] of [dpmcasecons [str hello] => [integer 0]] default: [integer -1]]]
+`)
+}
+
+
 func TestGenerics(t *testing.T) {
 	testDecorate(t,
 		`

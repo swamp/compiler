@@ -322,6 +322,26 @@ func [function main func(Bool -> Maybe<Int>) 1 [[constant1 int:3 #2]]]
 `)
 }
 
+func TestCasePatternMatching(t *testing.T) {
+	testGenerate(t,
+		`
+some : String -> Int
+some a =
+    case a of
+        "hello" -> 0
+
+        _ -> -1
+	`, `
+func [function some 2 1 [[constant1 hello #2] [constant2 int:0 #3] [constant3 int:-1 #4]]]
+00: csep 0 1 [[2 [label @08]] [0 [label offset @0d]]]
+08: lr 0,3
+0b: jmp [label @10]
+0d: lr 0,4
+10: ret
+`)
+}
+
+
 func TestSimple(t *testing.T) {
 	testGenerate(t,
 		`

@@ -30,7 +30,7 @@ func (f *FakeExpression) FetchPositionAndLength() token.PositionLength {
 	return token.PositionLength{}
 }
 
-func decorateCase(d DecorateStream, caseExpression *ast.Case, context *VariableContext) (*decorated.Case, decshared.DecoratedError) {
+func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType, context *VariableContext) (*decorated.CaseCustomType, decshared.DecoratedError) {
 	decoratedTest, decoratedTestErr := DecorateExpression(d, caseExpression.Test(), context)
 	if decoratedTestErr != nil {
 		return nil, decoratedTestErr
@@ -46,7 +46,7 @@ func decorateCase(d DecorateStream, caseExpression *ast.Case, context *VariableC
 
 	handledCustomTypeVariants := make([]bool, customType.VariantCount())
 
-	var decoratedConsequences []*decorated.CaseConsequence
+	var decoratedConsequences []*decorated.CaseConsequenceCustomType
 
 	var defaultCase decorated.DecoratedExpression
 
@@ -119,7 +119,7 @@ func decorateCase(d DecorateStream, caseExpression *ast.Case, context *VariableC
 				param := decorated.NewCaseConsequenceParameter(ident, argumentType)
 				parameters = append(parameters, param)
 			}
-			decoratedConsequence := decorated.NewCaseConsequence(foundVariant.Index(), consequenceField.Identifier(),
+			decoratedConsequence := decorated.NewCaseConsequenceCustomType(foundVariant.Index(), consequenceField.Identifier(),
 				parameters, decoratedExpression)
 			decoratedConsequences = append(decoratedConsequences, decoratedConsequence)
 		}
@@ -137,6 +137,6 @@ func decorateCase(d DecorateStream, caseExpression *ast.Case, context *VariableC
 		}
 	}
 
-	c, err := decorated.NewCase(decoratedTest, decoratedConsequences, defaultCase)
+	c, err := decorated.NewCaseCustomType(decoratedTest, decoratedConsequences, defaultCase)
 	return c, err
 }

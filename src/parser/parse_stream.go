@@ -92,6 +92,7 @@ type ParseStream interface {
 	detectAssign() bool
 	detectNewLineOrSpace() (bool, bool)
 	detectOneSpaceAndTermination() bool
+	detectTypeIdentifier() bool
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// parse. parse expressions and terms
@@ -99,6 +100,7 @@ type ParseStream interface {
 	parseExpression(precedence Precedence, startIndentation int) (ast.Expression, parerr.ParseError)
 	parseExpressionNormal(startIndentation int) (ast.Expression, parerr.ParseError)
 	parseTerm(startIndentation int) (ast.Expression, parerr.ParseError)
+	parseLiteral(startIndentation int) (ast.Literal, parerr.ParseError)
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// debug info

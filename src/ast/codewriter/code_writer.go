@@ -137,7 +137,7 @@ func writeMultiLineComment(comment *ast.MultilineComment, colorer coloring.Color
 	colorer.KeywordString("-}")
 }
 
-func writeCase(caseExpression *ast.Case, colorer coloring.Colorer, indentation int) {
+func writeCase(caseExpression *ast.CaseCustomType, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("case")
 	colorer.OneSpace()
 	writeExpression(caseExpression.Test(), colorer, 0)
@@ -509,7 +509,7 @@ func writeExpression(expression ast.Expression, colorer coloring.Colorer, indent
 		{
 			writeBooleanLiteral(t, colorer, indentation)
 		}
-	case *ast.Case:
+	case *ast.CaseCustomType:
 		{
 			writeCase(t, colorer, indentation)
 		}

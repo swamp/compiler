@@ -22,3 +22,5 @@ type Expression interface {
 	DebugString() string
 	PositionLength() token.PositionLength
 }
+
+type Literal  = Expression

@@ -191,11 +191,11 @@ func (e *MustBeCustomType) FetchPositionLength() token.PositionLength {
 }
 
 type CaseCouldNotFindCustomVariantType struct {
-	caseExpression *ast.Case
-	consequence    *ast.CaseConsequence
+	caseExpression *ast.CaseCustomType
+	consequence    *ast.CaseConsequenceCustomType
 }
 
-func NewCaseCouldNotFindCustomVariantType(caseExpression *ast.Case, consequence *ast.CaseConsequence) *CaseCouldNotFindCustomVariantType {
+func NewCaseCouldNotFindCustomVariantType(caseExpression *ast.CaseCustomType, consequence *ast.CaseConsequenceCustomType) *CaseCouldNotFindCustomVariantType {
 	return &CaseCouldNotFindCustomVariantType{consequence: consequence, caseExpression: caseExpression}
 }
 
@@ -418,10 +418,10 @@ func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.PositionL
 
 type UnhandledCustomTypeVariants struct {
 	unhandledVariants []*dectype.CustomTypeVariant
-	caseExpression    *ast.Case
+	caseExpression    *ast.CaseCustomType
 }
 
-func NewUnhandledCustomTypeVariants(caseExpression *ast.Case, unhandledVariants []*dectype.CustomTypeVariant) *UnhandledCustomTypeVariants {
+func NewUnhandledCustomTypeVariants(caseExpression *ast.CaseCustomType, unhandledVariants []*dectype.CustomTypeVariant) *UnhandledCustomTypeVariants {
 	return &UnhandledCustomTypeVariants{unhandledVariants: unhandledVariants, caseExpression: caseExpression}
 }
 
@@ -435,11 +435,11 @@ func (e *UnhandledCustomTypeVariants) FetchPositionLength() token.PositionLength
 
 type AlreadyHandledCustomTypeVariant struct {
 	unhandledVariant *dectype.CustomTypeVariant
-	caseExpression   *ast.Case
-	consequence      *ast.CaseConsequence
+	caseExpression   *ast.CaseCustomType
+	consequence      *ast.CaseConsequenceCustomType
 }
 
-func NewAlreadyHandledCustomTypeVariant(caseExpression *ast.Case, consequence *ast.CaseConsequence, unhandledVariant *dectype.CustomTypeVariant) *AlreadyHandledCustomTypeVariant {
+func NewAlreadyHandledCustomTypeVariant(caseExpression *ast.CaseCustomType, consequence *ast.CaseConsequenceCustomType, unhandledVariant *dectype.CustomTypeVariant) *AlreadyHandledCustomTypeVariant {
 	return &AlreadyHandledCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression, consequence: consequence}
 }
 
@@ -524,8 +524,8 @@ func (e *CouldNotSmashFunctions) FetchPositionLength() token.PositionLength {
 
 type CaseWrongParameterCountInCustomTypeVariant struct {
 	unhandledVariant *dectype.CustomTypeVariant
-	caseExpression   *ast.Case
-	consequence      *ast.CaseConsequence
+	caseExpression   *ast.CaseCustomType
+	consequence      *ast.CaseConsequenceCustomType
 }
 
 type ExtraFunctionArguments struct {
@@ -546,7 +546,7 @@ func (e *ExtraFunctionArguments) FetchPositionLength() token.PositionLength {
 	return e.posLength
 }
 
-func NewCaseWrongParameterCountInCustomTypeVariant(caseExpression *ast.Case, consequence *ast.CaseConsequence, unhandledVariant *dectype.CustomTypeVariant) *CaseWrongParameterCountInCustomTypeVariant {
+func NewCaseWrongParameterCountInCustomTypeVariant(caseExpression *ast.CaseCustomType, consequence *ast.CaseConsequenceCustomType, unhandledVariant *dectype.CustomTypeVariant) *CaseWrongParameterCountInCustomTypeVariant {
 	return &CaseWrongParameterCountInCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression, consequence: consequence}
 }
 

@@ -36,38 +36,38 @@ func NewCaseConsequenceParameter(name *ast.VariableIdentifier, parameterType dty
 	return &CaseConsequenceParameter{name: name, parameterType: parameterType}
 }
 
-type CaseConsequence struct {
+type CaseConsequenceCustomType struct {
 	variantName   *ast.TypeIdentifier
 	parameters    []*CaseConsequenceParameter
 	expression    DecoratedExpression
 	internalIndex int
 }
 
-func NewCaseConsequence(internalIndex int, variantName *ast.TypeIdentifier, parameters []*CaseConsequenceParameter, expression DecoratedExpression) *CaseConsequence {
-	return &CaseConsequence{internalIndex: internalIndex, variantName: variantName, parameters: parameters, expression: expression}
+func NewCaseConsequenceCustomType(internalIndex int, variantName *ast.TypeIdentifier, parameters []*CaseConsequenceParameter, expression DecoratedExpression) *CaseConsequenceCustomType {
+	return &CaseConsequenceCustomType{internalIndex: internalIndex, variantName: variantName, parameters: parameters, expression: expression}
 }
 
-func (c *CaseConsequence) Expression() DecoratedExpression {
+func (c *CaseConsequenceCustomType) Expression() DecoratedExpression {
 	return c.expression
 }
 
-func (c *CaseConsequence) InternalIndex() int {
+func (c *CaseConsequenceCustomType) InternalIndex() int {
 	return c.internalIndex
 }
 
-func (c *CaseConsequence) Identifier() *ast.TypeIdentifier {
+func (c *CaseConsequenceCustomType) Identifier() *ast.TypeIdentifier {
 	return c.variantName
 }
 
-func (c *CaseConsequence) Parameters() []*CaseConsequenceParameter {
+func (c *CaseConsequenceCustomType) Parameters() []*CaseConsequenceParameter {
 	return c.parameters
 }
 
-func (c *CaseConsequence) String() string {
+func (c *CaseConsequenceCustomType) String() string {
 	return fmt.Sprintf("[dcasecons %v (%v) => %v]", c.variantName, c.parameters, c.expression)
 }
 
-func caseConsequenceArrayToStringEx(expressions []*CaseConsequence, ch string) string {
+func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceCustomType, ch string) string {
 	var out bytes.Buffer
 
 	for index, expression := range expressions {
@@ -79,17 +79,17 @@ func caseConsequenceArrayToStringEx(expressions []*CaseConsequence, ch string) s
 	return out.String()
 }
 
-type Case struct {
+type CaseCustomType struct {
 	test        DecoratedExpression
-	cases       []*CaseConsequence
+	cases       []*CaseConsequenceCustomType
 	defaultCase DecoratedExpression
 }
 
-func NewCase(test DecoratedExpression, cases []*CaseConsequence, defaultCase DecoratedExpression) (*Case, decshared.DecoratedError) {
-	return &Case{test: test, cases: cases, defaultCase: defaultCase}, nil
+func NewCaseCustomType(test DecoratedExpression, cases []*CaseConsequenceCustomType, defaultCase DecoratedExpression) (*CaseCustomType, decshared.DecoratedError) {
+	return &CaseCustomType{test: test, cases: cases, defaultCase: defaultCase}, nil
 }
 
-func (i *Case) Type() dtype.Type {
+func (i *CaseCustomType) Type() dtype.Type {
 	if len(i.cases) == 0 {
 		return i.defaultCase.Type()
 	}
@@ -97,29 +97,29 @@ func (i *Case) Type() dtype.Type {
 	return firstCase.Expression().Type()
 }
 
-func (i *Case) String() string {
+func (i *CaseCustomType) String() string {
 	if i.defaultCase != nil {
 		return fmt.Sprintf("[dcase: %v of %v default: %v]", i.test, caseConsequenceArrayToStringEx(i.cases, ";"), i.defaultCase)
 	}
 	return fmt.Sprintf("[dcase: %v of %v]", i.test, caseConsequenceArrayToStringEx(i.cases, ";"))
 }
 
-func (i *Case) Test() DecoratedExpression {
+func (i *CaseCustomType) Test() DecoratedExpression {
 	return i.test
 }
 
-func (i *Case) Consequences() []*CaseConsequence {
+func (i *CaseCustomType) Consequences() []*CaseConsequenceCustomType {
 	return i.cases
 }
 
-func (i *Case) DefaultCase() DecoratedExpression {
+func (i *CaseCustomType) DefaultCase() DecoratedExpression {
 	return i.defaultCase
 }
 
-func (i *Case) DebugString() string {
+func (i *CaseCustomType) DebugString() string {
 	return fmt.Sprintf("[dcase]")
 }
 
-func (i *Case) FetchPositionAndLength() token.PositionLength {
+func (i *CaseCustomType) FetchPositionAndLength() token.PositionLength {
 	return i.test.FetchPositionAndLength()
 }
