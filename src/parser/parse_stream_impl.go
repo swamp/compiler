@@ -419,7 +419,7 @@ func (p *ParseStreamImpl) detectEndOfCallOperator() bool {
 		if termErr == nil {
 			t := term.Type()
 			_, isOperator := term.(token.OperatorToken)
-			detectedEndOfCallOperator = t == token.Else || t == token.RightCurlyBrace || isOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma
+			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma
 		}
 	}
 	p.tokenizer.Seek(save)
