@@ -717,6 +717,49 @@ func TestConstructorWithSeveralFields(t *testing.T) {
 
 }
 
+func TestUnary1(t *testing.T) {
+	testParse(t,
+		`
+a : Bool -> Bool
+a x =
+    !x
+`, `
+[annotation: $a [func-type [type-reference $Bool] -> [type-reference $Bool]]]
+[definition: $a = [func ([$x]) -> (! $x)]]
+`)
+
+}
+
+
+
+func TestUnary2(t *testing.T) {
+	testParse(t,
+		`
+someTest : Bool -> Bool -> Bool
+someTest a b =
+    !a && b
+`, `
+[annotation: $someTest [func-type [type-reference $Bool] -> [type-reference $Bool] -> [type-reference $Bool]]]
+[definition: $someTest = [func ([$a $b]) -> ((! $a) AND $b)]]
+`)
+
+}
+
+
+func TestUnary3(t *testing.T) {
+	testParse(t,
+		`
+someTest : Bool -> Bool -> Bool
+someTest a b =
+    a && !b
+`, `
+[annotation: $someTest [func-type [type-reference $Bool] -> [type-reference $Bool] -> [type-reference $Bool]]]
+[definition: $someTest = [func ([$a $b]) -> ($a AND (! $b))]]
+`)
+
+}
+
+
 func TestList(t *testing.T) {
 	testParseExpression(t,
 		`

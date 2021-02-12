@@ -365,6 +365,21 @@ someFunc = [functionvalue ([[arg $name = [primitive String]]]) -> [variant-const
 `)
 }
 
+func TestCustomTypeVariantEqual(t *testing.T) {
+	testDecorate(t,
+		`
+someFunc : String -> Bool
+someFunc name =
+    name == "Something"
+`,
+		`
+func(String -> Bool) : [func  [primitive String] [primitive Bool]]
+
+someFunc = [functionvalue ([[arg $name = [primitive String]]]) -> (boolop [getvar $name [primitive String]] EQ [str Something])]
+`)
+}
+
+
 func TestUnknownAnnotationType(t *testing.T) {
 	testDecorateFail(t, `
     someFunc : Position2

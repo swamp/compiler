@@ -140,6 +140,55 @@ func [function isBeautiful 2 1 [[constant1 False #3] [constant2 Rebecca #4] [con
 `)
 }
 
+
+
+func TestStringEqual(t *testing.T) {
+	testGenerate(t,
+		`
+isBeautiful : String -> Bool
+isBeautiful name =
+    if name == "Rebecca" then True else False
+`, `
+func [function isBeautiful 2 1 [[constant1 Rebecca #3] [constant2 True #4] [constant3 False #5]]]
+00: cpve 2,1,3
+04: brfa 2 [label @0c]
+07: lr 0,4
+0a: jmp [label @0f]
+0c: lr 0,5
+0f: ret
+`)
+}
+
+
+func TestIntEqual(t *testing.T) {
+	testGenerate(t,
+		`
+isCold : Int -> Bool
+isCold temp =
+    temp == -1
+`, `
+func [function isCold 2 1 [[constant1 int:-1 #2]]]
+00: cpeq 0,1,2
+04: ret
+`)
+}
+
+func TestUnary2(t *testing.T) {
+	testGenerate(t,
+		`
+someTest : Bool -> Bool -> Bool
+someTest a b =
+    !a && b
+`, `
+func [function someTest 1 2 []]
+00: not 0,1
+03: brfa 0 [label @09]
+06: lr 0,2
+09: ret
+`)
+}
+
+
 func TestGuardMultiple(t *testing.T) {
 	testGenerate(t,
 		`

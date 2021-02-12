@@ -6,7 +6,6 @@
 package ast
 
 import (
-	"bytes"
 	"fmt"
 
 	"github.com/swamp/compiler/src/token"
@@ -34,7 +33,6 @@ func (i *UnaryExpression) OperatorType() token.Type {
 	return i.token.Type()
 }
 
-
 func (i *UnaryExpression) OperatorToken() token.OperatorToken {
 	return i.operator
 }
@@ -44,14 +42,7 @@ func (i *UnaryExpression) PositionLength() token.PositionLength {
 }
 
 func (i *UnaryExpression) String() string {
-	var out bytes.Buffer
-
-	out.WriteString("(")
-	out.WriteString(i.left.String())
-	out.WriteString(" " + i.operator.String() + " ")
-	out.WriteString(")")
-
-	return out.String()
+	return fmt.Sprintf("(%v %v)", i.operator, i.left)
 }
 
 func (i *UnaryExpression) DebugString() string {

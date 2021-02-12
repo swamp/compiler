@@ -15,7 +15,9 @@ import (
 	swamppack "github.com/swamp/pack/lib"
 
 	decorator "github.com/swamp/compiler/src/decorated/convert"
+	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/typeinfo"
 )
 
@@ -127,15 +129,15 @@ func NewGenerator() *Generator {
 func arithmeticToBinaryOperatorType(operatorType decorated.ArithmeticOperatorType) swampopcodeinst.BinaryOperatorType {
 	switch operatorType {
 	case decorated.ArithmeticPlus:
-		return swampopcodeinst.BinaryOperatorArithmeticPlus
+		return swampopcodeinst.BinaryOperatorArithmeticIntPlus
 	case decorated.ArithmeticMinus:
-		return swampopcodeinst.BinaryOperatorArithmeticMinus
+		return swampopcodeinst.BinaryOperatorArithmeticIntMinus
 	case decorated.ArithmeticMultiply:
-		return swampopcodeinst.BinaryOperatorArithmeticMultiply
+		return swampopcodeinst.BinaryOperatorArithmeticIntMultiply
 	case decorated.ArithmeticDivide:
-		return swampopcodeinst.BinaryOperatorArithmeticDivide
+		return swampopcodeinst.BinaryOperatorArithmeticIntDivide
 	case decorated.ArithmeticAppend:
-		return swampopcodeinst.BinaryOperatorArithmeticAppend
+		return swampopcodeinst.BinaryOperatorArithmeticListAppend
 	case decorated.ArithmeticFixedMultiply:
 		return swampopcodeinst.BinaryOperatorArithmeticFixedMultiply
 	case decorated.ArithmeticFixedDivide:
@@ -164,11 +166,11 @@ func logicalToUnaryOperatorType(operatorType decorated.LogicalUnaryOperatorType)
 func bitwiseToBinaryOperatorType(operatorType decorated.BitwiseOperatorType) swampopcodeinst.BinaryOperatorType {
 	switch operatorType {
 	case decorated.BitwiseAnd:
-		return swampopcodeinst.BinaryOperatorBitwiseAnd
+		return swampopcodeinst.BinaryOperatorBitwiseIntAnd
 	case decorated.BitwiseOr:
-		return swampopcodeinst.BinaryOperatorBitwiseOr
+		return swampopcodeinst.BinaryOperatorBitwiseIntOr
 	case decorated.BitwiseXor:
-		return swampopcodeinst.BinaryOperatorBitwiseXor
+		return swampopcodeinst.BinaryOperatorBitwiseIntXor
 	}
 
 	return 0
@@ -317,20 +319,31 @@ func generateLogical(code *assembler.Code, target assembler.TargetVariable, oper
 	return nil
 }
 
-func booleanToBinaryOperatorType(operatorType decorated.BooleanOperatorType) swampopcodeinst.BinaryOperatorType {
+func booleanToBinaryIntOperatorType(operatorType decorated.BooleanOperatorType) swampopcodeinst.BinaryOperatorType {
 	switch operatorType {
 	case decorated.BooleanEqual:
-		return swampopcodeinst.BinaryOperatorBooleanEqual
+		return swampopcodeinst.BinaryOperatorBooleanIntEqual
 	case decorated.BooleanNotEqual:
-		return swampopcodeinst.BinaryOperatorBooleanNotEqual
+		return swampopcodeinst.BinaryOperatorBooleanIntNotEqual
 	case decorated.BooleanLess:
-		return swampopcodeinst.BinaryOperatorBooleanLess
+		return swampopcodeinst.BinaryOperatorBooleanIntLess
 	case decorated.BooleanLessOrEqual:
-		return swampopcodeinst.BinaryOperatorBooleanLessOrEqual
+		return swampopcodeinst.BinaryOperatorBooleanIntLessOrEqual
 	case decorated.BooleanGreater:
-		return swampopcodeinst.BinaryOperatorBooleanGreater
+		return swampopcodeinst.BinaryOperatorBooleanIntGreater
 	case decorated.BooleanGreaterOrEqual:
-		return swampopcodeinst.BinaryOperatorBooleanGreaterOrEqual
+		return swampopcodeinst.BinaryOperatorBooleanIntGreaterOrEqual
+	}
+
+	return 0
+}
+
+func booleanToBinaryValueOperatorType(operatorType decorated.BooleanOperatorType) swampopcodeinst.BinaryOperatorType {
+	switch operatorType {
+	case decorated.BooleanEqual:
+		return swampopcodeinst.BinaryOperatorBooleanValueEqual
+	case decorated.BooleanNotEqual:
+		return swampopcodeinst.BinaryOperatorBooleanValueNotEqual
 	}
 
 	return 0
@@ -347,7 +360,12 @@ func generateBoolean(code *assembler.Code, target assembler.TargetVariable, oper
 		return rightErr
 	}
 
-	opcodeBinaryOperator := booleanToBinaryOperatorType(operator.OperatorType())
+	foundPrimitive, _ := operator.Left().Type().(*dectype.PrimitiveAtom)
+	opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
+	if foundPrimitive.AtomName() != "Int" {
+		opcodeBinaryOperator = booleanToBinaryValueOperatorType(operator.OperatorType())
+	}
+
 	code.BinaryOperator(target, leftVar, rightVar, opcodeBinaryOperator)
 	genContext.context.FreeVariableIfNeeded(leftVar)
 	genContext.context.FreeVariableIfNeeded(rightVar)
@@ -548,7 +566,7 @@ func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariabl
 		consequencesBlockCode.Copy(consequenceCode)
 	}
 
-	code.Case(target, testVar, consequences, defaultCase)
+	code.Case(testVar, consequences, defaultCase)
 	genContext.context.FreeVariableIfNeeded(testVar)
 	code.Copy(consequencesBlockCode)
 
@@ -623,7 +641,7 @@ func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVa
 		consequencesBlockCode.Copy(consequenceCode)
 	}
 
-	code.CasePatternMatching(target, testVar, consequences, defaultCase)
+	code.CasePatternMatching(testVar, consequences, defaultCase)
 	genContext.context.FreeVariableIfNeeded(testVar)
 	code.Copy(consequencesBlockCode)
 
@@ -888,18 +906,32 @@ func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Decora
 	return newVar, nil
 }
 
+func isIntLike(typeToCheck dtype.Type) bool {
+	primitiveAtom, _ := typeToCheck.(*dectype.PrimitiveAtom)
+	if primitiveAtom == nil {
+		return false
+	}
+	name := primitiveAtom.AtomName()
+
+	return name == "Int" || name == "Fixed" || name == "Char"
+}
+
 func generateExpression(code *assembler.Code, target assembler.TargetVariable, expr decorated.DecoratedExpression, genContext *generateContext) error {
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)
 
 	case *decorated.ArithmeticOperator:
-		if e.Left().Type().DecoratedName() == "List" {
-			return generateListAppend(code, target, e, genContext)
-		} else if e.Left().Type().DecoratedName() == "String" {
-			return generateStringAppend(code, target, e, genContext)
-		} else {
-			return generateArithmetic(code, target, e, genContext)
+		{
+			if e.Left().Type().DecoratedName() == "List" && e.OperatorType() == decorated.ArithmeticPlus {
+				return generateListAppend(code, target, e, genContext)
+			} else if e.Left().Type().DecoratedName() == "String" && e.OperatorType() == decorated.ArithmeticAppend {
+				return generateStringAppend(code, target, e, genContext)
+			} else if isIntLike(e.Left().Type()) {
+				return generateArithmetic(code, target, e, genContext)
+			} else {
+				return fmt.Errorf("Cant generate arithmetic for type:%v %v", e.Left().Type(), e.OperatorType())
+			}
 		}
 
 	case *decorated.BitwiseOperator:

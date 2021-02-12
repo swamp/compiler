@@ -12,7 +12,7 @@ import (
 )
 
 func parseUnary(p ParseStream, startIndentation int, infixToken token.OperatorToken) (ast.Expression, parerr.ParseError) {
-	left, leftErr := p.parseExpressionNormal(startIndentation)
+	left, leftErr := p.parseTerm(startIndentation)
 	if leftErr != nil {
 		return nil, leftErr
 	}
