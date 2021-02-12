@@ -11,6 +11,14 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type FunctionCaller interface {
+	Arguments() []Expression
+	OverwriteArguments(args []Expression)
+	String() string
+	DebugString() string
+	PositionLength() token.PositionLength
+}
+
 type FunctionCall struct {
 	arguments     []Expression
 	functionExpression Expression

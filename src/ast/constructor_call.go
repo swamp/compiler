@@ -28,6 +28,10 @@ func (i *ConstructorCall) Arguments() []Expression {
 	return i.arguments
 }
 
+func (i *ConstructorCall) OverwriteArguments(args []Expression) {
+	i.arguments = args
+}
+
 func (i *ConstructorCall) PositionLength() token.PositionLength {
 	return i.functionValue.symbolToken.FetchPositionLength()
 }

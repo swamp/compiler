@@ -13,21 +13,10 @@ import (
 
 func parsePipeRightExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.Expression) (ast.Expression, parerr.ParseError) {
 	p.maybeOneSpace()
-
 	right, rightErr := p.parseExpression(precedence, startIndentation)
 	if rightErr != nil {
 		return nil, rightErr
 	}
-
-
-	/*
-	leftCall, _ := left.(*ast.FunctionCall)
-	if leftCall == nil {
-		return nil, parerr.NewLeftPartOfPipeMustBeFunctionCallError(operatorToken)
-
-	}
-
-	 */
 
 	rightCall, _ := right.(*ast.FunctionCall)
 	if rightCall == nil {

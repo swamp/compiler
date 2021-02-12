@@ -16,11 +16,12 @@ func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, s
 	if spaceErr != nil {
 		return nil, spaceErr
 	}
-	right, rightErr := p.parseExpression(precedence, startIndentation)
+	right, rightErr := p.parseExpressionNormal(startIndentation)
 	if rightErr != nil {
 		return nil, rightErr
 	}
-	leftCall, _ := left.(*ast.FunctionCall)
+
+	leftCall, _ := left.(ast.FunctionCaller)
 	if leftCall == nil {
 		leftVar, _ := left.(*ast.VariableIdentifier)
 		if leftVar == nil {
@@ -29,21 +30,11 @@ func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, s
 		leftCall = ast.NewFunctionCall(leftVar, nil)
 	}
 
-	rightCall, _ := right.(*ast.FunctionCall)
+	rightCall, _ := right.(ast.FunctionCaller)
 	if rightCall == nil {
 		return nil, parerr.NewRightPartOfPipeMustBeFunctionCallError(operatorToken)
 	}
-	p.maybeOneSpace()
-	if p.maybePipeLeft() {
-		p.maybeOneSpace()
-		expressionToAppend, expressionToAppendErr := p.parseExpression(precedence, startIndentation)
-		if expressionToAppendErr != nil {
-			return nil, expressionToAppendErr
-		}
-		innerArgs := rightCall.Arguments()
-		innerArgs = append(innerArgs, expressionToAppend)
-		rightCall.OverwriteArguments(innerArgs)
-	}
+
 	args := leftCall.Arguments()
 	args = append(args, rightCall)
 	leftCall.OverwriteArguments(args)

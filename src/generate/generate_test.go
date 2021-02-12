@@ -1069,6 +1069,83 @@ tester b =
 `, expectedPipeAsm)
 }
 
+func TestOperatorPipeLeft4(t *testing.T) {
+	testGenerate(t,
+		`
+something : String
+something =
+    "hello"
+
+
+first : Int -> String -> Int
+first a b =
+    a * a
+
+
+second : String -> Int -> Bool
+second str a =
+    a > 25
+
+
+third : Bool -> Bool
+third a =
+    a
+
+
+tester : String -> Bool
+tester b =
+    third <| second b <| first (2 + 2) <| something()
+`, expectedPipeAsm)
+}
+
+
+func TestOperatorPipeLeftConstructor(t *testing.T) {
+	testGenerate(t,
+		`
+type alias Vector2 = { x : Int, y : Int }
+
+
+first : Int -> Vector2 -> Int
+first a vec =
+    42
+
+
+second : String -> Int -> Bool
+second str a =
+    a > 25
+
+
+third : Bool -> Bool
+third a =
+    a
+
+
+tester : String -> Bool
+tester b =
+    third <| second b <| first (2 + 2) <| Vector2 0 23
+`, `
+func [function first 3 2 [[constant1 int:42 #3]]]
+00: lr 0,3
+03: ret
+
+func [function second 6 2 [[constant1 int:25 #3]]]
+00: cpg 0,2,3
+04: ret
+
+func [function tester 7 1 [[constant1 int:2 #6] [constant2 int:0 #7] [constant3 int:23 #8] [constant4 func:first #9] [constant5 func:second #10] [constant6 func:third #11]]]
+00: add 4,6,6
+04: crs 5 [7 8]
+09: call 3 9 ([4 5])
+0f: call 2 10 ([1 3])
+15: call 0 11 ([2])
+1a: ret
+
+func [function third 8 1 []]
+00: lr 0,1
+03: ret
+`)
+}
+
 func TestListType5(t *testing.T) {
 	testGenerate(t,
 		`
