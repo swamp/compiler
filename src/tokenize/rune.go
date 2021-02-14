@@ -48,3 +48,7 @@ func isStartString(ch rune) bool {
 func isOperator(ch rune) bool {
 	return strings.Contains(":|<=>!-+*/.&^~", string(ch))
 }
+
+func isUnaryOperator(ch rune) bool {
+	return strings.Contains(":!-+^~", string(ch)) // HACK ':' should not be in here
+}

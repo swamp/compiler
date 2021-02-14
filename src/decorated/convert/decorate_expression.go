@@ -15,7 +15,7 @@ import (
 
 func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
 	if e == nil {
-		panic("expression is nil")
+		panic(fmt.Sprintf("expression is nil %v", context))
 	}
 
 	switch v := e.(type) {
@@ -67,6 +67,7 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 }
 
 func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+
 	expr, exprErr := internalDecorateExpression(d, e, context)
 	if exprErr != nil {
 		return nil, exprErr

@@ -10,6 +10,7 @@ type Type uint
 const (
 	OperatorPlus Type = iota
 	OperatorMinus
+	OperatorUnaryMinus
 	OperatorMultiply
 	OperatorDivide
 	OperatorPipeRight
@@ -23,7 +24,7 @@ const (
 	OperatorLessOrEqual
 	OperatorEqual
 	OperatorNotEqual
-	OperatorNot
+	OperatorUnaryNot
 	OperatorBitwiseOr
 	OperatorBitwiseAnd
 	OperatorBitwiseXor
@@ -32,7 +33,8 @@ const (
 	OperatorCons
 	Colon
 	OperatorAssign
-	OperatorUpdateOrGuard
+	Guard
+	OperatorUpdate
 	Accessor
 	RightParen
 	LeftParen

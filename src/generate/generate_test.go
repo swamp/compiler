@@ -998,8 +998,7 @@ func [function main func(Bool -> Bool) 1 [[constant1 Peter #2] [constant2 func:i
 05: ret
 `)
 }
-
-const expectedPipeAsm = `
+/*
 func [function first func(Int -> Int) 1 []]
 00: mul 0,1,1
 04: ret
@@ -1018,7 +1017,31 @@ func [function tester func(String -> Bool) 1 [[constant1 int:2 #5] [constant2 fu
 func [function third func(Bool -> Bool) 1 []]
 00: lr 0,1 ; return a
 03: ret
+ */
+const expectedPipeAsm = `
+func [function first 2 2 []]
+00: mul 0,1,1
+04: ret
 
+func [function second 4 2 [[constant1 int:25 #3]]]
+00: cpg 0,2,3
+04: ret
+
+func [function something 5 0 [[constant1 hello #1]]]
+00: lr 0,1
+03: ret
+
+func [function tester 6 1 [[constant1 int:2 #6] [constant2 func:something #7] [constant3 func:first #8] [constant4 func:second #9] [constant5 func:third #10]]]
+00: add 4,6,6
+04: call 5 7 ([])
+08: call 3 8 ([4 5])
+0e: call 2 9 ([1 3])
+14: call 0 10 ([2])
+19: ret
+
+func [function third 7 1 []]
+00: lr 0,1
+03: ret
 `
 
 func TestOperatorPipeRight(t *testing.T) {
@@ -1043,6 +1066,203 @@ tester : String -> Bool
 tester b =
     first (2 + 2) |> second b |> third
 `, expectedPipeAsm)
+}
+
+func TestUnaryMinus(t *testing.T) {
+	testGenerate(t,
+		`
+second : Int -> Bool
+second a =
+    a < 0
+
+
+tester : Int -> Bool
+tester b =
+    second -b
+`, `
+func [function second 2 1 [[constant1 int:0 #2]]]
+00: cpl 0,1,2
+04: ret
+
+func [function tester 2 1 [[constant1 func:second #3]]]
+00: neg 2,1
+03: call 0 3 ([2])
+08: ret`)
+}
+
+func TestUnaryMinusInNotACall(t *testing.T) {
+	testGenerate(t,
+		`
+type alias Data = { end : Int }
+
+
+second : Int -> Bool
+second a =
+    a < 0
+
+
+tester : Data -> Int -> Bool
+tester data b =
+    second (data.end - b)
+`, `
+func [function second 2 1 [[constant1 int:0 #2]]]
+00: cpl 0,1,2
+04: ret
+
+func [function tester 5 2 [[constant1 func:second #5]]]
+00: get 4, 1, [#0]
+05: sub 3,4,2
+09: call 0 5 ([3])
+0e: ret
+`)
+}
+
+func TestGuardLet2(t *testing.T) {
+	testGenerate(t,
+		`
+tester : Int -> Char
+tester x =
+    let
+        existingTile = 'a'
+        isUpperLeft = False
+    in
+    | existingTile == '_' -> '@'
+    | isUpperLeft -> '/'
+    | _ -> '2'
+`, `
+func [function tester 2 1 [[constant1 int:97 #5] [constant2 False #6] [constant3 int:50 #7] [constant4 int:95 #8] [constant5 int:64 #9] [constant6 int:47 #10]]]
+00: lr 2,5
+03: lr 3,6
+06: cpve 4,2,8
+0a: brfa 4 [label @12]
+0d: lr 0,9
+10: jmp [label @1d]
+12: brfa 3 [label @1a]
+15: lr 0,10
+18: jmp [label @1d]
+1a: lr 0,7
+1d: ret
+`)
+}
+
+func TestUnaryMinusInNotACall2(t *testing.T) {
+	testGenerate(t,
+		`
+second : Int -> Int -> Bool
+second time startTime =
+    let
+        timeInAnimation = time - startTime
+    in
+    timeInAnimation > 10
+
+
+tester : Int -> Bool
+tester b =
+    second -2 -3
+`, `
+func [function second 2 2 [[constant1 int:10 #4]]]
+00: sub 3,1,2
+04: cpg 0,3,4
+08: ret
+
+func [function tester 3 1 [[constant1 int:2 #4] [constant2 int:3 #5] [constant3 func:second #6]]]
+00: neg 2,4
+03: neg 3,5
+06: call 0 6 ([2 3])
+0c: ret
+`)
+}
+
+
+
+func TestDivide(t *testing.T) {
+	testGenerate(t,
+		`
+type alias State = { time : Int }
+
+
+second : State -> Bool
+second state =
+    let
+        ft = (Int.toFixed state.time) / 50.0
+    in
+    ft > 10.0
+
+
+tester : Int -> Bool
+tester b =
+    second { time = 42 }
+`, `
+func [function second 4 1 [[constant1 func:Int.toFixed #6] [constant2 int:50000 #7] [constant3 int:10000 #8]]]
+00: get 4, 1, [#0]
+05: call 3 6 ([4])
+0a: lr 5,7
+0d: fxdiv 2,3,5
+11: lr 3,8
+14: add 0,2,3
+18: ret
+
+func [function tester 5 1 [[constant1 int:42 #3] [constant2 func:second #4]]]
+00: crs 2 [3]
+04: call 0 4 ([2])
+09: ret
+
+`)
+}
+
+func TestUnaryNot(t *testing.T) {
+	testGenerate(t,
+		`
+second : Bool -> Int
+second a =
+    if a then 3 else 4
+
+
+tester : Bool -> Int
+tester b =
+    second !b
+`, `
+func [function second 2 1 [[constant1 int:3 #2] [constant2 int:4 #3]]]
+00: brfa 1 [label @08]
+03: lr 0,2
+06: jmp [label @0b]
+08: lr 0,3
+0b: ret
+
+func [function tester 2 1 [[constant1 func:second #3]]]
+00: not 2,1
+03: call 0 3 ([2])
+08: ret
+`)
+}
+
+
+func TestBinaryMinus(t *testing.T) {
+	testGenerate(t,
+		`
+second : Int -> Bool
+second a =
+    a < 0
+
+
+tester : Int -> Bool
+tester b =
+    let
+        x = 42 - 2
+    in
+    second (2 - b)
+
+`, `
+func [function second 2 1 [[constant1 int:0 #2]]]
+00: cpl 0,1,2
+04: ret
+
+func [function tester 2 1 [[constant1 int:42 #4] [constant2 int:2 #5] [constant3 func:second #6]]]
+00: sub 2,4,5
+04: sub 3,5,1
+08: call 0 6 ([3])
+0d: ret
+`)
 }
 
 func TestOperatorPipeLeft(t *testing.T) {

@@ -253,9 +253,9 @@ func (p *ParseStreamImpl) readVariableIdentifierAssignOrUpdate() (*ast.VariableI
 	return ident, false, nil
 }
 
-func (p *ParseStreamImpl) guessToken() (token.Token, parerr.ParseError) {
+func (p *ParseStreamImpl) readTerm() (token.Token, parerr.ParseError) {
 	pos := p.tokenizer.ParsingPosition()
-	t, tErr := p.tokenizer.GuessNext()
+	t, tErr := p.tokenizer.ReadTerm()
 	if tErr != nil {
 		return nil, tErr
 	}
@@ -411,15 +411,18 @@ func (p *ParseStreamImpl) maybeUpToOneLogicalSpaceForContinuation(currentIndenta
 func (p *ParseStreamImpl) detectEndOfCallOperator() bool {
 	save := p.tokenizer.Tell()
 	detectedEndOfCallOperator := false
-	term, termErr := p.guessToken()
+	term, termErr := p.tokenizer.ReadTermOrEndOrSeparator()
 	_, isEOF := term.(*tokenize.EndOfFile)
 	if isEOF {
 		detectedEndOfCallOperator = true
 	} else {
 		if termErr == nil {
 			t := term.Type()
-			_, isOperator := term.(token.OperatorToken)
-			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma
+			_, isBinaryOperator := term.(token.OperatorToken)
+			if t == token.OperatorUnaryMinus || t == token.OperatorUnaryNot {
+				isBinaryOperator = false
+			}
+			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isBinaryOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma
 		}
 	}
 	p.tokenizer.Seek(save)

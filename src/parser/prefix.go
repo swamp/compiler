@@ -12,29 +12,6 @@ import (
 )
 
 func (p *Parser) parsePrefix(t token.Token, startIndentation int) (ast.Expression, parerr.ParseError) {
-
-	// ---------------------------------------------------------------
-	// Unary
-	// ---------------------------------------------------------------
-	if operator, isOperator := t.(token.OperatorToken); isOperator {
-		opType := operator.Type()
-		if opType == token.OperatorBitwiseNot {
-			return parseUnary(p.stream, startIndentation, operator)
-		}
-
-		if opType == token.OperatorNot {
-			return parseUnary(p.stream, startIndentation, operator)
-		}
-
-		if opType == token.OperatorUpdateOrGuard {
-			return parseGuard(p.stream, startIndentation, operator)
-		}
-	}
-
-	if lambdaToken, isLambda := t.(token.LambdaToken); isLambda {
-		return parseLambda(p.stream, lambdaToken, startIndentation)
-	}
-
 	if externalFunctionToken, isExternalFunction := t.(token.ExternalFunctionToken); isExternalFunction {
 		return parseExternalFunction(p.stream, externalFunctionToken)
 	}
@@ -57,9 +34,9 @@ func (p *Parser) parsePrefix(t token.Token, startIndentation int) (ast.Expressio
 		}
 	}
 
-	// ---------------------------------------------------------------
-	// Type Identifier
-	// ---------------------------------------------------------------
+	if t.Type() == token.Guard {
+		return parseGuard(p.stream, startIndentation)
+	}
 
 	return nil, parerr.NewUnknownPrefixInExpression(t)
 }

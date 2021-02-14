@@ -21,9 +21,37 @@ func (e *EndOfFile) Type() token.Type {
 	return token.EOF
 }
 
-func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
+func (t *Tokenizer) ParseUnaryOperator() (token.Token, TokenError) {
 	startPosition := t.position
 
+	ch := t.nextRune()
+	if ch == 0 {
+		return nil, NewEncounteredEOF()
+	}
+	raw := string(ch)
+	debugString := ""
+	var operatorType token.Type
+	switch ch {
+	case '-':
+		next := t.nextRune()
+		if next == ' ' {
+			t.unreadRune()
+			t.unreadRune()
+			return nil, NewUnexpectedEatTokenError(t.MakePositionLength(startPosition), 'x', ' ')
+		} else if next == '>' {
+			return nil, NewUnexpectedEatTokenError(t.MakePositionLength(startPosition), 'y', ' ')
+		}
+		t.unreadRune()
+		operatorType = token.OperatorUnaryMinus
+	case '!':
+		operatorType = token.OperatorUnaryNot
+
+	}
+	return token.NewOperatorToken(operatorType, t.MakePositionLength(startPosition), raw, debugString), nil
+}
+
+func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
+	startPosition := t.position
 	ch := t.nextRune()
 	if ch == 0 {
 		return nil, NewEncounteredEOF()
@@ -74,7 +102,7 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			debugString = "OR"
 			operatorType = token.OperatorOr
 		} else {
-			operatorType = token.OperatorUpdateOrGuard
+			operatorType = token.OperatorUpdate
 			t.unreadRune()
 		}
 	case '-':
@@ -109,7 +137,7 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			operatorType = token.OperatorNotEqual
 		} else {
 			t.unreadRune()
-			operatorType = token.OperatorNot
+			operatorType = token.OperatorUnaryNot
 		}
 	default:
 		switch ch {

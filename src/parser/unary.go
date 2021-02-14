@@ -16,6 +16,10 @@ func parseUnary(p ParseStream, startIndentation int, infixToken token.OperatorTo
 	if leftErr != nil {
 		return nil, leftErr
 	}
+	intValue, isInt := left.(*ast.IntegerLiteral)
+	if isInt {
+		return ast.NewIntegerLiteral(intValue.Token, -intValue.Value()), nil
+	}
 	expression := ast.NewUnaryExpression(infixToken, infixToken, left)
 	return expression, nil
 }

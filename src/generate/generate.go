@@ -36,6 +36,7 @@ type Function struct {
 	variableCount  uint
 	constants      []*assembler.Constant
 	opcodes        []byte
+	debugLookup typeinfo.TypeLookup
 }
 
 type ExternalFunction struct {
@@ -163,6 +164,15 @@ func logicalToUnaryOperatorType(operatorType decorated.LogicalUnaryOperatorType)
 	panic("illegal unaryoperator")
 }
 
+func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperatorType) swampopcodeinst.UnaryOperatorType {
+	switch operatorType {
+	case decorated.ArithmeticUnaryMinus:
+		return swampopcodeinst.UnaryOperatorNegate
+	}
+	panic("illegal unaryoperator")
+}
+
+
 func bitwiseToBinaryOperatorType(operatorType decorated.BitwiseOperatorType) swampopcodeinst.BinaryOperatorType {
 	switch operatorType {
 	case decorated.BitwiseAnd:
@@ -273,6 +283,17 @@ func generateUnaryLogical(code *assembler.Code, target assembler.TargetVariable,
 		return leftErr
 	}
 	opcodeUnaryOperatorType := logicalToUnaryOperatorType(operator.OperatorType())
+	code.UnaryOperator(target, leftVar, opcodeUnaryOperatorType)
+	genContext.context.FreeVariableIfNeeded(leftVar)
+	return nil
+}
+
+func generateUnaryArithmetic(code *assembler.Code, target assembler.TargetVariable, operator *decorated.ArithmeticUnaryOperator, genContext *generateContext) error {
+	leftVar, leftErr := generateExpressionWithSourceVar(code, operator.Left(), genContext, "bitwise-left")
+	if leftErr != nil {
+		return leftErr
+	}
+	opcodeUnaryOperatorType := arithmeticToUnaryOperatorType(operator.OperatorType())
 	code.UnaryOperator(target, leftVar, opcodeUnaryOperatorType)
 	genContext.context.FreeVariableIfNeeded(leftVar)
 	return nil
@@ -942,6 +963,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.LogicalUnaryOperator:
 		return generateUnaryLogical(code, target, e, genContext)
+
+	case *decorated.ArithmeticUnaryOperator:
+		return generateUnaryArithmetic(code, target, e, genContext)
 
 	case *decorated.LogicalOperator:
 		return generateLogical(code, target, e, genContext)

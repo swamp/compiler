@@ -26,8 +26,12 @@ github.com/swamp/assembler v0.0.0-20210212095816-a3667cf5e493 h1:bghV80Mhx7NJxRc
 github.com/swamp/assembler v0.0.0-20210212095816-a3667cf5e493/go.mod h1:Qc1ME4i3moVqaoZGfa2Kb5GXevxbMypqfB5CywsAGb8=
 github.com/swamp/disassembler v0.0.0-20210212095656-af9ccbf996d9 h1:LcWEx8oyS3wHfOaS1sNWSYGrivCptHQwRb8mXSRqfVQ=
 github.com/swamp/disassembler v0.0.0-20210212095656-af9ccbf996d9/go.mod h1:Dpe6iPoKdR5DlqNo1llXTiBhzVxKp55ZKlbnaGIl2jY=
+github.com/swamp/disassembler v0.0.0-20210214100502-713c999c3245 h1:q1Xls7dwOIEToVfIoNJTIbPK4mxddS47/Zr5ajfrsu4=
+github.com/swamp/disassembler v0.0.0-20210214100502-713c999c3245/go.mod h1:/3TOpRLW7AhBnF80nr4C+H9A7TolseaukFBd/Chg37g=
 github.com/swamp/opcodes v0.0.0-20210212094706-61e15159b7f2 h1:GwZ+WbzBt4lrxgr/1hGCg4e0mmXSEyAZpfZGTy2Wkrw=
 github.com/swamp/opcodes v0.0.0-20210212094706-61e15159b7f2/go.mod h1:DCUPUv3e90C9rwpMcgYASQwtprvSwzusvbnTk4IfDU4=
+github.com/swamp/opcodes v0.0.0-20210214095833-e3801acbc388 h1:rv/3biPFRgCFWhE21BJlJ6BGFk1xyXmZbQ+xAHH32oc=
+github.com/swamp/opcodes v0.0.0-20210214095833-e3801acbc388/go.mod h1:DCUPUv3e90C9rwpMcgYASQwtprvSwzusvbnTk4IfDU4=
 github.com/swamp/pack v0.0.0-20210122130807-560a9bc9af01 h1:Y84RsrM1WvB63peb7NnaW6hedb4ZEj8RBJHbLZqZ6f8=
 github.com/swamp/pack v0.0.0-20210122130807-560a9bc9af01/go.mod h1:wYBguB+Q5gfTgsB9sR6G3Du5A/Sf0gGb+lXe7CjhIJ8=
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

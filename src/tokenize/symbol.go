@@ -36,7 +36,7 @@ func (t *Tokenizer) parseAnySymbol(startPosition token.PositionToken) (token.Tok
 	}
 	if variableSymbol.Name() == "not" {
 		t.EatOneSpace()
-		return token.NewOperatorToken(token.OperatorNot, variableSymbol.FetchPositionLength(), variableSymbol.Raw(), "NOT"), nil
+		return token.NewOperatorToken(token.OperatorUnaryNot, variableSymbol.FetchPositionLength(), variableSymbol.Raw(), "NOT"), nil
 	}
 	keywordSymbol, keywordSymbolErr := DetectLowercaseKeyword(variableSymbol)
 	if keywordSymbolErr == nil {

@@ -8,11 +8,10 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
-	"github.com/swamp/compiler/src/token"
 )
 
 
-func parseGuard(p ParseStream, startIndentation int, infixToken token.OperatorToken) (ast.Expression, parerr.ParseError) {
+func parseGuard(p ParseStream, startIndentation int) (ast.Expression, parerr.ParseError) {
 	var items []ast.GuardItem
 	var defaultConsequence ast.Expression
 

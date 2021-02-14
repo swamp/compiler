@@ -13,7 +13,7 @@ import (
 )
 
 func expectTypeSymbol(t *testing.T, tokenizer *tokenize.Tokenizer, expectedString string) {
-	hopefullySymbolToken, hopefullySymbolTokenErr := tokenizer.GuessNext()
+	hopefullySymbolToken, hopefullySymbolTokenErr := tokenizer.ReadTerm()
 	if hopefullySymbolTokenErr != nil {
 		t.Error(hopefullySymbolTokenErr)
 	}
@@ -33,7 +33,7 @@ func expectVariableSymbol(t *testing.T, tokenizer *tokenize.Tokenizer, expectedS
 }
 
 func expectLambda(t *testing.T, tokenizer *tokenize.Tokenizer) {
-	hopefullyLambdaToken, hopefullyLambdaTokenErr := tokenizer.GuessNext()
+	hopefullyLambdaToken, hopefullyLambdaTokenErr := tokenizer.ReadTerm()
 	if hopefullyLambdaTokenErr != nil {
 		t.Error(hopefullyLambdaTokenErr)
 	}
@@ -44,7 +44,7 @@ func expectLambda(t *testing.T, tokenizer *tokenize.Tokenizer) {
 }
 
 func expectOperator(t *testing.T, tokenizer *tokenize.Tokenizer, expectedString string) {
-	hopefullyOperatorToken, hopefullyOperatorTokenErr := tokenizer.GuessNext()
+	hopefullyOperatorToken, hopefullyOperatorTokenErr := tokenizer.ReadTerm()
 	if hopefullyOperatorTokenErr != nil {
 		t.Error(hopefullyOperatorTokenErr)
 	}
@@ -55,7 +55,7 @@ func expectOperator(t *testing.T, tokenizer *tokenize.Tokenizer, expectedString 
 }
 
 func expectNumber(t *testing.T, tokenizer *tokenize.Tokenizer, expectedValue float64) {
-	hopefullySymbolToken, hopefullySymbolTokenErr := tokenizer.GuessNext()
+	hopefullySymbolToken, hopefullySymbolTokenErr := tokenizer.ReadTerm()
 	if hopefullySymbolTokenErr != nil {
 		t.Error(hopefullySymbolTokenErr)
 	}

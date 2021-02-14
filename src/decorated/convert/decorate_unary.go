@@ -22,9 +22,18 @@ func tryConvertToBitwiseUnaryOperator(operatorType token.Type) (decorated.Bitwis
 
 func tryConvertToLogicalUnaryOperator(operatorType token.Type) (decorated.LogicalUnaryOperatorType, bool) {
 	switch operatorType {
-	case token.OperatorNot:
+	case token.OperatorUnaryNot:
 		return decorated.LogicalUnaryNot, true
 	}
+	return 0, false
+}
+
+func tryConvertToArithmeticUnaryOperator(operatorType token.Type) (decorated.ArithmeticUnaryOperatorType, bool) {
+	switch operatorType {
+	case token.OperatorUnaryMinus:
+		return decorated.ArithmeticUnaryMinus, true
+	}
+
 	return 0, false
 }
 
@@ -46,5 +55,15 @@ func decorateUnary(d DecorateStream, unary *ast.UnaryExpression, context *Variab
 		}
 		return decorated.NewLogicalUnaryOperator(leftExpression, logicalUnaryOperatorType)
 	}
+
+	arithmeticUnaryOperatorType, isLogicalUnary := tryConvertToArithmeticUnaryOperator(unary.OperatorType())
+	if isLogicalUnary {
+		leftExpression, leftExpressionErr := DecorateExpression(d, unary.Left(), context)
+		if leftExpressionErr != nil {
+			return nil, leftExpressionErr
+		}
+		return decorated.NewArithmeticUnaryOperator(leftExpression, arithmeticUnaryOperatorType)
+	}
+
 	panic("unknown unary")
 }

@@ -667,7 +667,46 @@ func (t *Tokenizer) ParseStartingKeyword() (token.Token, TokenError) {
 	return t.ParseVariableSymbol()
 }
 
-func (t *Tokenizer) internalGuessNext() (token.Token, error) {
+func (t *Tokenizer) readEndOrSeparatorToken() (token.Token, error) {
+	posToken := t.position
+	r := t.nextRune()
+	singleCharLength := t.MakePositionLength(posToken)
+	if r == ')' {
+		return token.NewParenToken(string(r), token.RightParen, singleCharLength, " )R "), nil
+	} else if r == '}' {
+		return token.NewParenToken(string(r), token.RightCurlyBrace, singleCharLength, " } "), nil
+	} else if r == ']' {
+		return token.NewParenToken(string(r), token.RightBracket, singleCharLength, " ] "), nil
+	} else if r == ',' {
+		return token.NewParenToken(string(r), token.Comma, singleCharLength, ","), nil
+	} else if r == '|' {
+		r := t.nextRune()
+		if r == '>' {
+			return token.NewOperatorToken(token.OperatorPipeRight, singleCharLength, "", "|>"), nil
+		} else {
+			t.unreadRune()
+		}
+	} else if r == '<' {
+		r := t.nextRune()
+		if r == '|' {
+			return token.NewOperatorToken(token.OperatorPipeLeft, singleCharLength, "", "<|"), nil
+		} else {
+			t.unreadRune()
+		}
+	}
+	t.unreadRune()
+	return nil, fmt.Errorf("not an end token")
+}
+
+func (t *Tokenizer) ReadTermOrEndOrSeparator() (token.Token, error) {
+	tokenFound, err := t.readEndOrSeparatorToken()
+	if err == nil {
+		return tokenFound, nil
+	}
+	return t.readTerm()
+}
+
+func (t *Tokenizer) readTerm() (token.Token, error) {
 	posToken := t.position
 	r := t.nextRune()
 	singleCharLength := t.MakePositionLength(posToken)
@@ -695,31 +734,29 @@ func (t *Tokenizer) internalGuessNext() (token.Token, error) {
 			return t.parseTripleString(r, posToken)
 		}
 		return t.ParseString(r, posToken)
-	} else if isOperator(r) {
+	} else if isUnaryOperator(r) {
 		t.unreadRune()
-		return t.ParseOperator()
-	} else if r == ')' {
-		return token.NewParenToken(string(r), token.RightParen, singleCharLength, " )R "), nil
+		return t.ParseUnaryOperator()
+	} else if r == '|' {
+		next := t.nextRune()
+		t.unreadRune()
+		if next == ' ' {
+			return token.NewGuardToken(singleCharLength, string(r)," guard "), nil
+		}
+		return nil, fmt.Errorf("started as guard | but is something else")
 	} else if r == '(' {
 		return token.NewParenToken(string(r), token.LeftParen, singleCharLength, " L( "), nil
+	} else if r == '-' {
+		return token.NewOperatorToken(token.OperatorUnaryMinus, singleCharLength, string(r), "unary-"), nil
 	} else if r == '{' {
 		nch := t.nextRune()
 		if nch == '-' {
 			return t.ReadMultilineComment(posToken)
 		}
 		t.unreadRune()
-
 		return token.NewParenToken(string(r), token.LeftCurlyBrace, singleCharLength, " { "), nil
-	} else if r == '}' {
-		return token.NewParenToken(string(r), token.RightCurlyBrace, singleCharLength, " } "), nil
 	} else if r == '[' {
 		return token.NewParenToken(string(r), token.LeftBracket, singleCharLength, " [ "), nil
-	} else if r == ']' {
-		return token.NewParenToken(string(r), token.RightBracket, singleCharLength, " ] "), nil
-	} else if r == ',' {
-		return token.NewParenToken(string(r), token.Comma, singleCharLength, ","), nil
-	} else if r == '\\' {
-		return token.NewLambdaToken(singleCharLength, " lambda "), nil
 	} else if r == '_' {
 		nextRune := t.nextRune()
 		if nextRune == '_' {
@@ -735,9 +772,9 @@ func (t *Tokenizer) internalGuessNext() (token.Token, error) {
 	return nil, fmt.Errorf("unknown rune '%c' %v", r, r)
 }
 
-func (t *Tokenizer) GuessNext() (token.Token, TokenError) {
+func (t *Tokenizer) ReadTerm() (token.Token, TokenError) {
 	startPos := t.position
-	token, err := t.internalGuessNext()
+	token, err := t.readTerm()
 	if err != nil {
 		return nil, TokenizerError{err: err, position: t.MakePositionLength(startPos)}
 	}

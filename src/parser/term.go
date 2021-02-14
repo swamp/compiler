@@ -41,6 +41,29 @@ func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.E
 		case token.BooleanToken: {
 			return parseBoolLiteral(p.stream, t)
 		}
+	   case token.OperatorToken:
+		   {
+			   switch t.Type() {
+			   case token.OperatorBitwiseNot:
+				   {
+					   return parseUnary(p.stream, startIndentation, t)
+				   }
+
+			   case token.OperatorUnaryNot:
+				   {
+					   return parseUnary(p.stream, startIndentation, t)
+				   }
+			   case token.OperatorUnaryMinus:
+				   {
+					   return parseUnary(p.stream, startIndentation, t)
+				   }
+
+			   }
+		   }
+		case token.GuardToken:
+			{
+			return parseGuard(p.stream, startIndentation)
+		}
 		case token.TypeId:
 			{
 				return parseTypeId(p.stream, t, startIndentation)
@@ -68,7 +91,7 @@ func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.E
 }
 
 func (p *Parser) parseTerm(startIndentation int) (ast.Expression, parerr.ParseError) {
-	someToken, someTokenErr := p.stream.guessToken()
+	someToken, someTokenErr := p.stream.readTerm()
 	if someTokenErr != nil {
 		return nil, someTokenErr
 	}

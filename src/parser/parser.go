@@ -31,7 +31,7 @@ var precedences = map[token.Type]Precedence{
 	token.OperatorBitwiseAnd:    ANDOR,
 	token.OperatorBitwiseXor:    ANDOR,
 	token.OperatorBitwiseNot:    PREFIX,
-	token.OperatorUpdateOrGuard: UPDATE,
+	token.OperatorUpdate: UPDATE,
 	token.OperatorAssign:        ASSIGN,
 	token.OperatorPipeRight:     PIPE,
 	token.OperatorPipeLeft:      PIPE,
@@ -120,7 +120,7 @@ func (p *Parser) peekUpcomingPrecedence(indentation int) (Precedence, bool) {
 
 func tokenIsLeaf(tok token.Token) bool {
 	t := tok.Type()
-	return t == token.VariableSymbol || t == token.TypeSymbol || t == token.NumberInteger || t == token.NumberFixed || t == token.BooleanType || t == token.StringConstant || t == token.ResourceNameSymbol || t == token.TypeIdSymbol
+	return t == token.VariableSymbol || t == token.TypeSymbol || t == token.NumberInteger || t == token.NumberFixed || t == token.BooleanType || t == token.StringConstant || t == token.ResourceNameSymbol || t == token.TypeIdSymbol || t == token.OperatorUnaryMinus || t == token.OperatorUnaryNot
 }
 
 func parenIsLeft(parenToken token.ParenToken) bool {
@@ -142,11 +142,11 @@ func (p *Parser) peekIsCall() bool {
 		return false
 	}
 
-	anyToken, anyTokenErr := p.stream.guessToken()
+	anyToken, anyTokenErr := p.stream.readTerm()
+	p.stream.tokenizer.Seek(saveInfo)
 	if anyTokenErr != nil {
 		return false
 	}
-	p.stream.tokenizer.Seek(saveInfo)
 	parenToken, wasParen := anyToken.(token.ParenToken)
 	isLeftParen := false
 	if wasParen {
@@ -160,7 +160,7 @@ func (p *Parser) peekIsCall() bool {
 }
 
 func (p *Parser) internalParseExpression(filterPrecedence Precedence, startIndentation int) (ast.Expression, parerr.ParseError) {
-	t, tErr := p.stream.guessToken()
+	t, tErr := p.stream.readTerm()
 	if tErr != nil {
 		return nil, tErr
 	}
@@ -199,17 +199,22 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 		}
 	}
 
-	isCall := p.peekIsCall()
-	if isCall {
-		_, _, spaceErr := p.stream.maybeOneSpace()
-		if spaceErr != nil {
-			return nil, spaceErr
-		}
-		leftExp, leftExpErr = parseFunctionCall(p.stream, startIndentation, leftExp)
-	} else {
-		typeIdentifier, isTypeIdentifier := term.(*ast.TypeIdentifier)
-		if isTypeIdentifier {
-			leftExp = ast.NewConstructorCall(typeIdentifier, nil)
+	_, isTypeIdentifier := term.(*ast.TypeIdentifier)
+	_, isVariableIdentifier := term.(*ast.VariableIdentifier)
+
+	if isTypeIdentifier || isVariableIdentifier {
+		isCall := p.peekIsCall()
+		if isCall {
+			_, _, spaceErr := p.stream.maybeOneSpace()
+			if spaceErr != nil {
+				return nil, spaceErr
+			}
+			leftExp, leftExpErr = parseFunctionCall(p.stream, startIndentation, leftExp)
+		} else {
+			typeIdentifier, isTypeIdentifier := term.(*ast.TypeIdentifier)
+			if isTypeIdentifier {
+				leftExp = ast.NewConstructorCall(typeIdentifier, nil)
+			}
 		}
 	}
 
