@@ -694,6 +694,26 @@ create = [functionvalue ([[arg $a = [primitive Int]]]) -> [record-literal record
 `)
 }
 
+func TestConstant2(t *testing.T) {
+	testDecorate(t,
+		`
+tileHeight : Int
+tileHeight =
+    2
+
+
+create : Int -> Int
+create a =
+    tileHeight
+`, `
+func(Int) : [func  [primitive Int]]
+func(Int -> Int) : [func  [primitive Int] [primitive Int]]
+
+create = [functionvalue ([[arg $a = [primitive Int]]]) -> [integer 2]]
+tileHeight = [functionvalue ([]) -> [integer 2]]
+`)
+}
+
 func TestCustomTypeConstructor(t *testing.T) {
 	testDecorate(t,
 		`
