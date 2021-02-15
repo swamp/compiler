@@ -609,6 +609,30 @@ func (p *ParseStreamImpl) eatOneSpace(reason string) (token.IndentationReport, p
 }
 
 
+
+func (p *ParseStreamImpl) eatOneSpaceOrIndent(reason string) (token.IndentationReport, parerr.ParseError) {
+	report, err := p.tokenizer.SkipWhitespaceToNextIndentation()
+	if err != nil {
+		return report, err
+	}
+
+	if p.disableEnforceStyle {
+		if tokenize.LegalContinuationSpace(report, !p.disableEnforceStyle) {
+			return report, nil
+		} else {
+			subErr := tokenize.NewUnexpectedIndentationError(report.PositionLength, report.PreviousCloseIndentation, report.CloseIndentation)
+			return report, parerr.NewExpectedOneSpaceOrExtraIndent(subErr)
+		}
+	}
+
+	if report.SpacesUntilMaybeNewline != 1 && report.NewLineCount != 1 {
+		return report, parerr.NewInternalError(report.PositionLength, fmt.Errorf("expected one space %v", reason))
+	}
+
+	return report, nil
+}
+
+
 func (p *ParseStreamImpl) eatNewLinesAfterStatement(count int) (token.IndentationReport, parerr.ParseError) {
 	report, err := p.tokenizer.SkipWhitespaceToNextIndentation()
 	if err != nil {

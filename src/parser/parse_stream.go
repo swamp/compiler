@@ -28,6 +28,7 @@ type ParseStream interface {
 
 	// Continuation is either a single space or a new line with exactly one indentation.
 	eatOneSpace(reason string) (token.IndentationReport, parerr.ParseError)
+	eatOneSpaceOrIndent(reason string) (token.IndentationReport, parerr.ParseError)
 	eatContinuationReturnIndentation(indentation int) (int, token.IndentationReport, parerr.ParseError)
 	eatArgumentSpaceOrDetectEndOfArguments(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 
