@@ -9,6 +9,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/tokenize"
 )
 
 func parseListLiteral(p ParseStream, startParen token.ParenToken, startIndentation int) (ast.Expression, parerr.ParseError) {
@@ -25,7 +26,7 @@ func parseListLiteral(p ParseStream, startParen token.ParenToken, startIndentati
 			}
 			expressions = append(expressions, exp)
 
-			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(startIndentation, false)
+			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(startIndentation, tokenize.NotAllowedAtAll)
 			if commaErr != nil {
 				return nil, commaErr
 			}

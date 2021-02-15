@@ -306,18 +306,22 @@ func (t *Tokenizer) EatOneSpace() (token.IndentationReport, TokenError) {
 }
 
 func (t *Tokenizer) SkipWhitespaceToNextIndentation() (token.IndentationReport, TokenError) {
-	const disallowComments = false
-
-	return t.SkipWhitespaceToNextIndentationHelper(disallowComments)
+	return t.SkipWhitespaceToNextIndentationHelper(NotAllowedAtAll)
 }
 
 func (t *Tokenizer) SkipWhitespaceAllowCommentsToNextIndentation() (token.IndentationReport, TokenError) {
-	const allowComments = true
-
-	return t.SkipWhitespaceToNextIndentationHelper(allowComments)
+	return t.SkipWhitespaceToNextIndentationHelper(SameLine)
 }
 
-func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments bool) (token.IndentationReport, TokenError) {
+type CommentAllowedType int
+
+const (
+	SameLine CommentAllowedType = iota
+	OwnLine
+	NotAllowedAtAll
+)
+
+func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentAllowedType) (token.IndentationReport, TokenError) {
 	var comments []token.CommentToken
 
 	detectedIndentationSpaces := 0 // t.lastReport.IndentationSpaces
@@ -327,6 +331,7 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments bool) (t
 	hasTrailingSpaces := false
 	closeIndentation := t.lastReport.CloseIndentation
 	exactIndentation := t.lastReport.ExactIndentation
+
 
 	for {
 		ch := t.nextRune()
@@ -368,12 +373,18 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments bool) (t
 				}
 			}
 
-			if allowComments {
+			if allowComments != NotAllowedAtAll {
 				comment, found, err := t.checkComment(ch, t.position)
 				if err != nil {
 					return token.IndentationReport{}, err
 				}
 				if found {
+					if allowComments == OwnLine {
+						if newLineCount == 0 {
+							trailingPosLength := token.NewPositionLength(startPos.Position(), 1, startPos.Indentation())
+							return token.IndentationReport{}, NewCommentNotAllowedHereError(trailingPosLength, fmt.Errorf("not allowed to have comment on same line"))
+						}
+					}
 					comments = append(comments, comment)
 					detectedIndentationSpaces = 0 // t.lastReport.IndentationSpaces
 					// newLineCount = 0  // keep number of lines
@@ -382,6 +393,8 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments bool) (t
 					hasTrailingSpaces = false
 					closeIndentation = t.lastReport.CloseIndentation
 					exactIndentation = t.lastReport.ExactIndentation
+					newLineCount = 0
+
 					continue
 				}
 			}

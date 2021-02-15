@@ -30,7 +30,7 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier) (ast.Expressi
 			return nil, skipAfterIdentifierErr
 		}
 	}
-	_, indentationErr := p.eatNewLineContinuation(keywordIndentation)
+	_, indentationErr := p.eatNewLineContinuationAllowComment(keywordIndentation)
 	if indentationErr != nil {
 		return nil, indentationErr
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/tokenize"
 )
 
 func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast.Expression, parerr.ParseError) {
@@ -35,7 +36,7 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 			}
 			assignment := ast.NewRecordLiteralFieldAssignment(varIdent, exp)
 			recordFieldAssignments = append(recordFieldAssignments, assignment)
-			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(indentation, false)
+			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(indentation, tokenize.SameLine)
 			if commaErr != nil {
 				return nil, commaErr
 			}

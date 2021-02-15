@@ -9,6 +9,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/tokenize"
 )
 
 func parseModuleName(p ParseStream) ([]*ast.TypeIdentifier, parerr.ParseError) {
@@ -97,7 +98,7 @@ func parseImport(p ParseStream, keyword token.VariableSymbolToken,
 				} else {
 					identifiersToExpose = append(identifiersToExpose, variableToExpose)
 				}
-				p.eatCommaSeparatorOrTermination(indentation, false)
+				p.eatCommaSeparatorOrTermination(indentation, tokenize.NotAllowedAtAll)
 			}
 		}
 		wasNewLine = p.detectNewLine()

@@ -9,6 +9,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/tokenize"
 )
 
 type ParseStream interface {
@@ -30,9 +31,10 @@ type ParseStream interface {
 	eatContinuationReturnIndentation(indentation int) (int, token.IndentationReport, parerr.ParseError)
 	eatArgumentSpaceOrDetectEndOfArguments(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 
-	eatCommaSeparatorOrTermination(indentation int, allowComments bool) (bool, token.IndentationReport, parerr.ParseError)
+	eatCommaSeparatorOrTermination(indentation int, allowComments tokenize.CommentAllowedType) (bool, token.IndentationReport, parerr.ParseError)
 
 	eatNewLineContinuation(indentation int) (token.IndentationReport, parerr.ParseError)
+	eatNewLineContinuationAllowComment(indentation int) (token.IndentationReport, parerr.ParseError)
 	eatOneOrTwoNewLineContinuationOrDedent(indentation int) (bool, token.IndentationReport, parerr.ParseError)
 
 	// Block spacing is a helper function for when you both allow single space and new line continuations.
@@ -66,6 +68,7 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	maybeOneSpace() (bool, token.IndentationReport, parerr.ParseError)
 	maybeNewLineContinuation(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
+	maybeNewLineContinuationAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 	maybeNewLineContinuationWithExtraEmptyLine(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 
 	maybeKeywordAlias() bool

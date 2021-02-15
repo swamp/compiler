@@ -136,6 +136,18 @@ func TestSingleLineComment(t *testing.T) {
 		` [singlelinecomment '   another comment']`)
 }
 
+func TestSingleLineCommentInLet(t *testing.T) {
+	testParseExpression(t,
+		`
+let
+    -- this is just a test to check
+    x = 3
+in
+4
+`,
+		` [singlelinecomment '   another comment']`)
+}
+
 func TestType(t *testing.T) {
 	testParseExpression(t,
 		`Unknown`,

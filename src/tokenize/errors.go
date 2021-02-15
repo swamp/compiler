@@ -235,3 +235,17 @@ func NewTrailingSpaceError(posLength token.PositionLength) TrailingSpaceError {
 func (e TrailingSpaceError) Error() string {
 	return fmt.Sprintf("illegal trailing space error %v", e.StandardTokenError)
 }
+
+
+type CommentNotAllowedHereError struct {
+	StandardTokenError
+	subError error
+}
+
+func NewCommentNotAllowedHereError(posLength token.PositionLength, subError error) CommentNotAllowedHereError {
+	return CommentNotAllowedHereError{StandardTokenError: StandardTokenError{posLength}, subError: subError}
+}
+
+func (e CommentNotAllowedHereError) Error() string {
+	return fmt.Sprintf("not allowed to have comment here %v %v", e.StandardTokenError, e.subError)
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/tokenize"
 )
 
 func parseRecordTypeFields(p ParseStream, expectedIndentation int,
@@ -43,8 +44,7 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 		var wasErr parerr.ParseError
 		var wasComma bool
 
-		const allowReport = true
-		if wasComma, report, wasErr = p.eatCommaSeparatorOrTermination(expectedIndentation, allowReport); wasErr != nil {
+		if wasComma, report, wasErr = p.eatCommaSeparatorOrTermination(expectedIndentation, tokenize.SameLine); wasErr != nil {
 			return nil, wasErr
 		}
 		precedingComments := report.Comments

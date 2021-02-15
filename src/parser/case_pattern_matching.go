@@ -54,7 +54,7 @@ func parseCasePatternMatching(p ParseStream, test ast.Expression, keyword token.
 		consequence := ast.NewCaseConsequenceForPatternMatching(len(consequences), prefix, expr)
 		consequences = append(consequences, consequence)
 
-		foundTextInColumnBelow, _, posLengthErr := p.maybeNewLineContinuation(consequenceIndentation)
+		foundTextInColumnBelow, _, posLengthErr := p.maybeNewLineContinuationAllowComment(consequenceIndentation)
 		if posLengthErr != nil {
 			return nil, posLengthErr
 		}

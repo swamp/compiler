@@ -66,7 +66,7 @@ func parseCaseCustomType(p ParseStream, test ast.Expression, keyword token.Keywo
 		consequence := ast.NewCaseConsequenceForCustomType(prefix, parameters, expr)
 		consequences = append(consequences, consequence)
 
-		foundTextInColumnBelow, _, posLengthErr := p.maybeNewLineContinuation(consequenceIndentation)
+		foundTextInColumnBelow, _, posLengthErr := p.maybeNewLineContinuationAllowComment(consequenceIndentation)
 		if posLengthErr != nil {
 			return nil, posLengthErr
 		}

@@ -54,7 +54,7 @@ func parseGuard(p ParseStream, startIndentation int) (ast.Expression, parerr.Par
 			items = append(items, item)
 		}
 
-		wasContinuation, _, continuationErr := p.maybeNewLineContinuation(startIndentation)
+		wasContinuation, _, continuationErr := p.maybeNewLineContinuationAllowComment(startIndentation)
 		if continuationErr != nil {
 			return nil, continuationErr
 		}

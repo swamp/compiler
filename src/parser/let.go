@@ -18,7 +18,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 
 	expectedIndentation := keywordIndentation + 1
 
-	if _, expectNewLineErr := p.eatNewLineContinuation(keywordIndentation); expectNewLineErr != nil {
+	if _, expectNewLineErr := p.eatNewLineContinuationAllowComment(keywordIndentation); expectNewLineErr != nil {
 		return nil, expectNewLineErr
 	}
 
@@ -68,7 +68,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 		}
 	}
 	expectedInConsequencesIndentation := keywordIndentation
-	_, spaceBeforeConsequenceErr := p.eatNewLineContinuation(expectedInConsequencesIndentation-1)
+	_, spaceBeforeConsequenceErr := p.eatNewLineContinuationAllowComment(expectedInConsequencesIndentation-1)
 	if spaceBeforeConsequenceErr != nil {
 		return nil, parerr.NewLetInConsequenceOnSameColumn(spaceBeforeConsequenceErr)
 	}

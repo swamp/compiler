@@ -29,7 +29,7 @@ func parseCase(p ParseStream, keyword token.Keyword, startIndentation int) (ast.
 		return nil, ofErr
 	}
 	consequenceIndentation := startIndentation + 1
-	_, secondSpaceErr := p.eatNewLineContinuation(startIndentation)
+	_, secondSpaceErr := p.eatNewLineContinuationAllowComment(startIndentation)
 	if secondSpaceErr != nil {
 		return nil, secondSpaceErr
 	}
