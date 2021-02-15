@@ -12,6 +12,10 @@ import (
 )
 
 func (p *Parser) parseInfix(left ast.Expression, startIndentation int) (ast.Expression, parerr.ParseError) {
+	if left == nil {
+		panic("not allowed to parse infix with nil")
+	}
+
 	if _, spaceErr := p.stream.skipMaybeSpaceAndSameIndentationOrContinuation(); spaceErr != nil {
 		return nil, spaceErr
 	}

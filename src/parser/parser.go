@@ -142,7 +142,7 @@ func (p *Parser) peekIsCall() bool {
 		return false
 	}
 
-	anyToken, anyTokenErr := p.stream.readTerm()
+	anyToken, anyTokenErr := p.stream.readTermToken()
 	p.stream.tokenizer.Seek(saveInfo)
 	if anyTokenErr != nil {
 		return false
@@ -160,7 +160,7 @@ func (p *Parser) peekIsCall() bool {
 }
 
 func (p *Parser) internalParseExpression(filterPrecedence Precedence, startIndentation int) (ast.Expression, parerr.ParseError) {
-	t, tErr := p.stream.readTerm()
+	t, tErr := p.stream.readTermToken()
 	if tErr != nil {
 		return nil, tErr
 	}
@@ -176,7 +176,7 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 		}
 	}
 
-	term, termErr := p.parseTermEx(t, startIndentation)
+	term, termErr := p.parseTermUsingToken(t, startIndentation)
 	if termErr != nil {
 		switch termErr.(type) {
 		case parerr.NotATermError:
@@ -225,6 +225,9 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 		}
 		if filterPrecedence >= peekPrecedence {
 			break
+		}
+		if leftExp == nil {
+			panic("not allowed to parse infix with nil")
 		}
 		leftExp, leftExpErr = p.parseInfix(leftExp, startIndentation)
 		if leftExpErr != nil {

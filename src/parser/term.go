@@ -11,8 +11,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.Expression, parerr.ParseError) {
-
+func (p *Parser) parseTermUsingToken(someToken token.Token, startIndentation int) (ast.Expression, parerr.ParseError) {
 	// ---------------------------------------------------------------
 	// Term
 	// ---------------------------------------------------------------
@@ -41,33 +40,25 @@ func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.E
 		case token.BooleanToken: {
 			return parseBoolLiteral(p.stream, t)
 		}
-	   case token.OperatorToken:
-		   {
-			   switch t.Type() {
-			   case token.OperatorBitwiseNot:
-				   {
+		case token.OperatorToken: {
+			switch t.Type() {
+			   case token.OperatorBitwiseNot: {
 					   return parseUnary(p.stream, startIndentation, t)
 				   }
-
-			   case token.OperatorUnaryNot:
-				   {
+			   case token.OperatorUnaryNot: {
 					   return parseUnary(p.stream, startIndentation, t)
 				   }
-			   case token.OperatorUnaryMinus:
-				   {
+			   case token.OperatorUnaryMinus: {
 					   return parseUnary(p.stream, startIndentation, t)
 				   }
-
-			   }
+				}
 		   }
-		case token.GuardToken:
-			{
+		case token.GuardToken: {
 			return parseGuard(p.stream, startIndentation)
 		}
-		case token.TypeId:
-			{
-				return parseTypeId(p.stream, t, startIndentation)
-			}
+		case token.TypeId: {
+			return parseTypeId(p.stream, t, startIndentation)
+		}
 	}
 
 	// ---------------------------------------------------------------
@@ -91,11 +82,11 @@ func (p *Parser) parseTermEx(someToken token.Token, startIndentation int) (ast.E
 }
 
 func (p *Parser) parseTerm(startIndentation int) (ast.Expression, parerr.ParseError) {
-	someToken, someTokenErr := p.stream.readTerm()
+	someToken, someTokenErr := p.stream.readTermToken()
 	if someTokenErr != nil {
 		return nil, someTokenErr
 	}
 
 
-	return p.parseTermEx(someToken, startIndentation)
+	return p.parseTermUsingToken(someToken, startIndentation)
 }

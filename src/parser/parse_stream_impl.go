@@ -253,9 +253,9 @@ func (p *ParseStreamImpl) readVariableIdentifierAssignOrUpdate() (*ast.VariableI
 	return ident, false, nil
 }
 
-func (p *ParseStreamImpl) readTerm() (token.Token, parerr.ParseError) {
+func (p *ParseStreamImpl) readTermToken() (token.Token, parerr.ParseError) {
 	pos := p.tokenizer.ParsingPosition()
-	t, tErr := p.tokenizer.ReadTerm()
+	t, tErr := p.tokenizer.ReadTermToken()
 	if tErr != nil {
 		return nil, tErr
 	}
@@ -411,7 +411,7 @@ func (p *ParseStreamImpl) maybeUpToOneLogicalSpaceForContinuation(currentIndenta
 func (p *ParseStreamImpl) detectEndOfCallOperator() bool {
 	save := p.tokenizer.Tell()
 	detectedEndOfCallOperator := false
-	term, termErr := p.tokenizer.ReadTermOrEndOrSeparator()
+	term, termErr := p.tokenizer.ReadTermTokenOrEndOrSeparator()
 	_, isEOF := term.(*tokenize.EndOfFile)
 	if isEOF {
 		detectedEndOfCallOperator = true
@@ -422,7 +422,7 @@ func (p *ParseStreamImpl) detectEndOfCallOperator() bool {
 			if t == token.OperatorUnaryMinus || t == token.OperatorUnaryNot {
 				isBinaryOperator = false
 			}
-			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isBinaryOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma
+			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isBinaryOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma || t == token.OperatorPipeRight
 		}
 	}
 	p.tokenizer.Seek(save)
@@ -751,10 +751,8 @@ func (p *ParseStreamImpl) eatArgumentSpaceOrDetectEndOfArguments(currentIndentat
 		}
 		return wasEnd, report, nil
 	} else {
-		if report.NewLineCount == 1 && report.ExactIndentation == currentIndentation+1 {
-			return false, report, nil
-		}
-		if report.NewLineCount == 0 && (report.SpacesUntilMaybeNewline == 1 || report.SpacesUntilMaybeNewline == 0) {
+		isLegalSpacing := (report.NewLineCount == 1 && report.ExactIndentation == currentIndentation+1) || (report.NewLineCount == 0 && (report.SpacesUntilMaybeNewline == 1 || report.SpacesUntilMaybeNewline == 0))
+		if isLegalSpacing {
 			wasEnd := p.detectEndOfCallOperator()
 			if wasEnd {
 				p.tokenizer.Seek(saveInfo)

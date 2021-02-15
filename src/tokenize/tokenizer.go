@@ -698,15 +698,15 @@ func (t *Tokenizer) readEndOrSeparatorToken() (token.Token, error) {
 	return nil, fmt.Errorf("not an end token")
 }
 
-func (t *Tokenizer) ReadTermOrEndOrSeparator() (token.Token, error) {
+func (t *Tokenizer) ReadTermTokenOrEndOrSeparator() (token.Token, error) {
 	tokenFound, err := t.readEndOrSeparatorToken()
 	if err == nil {
 		return tokenFound, nil
 	}
-	return t.readTerm()
+	return t.readTermToken()
 }
 
-func (t *Tokenizer) readTerm() (token.Token, error) {
+func (t *Tokenizer) readTermToken() (token.Token, error) {
 	posToken := t.position
 	r := t.nextRune()
 	singleCharLength := t.MakePositionLength(posToken)
@@ -772,9 +772,9 @@ func (t *Tokenizer) readTerm() (token.Token, error) {
 	return nil, fmt.Errorf("unknown rune '%c' %v", r, r)
 }
 
-func (t *Tokenizer) ReadTerm() (token.Token, TokenError) {
+func (t *Tokenizer) ReadTermToken() (token.Token, TokenError) {
 	startPos := t.position
-	token, err := t.readTerm()
+	token, err := t.readTermToken()
 	if err != nil {
 		return nil, TokenizerError{err: err, position: t.MakePositionLength(startPos)}
 	}

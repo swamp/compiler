@@ -183,7 +183,7 @@ func SyntaxColor(code string) (string, error) {
 
 	a := ""
 	for {
-		token, tokenErr := tokenizer.ReadTerm()
+		token, tokenErr := tokenizer.ReadTermToken()
 		if tokenErr != nil {
 			return a, tokenErr
 		}
