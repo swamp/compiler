@@ -33,9 +33,9 @@ func writeRecordType(recordType *ast.Record, colorer coloring.Colorer, indentati
 }
 
 func writeCustomType(customType *ast.CustomType, colorer coloring.Colorer, indentation int) {
-	//writeTypeIdentifier(customType.Identifier(), colorer)
-	//colorer.NewLine(indentation+1)
-	//colorer.OneSpace()
+	// writeTypeIdentifier(customType.Identifier(), colorer)
+	// colorer.NewLine(indentation+1)
+	// colorer.OneSpace()
 	for index, variant := range customType.Variants() {
 		if index > 0 {
 			colorer.NewLine(indentation)
@@ -161,7 +161,7 @@ func writeCase(caseExpression *ast.CaseCustomType, colorer coloring.Colorer, ind
 		writeExpression(consequence.Expression(), colorer, 0)
 	}
 
-	//colorer.NewLine(indentation)
+	// colorer.NewLine(indentation)
 }
 
 func writeGuard(guardExpression *ast.GuardExpression, colorer coloring.Colorer, indentation int) {
@@ -363,20 +363,6 @@ func writeFunctionCall(functionCall *ast.FunctionCall, colorer coloring.Colorer,
 	}
 }
 
-func writeLambdaFunctionValue(functionCall *ast.LambdaFunctionValue, colorer coloring.Colorer, indentation int) {
-	colorer.KeywordString("\\")
-	for index, parameter := range functionCall.Parameters() {
-		if index > 0 {
-			colorer.OneSpace()
-		}
-		colorer.VariableSymbol(parameter.Symbol())
-	}
-	colorer.OneSpace()
-	colorer.RightArrow()
-	colorer.OneSpace()
-	writeExpression(functionCall.Expression(), colorer, indentation)
-}
-
 func writeCustomTypeStatement(customTypeStatement *ast.CustomTypeStatement, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("type ")
 	writeTypeIdentifier(customTypeStatement.TypeIdentifier(), colorer)
@@ -567,10 +553,6 @@ func writeExpression(expression ast.Expression, colorer coloring.Colorer, indent
 		{
 			writeUnaryOperator(t, colorer, indentation)
 		}
-	case *ast.LambdaFunctionValue:
-		{
-			writeLambdaFunctionValue(t, colorer, indentation)
-		}
 	case *ast.Lookups:
 		writeLookups(t, colorer, indentation)
 	default:
@@ -595,7 +577,6 @@ func WriteCode(program *ast.Program, useColor bool) (string, error) {
 				colorer.NewLine(0)
 				colorer.NewLine(0)
 			} else {
-
 			}
 		}
 		switch t := expression.(type) {

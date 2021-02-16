@@ -73,14 +73,6 @@ func NewTypeParameterContextDynamic(names []*dtype.TypeArgumentName) *TypeParame
 	return &TypeParameterContextDynamic{argumentNames: names, resolvedArguments: make([]dtype.Type, len(names))}
 }
 
-func (t *TypeParameterContextDynamic) ToParameterContext() (*TypeParameterContext, DecoratedTypeError) {
-	if verifyErr := t.Verify(); verifyErr != nil {
-		return nil, verifyErr
-	}
-
-	return NewTypeParameterContext(t.argumentNames, t.resolvedArguments)
-}
-
 func (t *TypeParameterContextDynamic) FillOutTheRestWithAny() {
 	for index, x := range t.resolvedArguments {
 		if x == nil {

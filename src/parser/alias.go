@@ -12,11 +12,13 @@ import (
 )
 
 func parseTypeAlias(p ParseStream, keywordIdentation int, nameOfAlias *ast.TypeIdentifier,
-	typeParameterContext *ast.TypeParameterIdentifierContext, precedingComments token.CommentBlock) (ast.Expression, parerr.ParseError) {
+	typeParameterContext *ast.TypeParameterIdentifierContext,
+	precedingComments token.CommentBlock) (ast.Expression, parerr.ParseError) {
 	newIndentation, _, spaceAfterAssignAndBeforeActualReferenceErr := p.eatContinuationReturnIndentation(keywordIdentation)
 	if spaceAfterAssignAndBeforeActualReferenceErr != nil {
 		return nil, spaceAfterAssignAndBeforeActualReferenceErr
 	}
+
 	referencedType, referencedTypeErr := parseTypeTermReference(p, newIndentation, typeParameterContext, precedingComments)
 	if referencedTypeErr != nil {
 		return nil, referencedTypeErr

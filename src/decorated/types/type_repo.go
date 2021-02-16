@@ -101,6 +101,10 @@ func (t *TypeRepo) DeclareRecordType(r *RecordAtom) *RecordAtom {
 	return r
 }
 
+type DecoratedTypeError interface {
+	Error() string
+}
+
 func (t *TypeRepo) DeclareTypeAlias(alias *ast.TypeIdentifier, concreteType dtype.Type) (*Alias, DecoratedTypeError) {
 	artifactTypeName := t.moduleName.JoinTypeIdentifier(alias)
 	newType := NewAliasType(alias, artifactTypeName, concreteType)

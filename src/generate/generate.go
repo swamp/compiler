@@ -496,8 +496,10 @@ func generateGuard(code *assembler.Code, target assembler.TargetVariable, guardE
 		consequenceCode.Jump(endLabel)
 		endOfConsequenceLabel := consequenceCode.Label(nil, "guard-end")
 		consequenceContext.context.Free()
-		codeItem := codeItem{ConditionCode: conditionCode, ConditionVariable: conditionVar, ConsequenceCode: consequenceCode,
-			EndOfConsequenceLabel: endOfConsequenceLabel}
+		codeItem := codeItem{
+			ConditionCode: conditionCode, ConditionVariable: conditionVar, ConsequenceCode: consequenceCode,
+			EndOfConsequenceLabel: endOfConsequenceLabel,
+		}
 		codeItems = append(codeItems, codeItem)
 	}
 
@@ -837,39 +839,6 @@ func generateList(code *assembler.Code, target assembler.TargetVariable, list *d
 	code.ListLiteral(target, variables)
 	return nil
 }
-
-/*
-	foundNamedExpression := definitions.FindNamedDecoratedExpression(getVar.Identifier())
-	if foundNamedExpression == nil {
-		expr := definitions.FindNamedDecoratedExpression(getVar.Identifier())
-		if expr != nil {
-			typeRef, typeErr := lookup.Lookup(expr.Type())
-			if typeErr != nil {
-				return nil, typeErr
-			}
-			funcAnnotation := assembler.NewFunctionAnnotation(uint8(typeRef))
-			funcName := assembler.NewFunctionName(expr.FullyQualifiedName())
-			constant, _ := c.AddFunctionReferenceConstant(funcName, funcAnnotation)
-			return constant, nil
-		}
-		return nil, fmt.Errorf("didn't find named expression %v (%v)", getVar.Identifier(), definitions)
-	}
-
-	typeRef, typeErr := lookup.Lookup(foundNamedExpression.Type())
-	if typeErr != nil {
-		return nil, typeErr
-	}
-	funcAnnotation := assembler.NewFunctionAnnotation(uint8(typeRef))
-	funcName := assembler.NewFunctionName(foundNamedExpression.FullyQualifiedName())
-	foundFunc, foundFuncErr := c.AddFunctionReferenceConstant(funcName, funcAnnotation)
-	if foundFuncErr != nil {
-		return nil, foundFuncErr
-	}
-	if foundFunc != nil {
-		return foundFunc, nil
-	}
-	return nil, fmt.Errorf("couldn't find variable or constant %v", getVar)
-*/
 
 func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.DecoratedExpression, genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
 	getVar, _ := expr.(*decorated.GetVariableOrReferenceFunction)

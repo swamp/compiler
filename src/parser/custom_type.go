@@ -17,6 +17,7 @@ func parseCustomType(p ParseStream, keyword token.VariableSymbolToken, preceding
 	if firstOneSpaceErr != nil {
 		return nil, firstOneSpaceErr
 	}
+
 	isAlias := p.maybeKeywordAlias()
 	if isAlias {
 		_, spaceAfterAliasErr := p.eatOneSpace("space after ALIAS")
@@ -24,6 +25,7 @@ func parseCustomType(p ParseStream, keyword token.VariableSymbolToken, preceding
 			return nil, spaceAfterAliasErr
 		}
 	}
+
 	nameOfType, nameOfTypeErr := p.readTypeIdentifier()
 	if nameOfTypeErr != nil {
 		return nil, nameOfTypeErr
@@ -35,7 +37,9 @@ func parseCustomType(p ParseStream, keyword token.VariableSymbolToken, preceding
 	}
 
 	wasNewLineBeforeAssign := false
+
 	var typeParameterIdentifiers []*ast.TypeParameter
+
 	for !p.maybeAssign() {
 		typeParameterIdent, typeParameterErr := p.readVariableIdentifier()
 		if typeParameterErr != nil {
@@ -61,18 +65,24 @@ func parseCustomType(p ParseStream, keyword token.VariableSymbolToken, preceding
 			return nil, afterAssignSpacingErr
 		}
 	}
+
 	expectedIndentation := keywordIndentation + 1
+
 	var fields []*ast.CustomTypeVariant
+
 	index := 0
+
 	for {
 		variantIdentifier, variantIdentifierErr := p.readTypeIdentifier()
 		if variantIdentifierErr != nil {
 			return nil, variantIdentifierErr
 		}
+
 		variantTypes, variantTypesErr := parseCustomTypeVariantTypesUntilNewline(p, keywordIndentation, nil)
 		if variantTypesErr != nil {
 			return nil, variantTypesErr
 		}
+
 		field := ast.NewCustomTypeVariant(index, variantIdentifier, variantTypes)
 		fields = append(fields, field)
 
