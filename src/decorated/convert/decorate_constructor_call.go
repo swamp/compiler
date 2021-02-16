@@ -17,6 +17,15 @@ import (
 func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
 	var decoratedExpressions []decorated.DecoratedExpression
 
+	for _, rawExpression := range call.Arguments() {
+		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, rawExpression, context)
+		if decoratedExpressionErr != nil {
+			return nil, decoratedExpressionErr
+		}
+
+		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
+	}
+
 	variantConstructor := d.TypeRepo().FindTypeFromName(call.TypeIdentifier().Name())
 	unaliasedConstructor := dectype.Unalias(variantConstructor)
 
