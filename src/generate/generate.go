@@ -899,6 +899,17 @@ func isIntLike(typeToCheck dtype.Type) bool {
 	return name == "Int" || name == "Fixed" || name == "Char"
 }
 
+func isListLike(typeToCheck dtype.Type) bool {
+	unaliasType := dectype.Unalias(typeToCheck)
+	primitiveAtom, _ := unaliasType.(*dectype.PrimitiveAtom)
+	if primitiveAtom == nil {
+		return false
+	}
+	name := primitiveAtom.PrimitiveName().Name()
+
+	return name == "List"
+}
+
 func generateExpression(code *assembler.Code, target assembler.TargetVariable, expr decorated.DecoratedExpression, genContext *generateContext) error {
 	switch e := expr.(type) {
 	case *decorated.Let:
@@ -906,7 +917,7 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.ArithmeticOperator:
 		{
-			if e.Left().Type().DecoratedName() == "List" && e.OperatorType() == decorated.ArithmeticPlus {
+			if isListLike(e.Left().Type()) && e.OperatorType() == decorated.ArithmeticAppend {
 				return generateListAppend(code, target, e, genContext)
 			} else if e.Left().Type().DecoratedName() == "String" && e.OperatorType() == decorated.ArithmeticAppend {
 				return generateStringAppend(code, target, e, genContext)
