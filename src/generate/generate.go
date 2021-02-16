@@ -34,7 +34,6 @@ type Function struct {
 	variableCount  uint
 	constants      []*assembler.Constant
 	opcodes        []byte
-	debugLookup    typeinfo.TypeLookup
 }
 
 type ExternalFunction struct {
@@ -1050,10 +1049,11 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariab
 
 	signature, lookupErr := lookup.Lookup(f.Type())
 	if lookupErr != nil {
-		signature = -1
 		return nil, lookupErr
 	}
+
 	functionConstant := NewFunction(fullyQualifiedVariableName, swamppack.TypeRef(signature), parameterCount, uint(root.Layouter().HighestUsedRegisterValue()), root.Constants().Constants(), opcodes)
+
 	return functionConstant, nil
 }
 

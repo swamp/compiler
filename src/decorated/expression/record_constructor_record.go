@@ -15,7 +15,6 @@ import (
 )
 
 type RecordConstructorRecord struct {
-	//arguments         []DecoratedExpression
 	recordType     *dectype.RecordAtom
 	record         *RecordLiteral
 	typeIdentifier *ast.TypeIdentifier

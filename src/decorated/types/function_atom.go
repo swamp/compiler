@@ -16,13 +16,9 @@ type FunctionAtom struct {
 }
 
 func NewFunctionAtom(parameterTypes []dtype.Type) *FunctionAtom {
-	if len(parameterTypes) < 1 {
-		//panic("function atoms must have at least a return type (1).")
-	}
-
 	for _, param := range parameterTypes {
 		if param == nil {
-			panic("stop here")
+			panic("function atom: nil parameter type")
 		}
 	}
 	return &FunctionAtom{parameterTypes: parameterTypes}

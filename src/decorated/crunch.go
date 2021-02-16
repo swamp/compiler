@@ -7,8 +7,9 @@ package deccy
 
 import (
 	"fmt"
-	dectype "github.com/swamp/compiler/src/decorated/types"
 	"strings"
+
+	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
@@ -19,8 +20,7 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-type NoImportModuleRepository struct {
-}
+type NoImportModuleRepository struct{}
 
 func (*NoImportModuleRepository) FetchModuleInPackage(moduleName dectype.PackageRelativeModuleName, verboseFlag bool) (*decorated.Module, decshared.DecoratedError) {
 	return nil, decorated.NewInternalError(fmt.Errorf("this is a no import module. Imports are not allowed"))

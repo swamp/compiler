@@ -5,8 +5,6 @@
 
 package token
 
-import "fmt"
-
 // SpaceToken :
 type SpaceToken struct {
 	PositionLength
@@ -18,7 +16,7 @@ func NewSpaceToken(position PositionLength, r rune) SpaceToken {
 }
 
 func (s SpaceToken) String() string {
-	return fmt.Sprintf("space")
+	return "space"
 }
 
 func (s SpaceToken) Type() Type {

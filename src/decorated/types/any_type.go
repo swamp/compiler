@@ -11,8 +11,7 @@ import (
 
 import "fmt"
 
-type Any struct {
-}
+type Any struct{}
 
 func (u *Any) String() string {
 	return fmt.Sprintf("[any]")

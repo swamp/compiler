@@ -24,7 +24,7 @@ func expectTypeSymbol(t *testing.T, tokenizer *tokenize.Tokenizer, expectedStrin
 }
 
 func expectVariableSymbol(t *testing.T, tokenizer *tokenize.Tokenizer, expectedString string) {
-	//tokenizer.SkipAnyWhitespace()
+	// tokenizer.SkipAnyWhitespace()
 
 	_, hopefullySymbolTokenErr := tokenizer.ParseVariableSymbol()
 	if hopefullySymbolTokenErr != nil {

@@ -50,7 +50,6 @@ func FindProjectDirectory() (string, error) {
 
 func ExecuteSwamp(swampCode string) (string, error) {
 	const tempOutputFileTemplate = "temp.swamp-pack"
-	const tempSwampFileSuffix = "temp.swamp"
 
 	tempDir, err := ioutil.TempDir("", "test.swamp")
 	if err != nil {

@@ -25,11 +25,13 @@ func NewImport(keyword token.VariableSymbolToken, path []*TypeIdentifier,
 	optionalAlias *TypeIdentifier, typesToExpose []*TypeIdentifier,
 	definitionsToExpose []*VariableIdentifier,
 	exposeAll bool, precedingComments token.CommentBlock) *Import {
-	return &Import{keyword: keyword, path: path, optionalAlias: optionalAlias,
+	return &Import{
+		keyword: keyword, path: path, optionalAlias: optionalAlias,
 		exposeAll:           exposeAll,
 		typesToExpose:       typesToExpose,
 		definitionsToExpose: definitionsToExpose,
-		precedingComments:   precedingComments}
+		precedingComments:   precedingComments,
+	}
 }
 
 func (i *Import) Path() []*TypeIdentifier {

@@ -30,6 +30,7 @@ func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (*
 	}
 	return x, nil
 }
+
 func parseTypeTermReference(p ParseStream, keywordIndentation int,
 	typeParameterContext *ast.TypeParameterIdentifierContext, precedingComments token.CommentBlock) (ast.Type, parerr.ParseError) {
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, true, precedingComments)

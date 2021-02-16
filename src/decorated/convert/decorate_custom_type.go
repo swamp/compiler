@@ -46,17 +46,6 @@ func DecorateCustomType(customTypeDefinition *ast.CustomType,
 		variants = append(variants, variant)
 	}
 
-	var decoratedTypeParameters []dtype.Type
-
-	for _, typeParameter := range customTypeDefinition.FindAllLocalTypes() {
-		converted, convertErr := ConvertFromAstToDecorated(typeParameter, typeRepo)
-		if convertErr != nil {
-			return nil, decorated.NewInternalError(convertErr)
-		}
-
-		decoratedTypeParameters = append(decoratedTypeParameters, converted)
-	}
-
 	decoratedNames := AstParametersToArgumentNames(customTypeDefinition.FindAllLocalTypes())
 	artifactTypeName := typeRepo.ModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
 	s := dectype.NewCustomType(customTypeDefinition.Identifier(), artifactTypeName, decoratedNames, variants)

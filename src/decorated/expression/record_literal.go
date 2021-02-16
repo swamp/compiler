@@ -67,9 +67,11 @@ func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate DecoratedExpression,
 		}
 		lastFoundIndex = assignment.index
 	}
-	return &RecordLiteral{t: t, recordTemplate: recordTemplate,
+	return &RecordLiteral{
+		t: t, recordTemplate: recordTemplate,
 		parseOrderedAssignments: parseOrderedAssignments,
-		sortedAssignments:       sortedAssignments}
+		sortedAssignments:       sortedAssignments,
+	}
 }
 
 func (c *RecordLiteral) Type() dtype.Type {

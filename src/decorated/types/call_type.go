@@ -43,7 +43,7 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 	case *InvokerType:
 		return replaceInvokerTypeFromContext(info, lookup)
 	default:
-		//fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
+		// fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
 	}
 
 	// fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
@@ -120,7 +120,7 @@ func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, err
 	}
 
 	if len(genericTypes) != len(arguments) {
-		return nil, fmt.Errorf("illegal count %v %v", genericTypes, arguments)
+		return nil, fmt.Errorf("call record type illegal count %v %v %v", record, genericTypes, arguments)
 	}
 
 	var convertedTypes []dtype.Type
@@ -155,7 +155,8 @@ func callCustomType(customType *CustomTypeAtom, arguments []dtype.Type) (dtype.T
 	}
 
 	if len(argumentNames) != len(arguments) {
-		return nil, fmt.Errorf("illegal count %v %v", arguments, argumentNames)
+		return nil, fmt.Errorf("call custom type: illegal count %v %v %v", customType,
+			arguments, argumentNames)
 	}
 
 	context := NewTypeParameterContextDynamic(argumentNames)
@@ -170,7 +171,7 @@ func callCustomTypeVariant(variant *CustomTypeVariant, arguments []dtype.Type) (
 	params := variant.parameterTypes
 
 	if len(params) != len(arguments) {
-		return nil, fmt.Errorf("illegal count %v %v", arguments, params)
+		return nil, fmt.Errorf("call custom type variant: illegal count %v %v %v", variant, arguments, params)
 	}
 
 	argumentNames := variant.InCustomType().genericLocalTypeNames
@@ -194,7 +195,8 @@ func callPrimitiveType(primitive *PrimitiveAtom, arguments []dtype.Type) (*Primi
 	}
 
 	if len(genericTypes) != len(arguments) {
-		return nil, fmt.Errorf("illegal count %v %v", genericTypes, arguments)
+		return nil, fmt.Errorf("call primitive type illegal count %v %v %v", primitive,
+			genericTypes, arguments)
 	}
 
 	var convertedTypes []dtype.Type

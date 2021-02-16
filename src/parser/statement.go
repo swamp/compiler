@@ -15,7 +15,6 @@ func (p *Parser) parseExpressionStatement(precedingComments token.CommentBlock) 
 	keywordSymbol, keywordSymbolErr := p.stream.tokenizer.ParseStartingKeyword()
 	if keywordSymbolErr != nil {
 		return nil, keywordSymbolErr
-
 	}
 
 	externalFunction, isExternalFunction := keywordSymbol.(token.ExternalFunctionToken)

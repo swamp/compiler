@@ -261,7 +261,7 @@ func NewUnMatchingFunctionReturnTypesInFunctionValue(fn *ast.FunctionValue, expr
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) Error() string {
-	return fmt.Sprintf("unmatching function return types")
+	return fmt.Sprintf("unmatching function return types %v", e.HasType)
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) FetchPositionLength() token.PositionLength {
@@ -392,16 +392,15 @@ func (e *WrongTypeForRecordConstructorField) FetchPositionLength() token.Positio
 }
 
 type WrongNumberOfFieldsInConstructor struct {
-	call               *ast.ConstructorCall
-	record             *dectype.RecordAtom
-	expectedExpression DecoratedExpression
-	err                error
+	call   *ast.ConstructorCall
+	record *dectype.RecordAtom
 }
 
 func NewWrongNumberOfFieldsInConstructor(record *dectype.RecordAtom, call *ast.ConstructorCall) *WrongNumberOfFieldsInConstructor {
 	return &WrongNumberOfFieldsInConstructor{
 		call:   call,
-		record: record}
+		record: record,
+	}
 }
 
 func (e *WrongNumberOfFieldsInConstructor) Error() string {
@@ -599,7 +598,7 @@ func (e *WrongNumberOfArgumentsInFunctionValue) EncounteredArgumentTypes() []dty
 }
 
 func (e *WrongNumberOfArgumentsInFunctionValue) Error() string {
-	return fmt.Sprintf("wrong number of arguments in functionvalue")
+	return fmt.Sprintf("wrong number of arguments in functionvalue %v", e.encounteredFunction)
 }
 
 func (e *WrongNumberOfArgumentsInFunctionValue) FetchPositionLength() token.PositionLength {

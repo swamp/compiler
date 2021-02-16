@@ -429,7 +429,6 @@ another score =
 [annotation: $another [func-type [type-reference $Int] -> [type-reference $Bool]]]
 [definition: $another = [func ([$score]) -> [let: [[letassign $af = [call $f ['Peter']]]] in [call $af [$score]]]]]
 `)
-
 }
 
 func TestLambda(t *testing.T) {
@@ -686,7 +685,6 @@ func TestConstructorWithOneField(t *testing.T) {
 		`
 { first = 42 }
 `, "[record-literal: [[$first = #42]]]")
-
 }
 
 func TestLookup(t *testing.T) {
@@ -694,7 +692,6 @@ func TestLookup(t *testing.T) {
 		`
 a.b.c + d.e * f.g
 `, "([lookups $a [$b $c]] + ([lookups $d [$e]] * [lookups $f [$g]]))")
-
 }
 
 func TestConstructorWithTwoFields(t *testing.T) {
@@ -702,7 +699,6 @@ func TestConstructorWithTwoFields(t *testing.T) {
 		`
 { first = 42, second = 99 }
 `, "[record-literal: [[$first = #42] [$second = #99]]]")
-
 }
 
 func TestConstructorWithTwoFieldsInDescendingOrder(t *testing.T) {
@@ -717,7 +713,6 @@ func TestConstructorWithSeveralFields(t *testing.T) {
 		`
 { first = 42, second = 99, third = 13 }
 `, "[record-literal: [[$first = #42] [$second = #99] [$third = #13]]]")
-
 }
 
 func TestUnary1(t *testing.T) {
@@ -730,7 +725,6 @@ a x =
 [annotation: $a [func-type [type-reference $Bool] -> [type-reference $Bool]]]
 [definition: $a = [func ([$x]) -> (! $x)]]
 `)
-
 }
 
 func TestUnary2(t *testing.T) {
@@ -743,7 +737,6 @@ someTest a b =
 [annotation: $someTest [func-type [type-reference $Bool] -> [type-reference $Bool] -> [type-reference $Bool]]]
 [definition: $someTest = [func ([$a $b]) -> ((! $a) AND $b)]]
 `)
-
 }
 
 func TestUnary3(t *testing.T) {
@@ -756,7 +749,6 @@ someTest a b =
 [annotation: $someTest [func-type [type-reference $Bool] -> [type-reference $Bool] -> [type-reference $Bool]]]
 [definition: $someTest = [func ([$a $b]) -> ($a AND (! $b))]]
 `)
-
 }
 
 func TestList(t *testing.T) {
@@ -764,7 +756,6 @@ func TestList(t *testing.T) {
 		`
 [ 2, 4, b, 101 ]
 `, "[list-literal: [#2 #4 $b #101]]")
-
 }
 
 func TestModuleReferences(t *testing.T) {
@@ -772,7 +763,6 @@ func TestModuleReferences(t *testing.T) {
 		`
 FirstModule.SecondMod.someFunc 12
 `, "[call FirstModule.SecondMod.$someFunc [#12]]")
-
 }
 
 func TestModuleReferenceWithType(t *testing.T) {
@@ -780,7 +770,6 @@ func TestModuleReferenceWithType(t *testing.T) {
 		`
 a : Bool -> FirstModule.SecondMod.ThisIsAType
 `, "[annotation: $a [func-type [type-reference $Bool] -> [type-reference FirstModule.SecondMod.$ThisIsAType]]]")
-
 }
 
 func TestAsm(t *testing.T) {
@@ -800,7 +789,6 @@ func TestModuleReferenceWithInitializer(t *testing.T) {
 		`
 { x = 2 }
 `, "[record-literal: [[$x = #2]]]")
-
 }
 
 func TestMoreComplexList(t *testing.T) {
@@ -815,7 +803,6 @@ func TestTwoListType(t *testing.T) {
 		`
 someFunc : List Sprite -> List Another
 `, "[annotation: $someFunc [func-type [type-reference $List [[type-reference $Sprite]]] -> [type-reference $List [[type-reference $Another]]]]]")
-
 }
 
 func TestMultipleListType(t *testing.T) {
@@ -823,7 +810,6 @@ func TestMultipleListType(t *testing.T) {
 		`
 someFunc : List Sprite -> List Another -> List Something
 `, "[annotation: $someFunc [func-type [type-reference $List [[type-reference $Sprite]]] -> [type-reference $List [[type-reference $Another]]] -> [type-reference $List [[type-reference $Something]]]]]")
-
 }
 
 func TestListLiteral(t *testing.T) {
@@ -858,7 +844,6 @@ someFunc a b =
     else
         3
 `, "[definition: $someFunc = [func ([$a $b]) -> [let: [[letassign $i = #3] [letassign $j = #4]] in [if: ($i >= #6) then [call $call [($i + $j)]] else #3]]]]")
-
 }
 
 func TestMoreMultipleStatements(t *testing.T) {
@@ -892,7 +877,6 @@ if x == 3 then
 else
     5
 `, "[if: ($x == #3) then [call $callme [(#4 + #4)]] else #5]")
-
 }
 
 func TestSimpleLetOneLine(t *testing.T) {
@@ -903,7 +887,6 @@ let
 in
 2 + x
 `, "[let: [[letassign $x = (#55 + (#41 * #4))]] in (#2 + $x)]")
-
 }
 
 func TestSimpleLetInOnAnotherLine(t *testing.T) {
@@ -914,7 +897,6 @@ let
 in
 2 + x
 `, "[let: [[letassign $x = (#55 + (#41 * #4))]] in (#2 + $x)]")
-
 }
 
 func xTestAnnotationThatIsUnfinished(t *testing.T) {
@@ -922,7 +904,6 @@ func xTestAnnotationThatIsUnfinished(t *testing.T) {
 		`
 checkIfBasicAttack : Character ->
 `, parerr.ExpectedTypeReferenceError{})
-
 }
 
 func TestSimpleLet(t *testing.T) { // --- FIXME
@@ -933,7 +914,6 @@ let
 in
 x + 2
 `, "[let: [[letassign $x = (#55 + #1)]] in ($x + #2)]")
-
 }
 
 func TestLet(t *testing.T) { // --- FIXME
@@ -948,7 +928,6 @@ let
 in
 x + y
 `, "[let: [[letassign $x = [call $callme [(#4 + #4)]]] [letassign $y = #3] [letassign $zarg = (#8 * #99)]] in ($x + $y)]")
-
 }
 
 func TestLetSubSameLine(t *testing.T) { // --- FIXME
@@ -978,7 +957,6 @@ pythagoras ax ay bx by =
 `, `
 [annotation: $pythagoras [func-type [type-reference $Int] -> [type-reference $Int] -> [type-reference $Int] -> [type-reference $Int] -> [type-reference $Int]]]
 [definition: $pythagoras = [func ([$ax $ay $bx $by]) -> [let: [[letassign $x = ($ax - $bx)] [letassign $y = ($ay - $by)]] in [call Math.$sqrt [(($x * $x) + ($y * $y))]]]]]`)
-
 }
 
 func TestGreat(t *testing.T) {
@@ -990,7 +968,6 @@ isGreat? a =
 `, `
 [annotation: $isGreat? [func-type [type-reference $Int] -> [type-reference $Bool]]]
 [definition: $isGreat? = [func ([$a]) -> ($a > #99)]]`)
-
 }
 
 func TestCase(t *testing.T) {
@@ -1054,6 +1031,7 @@ type SomeEnum =
 
 `, "[custom-type-statement [custom-type $SomeEnum [[variant $First [[type-reference $String]]] [variant $Anon] [variant $Second [[type-reference $Int]]]]]]")
 }
+
 func TestExternalFunction(t *testing.T) { // --- FIXME
 	testParse(t,
 		`

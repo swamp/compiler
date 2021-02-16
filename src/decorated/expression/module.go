@@ -120,6 +120,7 @@ func (m *Module) ExposedDefinitions() *ModuleReferenceDefinitions {
 
 func (m *Module) LocalAndImportedDefinitions() *ModuleDefinitionsCombine {
 	importAndLocal := NewModuleDefinitionsCombine(m.Definitions(), m.ImportedDefinitions())
+
 	return importAndLocal
 }
 

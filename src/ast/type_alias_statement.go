@@ -22,6 +22,7 @@ func NewAliasStatement(name *TypeIdentifier, referencedType Type) *AliasStatemen
 	}
 	return &AliasStatement{referencedType: referencedType, name: name}
 }
+
 func (i *AliasStatement) String() string {
 	return fmt.Sprintf("[alias %v %v]", i.name, i.referencedType)
 }

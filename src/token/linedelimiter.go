@@ -5,8 +5,6 @@
 
 package token
 
-import "fmt"
-
 // LineDelimiterToken :
 type LineDelimiterToken struct {
 	PositionLength
@@ -17,7 +15,7 @@ func NewLineDelimiter(position PositionLength) LineDelimiterToken {
 }
 
 func (s LineDelimiterToken) String() string {
-	return fmt.Sprintf("LF")
+	return "LF"
 }
 
 func (s LineDelimiterToken) Type() Type {

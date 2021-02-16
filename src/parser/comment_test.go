@@ -58,7 +58,7 @@ type alias Struct =
 `)
 }
 
-func xTestAllowCommentsEndOfFile(t *testing.T) {
+func TestAllowCommentsEndOfFile(t *testing.T) {
 	testParse(t,
 		`
 type alias Struct =

@@ -20,8 +20,7 @@ import (
 	"github.com/swamp/compiler/src/settings"
 )
 
-type LibraryReaderAndDecorator struct {
-}
+type LibraryReaderAndDecorator struct{}
 
 func NewLibraryReaderAndDecorator() *LibraryReaderAndDecorator {
 	return &LibraryReaderAndDecorator{}
@@ -93,8 +92,8 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *World, repository d
 	moduleReader := NewModuleReaderAndDecorator(fileLoader, worldDecorator)
 	newRepository := NewModuleRepository(world, namespacePrefix, moduleReader)
 
-	//green := color.New(color.FgHiGreen)
-	//green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
+	// green := color.New(color.FgHiGreen)
+	// green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
 
 	return newRepository.FetchMainModuleInPackage(verboseFlag)
 }

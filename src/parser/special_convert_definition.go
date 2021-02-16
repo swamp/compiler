@@ -40,9 +40,6 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier) (ast.Expressi
 		return nil, exprErr
 	}
 
-	if len(parameters) == 1 {
-		parameters = parameters
-	}
 	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, expr)
 
 	return ast.NewDefinitionAssignment(ident, newFunction), nil

@@ -42,5 +42,5 @@ func (i *GuardExpression) String() string {
 }
 
 func (i *GuardExpression) DebugString() string {
-	return fmt.Sprintf("[guard]")
+	return "[guard]"
 }

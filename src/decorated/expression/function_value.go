@@ -67,9 +67,11 @@ func (f *FunctionValue) String() string {
 func (f *FunctionValue) DecoratedName() string {
 	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
 }
+
 func (f *FunctionValue) HumanReadable() string {
 	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
 }
+
 func (f *FunctionValue) ShortName() string {
 	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
 }

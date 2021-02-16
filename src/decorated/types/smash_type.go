@@ -146,7 +146,6 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 		}
 		if convertedType == nil {
 			panic("converted was nil")
-			return nil, fmt.Errorf("returned nil")
 		}
 
 		converted = append(converted, convertedType)
@@ -245,8 +244,6 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 
 func SmashFunctions(original *FunctionAtom, otherFunc *FunctionAtom) (*FunctionAtom, error) {
 	context := NewTypeParameterContextOther()
-
-	fmt.Sprintf("smash %v and %v\n", original, otherFunc)
 
 	result, resultErr := fillContextFromFunctions(context, original, otherFunc)
 	if resultErr != nil {

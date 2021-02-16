@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
@@ -18,14 +19,20 @@ type NamedDecoratedExpression struct {
 	mDef               *ModuleDefinition
 }
 
-func NewNamedDecoratedExpression(fullyQualifiedName string, mDef *ModuleDefinition, expression DecoratedExpression) *NamedDecoratedExpression {
+func NewNamedDecoratedExpression(fullyQualifiedName string, mDef *ModuleDefinition,
+	expression DecoratedExpression) *NamedDecoratedExpression {
 	if fullyQualifiedName == "" {
 		panic("must have qualified name")
 	}
+
 	if expression == nil {
 		panic("must have a valid expression")
 	}
-	return &NamedDecoratedExpression{fullyQualifiedName: fullyQualifiedName, mDef: mDef, expression: expression, wasReferenced: false}
+
+	return &NamedDecoratedExpression{
+		fullyQualifiedName: fullyQualifiedName, mDef: mDef,
+		expression: expression, wasReferenced: false,
+	}
 }
 
 func (n *NamedDecoratedExpression) FullyQualifiedName() string {

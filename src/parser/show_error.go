@@ -95,7 +95,7 @@ func showWrongNumberOfArgumentsInFunctionValue(e *decorated.WrongNumberOfArgumen
 	indentation--
 	userInstruction("but expected:", indentation, colorer)
 	colorFunctionParametersWithAlias(e.ExpectedFunctionType().FunctionParameterTypes(), indentation+1, false, colorer)
-	//ColorTypesWithAtom(e.ExpectedFunctionType().FunctionParameterTypes(), indentation, true, colorer)
+	// ColorTypesWithAtom(e.ExpectedFunctionType().FunctionParameterTypes(), indentation, true, colorer)
 }
 
 func showAllItemsInListMustHaveSameType(e *decorated.EveryItemInThelistMustHaveTheSameType, indentation int, colorer coloring.Colorer) {

@@ -59,7 +59,7 @@ func testParse(t *testing.T, code string, ast string) {
 	}
 	ast = strings.TrimSpace(ast)
 	generatedAst := strings.TrimSpace(program.String())
-	//fmt.Printf("ast:%v\n", generatedAst)
+	// fmt.Printf("ast:%v\n", generatedAst)
 	if ast != generatedAst {
 		t.Errorf("wrong ast generated:\n\n%v\nexpected\n\n%v\n", generatedAst, ast)
 	}

@@ -43,8 +43,12 @@ type CaseConsequenceCustomType struct {
 	internalIndex int
 }
 
-func NewCaseConsequenceCustomType(internalIndex int, variantName *ast.TypeIdentifier, parameters []*CaseConsequenceParameter, expression DecoratedExpression) *CaseConsequenceCustomType {
-	return &CaseConsequenceCustomType{internalIndex: internalIndex, variantName: variantName, parameters: parameters, expression: expression}
+func NewCaseConsequenceCustomType(internalIndex int, variantName *ast.TypeIdentifier, parameters []*CaseConsequenceParameter,
+	expression DecoratedExpression) *CaseConsequenceCustomType {
+	return &CaseConsequenceCustomType{
+		internalIndex: internalIndex, variantName: variantName, parameters: parameters,
+		expression: expression,
+	}
 }
 
 func (c *CaseConsequenceCustomType) Expression() DecoratedExpression {
@@ -99,7 +103,8 @@ func (i *CaseCustomType) Type() dtype.Type {
 
 func (i *CaseCustomType) String() string {
 	if i.defaultCase != nil {
-		return fmt.Sprintf("[dcase: %v of %v default: %v]", i.test, caseConsequenceArrayToStringEx(i.cases, ";"), i.defaultCase)
+		return fmt.Sprintf("[dcase: %v of %v default: %v]", i.test,
+			caseConsequenceArrayToStringEx(i.cases, ";"), i.defaultCase)
 	}
 	return fmt.Sprintf("[dcase: %v of %v]", i.test, caseConsequenceArrayToStringEx(i.cases, ";"))
 }
@@ -117,7 +122,7 @@ func (i *CaseCustomType) DefaultCase() DecoratedExpression {
 }
 
 func (i *CaseCustomType) DebugString() string {
-	return fmt.Sprintf("[dcase]")
+	return "[dcase]"
 }
 
 func (i *CaseCustomType) FetchPositionAndLength() token.PositionLength {

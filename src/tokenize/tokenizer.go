@@ -66,10 +66,12 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 
 // NewTokenizer :
 func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
-	t := &Tokenizer{r: r,
+	t := &Tokenizer{
+		r:                     r,
 		position:              token.NewPositionToken(token.NewPositionTopLeft(), 0),
 		lastTokenWasDelimiter: true,
-		enforceStyleGuide:     exactWhitespace}
+		enforceStyleGuide:     exactWhitespace,
+	}
 	verifyErr := verifyOctets(r.Octets(), r.RelativeFilename())
 	if verifyErr != nil {
 		return t, verifyErr
@@ -229,8 +231,6 @@ func LegalContinuationSpace(report token.IndentationReport, enforceStyle bool) b
 		}
 		return false
 	}
-
-	return false
 }
 
 func LegalSameIndentationOrNoSpace(report token.IndentationReport, indentation int, enforceStyle bool) bool {
@@ -403,7 +403,8 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 				spacesUntilMaybeNewline = -1
 			}
 
-			newReport := token.IndentationReport{IndentationSpaces: detectedIndentationSpaces,
+			newReport := token.IndentationReport{
+				IndentationSpaces:         detectedIndentationSpaces,
 				CloseIndentation:          closeIndentation,
 				ExactIndentation:          exactIndentation,
 				Comments:                  token.MakeCommentBlock(comments),
@@ -415,7 +416,8 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 				PreviousCloseIndentation:  t.lastReport.CloseIndentation,
 				PreviousExactIndentation:  t.lastReport.ExactIndentation,
 				PreviousIndentationSpaces: t.lastReport.IndentationSpaces,
-				EndOfFile:                 endOfFile}
+				EndOfFile:                 endOfFile,
+			}
 
 			t.lastReport = newReport
 			return newReport, nil

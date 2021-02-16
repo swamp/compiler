@@ -257,7 +257,7 @@ main : Bool -> String
 main ignore =
     some ( Aron { solder = False } { something = "return it" } )
 `, `
-    string: 'return it' refcount:4 
+    string: 'return it' refcount:4
   `)
 }
 
@@ -607,21 +607,6 @@ struct: field_count: 2 refcount:2
   `)
 }
 
-func xTestSimpleListFoldl(t *testing.T) {
-	executeTest(t,
-		`
-add : Int -> Int -> Int
-add a b =
-    a + b
-
-
-main : Bool -> Int
-main ignore =
-    List.foldl add 20 [ 10, 5, 3 ]
-`, `
-  `)
-}
-
 func TestArrayFromList(t *testing.T) {
 	executeTest(t,
 		`
@@ -650,7 +635,7 @@ main ignore =
     case mightBeSprite of
         Just sprite -> sprite
 
-        Nothing -> { dummy = -1, scale = { scaleX = -1, scaleY = -1 } } 
+        Nothing -> { dummy = -1, scale = { scaleX = -1, scaleY = -1 } }
 `, `
 struct: field_count: 2 refcount:4
 ..int: 0 refcount:4

@@ -45,9 +45,9 @@ func isStartString(ch rune) bool {
 	return ch == '\'' || ch == '"'
 }
 
-func isOperator(ch rune) bool {
-	return strings.Contains(":|<=>!-+*/.&^~", string(ch))
-}
+//func isOperator(ch rune) bool {
+//return strings.Contains(":|<=>!-+*/.&^~", string(ch))
+//}
 
 func isUnaryOperator(ch rune) bool {
 	return strings.Contains(":!-+^~", string(ch)) // HACK ':' should not be in here

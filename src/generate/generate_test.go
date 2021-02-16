@@ -286,7 +286,7 @@ type alias Cool =
 a : Bool -> List Int
 a x =
     []
-`, ` 
+`, `
 func [function a func(Bool -> List<Int>) 1 []]
 00: crl 0 []
 03: ret
@@ -852,27 +852,13 @@ func [function f func(String -> Int -> Bool) 2 [[constant1 Peter #5] [constant2 
 `)
 }
 
-func xTestLambda(t *testing.T) {
-	testGenerate(t,
-		`
-isBeautiful : (String -> Bool) -> Bool
-isBeautiful f =
-    f "John"
-
-
-main : Bool -> Bool
-main a =
-    isBeautiful (\name -> name == "John")
-`, "")
-}
-
 func TestAppend(t *testing.T) {
 	testGenerate(t,
 		`
 a : Int -> List Int
 a x =
     [ 1, 3, 4 ] ++ [ 5, 6, 7, 8 ] ++ [ 9 ]
-`, ` 
+`, `
 func [function a func(Int -> List<Int>) 1 [[constant1 int:1 #5] [constant2 int:3 #6] [constant3 int:4 #7] [constant4 int:5 #8] [constant5 int:6 #9] [constant6 int:7 #10] [constant7 int:8 #11] [constant8 int:9 #12]]]
 00: crl 3 [5 6 7]
 06: crl 4 [8 9 10 11]
@@ -894,7 +880,7 @@ ownAppender lista listb =
 main : Bool -> List Int
 main a =
     ownAppender [ 1, 2 ] [ 3, 4 ]
-`, ` 
+`, `
 func [function main func(Bool -> List<Int>) 1 [[constant1 int:1 #4] [constant2 int:2 #5] [constant3 int:3 #6] [constant4 int:4 #7] [constant5 func:ownAppender #8]]]
 00: crl 2 [4 5]
 05: crl 3 [6 7]
@@ -1633,7 +1619,7 @@ func [function checkMaybeGamepad func(Maybe<Gamepad> -> Maybe<Gamepad> -> Player
 func [function main func(UserInput -> UserInput -> ScreenInfo -> PlayerInputs) 3 []]
 00: crl 4 []
 03: crs 0 [4]
-07: ret  
+07: ret
 `)
 }
 
@@ -1670,7 +1656,7 @@ func [function checkMaybe func(Maybe<Int> -> Maybe<Int> -> Int) 2 [[constant1 in
 
 func [function main func(Int -> Int) 1 [[constant1 int:2 #2]]]
 00: lr 0,2
-03: ret    
+03: ret
     `)
 }
 
@@ -1725,6 +1711,6 @@ func [function main func(UserInput -> PlayerInputs) 1 [[constant1 int:0 #6] [con
 0b: call 4 8 ([3])
 10: crl 5 [4]
 14: crs 0 [5]
-18: ret   
+18: ret
     `)
 }

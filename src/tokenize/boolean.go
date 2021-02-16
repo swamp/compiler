@@ -12,7 +12,6 @@ import (
 )
 
 func DetectUppercaseBoolean(t token.TypeSymbolToken) (token.BooleanToken, error) {
-
 	switch t.Name() {
 	case "True":
 		return token.NewBooleanToken(t.Raw(), true, t.FetchPositionLength()), nil

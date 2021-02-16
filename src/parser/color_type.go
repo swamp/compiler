@@ -160,7 +160,6 @@ func ColorType(dType dtype.Type, indentation int, inside bool, colorer coloring.
 			}
 		}
 	}
-
 }
 
 func ColorTypeWithAtom(dType dtype.Type, indentation int, inside bool, colorer coloring.Colorer) {
