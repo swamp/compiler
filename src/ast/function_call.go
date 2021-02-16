@@ -20,7 +20,7 @@ type FunctionCaller interface {
 }
 
 type FunctionCall struct {
-	arguments     []Expression
+	arguments          []Expression
 	functionExpression Expression
 }
 

@@ -10,8 +10,6 @@ type Type interface {
 	String() string
 }
 
-
-
 func NewCustomType(customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter) *CustomType {
 	c := &CustomType{name: customTypeName, variants: variants, typeParameters: typeParameterIdentifiers}
 	for _, variant := range variants {
@@ -27,4 +25,3 @@ func NewLocalType(typeArgument *TypeParameter) *LocalType {
 func NewTypeReference(ident *TypeIdentifier, arguments []Type) *TypeReference {
 	return &TypeReference{ident: ident, arguments: arguments}
 }
-

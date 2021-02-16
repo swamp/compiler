@@ -12,9 +12,9 @@ import (
 )
 
 type RecordField struct {
-	symbol   *VariableIdentifier
-	userType Type
-	index    int
+	symbol            *VariableIdentifier
+	userType          Type
+	index             int
 	precedingComments token.CommentBlock
 }
 

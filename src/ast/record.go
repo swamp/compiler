@@ -9,7 +9,7 @@ import "fmt"
 
 type Record struct {
 	typeParameters []*TypeParameter
-	fields []*RecordField
+	fields         []*RecordField
 }
 
 func NewRecordType(fields []*RecordField, typeParameters []*TypeParameter) *Record {

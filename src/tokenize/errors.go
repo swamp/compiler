@@ -236,7 +236,6 @@ func (e TrailingSpaceError) Error() string {
 	return fmt.Sprintf("illegal trailing space error %v", e.StandardTokenError)
 }
 
-
 type CommentNotAllowedHereError struct {
 	StandardTokenError
 	subError error

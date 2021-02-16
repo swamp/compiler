@@ -47,10 +47,10 @@ func (a *RecordLiteralAssignment) Expression() DecoratedExpression {
 }
 
 type RecordLiteral struct {
-	t                 *dectype.RecordAtom
-	sortedAssignments []*RecordLiteralAssignment
+	t                       *dectype.RecordAtom
+	sortedAssignments       []*RecordLiteralAssignment
 	parseOrderedAssignments []*RecordLiteralAssignment
-	recordTemplate    DecoratedExpression
+	recordTemplate          DecoratedExpression
 }
 
 func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate DecoratedExpression,
@@ -69,7 +69,7 @@ func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate DecoratedExpression,
 	}
 	return &RecordLiteral{t: t, recordTemplate: recordTemplate,
 		parseOrderedAssignments: parseOrderedAssignments,
-		sortedAssignments: sortedAssignments}
+		sortedAssignments:       sortedAssignments}
 }
 
 func (c *RecordLiteral) Type() dtype.Type {

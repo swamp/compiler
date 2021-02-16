@@ -127,7 +127,7 @@ func (u *FunctionAtom) ShortName() string {
 }
 
 type FunctionAtomMismatch struct {
-	Expected dtype.Atom
+	Expected    dtype.Atom
 	Encountered dtype.Atom
 }
 

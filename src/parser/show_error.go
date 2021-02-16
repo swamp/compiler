@@ -113,7 +113,6 @@ func showOneSpaceAfterRecordTypeColon(e *parerr.OneSpaceAfterRecordTypeColon, in
 	userInstruction("you must have a space after the ':' in a record type field:", indentation, colorer)
 }
 
-
 func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parerr.ParseError,
 	verbose bool, errorAsWarning bool) tokenize.TokenError {
 	if parserError == nil {
@@ -159,8 +158,6 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 
 	indentation := 1
 	colorer.NewLine(indentation)
-
-
 
 	switch e := parserError.(type) {
 	case *decorated.UnMatchingFunctionReturnTypesInFunctionValue:

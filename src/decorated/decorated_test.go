@@ -28,7 +28,7 @@ first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a 
 }
 
 func TestConstant(t *testing.T) {
-	testDecorateWithoutDefault(t,`
+	testDecorateWithoutDefault(t, `
 fn : String
 fn =
     "Hello"
@@ -47,9 +47,8 @@ fn = [functionvalue ([]) -> [str Hello]]
 `)
 }
 
-
 func TestBooleanLookup(t *testing.T) {
-	testDecorateWithoutDefault(t,`
+	testDecorateWithoutDefault(t, `
 another : Bool
 another =
     let
@@ -64,7 +63,6 @@ func(Bool) : [func  [primitive Bool]]
 another = [functionvalue ([]) -> [let [[letassign $a = [bool true]] [letassign $b = [bool false]]] in [logical [getvar $a [primitive Bool]] [getvar $b [primitive Bool]] 0]]]
 `)
 }
-
 
 func TestResourceName(t *testing.T) {
 	testDecorateWithoutDefault(t,
@@ -102,7 +100,6 @@ func(Fixed -> Fixed) : [func  [primitive Fixed] [primitive Fixed]]
 first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> (arithmetic [getvar $a [primitive Fixed]] FMULTIPLY [getvar $a [primitive Fixed]])]		
 `)
 }
-
 
 func TestChar(t *testing.T) {
 	testDecorateWithoutDefault(t,
@@ -378,7 +375,6 @@ func(String -> Bool) : [func  [primitive String] [primitive Bool]]
 someFunc = [functionvalue ([[arg $name = [primitive String]]]) -> (boolop [getvar $name [primitive String]] EQ [str Something])]
 `)
 }
-
 
 func TestUnknownAnnotationType(t *testing.T) {
 	testDecorateFail(t, `
@@ -1260,7 +1256,6 @@ func(Child -> String) : [func  [custom-type  [variant $Aron] [variant $Alexandra
 some = [functionvalue ([[arg $child = [custom-type [[variant $Aron [[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]] [variant $Alexandra []] [variant $Alma [[alias Studying record-type [[record-type-field subject [primitive String] (0)]]]]]] [variant $Isabelle [[alias Work record-type [[record-type-field web [primitive Int] (0)]]]]]]]]]]) -> [dcase: [getvar $child [custom-type [[variant $Aron [[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]] [variant $Alexandra []] [variant $Alma [[alias Studying record-type [[record-type-field subject [primitive String] (0)]]]]]] [variant $Isabelle [[alias Work record-type [[record-type-field web [primitive Int] (0)]]]]]]]]] of [dcasecons $Aron ([[dcaseparm $x type:[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]]) => [str Aron]];[dcasecons $Alexandra ([]) => [str Alexandris]] default: [str ]]]`)
 }
 
-
 func TestCaseStringAndDefault(t *testing.T) {
 	testDecorate(t, // -- just a comment
 		`
@@ -1276,7 +1271,6 @@ func(String -> Int) : [func  [primitive String] [primitive Int]]
 some = [functionvalue ([[arg $a = [primitive String]]]) -> [dpmcase: [getvar $a [primitive String]] of [dpmcasecons [str hello] => [integer 0]] default: [integer -1]]]
 `)
 }
-
 
 func TestGenerics(t *testing.T) {
 	testDecorate(t,

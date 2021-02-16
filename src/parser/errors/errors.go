@@ -318,7 +318,6 @@ func (e ExpectedBlockSpacing) Error() string {
 	return fmt.Sprintf("expected a block spacing %v", e.SubError)
 }
 
-
 type ExpectedContinuationLineOrOneSpace struct {
 	posLength token.PositionLength
 }
@@ -371,7 +370,6 @@ func (e RightPartOfPipeMustBeFunctionCallError) Error() string {
 	return fmt.Sprintf("right part must be a function call %v", e.Token)
 }
 
-
 type ExpectedElseKeyword struct {
 	SubError
 }
@@ -411,7 +409,6 @@ func NewUnknownStatement(t token.Token) UnknownStatement {
 func (e UnknownStatement) Error() string {
 	return fmt.Sprintf("unknown statement %v %T", e.Token, e.Token)
 }
-
 
 type UnknownPrefixInExpression struct {
 	token.Token
@@ -453,7 +450,6 @@ func (e ExpectedOneSpaceOrExtraIndent) Error() string {
 	return fmt.Sprintf("expected either a single space or a new indented block %v", e.SubError)
 }
 
-
 type ExpectedOneSpaceAfterComma struct {
 	SubError
 }
@@ -465,8 +461,6 @@ func NewExpectedOneSpaceAfterComma(subError tokenize.TokenError) ExpectedOneSpac
 func (e ExpectedOneSpaceAfterComma) Error() string {
 	return fmt.Sprintf("expected a single space after ',' (%v)", e.SubError)
 }
-
-
 
 type ExpectedOneSpaceAfterBinaryOperator struct {
 	SubError
@@ -480,9 +474,6 @@ func (e ExpectedOneSpaceAfterBinaryOperator) Error() string {
 	return fmt.Sprintf("expected a single space after binary operator (%v)", e.SubError)
 }
 
-
-
-
 type ExpectedOneSpaceAfterVariableAndBeforeAssign struct {
 	SubError
 }
@@ -494,8 +485,6 @@ func NewExpectedOneSpaceAfterVariableAndBeforeAssign(subError tokenize.TokenErro
 func (e ExpectedOneSpaceAfterVariableAndBeforeAssign) Error() string {
 	return fmt.Sprintf("expected a single space after variable and before '=' (%v)", e.SubError)
 }
-
-
 
 type ExpectedOneSpaceAfterAssign struct {
 	SubError
@@ -509,9 +498,6 @@ func (e ExpectedOneSpaceAfterAssign) Error() string {
 	return fmt.Sprintf("expected a single space after = (%v)", e.SubError)
 }
 
-
-
-
 type ExpectedOneSpaceOrExtraIndentCommaSeparator struct {
 	SubError
 }
@@ -523,10 +509,6 @@ func NewExpectedOneSpaceOrExtraIndentCommaSeparator(subError tokenize.TokenError
 func (e ExpectedOneSpaceOrExtraIndentCommaSeparator) Error() string {
 	return fmt.Sprintf("expected ',' and space or space and termination (%v)", e.SubError)
 }
-
-
-
-
 
 type ExpectedOneSpaceOrExtraIndentArgument struct {
 	SubError
@@ -540,12 +522,6 @@ func (e ExpectedOneSpaceOrExtraIndentArgument) Error() string {
 	return fmt.Sprintf("expected either a single space or a new indented block and a call argument %v", e.SubError)
 }
 
-
-
-
-
-
-
 type LetInConsequenceOnSameColumn struct {
 	SubError
 }
@@ -557,7 +533,6 @@ func NewLetInConsequenceOnSameColumn(subError tokenize.TokenError) LetInConseque
 func (e LetInConsequenceOnSameColumn) Error() string {
 	return fmt.Sprintf("the in consequence should be aligned on the same column as 'let' %v", e.SubError)
 }
-
 
 type OneSpaceAfterRecordTypeColon struct {
 	SubError
@@ -583,7 +558,6 @@ func (e ParseAliasError) Error() string {
 	return fmt.Sprintf("problem parsing alias %v", e.SubParserError)
 }
 
-
 type ExpectedDefaultLastError struct {
 	expression ast.Expression
 }
@@ -599,7 +573,6 @@ func (e ExpectedDefaultLastError) Error() string {
 func (e ExpectedDefaultLastError) FetchPositionLength() token.PositionLength {
 	return e.expression.PositionLength()
 }
-
 
 type MustHaveDefaultInConditionsError struct {
 	expression ast.Expression

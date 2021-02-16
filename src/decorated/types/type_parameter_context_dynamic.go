@@ -31,9 +31,11 @@ func (t *TypeParameterContextDynamic) DebugString() string {
 	s := ""
 	for index, name := range t.ArgumentNames() {
 		argumentType := t.ArgumentTypes()[index]
+
 		if index > 0 {
 			s += ", "
 		}
+
 		s += fmt.Sprintf("%v = %v", name, argumentType)
 	}
 	return s
@@ -45,9 +47,11 @@ func (t *TypeParameterContextDynamic) DecoratedName() string {
 		if index > 0 {
 			s += ","
 		}
+
 		if arg == nil {
 			panic("illegal state in " + t.String())
 		}
+
 		s += arg.DecoratedName()
 	}
 	return s

@@ -41,4 +41,3 @@ func (i *TypeReference) Name() string {
 	}
 	return fmt.Sprintf("%v<%v>", i.ident.Name(), s)
 }
-

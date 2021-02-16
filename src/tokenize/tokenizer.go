@@ -257,7 +257,7 @@ func LegalSameIndentationOrOptionalOneSpace(report token.IndentationReport, inde
 	}
 
 	if enforceStyle {
-		if report.NewLineCount == 1 && (report.ExactIndentation == indentation || report.ExactIndentation == indentation + 1) {
+		if report.NewLineCount == 1 && (report.ExactIndentation == indentation || report.ExactIndentation == indentation+1) {
 			return true
 		}
 	} else {
@@ -331,7 +331,6 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 	hasTrailingSpaces := false
 	closeIndentation := t.lastReport.CloseIndentation
 	exactIndentation := t.lastReport.ExactIndentation
-
 
 	for {
 		ch := t.nextRune()
@@ -522,7 +521,7 @@ func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.Cha
 		return token.CharacterToken{}, fmt.Errorf("expected ' after character")
 	}
 	posLen := t.MakePositionLength(startPosition)
-	return token.NewCharacterToken("'" + string(ch) + "'", ch, posLen), nil
+	return token.NewCharacterToken("'"+string(ch)+"'", ch, posLen), nil
 }
 
 func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, error) {
@@ -578,10 +577,9 @@ func (t *Tokenizer) isTriple(ch rune, startStringRune rune) (bool, error) {
 	return false, nil
 }
 
-
 func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, error) {
 	var a string
-	raw := string(startStringRune+startStringRune+startStringRune)
+	raw := string(startStringRune + startStringRune + startStringRune)
 	for {
 		ch := t.nextRune()
 		raw += string(ch)
@@ -754,7 +752,7 @@ func (t *Tokenizer) readTermToken() (token.Token, error) {
 		next := t.nextRune()
 		t.unreadRune()
 		if next == ' ' {
-			return token.NewGuardToken(singleCharLength, string(r)," guard "), nil
+			return token.NewGuardToken(singleCharLength, string(r), " guard "), nil
 		}
 		return nil, fmt.Errorf("started as guard | but is something else")
 	} else if r == '(' {

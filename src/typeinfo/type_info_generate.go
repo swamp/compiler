@@ -72,6 +72,5 @@ func Generate(world *loader.World) (*Chunk, error) {
 		}
 	}
 
-
 	return chunk, nil
 }

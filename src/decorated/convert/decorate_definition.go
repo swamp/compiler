@@ -27,8 +27,6 @@ func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *a
 		return nil, decorated.NewInternalError(err)
 	}
 
-
-
 	var decoratedExpression decorated.DecoratedExpression
 
 	switch e := expr.(type) {

@@ -34,10 +34,12 @@ func (g *GetVariableOrReferenceFunction) NamedExpression() *NamedDecoratedExpres
 	return g.referencedExpression
 }
 
-func NewGetVariable(ident *ast.VariableIdentifier, referencedExpression *NamedDecoratedExpression) *GetVariableOrReferenceFunction {
+func NewGetVariable(ident *ast.VariableIdentifier,
+	referencedExpression *NamedDecoratedExpression) *GetVariableOrReferenceFunction {
 	if referencedExpression == nil {
 		panic("cant be nil")
 	}
+
 	return &GetVariableOrReferenceFunction{ident: ident, referencedExpression: referencedExpression}
 }
 

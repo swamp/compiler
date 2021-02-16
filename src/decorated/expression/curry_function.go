@@ -12,12 +12,12 @@ import (
 )
 
 type CurryFunction struct {
-	functionType DecoratedExpression
+	functionType    DecoratedExpression
 	argumentsToSave []DecoratedExpression
 }
 
 func NewCurryFunction(functionType DecoratedExpression, argumentsToSave []DecoratedExpression) *CurryFunction {
-	return &CurryFunction{functionType: functionType,  argumentsToSave: argumentsToSave}
+	return &CurryFunction{functionType: functionType, argumentsToSave: argumentsToSave}
 }
 
 func (c *CurryFunction) ArgumentsToSave() []DecoratedExpression {

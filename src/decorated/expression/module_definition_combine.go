@@ -14,7 +14,8 @@ type ModuleDefinitionsCombine struct {
 	importDefinitions   *ModuleReferenceDefinitions
 }
 
-func NewModuleDefinitionsCombine(internalDefinitions *ModuleDefinitions, importDefinitions *ModuleReferenceDefinitions) *ModuleDefinitionsCombine {
+func NewModuleDefinitionsCombine(internalDefinitions *ModuleDefinitions,
+	importDefinitions *ModuleReferenceDefinitions) *ModuleDefinitionsCombine {
 	return &ModuleDefinitionsCombine{internalDefinitions: internalDefinitions, importDefinitions: importDefinitions}
 }
 
@@ -23,5 +24,6 @@ func (d *ModuleDefinitionsCombine) FindDefinitionExpression(identifier *ast.Vari
 	if foundDef == nil {
 		return d.importDefinitions.FindDefinition(identifier)
 	}
+
 	return foundDef
 }

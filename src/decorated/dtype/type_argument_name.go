@@ -30,4 +30,3 @@ func (t *TypeArgumentName) Name() string {
 func (t *TypeArgumentName) VariableIdentifier() *ast.VariableIdentifier {
 	return t.name
 }
-

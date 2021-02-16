@@ -54,7 +54,6 @@ func (u *Any) Generate(params []dtype.Type) (dtype.Type, error) {
 	return nil, fmt.Errorf("Any can not be applied")
 }
 
-
 func (u *Any) Resolve() (dtype.Atom, error) {
 	return u, nil
 }

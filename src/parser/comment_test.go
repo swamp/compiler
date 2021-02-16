@@ -11,8 +11,6 @@ import (
 	parerr "github.com/swamp/compiler/src/parser/errors"
 )
 
-
-
 func TestCommentBeforeAnnotation(t *testing.T) {
 	testParse(t,
 		`
@@ -60,8 +58,6 @@ type alias Struct =
 `)
 }
 
-
-
 func xTestAllowCommentsEndOfFile(t *testing.T) {
 	testParse(t,
 		`
@@ -78,5 +74,3 @@ so cool
 [alias $Struct [record-type [[field: $a [type-reference $Int]] [field: $b [type-reference $Boolean]]]]]
 `)
 }
-
-

@@ -10,12 +10,11 @@ import (
 	"github.com/swamp/compiler/src/loader"
 )
 
-
 type PackageLoader struct {
 	repository *loader.ModuleRepository
 }
 
-func NewPackageLoader(filePathPrefix string, moduleNamespace dectype.PackageRootModuleName, world *loader.World, worldDecorator* loader.WorldDecorator) *PackageLoader {
+func NewPackageLoader(filePathPrefix string, moduleNamespace dectype.PackageRootModuleName, world *loader.World, worldDecorator *loader.WorldDecorator) *PackageLoader {
 	fileLoader := loader.NewLoader(filePathPrefix)
 	loaderAndDecorator := loader.NewModuleReaderAndDecorator(fileLoader, worldDecorator)
 	moduleRepo := loader.NewModuleRepository(world, moduleNamespace, loaderAndDecorator)

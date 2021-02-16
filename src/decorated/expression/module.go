@@ -21,6 +21,7 @@ func NewFullyQualifiedVariableName(module *Module, identifier *ast.VariableIdent
 	if module == nil {
 		panic(fmt.Sprintf("must have module in %v", identifier))
 	}
+
 	return &FullyQualifiedVariableName{module: module, identifier: identifier}
 }
 
@@ -56,17 +57,22 @@ type Module struct {
 
 func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName) *Module {
 	importedTypes := dectype.NewExposedTypes()
-	m := &Module{fullyQualifiedModuleName: fullyQualifiedModuleName, exposedTypes: dectype.NewExposedTypes(), importedTypes: importedTypes}
+	m := &Module{
+		fullyQualifiedModuleName: fullyQualifiedModuleName, exposedTypes: dectype.NewExposedTypes(),
+		importedTypes: importedTypes,
+	}
 	m.typeRepo = dectype.NewTypeRepo(fullyQualifiedModuleName, importedTypes)
 	m.definitions = NewModuleDefinitions(m)
 	m.importedDefinitions = NewModuleReferenceDefinitions(m)
 	m.exposedDefinitions = NewModuleReferenceDefinitions(m)
 	m.declarations = NewModuleDeclarations(m)
+
 	return m
 }
 
 func (m *Module) AddExternalFunction(name string, parameterCount uint) {
-	m.externalFunctions = append(m.externalFunctions, &ExternalFunction{FunctionName: name, ParameterCount: parameterCount})
+	m.externalFunctions = append(m.externalFunctions,
+		&ExternalFunction{FunctionName: name, ParameterCount: parameterCount})
 }
 
 func (m *Module) ExternalFunctions() []*ExternalFunction {
@@ -148,5 +154,6 @@ func (m *Module) DebugString() string {
 	s += "\n"
 	s += m.definitions.DebugString()
 	s += "\n-----------------------\n"
+
 	return s
 }

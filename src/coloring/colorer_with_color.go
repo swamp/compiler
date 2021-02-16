@@ -67,11 +67,11 @@ func (c *ColorerWithColor) StringLiteral(t token.StringToken) {
 	c.builder.WriteString("\"" + ColorKeywordString(t.Text()) + "\"")
 }
 
-func (c *ColorerWithColor) KeywordString(t string)  {
+func (c *ColorerWithColor) KeywordString(t string) {
 	c.builder.WriteString(ColorKeywordString(t))
 }
 
-func (c *ColorerWithColor) NewLine(indentation int)  {
+func (c *ColorerWithColor) NewLine(indentation int) {
 	c.builder.WriteString(writeNewline(indentation))
 }
 
@@ -79,27 +79,27 @@ func (c *ColorerWithColor) RecordField(t token.VariableSymbolToken) {
 	c.builder.WriteString(ColorRecordField(t))
 }
 
-func (c *ColorerWithColor) OneSpace()  {
+func (c *ColorerWithColor) OneSpace() {
 	c.builder.WriteString(" ")
 }
 
-func (c *ColorerWithColor) RightArrow()  {
+func (c *ColorerWithColor) RightArrow() {
 	c.KeywordString("➞")
 }
 
-func (c *ColorerWithColor) LeftPipe()  {
+func (c *ColorerWithColor) LeftPipe() {
 	c.KeywordString("ᐊ")
 }
 
-func (c *ColorerWithColor) RightPipe()  {
+func (c *ColorerWithColor) RightPipe() {
 	c.KeywordString("ᐅ")
 }
 
-func (c *ColorerWithColor) OperatorString(operator string)  {
+func (c *ColorerWithColor) OperatorString(operator string) {
 	c.builder.WriteString(ColorOperatorString(operator))
 }
 
-func (c *ColorerWithColor) LocalType(operator token.VariableSymbolToken)  {
+func (c *ColorerWithColor) LocalType(operator token.VariableSymbolToken) {
 	c.builder.WriteString(ColorLocalType(operator))
 }
 

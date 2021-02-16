@@ -122,8 +122,8 @@ func (e *UnknownBinaryOperator) FetchPositionLength() token.PositionLength {
 }
 
 type LogicalOperatorLeftMustBeBoolean struct {
-	typeA    DecoratedExpression
-	operator *LogicalOperator
+	typeA       DecoratedExpression
+	operator    *LogicalOperator
 	booleanType dtype.Type
 }
 
@@ -391,19 +391,16 @@ func (e *WrongTypeForRecordConstructorField) FetchPositionLength() token.Positio
 	return e.call.TypeIdentifier().Symbol().FetchPositionLength()
 }
 
-
-
 type WrongNumberOfFieldsInConstructor struct {
 	call               *ast.ConstructorCall
-	record        *dectype.RecordAtom
+	record             *dectype.RecordAtom
 	expectedExpression DecoratedExpression
 	err                error
 }
 
-
 func NewWrongNumberOfFieldsInConstructor(record *dectype.RecordAtom, call *ast.ConstructorCall) *WrongNumberOfFieldsInConstructor {
 	return &WrongNumberOfFieldsInConstructor{
-		call:                 call,
+		call:   call,
 		record: record}
 }
 
@@ -414,7 +411,6 @@ func (e *WrongNumberOfFieldsInConstructor) Error() string {
 func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.PositionLength {
 	return e.call.TypeIdentifier().Symbol().FetchPositionLength()
 }
-
 
 type UnhandledCustomTypeVariants struct {
 	unhandledVariants []*dectype.CustomTypeVariant
@@ -488,7 +484,7 @@ type FunctionCallTypeMismatch struct {
 	expected    *dectype.FunctionAtom
 	encountered *dectype.FunctionAtom
 	call        *ast.FunctionCall
-	err error
+	err         error
 }
 
 func NewFunctionCallTypeMismatch(err error, call *ast.FunctionCall, expected *dectype.FunctionAtom, encountered *dectype.FunctionAtom) *FunctionCallTypeMismatch {

@@ -36,7 +36,7 @@ func (e *ExposedTypes) AddTypes(allTypes []dtype.Type) {
 func (e *ExposedTypes) AddTypesWithModulePrefix(allTypes []dtype.Type, prefix PackageRelativeModuleName) {
 	for _, t := range allTypes {
 		fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(t.DecoratedName(), token.PositionLength{}, 0))
-		fullyQualifiedName := prefix.JoinLocalName( fakeVariable)
+		fullyQualifiedName := prefix.JoinLocalName(fakeVariable)
 		e.identifierToType[fullyQualifiedName] = t
 		e.types = append(e.types, t)
 	}

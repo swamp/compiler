@@ -36,4 +36,3 @@ func (t *Tokenizer) WasSpacingRune(requiredRune rune) (token.RuneToken, bool) {
 	}
 	return token.NewRuneToken(readRune, t.MakePositionLength(startPos)), true
 }
-

@@ -19,7 +19,6 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 		return nil, tErr
 	}
 
-
 	someTerminationFound := p.detectOneSpaceAndTermination()
 
 	if someTerminationFound {
@@ -52,7 +51,6 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 		}
 
 	}
-
 
 	return term, nil
 }

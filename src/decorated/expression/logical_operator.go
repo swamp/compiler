@@ -34,7 +34,7 @@ func NewLogicalOperator(left DecoratedExpression, right DecoratedExpression, ope
 		return nil, NewLogicalOperatorLeftMustBeBoolean(a, left, booleanType)
 	}
 
-	if err := dectype.CompatibleTypes(right.Type(), booleanType); err != nil{
+	if err := dectype.CompatibleTypes(right.Type(), booleanType); err != nil {
 		return nil, NewLogicalOperatorRightMustBeBoolean(a, right, booleanType)
 	}
 

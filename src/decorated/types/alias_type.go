@@ -62,6 +62,7 @@ func (u *Alias) Generate(params []dtype.Type) (dtype.Type, error) {
 	return u.referencedType.Generate(params)
 }
 
-func NewAliasType(name *ast.TypeIdentifier, artifactTypeName ArtifactFullyQualifiedTypeName, referencedType dtype.Type) *Alias {
+func NewAliasType(name *ast.TypeIdentifier, artifactTypeName ArtifactFullyQualifiedTypeName,
+	referencedType dtype.Type) *Alias {
 	return &Alias{name: name, artifactTypeName: artifactTypeName, referencedType: referencedType}
 }

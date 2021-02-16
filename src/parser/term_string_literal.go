@@ -38,7 +38,7 @@ func parseInterpolationString(s string) [][]int {
 	return locations
 }
 
-func replaceInterpolationString( s string) string {
+func replaceInterpolationString(s string) string {
 	ranges := parseInterpolationString(s)
 
 	result := ""
@@ -54,7 +54,7 @@ func replaceInterpolationString( s string) string {
 
 		result += fmt.Sprintf("\"%s\"", s[lastPos:start])
 
-		inside := s[start+2:end-1]
+		inside := s[start+2 : end-1]
 
 		result += fmt.Sprintf(" ++ Debug.toString(%v)", inside)
 

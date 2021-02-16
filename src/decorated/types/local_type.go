@@ -60,7 +60,6 @@ func (u *LocalType) Generate(params []dtype.Type) (dtype.Type, error) {
 	return nil, fmt.Errorf("LocalType can not be applied")
 }
 
-
 func (u *LocalType) Resolve() (dtype.Atom, error) {
 	return u, nil
 }

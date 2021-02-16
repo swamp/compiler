@@ -33,7 +33,7 @@ func (i *LambdaFunctionValue) Token() token.Token {
 	return i.lambdaToken
 }
 
-func (i * LambdaFunctionValue) PositionLength() token.PositionLength {
+func (i *LambdaFunctionValue) PositionLength() token.PositionLength {
 	return i.lambdaToken.FetchPositionLength()
 }
 

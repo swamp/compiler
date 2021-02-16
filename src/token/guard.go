@@ -10,8 +10,8 @@ import "fmt"
 // GuardToken :
 type GuardToken struct {
 	PositionLength
-	raw          string
-	debugString  string
+	raw         string
+	debugString string
 }
 
 func NewGuardToken(startPosition PositionLength, raw string, debugString string) GuardToken {

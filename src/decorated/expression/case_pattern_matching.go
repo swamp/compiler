@@ -15,7 +15,7 @@ import (
 )
 
 type CaseConsequencePatternMatching struct {
-	literal    DecoratedExpression
+	literal       DecoratedExpression
 	expression    DecoratedExpression
 	internalIndex int
 }

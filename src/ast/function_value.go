@@ -12,8 +12,8 @@ import (
 )
 
 type FunctionValue struct {
-	parameters  []*VariableIdentifier
-	expression  Expression
+	parameters         []*VariableIdentifier
+	expression         Expression
 	debugAssignedValue token.VariableSymbolToken
 }
 

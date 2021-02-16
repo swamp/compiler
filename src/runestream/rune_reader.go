@@ -25,8 +25,8 @@ func isAllowedWhitespace(ch rune) bool {
 // RuneReader :
 type RuneReader struct {
 	relativeFilename string
-	octets []byte
-	index  int
+	octets           []byte
+	index            int
 }
 
 // NewRuneReader :
@@ -70,7 +70,7 @@ func (s *RuneReader) DetectCurrentColumn() (int, int) {
 
 	indentationSpace := 0
 
-	for pos := startPos; pos >= 0; pos -- {
+	for pos := startPos; pos >= 0; pos-- {
 		ch := rune(s.octets[pos])
 		if ch == '\n' {
 			return startPos - pos, indentationSpace

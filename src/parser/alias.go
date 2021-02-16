@@ -22,6 +22,5 @@ func parseTypeAlias(p ParseStream, keywordIdentation int, nameOfAlias *ast.TypeI
 		return nil, referencedTypeErr
 	}
 
-
 	return ast.NewAliasStatement(nameOfAlias, referencedType), nil
 }

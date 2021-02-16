@@ -44,9 +44,8 @@ func (t *TypeParameterContextOther) DecoratedName() string {
 	return s
 }
 
-
 func NewTypeParameterContextOther() *TypeParameterContextOther {
-	t := &TypeParameterContextOther{ resolvedArguments: make(map[string]dtype.Type)}
+	t := &TypeParameterContextOther{resolvedArguments: make(map[string]dtype.Type)}
 
 	return t
 }

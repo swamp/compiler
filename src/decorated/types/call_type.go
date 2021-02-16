@@ -62,7 +62,7 @@ func replaceRecordFromContext(record *RecordAtom, lookup Lookup) (*RecordAtom, e
 		if convertedErr != nil {
 			return nil, convertedErr
 		}
-		if converted ==  nil {
+		if converted == nil {
 			panic("converted is nil")
 		}
 

@@ -72,7 +72,8 @@ func (s *CustomTypeAtom) ConcretizedName() string {
 	return s.DecoratedName()
 }
 
-func NewCustomType(name *ast.TypeIdentifier, artifactTypeName ArtifactFullyQualifiedTypeName, genericLocalTypeNames []*dtype.TypeArgumentName, variants []*CustomTypeVariant) *CustomTypeAtom {
+func NewCustomType(name *ast.TypeIdentifier, artifactTypeName ArtifactFullyQualifiedTypeName,
+	genericLocalTypeNames []*dtype.TypeArgumentName, variants []*CustomTypeVariant) *CustomTypeAtom {
 	nameToField := make(map[string]*CustomTypeVariant)
 	for index, variant := range variants {
 		key := variant.Name().Name()
@@ -85,7 +86,10 @@ func NewCustomType(name *ast.TypeIdentifier, artifactTypeName ArtifactFullyQuali
 		nameToField[key] = variant
 	}
 
-	return &CustomTypeAtom{name: name, artifactTypeName: artifactTypeName, genericLocalTypeNames: genericLocalTypeNames, variants: variants, nameToField: nameToField}
+	return &CustomTypeAtom{
+		name: name, artifactTypeName: artifactTypeName,
+		genericLocalTypeNames: genericLocalTypeNames, variants: variants, nameToField: nameToField,
+	}
 }
 
 func (s *CustomTypeAtom) HasVariant(variantToLookFor *CustomTypeVariant) bool {

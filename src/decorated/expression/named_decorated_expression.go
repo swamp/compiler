@@ -15,7 +15,7 @@ type NamedDecoratedExpression struct {
 	fullyQualifiedName string
 	expression         DecoratedExpression
 	wasReferenced      bool
-	mDef *ModuleDefinition
+	mDef               *ModuleDefinition
 }
 
 func NewNamedDecoratedExpression(fullyQualifiedName string, mDef *ModuleDefinition, expression DecoratedExpression) *NamedDecoratedExpression {

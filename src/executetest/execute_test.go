@@ -19,7 +19,7 @@ main ignored =
 }
 
 func TestAdvanced(t *testing.T) {
-	executeTest(t,`
+	executeTest(t, `
 type alias Sprite =
     { x : Int
     , y : Int
@@ -470,7 +470,7 @@ enum: 1 refcount:1
 
 func TestMaybe(t *testing.T) {
 	executeTest(t,
-	`type alias Thing =
+		`type alias Thing =
     { something : String
     }
 

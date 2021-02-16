@@ -27,11 +27,3 @@ func (i *Alias) Identifier() *TypeIdentifier {
 func (i *Alias) ReferencedType() Type {
 	return i.referencedType
 }
-
-func Unalias(maybeAlias Type) Type {
-	unaliased, isAlias := maybeAlias.(*Alias)
-	if isAlias {
-		return Unalias(unaliased.ReferencedType())
-	}
-	return maybeAlias
-}

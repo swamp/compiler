@@ -14,9 +14,9 @@ import (
 )
 
 type TypeIdLiteral struct {
-	typeId              *ast.TypeId
+	typeId                *ast.TypeId
 	constructedTypeIdType dtype.Type
-	containedType dtype.Type
+	containedType         dtype.Type
 }
 
 func NewTypeIdLiteral(typeId *ast.TypeId, constructedTypeIdType dtype.Type, containedType dtype.Type) *TypeIdLiteral {

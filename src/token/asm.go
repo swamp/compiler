@@ -7,7 +7,6 @@ package token
 
 import (
 	"fmt"
-
 )
 
 // Keyword :
@@ -42,7 +41,7 @@ type ExternalFunctionToken struct {
 	functionName   string
 	parameterCount uint
 	raw            string
-	commentToken  IndentationReport
+	commentToken   IndentationReport
 }
 
 func NewExternalFunctionToken(raw string, functionName string, parameterCount uint, commentToken IndentationReport, startPosition PositionLength) ExternalFunctionToken {

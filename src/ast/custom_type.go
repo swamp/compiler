@@ -8,9 +8,9 @@ package ast
 import "fmt"
 
 type CustomType struct {
-	name     *TypeIdentifier
+	name           *TypeIdentifier
 	typeParameters []*TypeParameter
-	variants []*CustomTypeVariant
+	variants       []*CustomTypeVariant
 }
 
 func (i *CustomType) String() string {

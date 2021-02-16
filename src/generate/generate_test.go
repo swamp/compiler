@@ -11,7 +11,6 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-
 func TestResourceName(t *testing.T) {
 	testGenerate(t,
 		`
@@ -40,7 +39,6 @@ func [function a 2 1 [[constant1 int:65 #2]]]
 `)
 }
 
-
 func TestTypeIdRef(t *testing.T) {
 	testGenerate(t,
 		`
@@ -66,8 +64,6 @@ func [function main 5 1 [[constant1 int:4 #3] [constant2 func:load #4]]]
 08: ret
 `)
 }
-
-
 
 func TestBooleanOperator(t *testing.T) {
 	testGenerate(t,
@@ -121,7 +117,6 @@ func [function main 3 1 [[constant1 func:load #2]]]
 `)
 }
 
-
 func TestGuard(t *testing.T) {
 	testGenerate(t,
 		`
@@ -140,8 +135,6 @@ func [function isBeautiful 2 1 [[constant1 False #3] [constant2 Rebecca #4] [con
 `)
 }
 
-
-
 func TestStringEqual(t *testing.T) {
 	testGenerate(t,
 		`
@@ -158,7 +151,6 @@ func [function isBeautiful 2 1 [[constant1 Rebecca #3] [constant2 True #4] [cons
 0f: ret
 `)
 }
-
 
 func TestIntEqual(t *testing.T) {
 	testGenerate(t,
@@ -187,7 +179,6 @@ func [function someTest 1 2 []]
 09: ret
 `)
 }
-
 
 func TestGuardMultiple(t *testing.T) {
 	testGenerate(t,
@@ -389,7 +380,6 @@ func [function some 2 1 [[constant1 hello #2] [constant2 int:0 #3] [constant3 in
 10: ret
 `)
 }
-
 
 func TestSimple(t *testing.T) {
 	testGenerate(t,
@@ -998,6 +988,7 @@ func [function main func(Bool -> Bool) 1 [[constant1 Peter #2] [constant2 func:i
 05: ret
 `)
 }
+
 /*
 func [function first func(Int -> Int) 1 []]
 00: mul 0,1,1
@@ -1017,7 +1008,7 @@ func [function tester func(String -> Bool) 1 [[constant1 int:2 #5] [constant2 fu
 func [function third func(Bool -> Bool) 1 []]
 00: lr 0,1 ; return a
 03: ret
- */
+*/
 const expectedPipeAsm = `
 func [function first 2 2 []]
 00: mul 0,1,1
@@ -1173,8 +1164,6 @@ func [function tester 3 1 [[constant1 int:2 #4] [constant2 int:3 #5] [constant3 
 `)
 }
 
-
-
 func TestDivide(t *testing.T) {
 	testGenerate(t,
 		`
@@ -1235,7 +1224,6 @@ func [function tester 2 1 [[constant1 func:second #3]]]
 08: ret
 `)
 }
-
 
 func TestBinaryMinus(t *testing.T) {
 	testGenerate(t,
@@ -1317,7 +1305,6 @@ tester b =
     third <| second b <| first (2 + 2) <| something()
 `, expectedPipeAsm)
 }
-
 
 func TestOperatorPipeLeftConstructor(t *testing.T) {
 	testGenerate(t,

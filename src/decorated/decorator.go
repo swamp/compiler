@@ -29,7 +29,7 @@ func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module) *
 }
 
 func (d *Decorator) Import(source *decorated.Module, relativeName dectype.PackageRelativeModuleName, exposeAll bool) error {
-	 return ImportModuleToModule(d.module, source, relativeName, exposeAll)
+	return ImportModuleToModule(d.module, source, relativeName, exposeAll)
 }
 
 func (d *Decorator) TypeRepo() *dectype.TypeRepo {

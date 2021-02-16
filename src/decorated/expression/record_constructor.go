@@ -15,9 +15,9 @@ import (
 )
 
 type RecordConstructor struct {
-	arguments         []*RecordLiteralAssignment
-	recordType *dectype.RecordAtom
-	typeIdentifier    *ast.TypeIdentifier
+	arguments      []*RecordLiteralAssignment
+	recordType     *dectype.RecordAtom
+	typeIdentifier *ast.TypeIdentifier
 }
 
 func NewRecordConstructor(typeIdentifier *ast.TypeIdentifier, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment) *RecordConstructor {

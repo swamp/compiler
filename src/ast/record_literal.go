@@ -12,8 +12,6 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-
-
 type ByAssignmentName []*RecordLiteralFieldAssignment
 
 func (a ByAssignmentName) Len() int           { return len(a) }
@@ -24,7 +22,7 @@ type RecordLiteral struct {
 	assignments       []*RecordLiteralFieldAssignment
 	sortedAssignments []*RecordLiteralFieldAssignment
 	templateRecord    *VariableIdentifier
-	parenToken token.ParenToken
+	parenToken        token.ParenToken
 }
 
 func NewRecordLiteral(parenToken token.ParenToken, templateRecord *VariableIdentifier, assignments []*RecordLiteralFieldAssignment) *RecordLiteral {

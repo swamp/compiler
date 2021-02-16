@@ -14,7 +14,7 @@ import (
 )
 
 type FixedLiteral struct {
-	integer           *ast.FixedLiteral
+	integer         *ast.FixedLiteral
 	globalFixedType dtype.Type
 }
 

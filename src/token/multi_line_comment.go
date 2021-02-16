@@ -17,8 +17,8 @@ func MakeCommentBlock(comments []CommentToken) CommentBlock {
 
 type CommentToken struct {
 	PositionLength
-	RawString string
-	CommentString string
+	RawString        string
+	CommentString    string
 	ForDocumentation bool
 }
 
@@ -34,7 +34,6 @@ func (s CommentToken) Text() string {
 	return s.CommentString
 }
 
-
 // CommentToken :
 type MultiLineCommentToken struct {
 	CommentToken
@@ -44,8 +43,6 @@ func NewMultiLineCommentToken(raw string, text string, forDocumentation bool, po
 	return MultiLineCommentToken{CommentToken: CommentToken{RawString: raw, CommentString: text, PositionLength: position, ForDocumentation: forDocumentation}}
 }
 
-
 func (s MultiLineCommentToken) String() string {
 	return fmt.Sprintf("[comment:%s]", s.CommentString)
 }
-

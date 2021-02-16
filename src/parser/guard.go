@@ -10,7 +10,6 @@ import (
 	parerr "github.com/swamp/compiler/src/parser/errors"
 )
 
-
 func parseGuard(p ParseStream, startIndentation int) (ast.Expression, parerr.ParseError) {
 	var items []ast.GuardItem
 	var defaultConsequence ast.Expression
@@ -74,11 +73,11 @@ func parseGuard(p ParseStream, startIndentation int) (ast.Expression, parerr.Par
 	}
 
 	/*
-	if p.maybeUpdate() {
+		if p.maybeUpdate() {
 
-	}
+		}
 
-	 */
+	*/
 
 	expression := ast.NewGuardExpression(items, defaultConsequence)
 	return expression, nil

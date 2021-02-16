@@ -6,11 +6,10 @@
 package decorator
 
 import (
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
 type LookupLocalType interface {
-	 LookupLocalType(localType *ast.LocalType) (dtype.Type, error)
+	LookupLocalType(localType *ast.LocalType) (dtype.Type, error)
 }

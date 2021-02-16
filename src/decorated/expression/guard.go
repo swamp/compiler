@@ -14,10 +14,9 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-
 type GuardItem struct {
-	condition    DecoratedExpression
-	consequence DecoratedExpression
+	condition     DecoratedExpression
+	consequence   DecoratedExpression
 	internalIndex int
 }
 
@@ -54,7 +53,7 @@ func guardConsequenceArrayToStringEx(expressions []*GuardItem, ch string) string
 }
 
 type Guard struct {
-	items       []*GuardItem
+	items        []*GuardItem
 	defaultGuard DecoratedExpression
 }
 

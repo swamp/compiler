@@ -13,7 +13,7 @@ import (
 )
 
 type ModuleDeclarations struct {
-	types      map[string]dtype.Type
+	types map[string]dtype.Type
 
 	ownedByModule *Module
 }

@@ -33,7 +33,8 @@ type UndefinedTypeParameterError struct {
 	context        *TypeParameterIdentifierContext
 }
 
-func NewUndefinedTypeParameterError(extraParameter *TypeParameter, context *TypeParameterIdentifierContext) *UndefinedTypeParameterError {
+func NewUndefinedTypeParameterError(extraParameter *TypeParameter,
+	context *TypeParameterIdentifierContext) *UndefinedTypeParameterError {
 	return &UndefinedTypeParameterError{extraParameter: extraParameter, context: context}
 }
 

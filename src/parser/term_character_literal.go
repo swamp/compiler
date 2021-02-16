@@ -11,7 +11,6 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-
 func parseCharacterLiteral(p ParseStream, characterToken token.CharacterToken) (ast.Expression, parerr.ParseError) {
 	lit := ast.NewCharacterConstant(characterToken, characterToken.Character())
 

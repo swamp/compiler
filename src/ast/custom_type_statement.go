@@ -13,8 +13,8 @@ import (
 
 type CustomTypeStatement struct {
 	customTypeOrWrapped Type
-	name *TypeIdentifier
-	precedingComments token.CommentBlock
+	name                *TypeIdentifier
+	precedingComments   token.CommentBlock
 }
 
 func NewCustomTypeStatement(name *TypeIdentifier, customType Type,

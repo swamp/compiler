@@ -13,7 +13,7 @@ import (
 type ModuleDefinition struct {
 	localIdentifier *ast.VariableIdentifier
 	createdIn       *ModuleDefinitions
-	expr     		DecoratedExpression
+	expr            DecoratedExpression
 }
 
 func NewModuleDefinition(createdIn *ModuleDefinitions, identifier *ast.VariableIdentifier, expr DecoratedExpression) *ModuleDefinition {

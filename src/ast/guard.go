@@ -14,11 +14,10 @@ import (
 type GuardItem struct {
 	Condition   Expression
 	Consequence Expression
-
 }
 
 type GuardExpression struct {
-	items []GuardItem
+	items       []GuardItem
 	defaultItem Expression
 }
 

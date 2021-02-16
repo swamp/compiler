@@ -22,7 +22,6 @@ func AtomizersFromTypes(types []dtype.Type) string {
 	return Atomizers(atoms)
 }
 
-
 func Atomizers(atoms []dtype.Atom) string {
 	s := ""
 	for index, atom := range atoms {
@@ -39,22 +38,24 @@ func Atomizer(atom dtype.Atom) string {
 	switch t := atom.(type) {
 	case *dectype.FunctionAtom:
 		return "function: " + AtomizersFromTypes(t.FunctionParameterTypes()) + "\n"
-	case *dectype.RecordAtom: {
-		s := fmt.Sprintf("record: %v\n", t.ShortName())
-		for _, field := range t.SortedFields() {
-			fieldAtom, _ := field.Type().Resolve()
-			s += fmt.Sprintf("  %v : %v\n", field.Name() , Atomizer(fieldAtom) )
+	case *dectype.RecordAtom:
+		{
+			s := fmt.Sprintf("record: %v\n", t.ShortName())
+			for _, field := range t.SortedFields() {
+				fieldAtom, _ := field.Type().Resolve()
+				s += fmt.Sprintf("  %v : %v\n", field.Name(), Atomizer(fieldAtom))
+			}
+			return s
 		}
-		return s
-	}
-	case *dectype.CustomTypeAtom: {
-		s := fmt.Sprintf("customype: %v\n", t.Name())
-		for _, field := range t.Variants() {
-			fieldAtom, _ := field.Resolve()
-			s += fmt.Sprintf("  %v : %v\n", field.Name().Name(), Atomizer(fieldAtom) )
+	case *dectype.CustomTypeAtom:
+		{
+			s := fmt.Sprintf("customype: %v\n", t.Name())
+			for _, field := range t.Variants() {
+				fieldAtom, _ := field.Resolve()
+				s += fmt.Sprintf("  %v : %v\n", field.Name().Name(), Atomizer(fieldAtom))
+			}
+			return s
 		}
-		return  s
-	}
 	}
 
 	return atom.AtomName() + "\n"

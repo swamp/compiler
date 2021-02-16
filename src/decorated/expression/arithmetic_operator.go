@@ -25,7 +25,6 @@ const (
 	ArithmeticCons
 	ArithmeticFixedMultiply
 	ArithmeticFixedDivide
-
 )
 
 type ArithmeticOperator struct {

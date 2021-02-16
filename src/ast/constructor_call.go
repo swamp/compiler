@@ -44,5 +44,5 @@ func (i *ConstructorCall) String() string {
 }
 
 func (i *ConstructorCall) DebugString() string {
-	return fmt.Sprintf("[ConstructorCall]")
+	return "[ConstructorCall]"
 }

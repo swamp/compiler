@@ -21,7 +21,6 @@ func LinePaddingBefore(expression Expression) int {
 	return lines
 }
 
-
 func LinePaddingAfter(expression Expression) int {
 	if expression == nil {
 		return 0
@@ -39,8 +38,6 @@ func LinePaddingAfter(expression Expression) int {
 
 	return lines
 }
-
-
 
 func ExpectedLinePaddingAfter(expression Expression) int {
 	if expression == nil {
@@ -67,13 +64,11 @@ func ExpectedLinePaddingAfter(expression Expression) int {
 	return lines
 }
 
-
-
 func LinesToInsertBetween(before Expression, now Expression) int {
-    previousPadding := LinePaddingAfter(before)
-    beforePadding :=  LinePaddingBefore(now)
+	previousPadding := LinePaddingAfter(before)
+	beforePadding := LinePaddingBefore(now)
 
-    totalPadding := previousPadding + beforePadding
+	totalPadding := previousPadding + beforePadding
 
-    return totalPadding
+	return totalPadding
 }

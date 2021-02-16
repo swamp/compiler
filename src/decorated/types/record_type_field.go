@@ -16,7 +16,6 @@ type RecordField struct {
 	index     int
 	name      *ast.VariableIdentifier
 	fieldType dtype.Type
-
 }
 
 func NewRecordField(name *ast.VariableIdentifier, fieldType dtype.Type) *RecordField {

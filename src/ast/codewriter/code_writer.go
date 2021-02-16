@@ -164,7 +164,6 @@ func writeCase(caseExpression *ast.CaseCustomType, colorer coloring.Colorer, ind
 	//colorer.NewLine(indentation)
 }
 
-
 func writeGuard(guardExpression *ast.GuardExpression, colorer coloring.Colorer, indentation int) {
 	for index, item := range guardExpression.Items() {
 		if index > 0 {
@@ -189,7 +188,6 @@ func writeGuard(guardExpression *ast.GuardExpression, colorer coloring.Colorer, 
 	colorer.OneSpace()
 	writeExpression(guardExpression.DefaultExpression(), colorer, 0)
 }
-
 
 func writeGetVariable(identifier *ast.VariableIdentifier, colorer coloring.Colorer, indentation int) {
 	moduleReference := identifier.ModuleReference()

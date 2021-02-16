@@ -17,7 +17,7 @@ func Unalias(t dtype.Type) dtype.Type {
 	if wasAlias {
 		return Unalias(alias.referencedType)
 	}
-	
+
 	return t
 }
 
@@ -64,7 +64,6 @@ func fillContextFromPrimitive(context *TypeParameterContextOther, original *Prim
 
 	return NewPrimitiveType(other.name, converted), nil
 }
-
 
 func fillContextFromRecordType(context *TypeParameterContextOther, original *RecordAtom, other *RecordAtom) (*RecordAtom, error) {
 	var converted []dtype.Type

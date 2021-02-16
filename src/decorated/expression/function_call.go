@@ -15,10 +15,10 @@ import (
 type FunctionCall struct {
 	functionType DecoratedExpression
 	assignments  []DecoratedExpression
-	returnType dtype.Type
+	returnType   dtype.Type
 }
 
-func NewFunctionCall(functionType DecoratedExpression, returnType dtype.Type,  assignments []DecoratedExpression) *FunctionCall {
+func NewFunctionCall(functionType DecoratedExpression, returnType dtype.Type, assignments []DecoratedExpression) *FunctionCall {
 	return &FunctionCall{functionType: functionType, assignments: assignments, returnType: returnType}
 }
 

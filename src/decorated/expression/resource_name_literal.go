@@ -14,7 +14,7 @@ import (
 )
 
 type ResourceNameLiteral struct {
-	resourceName           *ast.ResourceNameLiteral
+	resourceName    *ast.ResourceNameLiteral
 	globalFixedType dtype.Type
 }
 

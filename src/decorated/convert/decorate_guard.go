@@ -52,7 +52,6 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 		}
 	}
 
-
 	defaultDecoratedExpression, defaultExpressionErr := DecorateExpression(d, guardExpression.DefaultExpression(), context)
 	if defaultExpressionErr != nil {
 		return nil, defaultExpressionErr

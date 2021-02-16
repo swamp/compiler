@@ -46,7 +46,7 @@ type FunctionValue struct {
 }
 
 func NewFunctionValue(forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression DecoratedExpression) *FunctionValue {
-	if len(parameters) != (forcedFunctionType.ParameterCount() -1 ) {
+	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
 	return &FunctionValue{forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression}

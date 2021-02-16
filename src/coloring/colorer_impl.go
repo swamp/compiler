@@ -79,7 +79,7 @@ func (c *ColorerWithoutColor) UserInstruction(t string) {
 	c.builder.WriteString(t)
 }
 
-func (c *ColorerWithoutColor) KeywordString(t string)  {
+func (c *ColorerWithoutColor) KeywordString(t string) {
 	c.builder.WriteString(t)
 }
 
@@ -91,29 +91,27 @@ func writeNewline(indentation int) string {
 	return "\n" + writeIndentation(indentation)
 }
 
-func (c *ColorerWithoutColor) NewLine(indentation int)  {
+func (c *ColorerWithoutColor) NewLine(indentation int) {
 	c.builder.WriteString(writeNewline(indentation))
 }
 
-func (c *ColorerWithoutColor) OneSpace()  {
+func (c *ColorerWithoutColor) OneSpace() {
 	c.builder.WriteString(" ")
 }
 
-
-func (c *ColorerWithoutColor) RightArrow()  {
+func (c *ColorerWithoutColor) RightArrow() {
 	c.KeywordString("->")
 }
 
-func (c *ColorerWithoutColor) LeftPipe()  {
+func (c *ColorerWithoutColor) LeftPipe() {
 	c.KeywordString("<|")
 }
 
-func (c *ColorerWithoutColor) RightPipe()  {
+func (c *ColorerWithoutColor) RightPipe() {
 	c.KeywordString("|>")
 }
 
-
-func (c *ColorerWithoutColor) OperatorString(operator string)  {
+func (c *ColorerWithoutColor) OperatorString(operator string) {
 	c.builder.WriteString(operator)
 }
 

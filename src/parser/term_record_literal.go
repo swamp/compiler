@@ -21,14 +21,14 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 		return nil, spaceAfterCurlyErr
 	}
 
-	varIdent, wasAssign, varIdentErr := p.readVariableIdentifierAssignOrUpdate()
+	varIdent, wasAssign, foundIndentation, varIdentErr := p.readVariableIdentifierAssignOrUpdate()
 	if varIdentErr != nil {
 		return nil, varIdentErr
 	}
 	if !wasAssign {
 		templateRecordIdentifier = varIdent
 	}
-	subIndentation := indentation
+	subIndentation := foundIndentation
 	for {
 		if wasAssign {
 			exp, expErr := p.parseExpressionNormal(subIndentation)

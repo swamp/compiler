@@ -39,7 +39,6 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 			return nil, decoratedRecordLiteralExpressionErr
 		}
 
-
 		templateRecord, resolveErr := dectype.ResolveToRecordType(decoratedRecordLiteralExpression.Type())
 		if resolveErr != nil {
 			return nil, decorated.NewInternalError(resolveErr)
@@ -67,7 +66,7 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 				return nil, decorated.NewNewRecordLiteralFieldNotInType(assignment, foundTemplateRecord)
 			}
 		} else {
-			if compatibleErr := dectype.CompatibleTypes(encounteredFieldType,existingField.Type()); compatibleErr != nil {
+			if compatibleErr := dectype.CompatibleTypes(encounteredFieldType, existingField.Type()); compatibleErr != nil {
 				return nil, decorated.NewRecordLiteralFieldTypeMismatch(assignment, existingField, encounteredFieldType, compatibleErr)
 			}
 		}
@@ -86,7 +85,6 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 		recordAssignment := decorated.NewRecordLiteralAssignment(field.Index(), name, decoratedExpression)
 		sortedRecordAssignment = append(sortedRecordAssignment, recordAssignment)
 	}
-
 
 	return decorated.NewRecordLiteral(typeRepoRecordType, decoratedRecordLiteralExpression, sortedRecordAssignment), nil
 }

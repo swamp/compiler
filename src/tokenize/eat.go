@@ -9,7 +9,6 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-
 func (t *Tokenizer) EatRune(requiredRune rune) TokenError {
 	startPos := t.position
 	readRune := t.nextRune()
@@ -23,7 +22,7 @@ func (t *Tokenizer) checkComment(readRune rune, startPos token.PositionToken) (t
 	if readRune == '-' {
 		nch := t.nextRune()
 		if nch == '-' {
-			comment :=t.ReadSingleLineComment(startPos)
+			comment := t.ReadSingleLineComment(startPos)
 			return comment.CommentToken, true, nil
 		} else {
 			t.unreadRune()
@@ -41,7 +40,7 @@ func (t *Tokenizer) checkComment(readRune rune, startPos token.PositionToken) (t
 		}
 	}
 
-	return token.CommentToken{},false, nil
+	return token.CommentToken{}, false, nil
 }
 
 func (t *Tokenizer) EatString(requiredString string) TokenError {

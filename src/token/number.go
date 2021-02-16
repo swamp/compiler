@@ -12,8 +12,8 @@ import (
 // NumberToken :
 type NumberToken struct {
 	PositionLength
-	number int32
-	raw    string
+	number  int32
+	raw     string
 	isFixed bool
 }
 

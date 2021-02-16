@@ -19,13 +19,16 @@ type BinaryOperator struct {
 	right    Expression
 }
 
-func NewBinaryOperator(token token.Token, operator token.OperatorToken, left Expression, right Expression) *BinaryOperator {
+func NewBinaryOperator(token token.Token, operator token.OperatorToken, left Expression,
+	right Expression) *BinaryOperator {
 	if left == nil {
 		panic("left is nil")
 	}
+
 	if right == nil {
 		panic("right is nil")
 	}
+
 	return &BinaryOperator{
 		token:    token,
 		operator: operator,

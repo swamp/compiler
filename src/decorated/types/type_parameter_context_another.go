@@ -89,5 +89,3 @@ func (t *TypeParameterContext) LookupTypeFromName(name string) dtype.Type {
 func (t *TypeParameterContext) LookupTypeFromArgument(param *dtype.TypeArgumentName) dtype.Type {
 	return t.LookupTypeFromName(param.Name())
 }
-
-

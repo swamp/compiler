@@ -19,7 +19,6 @@ type DecoratedExpressionNode struct {
 	decoratedType dtype.Type
 }
 
-
 func (d DecoratedExpressionNode) Type() dtype.Type {
 	return d.decoratedType
 }

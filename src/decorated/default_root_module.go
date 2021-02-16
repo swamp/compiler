@@ -388,8 +388,6 @@ fromCode a =
 
 `
 
-
-
 const typeIdCode = `
 `
 
@@ -446,7 +444,6 @@ func addCores(m *decorated.Module, globalModule *decorated.Module) ([]*decorated
 		return nil, charModuleErr
 	}
 	importModules = append(importModules, charModule)
-
 
 	typeId, typeIdErr := compileToGlobal(m, globalModule, "TypeRef", typeIdCode)
 	if typeIdErr != nil {

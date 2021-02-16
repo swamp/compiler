@@ -12,6 +12,7 @@ import (
 
 func parseArgumentExpression(p ParseStream, startIndentation int) (ast.Expression, parerr.ParseError) {
 	e, eErr := p.parseTerm(startIndentation) // Must be terms
+
 	return e, eErr
 }
 
@@ -28,6 +29,7 @@ func parseFunctionCallArguments(p ParseStream, startIndentation int) ([]ast.Expr
 				break
 			}
 			arguments = append(arguments, e)
+
 			wasEnd, _, _ := p.eatArgumentSpaceOrDetectEndOfArguments(startIndentation)
 			if wasEnd {
 				break
@@ -37,4 +39,3 @@ func parseFunctionCallArguments(p ParseStream, startIndentation int) ([]ast.Expr
 
 	return arguments, nil
 }
-

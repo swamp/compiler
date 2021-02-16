@@ -58,12 +58,14 @@ func (c *FmtCmd) Run() error {
 		if err != nil {
 			return err
 		}
+
 		beautifiedCode, beautyErr := beautify("", string(octets))
 		if beautyErr != nil {
 			return beautyErr
 		}
 
 		ioutil.WriteFile(match, []byte(beautifiedCode), 0o600)
+
 		fmt.Println(beautifiedCode)
 	}
 	return nil

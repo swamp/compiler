@@ -16,47 +16,60 @@ func (p *Parser) parseTermUsingToken(someToken token.Token, startIndentation int
 	// Term
 	// ---------------------------------------------------------------
 	switch t := someToken.(type) {
-		case token.VariableSymbolToken: {
+	case token.VariableSymbolToken:
+		{
 			return parseVariableSymbol(p.stream, t)
 		}
-		case token.TypeSymbolToken: {
+	case token.TypeSymbolToken:
+		{
 			return parseTypeSymbol(p.stream, startIndentation, t)
 		}
-		case token.StringToken: {
+	case token.StringToken:
+		{
 			return parseStringLiteral(p.stream, t)
 		}
-		case token.CharacterToken: {
+	case token.CharacterToken:
+		{
 			return parseCharacterLiteral(p.stream, t)
 		}
-		case token.NumberToken: {
+	case token.NumberToken:
+		{
 			if t.Type() == token.NumberFixed {
 				return parseFixedLiteral(p.stream, t)
 			}
 			return parseIntegerLiteral(p.stream, t)
 		}
-		case token.ResourceName: {
+	case token.ResourceName:
+		{
 			return parseResourceNameLiteral(p.stream, t)
 		}
-		case token.BooleanToken: {
+	case token.BooleanToken:
+		{
 			return parseBoolLiteral(p.stream, t)
 		}
-		case token.OperatorToken: {
+	case token.OperatorToken:
+		{
 			switch t.Type() {
-			   case token.OperatorBitwiseNot: {
-					   return parseUnary(p.stream, startIndentation, t)
-				   }
-			   case token.OperatorUnaryNot: {
-					   return parseUnary(p.stream, startIndentation, t)
-				   }
-			   case token.OperatorUnaryMinus: {
-					   return parseUnary(p.stream, startIndentation, t)
-				   }
+			case token.OperatorBitwiseNot:
+				{
+					return parseUnary(p.stream, startIndentation, t)
 				}
-		   }
-		case token.GuardToken: {
+			case token.OperatorUnaryNot:
+				{
+					return parseUnary(p.stream, startIndentation, t)
+				}
+			case token.OperatorUnaryMinus:
+				{
+					return parseUnary(p.stream, startIndentation, t)
+				}
+			}
+		}
+	case token.GuardToken:
+		{
 			return parseGuard(p.stream, startIndentation)
 		}
-		case token.TypeId: {
+	case token.TypeId:
+		{
 			return parseTypeId(p.stream, t, startIndentation)
 		}
 	}
@@ -86,7 +99,6 @@ func (p *Parser) parseTerm(startIndentation int) (ast.Expression, parerr.ParseEr
 	if someTokenErr != nil {
 		return nil, someTokenErr
 	}
-
 
 	return p.parseTermUsingToken(someToken, startIndentation)
 }

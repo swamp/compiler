@@ -36,7 +36,6 @@ func TestMultilineCommentOnOneLine(t *testing.T) {
 		`[multilinecomment ' this is basically a comment ']`)
 }
 
-
 func TestMultilineComment(t *testing.T) {
 	testParseExpression(t,
 		`{-  
@@ -48,15 +47,12 @@ func TestMultilineComment(t *testing.T) {
               a comment ']`)
 }
 
-
-
 func TestChar(t *testing.T) {
 	testParseExpression(t,
 		`'c'
 `,
 		`'c'`)
 }
-
 
 func TestConstant(t *testing.T) {
 	testParse(t,
@@ -71,7 +67,6 @@ fn =
 `)
 }
 
-
 func TestStringInterpolation(t *testing.T) {
 	testParseExpression(t,
 		`
@@ -85,7 +80,6 @@ a
 [let: [[letassign $a = ((('' ++ [call Debug.$toString [$a]]) ++ ' ') ++ [call Debug.$toString [$b]])]] in $a]
 `)
 }
-
 
 func TestGuard(t *testing.T) {
 	testParseExpression(t,
@@ -103,7 +97,6 @@ a
 [let: [[letassign $a = [guard: [{($y > #3) $y} {($y == #4) #45}] 'hello']]] in $a]
 `)
 }
-
 
 func TestGuardExpression(t *testing.T) {
 	testParse(t,
@@ -321,7 +314,6 @@ func TestRecordLiteral(t *testing.T) {
 		`[record-literal: [[$a = #3]]]`)
 }
 
-
 func TestRecordLiteralTwoItems(t *testing.T) {
 	testParseExpression(t,
 		`
@@ -395,7 +387,6 @@ func TestListLiteralTwoItems(t *testing.T) {
 `,
 		`[list-literal: [#3 (#4 + #5)]]`)
 }
-
 
 func TestSimpleAnnotation(t *testing.T) {
 	testParse(t,
@@ -742,8 +733,6 @@ a x =
 
 }
 
-
-
 func TestUnary2(t *testing.T) {
 	testParse(t,
 		`
@@ -757,7 +746,6 @@ someTest a b =
 
 }
 
-
 func TestUnary3(t *testing.T) {
 	testParse(t,
 		`
@@ -770,7 +758,6 @@ someTest a b =
 `)
 
 }
-
 
 func TestList(t *testing.T) {
 	testParseExpression(t,
@@ -1184,7 +1171,6 @@ func TestUpdateWithSpace(t *testing.T) {
 `, "[definition: $a = [func ([]) -> [record-literal: [[$someField = #3]] ($objectToUpdate)]]]")
 }
 
-
 func TestUpdateWithCallAndSpace(t *testing.T) { // --- FIXME
 	testParse(t,
 		`
@@ -1192,7 +1178,6 @@ func TestUpdateWithCallAndSpace(t *testing.T) { // --- FIXME
     { inSprite | scale = scaleBoth scaleFactor }
 `, "[definition: $a = [func ([]) -> [record-literal: [[$scale = [call $scaleBoth [$scaleFactor]]]] ($inSprite)]]]")
 }
-
 
 func TestComplexUpdate(t *testing.T) {
 	testParseExpression(t,
@@ -1352,8 +1337,6 @@ case a of
 `)
 }
 
-
-
 func TestMinimalTypeConstructor(t *testing.T) {
 	testParseExpression(t,
 		`
@@ -1406,7 +1389,6 @@ k a =
 `)
 }
 
-
 func TestRecordAnnotation3(t *testing.T) {
 	testParse(t,
 		`
@@ -1418,7 +1400,6 @@ f a =
 [definition: $f = [func ([$a]) -> #2]]
 `)
 }
-
 
 func TestPipeRight2(t *testing.T) {
 	testParse(t, `

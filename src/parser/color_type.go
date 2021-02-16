@@ -20,9 +20,6 @@ func colorAlias(alias *dectype.Alias, colorer coloring.Colorer) {
 	colorer.AliasNameSymbol(alias.TypeIdentifier().Symbol())
 }
 
-
-
-
 func colorFunctionParameters(functionParameterTypes []dtype.Type, indentation int, inside bool, colorer coloring.Colorer) {
 	for index, parameterType := range functionParameterTypes {
 		if index > 0 {
@@ -48,7 +45,6 @@ func colorFunctionType(functionType *dectype.FunctionAtom, indentation int, insi
 	rightToken := token.NewOperatorToken(token.RightParen, token.PositionLength{}, ")", ")")
 	colorer.Operator(rightToken)
 }
-
 
 func newDoubleLine(indentation int, colorer coloring.Colorer) {
 	colorer.NewLine(0)
@@ -79,7 +75,7 @@ func colorRecordType(recordType *dectype.RecordAtom, indentation int, inside boo
 	colorer.OperatorString("}")
 }
 
-func colorCustomType(recordType *dectype.CustomTypeAtom, indentation int, inside bool, colorer coloring.Colorer)  {
+func colorCustomType(recordType *dectype.CustomTypeAtom, indentation int, inside bool, colorer coloring.Colorer) {
 	s := coloring.ColorTypeSymbol(recordType.TypeIdentifier().Symbol())
 	indentation++
 	colorer.NewLine(indentation)
@@ -112,8 +108,6 @@ func colorTypeEmbed(recordType *dectype.InvokerType, colorer coloring.Colorer) {
 	colorer.OperatorString(")")
 }
 
-
-
 func colorPrimitive(primitive *dectype.PrimitiveAtom, indentation int, inside bool, colorer coloring.Colorer) {
 	fakeSymbol := token.NewTypeSymbolToken(primitive.HumanReadable(), token.PositionLength{}, 0)
 	colorer.PrimitiveType(fakeSymbol)
@@ -128,7 +122,7 @@ func colorAny(indentation int, inside bool, colorer coloring.Colorer) {
 	colorer.PrimitiveType(fakeSymbol)
 }
 
-func ColorAtom(atomType dtype.Atom, indentation int, inside bool, colorer coloring.Colorer)  {
+func ColorAtom(atomType dtype.Atom, indentation int, inside bool, colorer coloring.Colorer) {
 	switch t := atomType.(type) {
 	case *dectype.FunctionAtom:
 		colorFunctionType(t, indentation, inside, colorer)
@@ -194,4 +188,3 @@ func ColorTypesWithAtom(dTypes []dtype.Type, indentation int, inside bool, color
 		ColorTypeWithAtom(foundType, indentation, inside, colorer)
 	}
 }
-

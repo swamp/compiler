@@ -11,7 +11,6 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
-
 func TypesToShortString(types []dtype.Type) string {
 	s := ""
 	for index, t := range types {
@@ -35,7 +34,6 @@ func TypesToHumanReadable(types []dtype.Type) string {
 
 	return s
 }
-
 
 func TypesToString(types []dtype.Type) string {
 	s := ""
@@ -101,7 +99,6 @@ func TypeParametersShortSuffix(types []dtype.Type) string {
 	return fmt.Sprintf("<%s>", TypesToShortString(types))
 }
 
-
 func TypeParametersHumanReadableSuffix(types []dtype.Type) string {
 	if len(types) == 0 {
 		return ""
@@ -117,7 +114,6 @@ func TypeArgumentNamesSuffix(types []*dtype.TypeArgumentName) string {
 
 	return fmt.Sprintf("<%s>", TypeArgumentsToString(types))
 }
-
 
 func TypesToDecoratedNames(types []dtype.Type) string {
 	s := ""

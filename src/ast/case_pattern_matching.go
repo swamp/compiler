@@ -8,13 +8,14 @@ package ast
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/swamp/compiler/src/token"
 )
 
 type CaseConsequencePatternMatching struct {
-	literal Literal
-	expression  Expression
-	index int
+	literal    Literal
+	expression Expression
+	index      int
 }
 
 func NewCaseConsequenceForPatternMatching(index int, literal Literal, expression Expression) *CaseConsequencePatternMatching {
@@ -24,7 +25,6 @@ func NewCaseConsequenceForPatternMatching(index int, literal Literal, expression
 func (c *CaseConsequencePatternMatching) Literal() Literal {
 	return c.literal
 }
-
 
 func (c *CaseConsequencePatternMatching) Index() int {
 	return c.index
@@ -67,6 +67,7 @@ func (i *CasePatternMatching) String() string {
 func (i *CasePatternMatching) Test() Expression {
 	return i.test
 }
+
 func (i *CasePatternMatching) Keyword() token.Keyword {
 	return i.keyword
 }
@@ -80,5 +81,5 @@ func (i *CasePatternMatching) Consequences() []*CaseConsequencePatternMatching {
 }
 
 func (i *CasePatternMatching) DebugString() string {
-	return fmt.Sprintf("[casepm]")
+	return "[casepm]"
 }

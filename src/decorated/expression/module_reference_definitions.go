@@ -7,11 +7,11 @@ package decorated
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/decorated/dtype"
-	dectype "github.com/swamp/compiler/src/decorated/types"
 	"sort"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/dtype"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -33,10 +33,11 @@ func sortedTypes(m map[string]dtype.Type) []string {
 		keys[i] = k
 		i++
 	}
+
 	sort.Strings(keys)
+
 	return keys
 }
-
 
 func sortedExpressionKeys(m map[string]*ModuleDefinition) []string {
 	keys := make([]string, len(m))
@@ -49,9 +50,8 @@ func sortedExpressionKeys(m map[string]*ModuleDefinition) []string {
 	return keys
 }
 
-
 type ModuleReferenceDefinitions struct {
-	referencedExpressions  map[string]*ModuleDefinition
+	referencedExpressions map[string]*ModuleDefinition
 
 	ownedByModule *Module
 }
@@ -60,8 +60,10 @@ func NewModuleReferenceDefinitions(ownedByModule *Module) *ModuleReferenceDefini
 	if ownedByModule == nil {
 		panic("sorry, all definitions must be owned by a module")
 	}
-	return &ModuleReferenceDefinitions{ownedByModule: ownedByModule,
-		referencedExpressions:  make(map[string]*ModuleDefinition)}
+	return &ModuleReferenceDefinitions{
+		ownedByModule:         ownedByModule,
+		referencedExpressions: make(map[string]*ModuleDefinition),
+	}
 }
 
 func (d *ModuleReferenceDefinitions) ReferencedDefinitions() []*ModuleDefinition {

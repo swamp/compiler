@@ -37,5 +37,5 @@ func (i *DefinitionAssignment) String() string {
 }
 
 func (i *DefinitionAssignment) DebugString() string {
-	return fmt.Sprintf("[assignmentdef]")
+	return "[assignmentdef]"
 }

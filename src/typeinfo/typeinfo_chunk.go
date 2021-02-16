@@ -59,7 +59,6 @@ func (t *LocalType) HumanReadable() string {
 	return t.name
 }
 
-
 type BlobType struct {
 	Type
 }
@@ -108,7 +107,6 @@ func (t *StringType) HumanReadable() string {
 	return "String"
 }
 
-
 type CharacterType struct {
 	Type
 }
@@ -121,7 +119,6 @@ func (t *CharacterType) HumanReadable() string {
 	return "Char"
 }
 
-
 type ResourceNameType struct {
 	Type
 }
@@ -133,7 +130,6 @@ func (t *ResourceNameType) String() string {
 func (t *ResourceNameType) HumanReadable() string {
 	return "ResourceName"
 }
-
 
 type ListType struct {
 	Type
@@ -805,7 +801,6 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 	return nil, fmt.Errorf("unknown primitive %v", primitive)
 }
 
-
 func (c *Chunk) consumeLocalType(localType *dectype.LocalType) (InfoType, error) {
 	return &LocalType{
 		Type: Type{},
@@ -855,7 +850,6 @@ func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 	case *dectype.LocalType:
 		return c.consumeLocalType(t)
 	}
-
 
 	return nil, fmt.Errorf("unknown atom %T", a)
 }

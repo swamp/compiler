@@ -20,7 +20,6 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-
 func compileToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.Program, decshared.DecoratedError) {
 	ioReader := strings.NewReader(x)
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "style test")
@@ -187,7 +186,6 @@ f a b =
     someFunc x * 3
 `)
 }
-
 
 func TestFormatLet2(t *testing.T) {
 	testStyleInternal(t, `
@@ -435,7 +433,6 @@ tester b =
 `)
 }
 
-
 func TestFormatCustomType3(t *testing.T) {
 	testStyleInternal(t,
 		`
@@ -456,4 +453,3 @@ a : Int -> { x : Maybe Int
 }
 `)
 }
-

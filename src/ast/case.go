@@ -8,6 +8,7 @@ package ast
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -66,6 +67,7 @@ func (i *CaseCustomType) String() string {
 func (i *CaseCustomType) Test() Expression {
 	return i.test
 }
+
 func (i *CaseCustomType) Keyword() token.Keyword {
 	return i.keyword
 }

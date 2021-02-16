@@ -16,7 +16,6 @@ func parseFunctionCall(p ParseStream, startIndentation int, expressionResolveToF
 		return nil, argumentsErr
 	}
 
-
 	typeIdentifier, isJustATypeIdentifier := expressionResolveToFunction.(*ast.TypeIdentifier)
 	if isJustATypeIdentifier {
 		return ast.NewConstructorCall(typeIdentifier, arguments), nil

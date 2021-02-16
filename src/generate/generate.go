@@ -21,13 +21,11 @@ import (
 	"github.com/swamp/compiler/src/typeinfo"
 )
 
-
 type generateContext struct {
-	context *assembler.Context
+	context     *assembler.Context
 	definitions *decorator.VariableContext
-	lookup typeinfo.TypeLookup
+	lookup      typeinfo.TypeLookup
 }
-
 
 type Function struct {
 	name           *decorated.FullyQualifiedVariableName
@@ -36,7 +34,7 @@ type Function struct {
 	variableCount  uint
 	constants      []*assembler.Constant
 	opcodes        []byte
-	debugLookup typeinfo.TypeLookup
+	debugLookup    typeinfo.TypeLookup
 }
 
 type ExternalFunction struct {
@@ -171,7 +169,6 @@ func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperato
 	}
 	panic("illegal unaryoperator")
 }
-
 
 func bitwiseToBinaryOperatorType(operatorType decorated.BitwiseOperatorType) swampopcodeinst.BinaryOperatorType {
 	switch operatorType {
@@ -460,13 +457,11 @@ func generateIf(code *assembler.Code, target assembler.TargetVariable, ifExpr *d
 	return nil
 }
 
-
-
 func generateGuard(code *assembler.Code, target assembler.TargetVariable, guardExpr *decorated.Guard, genContext *generateContext) error {
 	type codeItem struct {
-		ConditionVariable assembler.SourceVariable
-		ConditionCode *assembler.Code
-		ConsequenceCode *assembler.Code
+		ConditionVariable     assembler.SourceVariable
+		ConditionCode         *assembler.Code
+		ConsequenceCode       *assembler.Code
 		EndOfConsequenceLabel *assembler.Label
 	}
 
@@ -518,7 +513,7 @@ func generateGuard(code *assembler.Code, target assembler.TargetVariable, guardE
 	return nil
 }
 
-func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.CaseCustomType, genContext* generateContext) error {
+func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.CaseCustomType, genContext *generateContext) error {
 	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), genContext, "cast-test")
 	if testErr != nil {
 		return testErr
@@ -594,7 +589,7 @@ func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariabl
 	return nil
 }
 
-func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.CasePatternMatching, genContext* generateContext) error {
+func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.CasePatternMatching, genContext *generateContext) error {
 	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), genContext, "cast-test")
 	if testErr != nil {
 		return testErr
@@ -681,7 +676,7 @@ func generateCharacterLiteral(code *assembler.Code, target assembler.TargetVaria
 	return nil
 }
 
-func generateTypeIdLiteral(code *assembler.Code, target assembler.TargetVariable, typeId *decorated.TypeIdLiteral, genContext* generateContext) error {
+func generateTypeIdLiteral(code *assembler.Code, target assembler.TargetVariable, typeId *decorated.TypeIdLiteral, genContext *generateContext) error {
 	indexIntoTypeInformationChunk, err := genContext.lookup.Lookup(typeId.ContainedType())
 	if err != nil {
 		return err
@@ -709,7 +704,6 @@ func generateResourceNameLiteral(code *assembler.Code, target assembler.TargetVa
 	return nil
 }
 
-
 func generateGetVariable(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.GetVariableOrReferenceFunction, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.Identifier().Name())
 	variable := context.FindVariable(varName)
@@ -717,7 +711,7 @@ func generateGetVariable(code *assembler.Code, target assembler.TargetVariable, 
 	return nil
 }
 
-func generateCustomTypeVariantConstructor(code *assembler.Code, target assembler.TargetVariable, constructor *decorated.CustomTypeVariantConstructor, genContext* generateContext) error {
+func generateCustomTypeVariantConstructor(code *assembler.Code, target assembler.TargetVariable, constructor *decorated.CustomTypeVariantConstructor, genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
 	for _, arg := range constructor.Arguments() {
 		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "customTypeVariantArgs")
@@ -732,7 +726,7 @@ func generateCustomTypeVariantConstructor(code *assembler.Code, target assembler
 	return nil
 }
 
-func generateCurry(code *assembler.Code, target assembler.TargetVariable, call *decorated.CurryFunction, genContext* generateContext) error {
+func generateCurry(code *assembler.Code, target assembler.TargetVariable, call *decorated.CurryFunction, genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
 	for _, arg := range call.ArgumentsToSave() {
 		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "sourceSave")
@@ -750,7 +744,7 @@ func generateCurry(code *assembler.Code, target assembler.TargetVariable, call *
 	return nil
 }
 
-func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable, call *decorated.FunctionCall, genContext* generateContext) error {
+func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable, call *decorated.FunctionCall, genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
 	for _, arg := range call.Arguments() {
 		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "arg")
@@ -771,7 +765,7 @@ func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable,
 	return nil
 }
 
-func generateRecurCall(code *assembler.Code, call *decorated.RecurCall, genContext* generateContext) error {
+func generateRecurCall(code *assembler.Code, call *decorated.RecurCall, genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
 	for _, arg := range call.Arguments() {
 		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "recurarg")
@@ -792,7 +786,7 @@ func generateBoolConstant(code *assembler.Code, target assembler.TargetVariable,
 	return nil
 }
 
-func generateRecordSortedAssignments(code *assembler.Code, target assembler.TargetVariable, sortedAssignments []*decorated.RecordLiteralAssignment, genContext* generateContext) error {
+func generateRecordSortedAssignments(code *assembler.Code, target assembler.TargetVariable, sortedAssignments []*decorated.RecordLiteralAssignment, genContext *generateContext) error {
 	variables := make([]assembler.SourceVariable, len(sortedAssignments))
 	for index, assignment := range sortedAssignments {
 		debugName := fmt.Sprintf("assign%v", assignment.FieldName())
@@ -807,7 +801,7 @@ func generateRecordSortedAssignments(code *assembler.Code, target assembler.Targ
 	return nil
 }
 
-func generateRecordLiteral(code *assembler.Code, target assembler.TargetVariable, record *decorated.RecordLiteral, genContext* generateContext) error {
+func generateRecordLiteral(code *assembler.Code, target assembler.TargetVariable, record *decorated.RecordLiteral, genContext *generateContext) error {
 	if record.RecordTemplate() != nil {
 		structToCopyVar, genErr := generateExpressionWithSourceVar(code, record.RecordTemplate(), genContext, "gopher")
 		if genErr != nil {
@@ -830,7 +824,7 @@ func generateRecordLiteral(code *assembler.Code, target assembler.TargetVariable
 	return nil
 }
 
-func generateList(code *assembler.Code, target assembler.TargetVariable, list *decorated.ListLiteral, genContext* generateContext) error {
+func generateList(code *assembler.Code, target assembler.TargetVariable, list *decorated.ListLiteral, genContext *generateContext) error {
 	variables := make([]assembler.SourceVariable, len(list.Expressions()))
 	for index, expr := range list.Expressions() {
 		debugName := fmt.Sprintf("listliteral%v", index)
@@ -877,7 +871,7 @@ func generateList(code *assembler.Code, target assembler.TargetVariable, list *d
 	return nil, fmt.Errorf("couldn't find variable or constant %v", getVar)
 */
 
-func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.DecoratedExpression, genContext* generateContext, debugName string) (assembler.SourceVariable, error) {
+func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.DecoratedExpression, genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
 	getVar, _ := expr.(*decorated.GetVariableOrReferenceFunction)
 	if getVar != nil {
 		ident := getVar.Identifier()
@@ -911,7 +905,6 @@ func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Decora
 		constant := genContext.context.Constants().AllocateIntegerConstant(characterLiteralConstant.Value())
 		return constant, nil
 	}
-
 
 	booleanConstant, _ := expr.(*decorated.BooleanLiteral)
 	if booleanConstant != nil {

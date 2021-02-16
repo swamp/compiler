@@ -23,7 +23,6 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 		newVariableContext.Add(parameter.Identifier(), namedDecoratedExpression)
 	}
 
-
 	self := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", token.PositionLength{}, 0))
 	selfDef := decorated.NewFunctionParameterDefinition(self, forcedFunctionType)
 	namedDecoratedExpression := decorated.NewNamedDecoratedExpression(functionName.Name(), nil, selfDef)
@@ -69,7 +68,3 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 
 	return decorated.NewFunctionValue(forcedFunctionType, parameters, decoratedExpression), nil
 }
-
-
-
-

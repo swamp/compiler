@@ -21,6 +21,7 @@ func NewAnnotation(NewAnnotation *VariableIdentifier, annotatedType Type, commen
 	if annotatedType == nil {
 		panic("must set annotated type")
 	}
+
 	return &Annotation{symbol: NewAnnotation, annotatedType: annotatedType, commentBlock: commentBlock}
 }
 

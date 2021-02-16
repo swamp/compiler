@@ -14,7 +14,6 @@ func TestCrunch(t *testing.T) {
 	aliasModules, importModules, mErr := CreateDefaultRootModule(true)
 	if mErr != nil {
 		t.Fatal(mErr)
-
 	}
 	const verboseFlag bool = true
 	if verboseFlag {

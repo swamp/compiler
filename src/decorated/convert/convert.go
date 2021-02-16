@@ -23,7 +23,7 @@ func AstParametersToArgumentNames(typeParameters []*ast.TypeParameter) []*dtype.
 }
 
 func ConvertFromAstToDecorated(astType ast.Type,
-	 t *dectype.TypeRepo) (dtype.Type, dectype.DecoratedTypeError) {
+	t *dectype.TypeRepo) (dtype.Type, dectype.DecoratedTypeError) {
 	switch info := astType.(type) {
 	case *ast.FunctionType:
 		var convertedParameters []dtype.Type
@@ -78,7 +78,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		var convertedParameters []dtype.Type
 
 		for _, a := range info.Arguments() {
-			convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a,  t)
+			convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
 			if convertedParameterErr != nil {
 				return nil, convertedParameterErr
 			}

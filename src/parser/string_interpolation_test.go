@@ -21,7 +21,7 @@ func TestInterpolation(t *testing.T) {
 	}
 }
 
-func TestInterpolationRanges(t * testing.T) {
+func TestInterpolationRanges(t *testing.T) {
 	ranges := parseInterpolationString("sdfj ${xid}")
 	if len(ranges) != 1 {
 		t.Errorf("wrong range count")
@@ -32,8 +32,7 @@ func TestInterpolationRanges(t * testing.T) {
 	}
 }
 
-
-func TestInterpolationSubstitution(t * testing.T) {
+func TestInterpolationSubstitution(t *testing.T) {
 	replaced := replaceInterpolationString(`some ${a 23 b}after`)
 
 	if replaced != `"some " ++ Debug.toString(a 23 b) ++ "after"` {
@@ -41,18 +40,16 @@ func TestInterpolationSubstitution(t * testing.T) {
 	}
 }
 
-
-func TestInterpolationSubstitution2(t * testing.T) {
+func TestInterpolationSubstitution2(t *testing.T) {
 	replaced := replaceInterpolationString(`some ${a 23 b}after ${b}`)
 
-	const correct =  `"some " ++ Debug.toString(a 23 b) ++ "after " ++ Debug.toString(b)`
+	const correct = `"some " ++ Debug.toString(a 23 b) ++ "after " ++ Debug.toString(b)`
 	if replaced != correct {
 		t.Errorf("wrong replaced. expected \n%v\nbut received\n%v\n", correct, replaced)
 	}
 }
 
-
-func TestInterpolationSubstitutionExpression(t * testing.T) {
+func TestInterpolationSubstitutionExpression(t *testing.T) {
 	expr, _ := replaceInterpolationStringToExpression(`some ${a 23 b}after ${b}`)
 
 	if expr.String() != `((('some ' ++ [call Debug.$toString [[call $a [#23 $b]]]]) ++ 'after ') ++ [call Debug.$toString [$b]])` {
@@ -60,7 +57,7 @@ func TestInterpolationSubstitutionExpression(t * testing.T) {
 	}
 }
 
-func TestInterpolationStringExpression2(t * testing.T) {
+func TestInterpolationStringExpression2(t *testing.T) {
 	expr, _ := replaceInterpolationStringToExpression(`${a} ${b}`)
 	if expr.String() != `((('' ++ [call Debug.$toString [$a]]) ++ ' ') ++ [call Debug.$toString [$b]])` {
 		t.Errorf("wrong expression")

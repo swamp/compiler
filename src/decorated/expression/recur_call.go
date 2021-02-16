@@ -13,8 +13,8 @@ import (
 )
 
 type RecurCall struct {
-	assignments  []DecoratedExpression
-	returnType dtype.Type
+	assignments []DecoratedExpression
+	returnType  dtype.Type
 }
 
 func NewRecurCall(returnType dtype.Type, assignments []DecoratedExpression) *RecurCall {

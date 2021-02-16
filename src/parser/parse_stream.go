@@ -20,7 +20,7 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	readTypeIdentifier() (*ast.TypeIdentifier, parerr.ParseError)
 	readVariableIdentifier() (*ast.VariableIdentifier, parerr.ParseError)
-	readVariableIdentifierAssignOrUpdate() (*ast.VariableIdentifier, bool, parerr.ParseError)
+	readVariableIdentifierAssignOrUpdate() (*ast.VariableIdentifier, bool, int, parerr.ParseError)
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// eat. Similar to read, but discards the result
@@ -40,7 +40,7 @@ type ParseStream interface {
 
 	// Block spacing is a helper function for when you both allow single space and new line continuations.
 	eatBlockSpacing(isBlock bool, keywordIndentation int) (token.IndentationReport, parerr.ParseError)
-	eatBlockSpacingOneExtraLine(isBlock bool, keywordIndentation int)  (token.IndentationReport, parerr.ParseError)
+	eatBlockSpacingOneExtraLine(isBlock bool, keywordIndentation int) (token.IndentationReport, parerr.ParseError)
 
 	eatOperatorUpdate() parerr.ParseError
 	eatRightArrow() parerr.ParseError

@@ -5,8 +5,6 @@
 
 package token
 
-
-
 type IndentationReport struct {
 	PreviousIndentationSpaces int
 	PreviousCloseIndentation  int
@@ -19,6 +17,6 @@ type IndentationReport struct {
 	EndOfFile                 bool
 	StartPos                  PositionToken
 	PositionLength            PositionLength
-	Comments CommentBlock
-	TrailingSpacesFound bool
+	Comments                  CommentBlock
+	TrailingSpacesFound       bool
 }

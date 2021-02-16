@@ -31,7 +31,7 @@ func (d *ModuleDefinitions) Definitions() []*ModuleDefinition {
 		keys = append(keys, expr)
 	}
 
-	return  keys
+	return keys
 }
 
 func (d *ModuleDefinitions) FindDefinitionExpression(identifier *ast.VariableIdentifier) *ModuleDefinition {
@@ -41,7 +41,6 @@ func (d *ModuleDefinitions) FindDefinitionExpression(identifier *ast.VariableIde
 	}
 	return expressionDef
 }
-
 
 func (d *ModuleDefinitions) AddDecoratedExpression(identifier *ast.VariableIdentifier, expr DecoratedExpression) error {
 	existingDeclare := d.FindDefinitionExpression(identifier)

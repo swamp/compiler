@@ -23,4 +23,4 @@ type Expression interface {
 	PositionLength() token.PositionLength
 }
 
-type Literal  = Expression
+type Literal = Expression

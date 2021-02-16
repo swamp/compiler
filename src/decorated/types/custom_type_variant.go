@@ -57,7 +57,7 @@ func (s *CustomTypeVariant) Generate(params []dtype.Type) (dtype.Type, error) {
 	return nil, fmt.Errorf("can not generate")
 }
 
-func (s *CustomTypeVariant) Resolve() (dtype.Atom, error){
+func (s *CustomTypeVariant) Resolve() (dtype.Atom, error) {
 	return nil, nil
 }
 

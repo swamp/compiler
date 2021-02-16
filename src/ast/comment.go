@@ -12,7 +12,7 @@ import (
 
 type LocalComment struct {
 	Singleline *SingleLineComment
-	Multiline *MultilineComment
+	Multiline  *MultilineComment
 }
 
 type MultilineComment struct {

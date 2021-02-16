@@ -76,7 +76,6 @@ func (g *Definer) functionAnnotation(identifier *ast.VariableIdentifier, constan
 	g.AnnotateFunc(identifier, convertedType)
 
 	return convertedType, nil
-	//	return nil, decorated.NewInternalError(fmt.Errorf("do not know what to do:%v", constantType))
 }
 
 func (g *Definer) handleAliasStatement(alias *ast.AliasStatement) decshared.DecoratedError {
@@ -95,15 +94,6 @@ func (g *Definer) findTypeFromAstType(constantType ast.Type) (dtype.Type, dectyp
 		return nil, tErr
 	}
 	return t, nil
-}
-
-func (g *Definer) createCustomType(ast *ast.CustomType) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
-	customType, createErr := DecorateCustomType(ast, g.typeRepo)
-	if createErr != nil {
-		return nil, createErr
-	}
-
-	return customType, nil
 }
 
 func ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType ast.Type, typeRepo *dectype.TypeRepo, localComments []ast.LocalComment) (dtype.Type, decshared.DecoratedError) {
@@ -167,26 +157,6 @@ func (g *Definer) handleDefinitionAssignment(d DecorateStream, assignment *ast.D
 		return decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 	}
 	g.localAnnotation = nil
-
-	/*
-		generator, isGenerator := annotatedType.(dtype.Type)
-		if isGenerator {
-			g.HackAddGeneratorsCode(d, assignment, generator)
-
-			functionValue, _ := expr.(*ast.FunctionValue)
-			if functionValue != nil {
-				assembly, isAssembly := functionValue.Expression().(*ast.Asm)
-
-				if isAssembly {
-					functionValue, _ := expr.(*ast.FunctionValue)
-					return g.HackAddRawCode(d, functionValue, assignment.Identifier(), assembly)
-				}
-			}
-			return nil
-		}
-
-	*/
-
 	variableContext := d.NewVariableContext()
 	g.localComments = nil
 	_, decoratedExpressionErr := decorateDefinition(d, variableContext, name, expr, annotatedType, g.localComments)

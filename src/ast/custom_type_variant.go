@@ -12,8 +12,8 @@ import (
 type CustomTypeVariant struct {
 	typeIdentifier *TypeIdentifier
 	userTypes      []Type
-	parent *CustomType
-	index int
+	parent         *CustomType
+	index          int
 }
 
 func NewCustomTypeVariant(index int, typeIdentifier *TypeIdentifier, userTypes []Type) *CustomTypeVariant {

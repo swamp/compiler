@@ -13,10 +13,10 @@ import (
 )
 
 type RecordAtom struct {
-	nameToField  map[string]*RecordField
+	nameToField       map[string]*RecordField
 	parsedOrderFields []*RecordField
-	sortedFields []*RecordField
-	genericTypes []dtype.Type
+	sortedFields      []*RecordField
+	genericTypes      []dtype.Type
 }
 
 func (s *RecordAtom) GenericTypes() []dtype.Type {
@@ -39,18 +39,17 @@ func (s *RecordAtom) HumanReadable() string {
 	return str
 }
 
-
 func (s *RecordAtom) ShortString() string {
 	/*
-	str := "[record-type "
-	for _, field := range s.sortedFields {
-		str += " " + field.ShortString()
-	}
-	str += "]"
+		str := "[record-type "
+		for _, field := range s.sortedFields {
+			str += " " + field.ShortString()
+		}
+		str += "]"
 
-	return str
+		return str
 
-	 */
+	*/
 
 	return s.DecoratedName()
 }
@@ -103,7 +102,6 @@ func NewRecordType(fields []*RecordField, genericTypes []dtype.Type) *RecordAtom
 func (s *RecordAtom) SortedFields() []*RecordField {
 	return s.sortedFields
 }
-
 
 func (s *RecordAtom) ParseOrderedFields() []*RecordField {
 	return s.parsedOrderFields

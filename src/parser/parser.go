@@ -21,20 +21,20 @@ var precedences = map[token.Type]Precedence{
 	token.OperatorGreaterOrEqual: LESSGREATER,
 	token.OperatorPlus:           SUM,
 	token.OperatorMinus:          SUM,
-	token.OperatorAppend:        SUM,
-	token.OperatorCons:          SUM,
-	token.OperatorDivide:        PRODUCT,
-	token.OperatorMultiply:      PRODUCT,
-	token.OperatorAnd:           ANDOR,
-	token.OperatorOr:            ANDOR,
-	token.OperatorBitwiseOr:     ANDOR,
-	token.OperatorBitwiseAnd:    ANDOR,
-	token.OperatorBitwiseXor:    ANDOR,
-	token.OperatorBitwiseNot:    PREFIX,
-	token.OperatorUpdate: UPDATE,
-	token.OperatorAssign:        ASSIGN,
-	token.OperatorPipeRight:     PIPE,
-	token.OperatorPipeLeft:      PIPE,
+	token.OperatorAppend:         SUM,
+	token.OperatorCons:           SUM,
+	token.OperatorDivide:         PRODUCT,
+	token.OperatorMultiply:       PRODUCT,
+	token.OperatorAnd:            ANDOR,
+	token.OperatorOr:             ANDOR,
+	token.OperatorBitwiseOr:      ANDOR,
+	token.OperatorBitwiseAnd:     ANDOR,
+	token.OperatorBitwiseXor:     ANDOR,
+	token.OperatorBitwiseNot:     PREFIX,
+	token.OperatorUpdate:         UPDATE,
+	token.OperatorAssign:         ASSIGN,
+	token.OperatorPipeRight:      PIPE,
+	token.OperatorPipeLeft:       PIPE,
 }
 
 type Parser struct {
@@ -103,7 +103,7 @@ func (p *Parser) ParseExpression() (*ast.Program, parerr.ParseError) {
 func (p *Parser) peekUpcomingPrecedence(indentation int) (Precedence, bool) {
 	var currentPrecedence Precedence
 	saveInfo := p.stream.tokenizer.Tell()
-	if _, _,  checkingForwardErr := p.stream.maybeUpToOneLogicalSpaceForContinuation(indentation); checkingForwardErr != nil  {
+	if _, _, checkingForwardErr := p.stream.maybeUpToOneLogicalSpaceForContinuation(indentation); checkingForwardErr != nil {
 		return currentPrecedence, false
 	}
 

@@ -12,7 +12,7 @@ import (
 )
 
 type PrimitiveAtom struct {
-	name  *ast.TypeIdentifier
+	name         *ast.TypeIdentifier
 	genericTypes []dtype.Type
 }
 
@@ -72,8 +72,6 @@ func (u *PrimitiveAtom) GenericTypes() []dtype.Type {
 	return u.genericTypes
 }
 
-
-
 func (u *PrimitiveAtom) Apply(params []dtype.Type) (dtype.Type, error) {
 	return nil, fmt.Errorf("can not apply primitive %v", u.name)
 }
@@ -81,7 +79,6 @@ func (u *PrimitiveAtom) Apply(params []dtype.Type) (dtype.Type, error) {
 func (u *PrimitiveAtom) Generate(params []dtype.Type) (dtype.Type, error) {
 	return nil, fmt.Errorf("can not generate primitive %v", u.name)
 }
-
 
 func (u *PrimitiveAtom) Next() dtype.Type {
 	return nil
