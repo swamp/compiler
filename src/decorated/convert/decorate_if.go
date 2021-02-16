@@ -6,8 +6,6 @@
 package decorator
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -16,7 +14,6 @@ import (
 
 func decorateIf(d DecorateStream, ifExpression *ast.IfExpression,
 	context *VariableContext) (*decorated.If, decshared.DecoratedError) {
-	fmt.Printf("decorating IF: %v\n", ifExpression)
 	condition, conditionErr := DecorateExpression(d, ifExpression.Condition(), context)
 	if conditionErr != nil {
 		return nil, conditionErr
