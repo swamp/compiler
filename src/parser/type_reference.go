@@ -49,7 +49,6 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 
 			return newFunctionType, nil
 		}
-
 	}
 
 	return term, nil

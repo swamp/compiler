@@ -44,8 +44,8 @@ func (r *ModuleReaderAndDecorator) ReadModule(repository deccy.ModuleRepository,
 		return nil, loadErr
 	}
 
-	//green := color.New(color.FgHiGreen)
-	//filepathToShow := pathutil.TryToMakeRelativePath(absoluteFilename)
+	// green := color.New(color.FgHiGreen)
+	// filepathToShow := pathutil.TryToMakeRelativePath(absoluteFilename)
 	// green.Fprintf(os.Stderr, "* compiling module '%v' %v\n", filepathToShow, fullyQualifiedName)
 
 	return r.runesToModule.RunesToModule(repository, fullyQualifiedName, absoluteFilename, runes)

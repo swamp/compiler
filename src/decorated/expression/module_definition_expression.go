@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 )
 
@@ -17,8 +18,11 @@ type ModuleDefinition struct {
 }
 
 func NewModuleDefinition(createdIn *ModuleDefinitions, identifier *ast.VariableIdentifier, expr DecoratedExpression) *ModuleDefinition {
-	return &ModuleDefinition{createdIn: createdIn, localIdentifier: identifier, expr: expr}
+	return &ModuleDefinition{
+		createdIn: createdIn, localIdentifier: identifier, expr: expr,
+	}
 }
+
 func (d *ModuleDefinition) Identifier() *ast.VariableIdentifier {
 	return d.localIdentifier
 }

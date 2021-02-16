@@ -72,7 +72,8 @@ func (i *CasePatternMatching) Type() dtype.Type {
 
 func (i *CasePatternMatching) String() string {
 	if i.defaultCase != nil {
-		return fmt.Sprintf("[dpmcase: %v of %v default: %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"), i.defaultCase)
+		return fmt.Sprintf("[dpmcase: %v of %v default: %v]", i.test,
+			caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"), i.defaultCase)
 	}
 	return fmt.Sprintf("[dpmcase: %v of %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"))
 }
@@ -90,7 +91,7 @@ func (i *CasePatternMatching) DefaultCase() DecoratedExpression {
 }
 
 func (i *CasePatternMatching) DebugString() string {
-	return fmt.Sprintf("[dpmcase]")
+	return "[dpmcase]"
 }
 
 func (i *CasePatternMatching) FetchPositionAndLength() token.PositionLength {

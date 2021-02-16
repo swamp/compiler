@@ -10,26 +10,12 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
-	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
 	var decoratedExpressions []decorated.DecoratedExpression
-
-	var decTypes []dtype.Type
-
-	for _, rawExpression := range call.Arguments() {
-		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, rawExpression, context)
-		if decoratedExpressionErr != nil {
-			return nil, decoratedExpressionErr
-		}
-
-		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
-
-		decTypes = append(decTypes, decoratedExpression.Type())
-	}
 
 	variantConstructor := d.TypeRepo().FindTypeFromName(call.TypeIdentifier().Name())
 	unaliasedConstructor := dectype.Unalias(variantConstructor)

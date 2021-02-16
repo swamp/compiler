@@ -14,6 +14,7 @@ import (
 
 func AtomizersFromTypes(types []dtype.Type) string {
 	var atoms []dtype.Atom
+
 	for _, singleType := range types {
 		atom, _ := singleType.Resolve()
 		atoms = append(atoms, atom)

@@ -22,8 +22,9 @@ func NewModuleDeclarations(ownedByModule *Module) *ModuleDeclarations {
 	if ownedByModule == nil {
 		panic("sorry, all definitions must be owned by a module")
 	}
-	return &ModuleDeclarations{ownedByModule: ownedByModule,
-		types: make(map[string]dtype.Type)}
+	return &ModuleDeclarations{
+		ownedByModule: ownedByModule, types: make(map[string]dtype.Type),
+	}
 }
 
 func (d *ModuleDeclarations) AddDeclaration(identifier *ast.VariableIdentifier, declaredType dtype.Type) error {

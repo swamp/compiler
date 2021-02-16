@@ -20,8 +20,10 @@ func NewModuleDefinitions(ownedByModule *Module) *ModuleDefinitions {
 	if ownedByModule == nil {
 		panic("sorry, all definitions must be owned by a module")
 	}
-	return &ModuleDefinitions{ownedByModule: ownedByModule,
-		definitions: make(map[string]*ModuleDefinition)}
+	return &ModuleDefinitions{
+		ownedByModule: ownedByModule,
+		definitions:   make(map[string]*ModuleDefinition),
+	}
 }
 
 func (d *ModuleDefinitions) Definitions() []*ModuleDefinition {

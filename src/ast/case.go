@@ -81,5 +81,5 @@ func (i *CaseCustomType) Consequences() []*CaseConsequenceCustomType {
 }
 
 func (i *CaseCustomType) DebugString() string {
-	return fmt.Sprintf("[case]")
+	return "[case]"
 }

@@ -20,7 +20,8 @@ type CustomTypeVariantConstructor struct {
 	typeIdentifier    *ast.TypeIdentifier
 }
 
-func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customTypeVariant *dectype.CustomTypeVariant, arguments []DecoratedExpression) *CustomTypeVariantConstructor {
+func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customTypeVariant *dectype.CustomTypeVariant,
+	arguments []DecoratedExpression) *CustomTypeVariantConstructor {
 	if customTypeVariant == nil {
 		panic("custom customTypeVariant is nil")
 	}
@@ -29,7 +30,10 @@ func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customT
 		panic("custom type is nil")
 	}
 
-	return &CustomTypeVariantConstructor{typeIdentifier: typeIdentifier, customTypeVariant: customTypeVariant, arguments: arguments}
+	return &CustomTypeVariantConstructor{
+		typeIdentifier: typeIdentifier, customTypeVariant: customTypeVariant,
+		arguments: arguments,
+	}
 }
 
 func (c *CustomTypeVariantConstructor) CustomTypeVariantIndex() int {
@@ -50,6 +54,7 @@ func (c *CustomTypeVariantConstructor) Type() dtype.Type {
 		resolvedTypes = append(resolvedTypes, resolved.Type())
 	}
 
+	fmt.Printf("call %v\n", c)
 	resolvedType, callErr := dectype.CallType(c.customTypeVariant, resolvedTypes)
 	if callErr != nil {
 		panic(callErr)

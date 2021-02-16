@@ -5,8 +5,6 @@
 
 package token
 
-import "fmt"
-
 // TypeId :
 type TypeId struct {
 	PositionLength
@@ -35,5 +33,5 @@ func (s TypeId) FetchIndentation() int {
 }
 
 func (s TypeId) String() string {
-	return fmt.Sprintf("@")
+	return "@"
 }

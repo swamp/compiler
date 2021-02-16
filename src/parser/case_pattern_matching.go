@@ -18,8 +18,8 @@ func parseCasePatternMatching(p ParseStream, test ast.Expression, keyword token.
 			if oneSpaceErr != nil {
 				return nil, oneSpaceErr
 			}
-			//fakeSymbol := token.NewTypeSymbolToken("_", defaultSymbolToken.FetchPositionLength(), 0)
-			//prefix = ast.NewDefaultMarker(fakeSymbol)
+			// fakeSymbol := token.NewTypeSymbolToken("_", defaultSymbolToken.FetchPositionLength(), 0)
+			// prefix = ast.NewDefaultMarker(fakeSymbol)
 		} else {
 			var prefixErr tokenize.TokenError
 			prefix, prefixErr = p.parseLiteral(startIndentation)

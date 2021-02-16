@@ -112,8 +112,12 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 	if packedErr != nil {
 		return packedErr
 	}
-	ioutil.WriteFile(outputFilename, packed, 0o644)
-	//color.Cyan("wrote output file '%v'\n", outputFilename)
+
+	if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
+		return err
+	}
+
+	// color.Cyan("wrote output file '%v'\n", outputFilename)
 	return nil
 }
 

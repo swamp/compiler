@@ -67,7 +67,6 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 }
 
 func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
-
 	expr, exprErr := internalDecorateExpression(d, e, context)
 	if exprErr != nil {
 		return nil, exprErr

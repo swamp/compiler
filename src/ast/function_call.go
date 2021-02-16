@@ -49,5 +49,5 @@ func (i *FunctionCall) String() string {
 }
 
 func (i *FunctionCall) DebugString() string {
-	return fmt.Sprintf("[FunctionCall]")
+	return "[FunctionCall]"
 }

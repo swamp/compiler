@@ -7,6 +7,8 @@ package main
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/ast/codewriter"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -14,7 +16,6 @@ import (
 	"github.com/swamp/compiler/src/parser"
 	"github.com/swamp/compiler/src/runestream"
 	"github.com/swamp/compiler/src/tokenize"
-	"strings"
 )
 
 func parseToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.Program, decshared.DecoratedError) {
@@ -40,7 +41,6 @@ func parseToProgram(moduleName string, x string, enforceStyle bool, verbose bool
 }
 
 func beautify(moduleName string, code string) (string, decshared.DecoratedError) {
-	const enforceStyle = true
 	const doNotForceStyle = false
 	const verbose = true
 
@@ -48,10 +48,12 @@ func beautify(moduleName string, code string) (string, decshared.DecoratedError)
 	if programErr != nil {
 		return "", programErr
 	}
+
 	codeWithColor, withColorErr := codewriter.WriteCode(program, true)
 	if withColorErr != nil {
 		return "", decorated.NewInternalError(withColorErr)
 	}
+
 	fmt.Println(codeWithColor)
 
 	codeWithoutColor, withoutColorErr := codewriter.WriteCode(program, false)

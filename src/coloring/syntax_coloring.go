@@ -193,5 +193,4 @@ func SyntaxColor(code string) (string, error) {
 
 		a += colorToken(token)
 	}
-
 }

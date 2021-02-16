@@ -23,7 +23,7 @@ func (s CharacterToken) Type() Type {
 }
 
 func (s CharacterToken) String() string {
-	return fmt.Sprintf("[ch:%s]", s.text)
+	return fmt.Sprintf("[ch:%c]", s.text)
 }
 
 func (s CharacterToken) Raw() string {

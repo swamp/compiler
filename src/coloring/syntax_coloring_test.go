@@ -36,7 +36,6 @@ zoomRenderToTextureSprite time camera =
     spriteFromRenderToTexture camera |> scaleSprite scaleFactor
 `
 	output, err := SyntaxColor(strings.TrimSpace(code))
-
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -310,6 +310,7 @@ func writeLookups(lookups *ast.Lookups, colorer coloring.Colorer, indentation in
 	}
 }
 
+/* TODO:
 func writeTypeParameters(typeParameters []*ast.TypeParameter, colorer coloring.Colorer) {
 	for index, param := range typeParameters {
 		if index > 0 {
@@ -318,6 +319,7 @@ func writeTypeParameters(typeParameters []*ast.TypeParameter, colorer coloring.C
 		colorer.LocalType(param.Identifier().Symbol())
 	}
 }
+*/
 
 func writeConstructorCall(constructorCall *ast.ConstructorCall, colorer coloring.Colorer, indentation int) {
 	writeTypeIdentifier(constructorCall.TypeIdentifier(), colorer)
@@ -576,7 +578,6 @@ func WriteCode(program *ast.Program, useColor bool) (string, error) {
 			if numberOfLinesToPad >= 2 {
 				colorer.NewLine(0)
 				colorer.NewLine(0)
-			} else {
 			}
 		}
 		switch t := expression.(type) {

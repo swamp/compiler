@@ -23,7 +23,7 @@ first a =
 		`
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]		
+first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]
 `)
 }
 
@@ -97,7 +97,7 @@ first a =
 		`
 func(Fixed -> Fixed) : [func  [primitive Fixed] [primitive Fixed]]
 
-first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> (arithmetic [getvar $a [primitive Fixed]] FMULTIPLY [getvar $a [primitive Fixed]])]		
+first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> (arithmetic [getvar $a [primitive Fixed]] FMULTIPLY [getvar $a [primitive Fixed]])]
 `)
 }
 
@@ -141,7 +141,7 @@ another a =
 func(Int -> Fixed) : [func  [primitive Int] [primitive Fixed]]
 
 another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Fixed]] [[integer 2]]]]
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $Int.toFixed [primitive Fixed]] [[getvar $a [primitive Int]]]]]		
+first = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $Int.toFixed [primitive Fixed]] [[getvar $a [primitive Int]]]]]
 `)
 }
 
@@ -163,7 +163,7 @@ func(Fixed -> Int) : [func  [primitive Fixed] [primitive Int]]
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 
 another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 2300]]]]
-first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]		
+first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]
 `)
 }
 
@@ -187,7 +187,7 @@ another a =
 func(Int -> Fixed) : [func  [primitive Int] [primitive Fixed]]
 
 another = [functionvalue ([[arg $a = [primitive Int]]]) -> [let [[letassign $x = [fcall [getvar $first [primitive Fixed]] [[integer 2]]]]] in [getvar $x [primitive Fixed]]]]
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> [integer 300]]		
+first = [functionvalue ([[arg $a = [primitive Int]]]) -> [integer 300]]
 `)
 }
 
@@ -211,7 +211,7 @@ func(Fixed -> Int) : [func  [primitive Fixed] [primitive Int]]
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 
 another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 2300]]]]
-first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]		
+first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]
 `)
 }
 
@@ -230,7 +230,7 @@ first a =
 		`
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]		
+first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]
 `)
 }
 
@@ -249,7 +249,7 @@ first a =
 		`
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]		
+first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]
 `)
 }
 
@@ -336,7 +336,7 @@ first a =
 		`
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]		
+first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]
 `)
 }
 
@@ -964,7 +964,7 @@ func(String -> Bool) : [func  [primitive String] [primitive Bool]]
 
 isLoveOfMyLife = [functionvalue ([[arg $name = [primitive String]] [arg $other = [primitive Int]]]) -> (boolop [getvar $name [primitive String]] EQ [str Rebecca])]
 main = [functionvalue ([[arg $fake = [primitive String]]]) -> [fcall [getvar $isLoveOfMyLife [primitive Bool]] [[str Lisa] [integer 2]]]]
- 
+
 `)
 }
 
@@ -1065,7 +1065,7 @@ func(Int -> Bool) : [func  [primitive Int] [primitive Bool]]
 
 another = [functionvalue ([[arg $score = [primitive Int]]]) -> [let [[letassign $af = [curry [getvar $f [functype [[primitive Int] [primitive Bool]]]] [[str Peter]]]]] in [fcall [getvar $af [primitive Bool]] [[getvar $score [primitive Int]]]]]]
 f = [functionvalue ([[arg $name = [primitive String]] [arg $score = [primitive Int]]]) -> [if (boolop [getvar $name [primitive String]] EQ [str Peter]) then (boolop (arithmetic [getvar $score [primitive Int]] MULTIPLY [integer 2]) GR [integer 100]) else (boolop [getvar $score [primitive Int]] GR [integer 100])]]
- 
+
 `)
 }
 
@@ -1411,7 +1411,7 @@ drawSprite = [functionvalue ([[arg $sprite = [alias Sprite record-type [[record-
 drawSprites = [functionvalue ([[arg $sprites = List<Sprite>]]) -> [fcall [getvar List.$map [concrcolltype [List [a]] [[primitive Bool]]]] [[getvar $drawSprite [functype [[alias Sprite record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]] [primitive Bool]]]] [getvar $sprites List<Sprite>]]]]
 drawWorld = [functionvalue ([[arg $world = [alias World record-type [[record-type-field drawTasks List<List<Sprite>> (0)]]]]]]) -> [fcall [getvar List.$map [concrcolltype [List [a]] [List<Bool>]]] [[getvar $drawSprites [functype [List<Sprite> List<Bool>]]] [lookups [lookupvar $world ([alias World record-type [[record-type-field drawTasks List<List<Sprite>> (0)]]]])] [[lookup [record-type-field drawTasks List<List<Sprite>> (0)]]]]]]]
 main = [functionvalue ([[arg $ignore = [primitive Bool]]]) -> [fcall [getvar $drawWorld List<List<Bool>>] [[record-literal record-type [[record-type-field drawTasks [concrcolltype [List [a]] [[concrcolltype [List [a]] [record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]]]]] (0)]]] [0 = [ListLiteral List<List<{x:Int;y:Int}>> [[ListLiteral List<{x:Int;y:Int}> [[record-literal record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]] [0 = [integer 10] 1 = [integer 20]]] [record-literal record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]] [0 = [integer 44] 1 = [integer 98]]]]] [ListLiteral List<{x:Int;y:Int}> [[record-literal record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]] [0 = [integer 99] 1 = [integer 98]]]]]]]]]]]]
- 
+
 `)
 }
 
@@ -1469,8 +1469,8 @@ func(List<a> -> a) : [func  List<a> [localtype a]]
 func(Bool -> Int) : [func  [primitive Bool] [primitive Int]]
 
 main = [functionvalue ([[arg $ignored = [primitive Bool]]]) -> [fcall [getvar $simple [primitive Int]] [[ListLiteral List<Int> [[integer 1] [integer 2] [integer 3]]]]]]
-simple = [functionvalue ([[arg $lst = List<a>]]) -> [integer 2]]	
- 
+simple = [functionvalue ([[arg $lst = List<a>]]) -> [integer 2]]
+
 `)
 }
 
@@ -1579,7 +1579,7 @@ checkMaybeInt a =
 		&decorated.AlreadyHandledCustomTypeVariant{})
 }
 
-func xTestFunctionAnnotationWithoutParameters(t *testing.T) {
+func TestFunctionAnnotationWithoutParameters(t *testing.T) {
 	testDecorate(t,
 		`
 single : Int
@@ -1614,7 +1614,7 @@ main = [functionvalue ([[arg $ignore = [primitive Bool]]]) -> [variant-construct
 }
 
 func TestConsequenceCheck(t *testing.T) {
-	testDecorateFail(t, `    
+	testDecorateFail(t, `
 type Direction =
     NotMoving
     | Right
@@ -1645,7 +1645,7 @@ isVertical direction =
 }
 
 func TestConsequenceCheck3(t *testing.T) {
-	testDecorateFail(t, `    
+	testDecorateFail(t, `
 type Direction =
     NotMoving
     | Right
@@ -1679,7 +1679,7 @@ isVertical direction =
 }
 
 func TestConsequenceCheck2(t *testing.T) {
-	testDecorateFail(t, `    
+	testDecorateFail(t, `
 type Direction =
     NotMoving
     | Right

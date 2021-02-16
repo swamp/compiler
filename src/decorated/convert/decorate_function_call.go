@@ -99,6 +99,8 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	var complete []dtype.Type
 	complete = append(complete, callFunctionType.FunctionParameterTypes()...)
 	extraParameters := functionType.FunctionParameterTypes()[len(callFunctionType.FunctionParameterTypes()):]
+
+	//nolint: gosimple
 	for _, extraParameter := range extraParameters {
 		//	fmt.Printf("extra parameter:%v\n", extraParameter)
 		complete = append(complete, extraParameter)
@@ -109,8 +111,6 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	functionCompatibleErr := dectype.CompatibleTypes(functionType, completeCalledFunction)
 	if functionCompatibleErr != nil {
 		return nil, decorated.NewFunctionCallTypeMismatch(functionCompatibleErr, call, functionType, completeCalledFunction)
-	} else {
-		// fmt.Printf("was compatible:\n%v\n%v\n", functionType, completeCalledFunction)
 	}
 
 	errorPosLength := call.FunctionExpression().PositionLength()

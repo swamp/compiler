@@ -37,5 +37,4 @@ func (p *Parser) parseInfix(left ast.Expression, startIndentation int) (ast.Expr
 	}
 
 	return parseBinaryOperator(p.stream, startIndentation, operator, precedence, left)
-
 }

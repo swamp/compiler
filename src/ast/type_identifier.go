@@ -49,6 +49,7 @@ func (i *TypeIdentifier) String() string {
 func (i *TypeIdentifier) DebugString() string {
 	return fmt.Sprintf("[TypeIdentifier]")
 }
+
 func (i *TypeIdentifier) IsDefaultSymbol() bool {
 	return i.symbolToken.Name() == "_"
 }

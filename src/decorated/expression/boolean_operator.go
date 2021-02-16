@@ -7,9 +7,9 @@ package decorated
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/decorated/decshared"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -62,7 +62,8 @@ func booleanOperatorToString(t BooleanOperatorType) string {
 }
 
 func (l *BooleanOperator) String() string {
-	return fmt.Sprintf("(boolop %v %v %v)", l.BinaryOperator.left, booleanOperatorToString(l.operatorType), l.BinaryOperator.right)
+	return fmt.Sprintf("(boolop %v %v %v)", l.BinaryOperator.left,
+		booleanOperatorToString(l.operatorType), l.BinaryOperator.right)
 }
 
 func (l *BooleanOperator) Left() DecoratedExpression {

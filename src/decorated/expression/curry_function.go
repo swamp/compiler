@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )

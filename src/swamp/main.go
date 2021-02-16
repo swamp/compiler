@@ -96,8 +96,7 @@ func (c *BuildCmd) Run() error {
 	return nil
 }
 
-type VersionCmd struct {
-}
+type VersionCmd struct{}
 
 func (c *VersionCmd) Run() error {
 	fmt.Printf("swamp v%v\n", Version)
