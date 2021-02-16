@@ -30,6 +30,10 @@ func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customT
 		panic("custom type is nil")
 	}
 
+	if customTypeVariant.ParameterCount() != len(arguments) {
+		panic(fmt.Sprintf("custom type variant constructor. wrong number of arguments %v %v", customTypeVariant.ParameterCount(), arguments))
+	}
+
 	return &CustomTypeVariantConstructor{
 		typeIdentifier: typeIdentifier, customTypeVariant: customTypeVariant,
 		arguments: arguments,
@@ -54,7 +58,6 @@ func (c *CustomTypeVariantConstructor) Type() dtype.Type {
 		resolvedTypes = append(resolvedTypes, resolved.Type())
 	}
 
-	fmt.Printf("call %v\n", c)
 	resolvedType, callErr := dectype.CallType(c.customTypeVariant, resolvedTypes)
 	if callErr != nil {
 		panic(callErr)
