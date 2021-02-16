@@ -899,13 +899,12 @@ func isIntLike(typeToCheck dtype.Type) bool {
 }
 
 func isListLike(typeToCheck dtype.Type) bool {
-	unaliasType := dectype.Unalias(typeToCheck)
+	unaliasType := dectype.UnaliasWithResolveInvoker(typeToCheck)
 	primitiveAtom, _ := unaliasType.(*dectype.PrimitiveAtom)
 	if primitiveAtom == nil {
 		return false
 	}
 	name := primitiveAtom.PrimitiveName().Name()
-
 	return name == "List"
 }
 
@@ -923,7 +922,7 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 			} else if isIntLike(e.Left().Type()) {
 				return generateArithmetic(code, target, e, genContext)
 			} else {
-				return fmt.Errorf("Cant generate arithmetic for type:%v %v", e.Left().Type(), e.OperatorType())
+				return fmt.Errorf("Cant generate arithmetic for type:%v <-> %v (%v)", e.Left().Type(), e.Right().Type(), e.OperatorType())
 			}
 		}
 
