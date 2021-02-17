@@ -35,9 +35,22 @@ func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
 	if !wasPrimitive {
 		return fmt.Errorf("wasn't same primitive %v", other)
 	}
+
 	if other.name.Name() != u.name.Name() {
 		return fmt.Errorf("not same primitive '%v' vs '%v'", u.name, other.name)
 	}
+
+	if other.ParameterCount() != u.ParameterCount() {
+		return fmt.Errorf("different number of parameters")
+	}
+
+	for index, genericType := range u.genericTypes {
+		otherGenericType := other.genericTypes[index]
+		if err := CompatibleTypes(genericType, otherGenericType); err != nil {
+			return fmt.Errorf("not same generic type %v and %v", genericType, otherGenericType)
+		}
+	}
+
 	return nil
 }
 
