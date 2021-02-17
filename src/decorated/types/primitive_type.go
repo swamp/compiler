@@ -47,7 +47,7 @@ func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
 	for index, genericType := range u.genericTypes {
 		otherGenericType := other.genericTypes[index]
 		if err := CompatibleTypes(genericType, otherGenericType); err != nil {
-			return fmt.Errorf("not same generic type %v and %v", genericType, otherGenericType)
+			return fmt.Errorf("not same generic type %v and %v %v", genericType.HumanReadable(), otherGenericType.HumanReadable(), err)
 		}
 	}
 

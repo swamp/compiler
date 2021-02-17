@@ -90,7 +90,7 @@ func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context
 
 	compatibleErr := dectype.CompatibleTypes(leftExpression.Type(), rightExpression.Type())
 	if compatibleErr != nil {
-		return nil, decorated.NewUnMatchingBinaryOperatorTypes(infix, rightExpression.Type(), leftExpression.Type())
+		return nil, decorated.NewUnMatchingBinaryOperatorTypes(infix, leftExpression.Type(), rightExpression.Type())
 	}
 
 	arithmeticOperatorType, worked := tryConvertToArithmeticOperator(infix.OperatorType())
