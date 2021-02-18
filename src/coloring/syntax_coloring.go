@@ -176,7 +176,7 @@ func SyntaxColor(code string) (string, error) {
 		return "", err
 	}
 	const enforceStyle = true
-	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, enforceStyle)
+	tokenizer, tokenizerErr := tokenize.NewTokenizerInternal(runeReader, enforceStyle)
 	if tokenizerErr != nil {
 		return "", tokenizerErr
 	}

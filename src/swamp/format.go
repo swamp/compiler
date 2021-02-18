@@ -24,7 +24,7 @@ func parseToProgram(moduleName string, x string, enforceStyle bool, verbose bool
 	if runeReaderErr != nil {
 		return nil, nil, decorated.NewInternalError(runeReaderErr)
 	}
-	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, enforceStyle)
+	tokenizer, tokenizerErr := tokenize.NewTokenizerInternal(runeReader, enforceStyle)
 	if tokenizerErr != nil {
 		const errorsAsWarnings = false
 		parser.ShowError(tokenizer, moduleName, tokenizerErr, verbose, errorsAsWarnings)

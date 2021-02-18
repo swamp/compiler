@@ -20,7 +20,7 @@ func Setup(x string) (*tokenize.Tokenizer, tokenize.TokenError) {
 		return nil, tokenize.NewInternalError(runeReaderErr)
 	}
 	const enforceStyle = true
-	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, enforceStyle)
+	tokenizer, tokenizerErr := tokenize.NewTokenizerInternal(runeReader, enforceStyle)
 	if tokenizerErr != nil {
 		return tokenizer, tokenizerErr
 	}

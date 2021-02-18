@@ -80,7 +80,7 @@ func replaceInterpolationStringToExpression(s string) (ast.Expression, parerr.Pa
 	runeReader, _ := runestream.NewRuneReader(reader, "internal interpolation string")
 
 	const exactWhitespace = true
-	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, exactWhitespace)
+	tokenizer, tokenizerErr := tokenize.NewTokenizerInternal(runeReader, exactWhitespace)
 	if tokenizerErr != nil {
 		return nil, tokenizerErr
 	}

@@ -64,19 +64,26 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 	return nil
 }
 
-// NewTokenizer :
-func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
+// NewTokenizerInternal :
+func NewTokenizerInternal(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
 	t := &Tokenizer{
 		r:                     r,
 		position:              token.NewPositionToken(token.NewPositionTopLeft(), 0),
 		lastTokenWasDelimiter: true,
 		enforceStyleGuide:     exactWhitespace,
 	}
+
+	return t, nil
+}
+
+// NewTokenizer :
+func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
 	verifyErr := verifyOctets(r.Octets(), r.RelativeFilename())
 	if verifyErr != nil {
-		return t, verifyErr
+		return nil, verifyErr
 	}
-	return t, nil
+
+	return NewTokenizerInternal(r, exactWhitespace)
 }
 
 func (t *Tokenizer) MakePositionLength(pos token.PositionToken) token.PositionLength {
