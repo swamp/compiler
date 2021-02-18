@@ -75,14 +75,32 @@ filterMap pred coll =
     __asm callexternal 00 coreListFilterMap 01 02
 
 
+__externalfn coreListFilterMap2 3
+filterMap2 : (a -> b -> Maybe c) -> List a -> List b -> List c
+filterMap2 pred a b =
+    __asm callexternal 00 coreListFilterMap2 01 02 03
+
+
 filter : (a -> Bool) -> List a -> List a
 filter pred coll =
     __asm callexternal 00 coreListFilter 01 02
 
 
+__externalfn coreListFilter2 3
+filter2 : (a -> b -> Bool) -> List a -> List b -> List b
+filter2 pred a b =
+    __asm callexternal 00 coreListFilter2 01 02 03
+
+
 remove : (a -> Bool) -> List a -> List a
 remove pred coll =
     __asm callexternal 00 coreListRemove 01 02
+
+
+__externalfn coreListRemove2 3
+remove2 : (a -> b -> Bool) -> List a -> List b -> List b
+remove2 pred a b =
+    __asm callexternal 00 coreListRemove2 01 02 03
 
 
 concatMap : (a -> List b) -> List a -> List b
