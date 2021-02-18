@@ -48,6 +48,7 @@ type ParseStream interface {
 	eatRightParen() parerr.ParseError
 	eatRightCurly() parerr.ParseError
 	eatRightBracket() parerr.ParseError
+	eatRightArrayBracket() parerr.ParseError
 	eatColon() parerr.ParseError
 	eatAccessor() parerr.ParseError
 	eatAssign() parerr.ParseError
@@ -88,6 +89,7 @@ type ParseStream interface {
 	maybeOneSpaceAndRightArrow() bool
 	maybeLeftParen() bool
 	maybeLeftCurly() bool
+	maybeRightArrayBracket() bool
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// detect. similar to maybe, but doesn't advance the token stream, only reports if the symbol is coming up.

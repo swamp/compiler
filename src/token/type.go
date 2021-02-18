@@ -42,6 +42,8 @@ const (
 	LeftCurlyBrace
 	RightBracket
 	LeftBracket
+	RightArrayBracket
+	LeftArrayBracket
 	Comma
 	If
 	Then

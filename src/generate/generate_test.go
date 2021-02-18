@@ -226,6 +226,27 @@ func [function a func(Bool -> List<Cool>) 1 [[constant1 hi #5] [constant2 anothe
 `)
 }
 
+func TestArrayLiteral(t *testing.T) {
+	testGenerate(t,
+		`
+type alias Cool =
+    { name : String
+    }
+
+
+a : Bool -> Array Cool
+a x =
+    [| { name = "hi" }, { name = "another" }, { name = "tjoho" } |]
+`, `
+func [function a 5 1 [[constant1 hi #5] [constant2 another #6] [constant3 tjoho #7]]]
+00: crs 2 [5]
+04: crs 3 [6]
+08: crs 4 [7]
+0c: crs 0 [2 3 4]
+12: ret
+`)
+}
+
 func TestListLiteral2(t *testing.T) {
 	testGenerate(t,
 		`

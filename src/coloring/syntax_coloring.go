@@ -23,6 +23,10 @@ func ColorOperator(t token.OperatorToken) string {
 	return color.HiGreenString(t.Raw())
 }
 
+func colorGuardToken(t token.GuardToken) string {
+	return color.HiGreenString(t.Raw())
+}
+
 func ColorOperatorString(t string) string {
 	return color.HiGreenString(t)
 }
@@ -165,6 +169,8 @@ func colorToken(t token.Token) string {
 		return colorAsm(v)
 	case token.LambdaToken:
 		return colorLambda(v)
+	case token.GuardToken:
+		return colorGuardToken(v)
 	}
 	panic(fmt.Sprintf("ColorToken: unknown type %T", t))
 }

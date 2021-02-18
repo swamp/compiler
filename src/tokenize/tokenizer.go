@@ -776,6 +776,13 @@ func (t *Tokenizer) readTermToken() (token.Token, error) {
 		t.unreadRune()
 		return token.NewParenToken(string(r), token.LeftCurlyBrace, singleCharLength, " { "), nil
 	} else if r == '[' {
+		nch := t.nextRune()
+		if nch == '|' {
+			return token.NewParenToken(string(r), token.LeftArrayBracket, singleCharLength, " [| "), nil
+		} else {
+			t.unreadRune()
+		}
+
 		return token.NewParenToken(string(r), token.LeftBracket, singleCharLength, " [ "), nil
 	} else if r == '_' {
 		nextRune := t.nextRune()

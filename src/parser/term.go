@@ -89,6 +89,8 @@ func (p *Parser) parseTermUsingToken(someToken token.Token, startIndentation int
 		return parseRecordLiteral(p.stream, startIndentation, someParenToken)
 	case token.LeftBracket:
 		return parseListLiteral(p.stream, someParenToken, startIndentation)
+	case token.LeftArrayBracket:
+		return parseArrayLiteral(p.stream, someParenToken, startIndentation)
 	default:
 		return nil, parerr.NewNotATermError(someToken)
 	}

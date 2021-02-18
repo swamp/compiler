@@ -101,6 +101,10 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			raw += string(nch)
 			debugString = "OR"
 			operatorType = token.OperatorOr
+		} else if nch == ']' {
+			raw += string(nch)
+			debugString = "|]"
+			operatorType = token.RightArrayBracket
 		} else {
 			operatorType = token.OperatorUpdate
 			t.unreadRune()

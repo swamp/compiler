@@ -1095,6 +1095,19 @@ a = [functionvalue ([[arg $x = [primitive Bool]]]) -> [ListLiteral List<Int> [[i
 `)
 }
 
+func TestArrayLiteral2(t *testing.T) {
+	testDecorate(t,
+		`
+a : Bool -> Array Int
+a x =
+    [| 10, 20, 99 |]
+`, `
+func(Bool -> Array<Int>) : [func  [primitive Bool] Array<Int>]
+
+a = [functionvalue ([[arg $x = [primitive Bool]]]) -> [ArrayLiteral Array<Int> [[integer 10] [integer 20] [integer 99]]]]
+`)
+}
+
 func TestListLiteral3(t *testing.T) {
 	testDecorate(t,
 		`

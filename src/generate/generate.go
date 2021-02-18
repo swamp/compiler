@@ -381,6 +381,7 @@ func generateBoolean(code *assembler.Code, target assembler.TargetVariable, oper
 	if foundPrimitive == nil {
 		return fmt.Errorf("could not find the left argument in the binary boolean operator to be a primitive. can not continue %v", operator)
 	}
+
 	opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
 	if foundPrimitive.AtomName() != "Int" {
 		opcodeBinaryOperator = booleanToBinaryValueOperatorType(operator.OperatorType())
@@ -389,6 +390,7 @@ func generateBoolean(code *assembler.Code, target assembler.TargetVariable, oper
 	code.BinaryOperator(target, leftVar, rightVar, opcodeBinaryOperator)
 	genContext.context.FreeVariableIfNeeded(leftVar)
 	genContext.context.FreeVariableIfNeeded(rightVar)
+
 	return nil
 }
 
@@ -842,6 +844,20 @@ func generateList(code *assembler.Code, target assembler.TargetVariable, list *d
 	return nil
 }
 
+func generateArray(code *assembler.Code, target assembler.TargetVariable, array *decorated.ArrayLiteral, genContext *generateContext) error {
+	variables := make([]assembler.SourceVariable, len(array.Expressions()))
+	for index, expr := range array.Expressions() {
+		debugName := fmt.Sprintf("arrayliteral%v", index)
+		exprVar, genErr := generateExpressionWithSourceVar(code, expr, genContext, debugName)
+		if genErr != nil {
+			return genErr
+		}
+		variables[index] = exprVar
+	}
+	code.Constructor(target, variables)
+	return nil
+}
+
 func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.DecoratedExpression, genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
 	getVar, _ := expr.(*decorated.GetVariableOrReferenceFunction)
 	if getVar != nil {
@@ -989,6 +1005,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.ListLiteral:
 		return generateList(code, target, e, genContext)
+
+	case *decorated.ArrayLiteral:
+		return generateArray(code, target, e, genContext)
 
 	case *decorated.FunctionCall:
 		return generateFunctionCall(code, target, e, genContext)

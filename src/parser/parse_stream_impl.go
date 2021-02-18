@@ -212,6 +212,10 @@ func (p *ParseStreamImpl) maybeLeftCurly() bool {
 	return p.tokenizer.MaybeString("{")
 }
 
+func (p *ParseStreamImpl) maybeRightArrayBracket() bool {
+	return p.tokenizer.MaybeString("|]")
+}
+
 func (p *ParseStreamImpl) maybeAccessor() bool {
 	return p.tokenizer.MaybeAccessor()
 }
@@ -901,6 +905,10 @@ func (p *ParseStreamImpl) eatRightCurly() parerr.ParseError {
 
 func (p *ParseStreamImpl) eatRightBracket() parerr.ParseError {
 	return p.eatRune(']')
+}
+
+func (p *ParseStreamImpl) eatRightArrayBracket() parerr.ParseError {
+	return p.eatString("|]")
 }
 
 func (p *ParseStreamImpl) eatOf() parerr.ParseError {

@@ -388,6 +388,14 @@ func TestListLiteralTwoItems(t *testing.T) {
 		`[list-literal: [#3 (#4 + #5)]]`)
 }
 
+func TestArrayLiteralTwoItems(t *testing.T) {
+	testParseExpression(t,
+		`
+[| 3, 4 + 5 |]
+`,
+		`[array-literal: [#3 (#4 + #5)]]`)
+}
+
 func TestSimpleAnnotation(t *testing.T) {
 	testParse(t,
 		`
