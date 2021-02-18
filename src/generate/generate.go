@@ -377,7 +377,10 @@ func generateBoolean(code *assembler.Code, target assembler.TargetVariable, oper
 		return rightErr
 	}
 
-	foundPrimitive, _ := operator.Left().Type().(*dectype.PrimitiveAtom)
+	foundPrimitive, _ := dectype.UnaliasWithResolveInvoker(operator.Left().Type()).(*dectype.PrimitiveAtom)
+	if foundPrimitive == nil {
+		return fmt.Errorf("could not find the left argument in the binary boolean operator to be a primitive. can not continue %v", operator)
+	}
 	opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
 	if foundPrimitive.AtomName() != "Int" {
 		opcodeBinaryOperator = booleanToBinaryValueOperatorType(operator.OperatorType())
@@ -889,7 +892,8 @@ func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Decora
 }
 
 func isIntLike(typeToCheck dtype.Type) bool {
-	primitiveAtom, _ := typeToCheck.(*dectype.PrimitiveAtom)
+	unaliasType := dectype.UnaliasWithResolveInvoker(typeToCheck)
+	primitiveAtom, _ := unaliasType.(*dectype.PrimitiveAtom)
 	if primitiveAtom == nil {
 		return false
 	}
