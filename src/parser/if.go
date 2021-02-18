@@ -36,7 +36,7 @@ func parseIf(p ParseStream, keyword token.Keyword, keywordIndentation int) (ast.
 	}
 
 	isIndentedBlock := foundIndentationAfterIf != keywordIndentation
-	consequence, consequenceErr := p.parseExpressionNormal(keywordIndentation)
+	consequence, consequenceErr := p.parseExpressionNormal(foundIndentationAfterIf)
 	if consequenceErr != nil {
 		return nil, consequenceErr
 	}
