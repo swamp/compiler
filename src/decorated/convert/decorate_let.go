@@ -23,6 +23,7 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 		decoratedAssignment := decorated.NewLetAssignment(assignment.Identifier(), decoratedExpression)
 		decoratedAssignments = append(decoratedAssignments, decoratedAssignment)
 		tempNamedExpression := decorated.NewNamedDecoratedExpression("let", nil, decoratedExpression)
+		tempNamedExpression.SetReferenced()
 		letVariableContext.Add(assignment.Identifier(), tempNamedExpression)
 	}
 

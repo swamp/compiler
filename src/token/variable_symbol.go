@@ -12,10 +12,11 @@ type VariableSymbolToken struct {
 	PositionLength
 	raw         string
 	Indentation int
+	sourceFile  *SourceFile
 }
 
-func NewVariableSymbolToken(raw string, startPosition PositionLength, indentation int) VariableSymbolToken {
-	return VariableSymbolToken{raw: raw, PositionLength: startPosition, Indentation: indentation}
+func NewVariableSymbolToken(raw string, sourceFile *SourceFile, startPosition PositionLength, indentation int) VariableSymbolToken {
+	return VariableSymbolToken{raw: raw, PositionLength: startPosition, sourceFile: sourceFile, Indentation: indentation}
 }
 
 func (s VariableSymbolToken) Type() Type {
@@ -36,4 +37,8 @@ func (s VariableSymbolToken) FetchIndentation() int {
 
 func (s VariableSymbolToken) String() string {
 	return fmt.Sprintf("$%s", s.raw)
+}
+
+func (s VariableSymbolToken) SourceFile() *SourceFile {
+	return s.sourceFile
 }

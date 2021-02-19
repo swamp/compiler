@@ -52,6 +52,8 @@ type Module struct {
 
 	externalFunctions []*ExternalFunction
 
+	isInternal bool
+
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 }
 
@@ -68,6 +70,14 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	m.declarations = NewModuleDeclarations(m)
 
 	return m
+}
+
+func (m *Module) MarkAsInternal() {
+	m.isInternal = true
+}
+
+func (m *Module) IsInternal() bool {
+	return m.isInternal
 }
 
 func (m *Module) AddExternalFunction(name string, parameterCount uint) {

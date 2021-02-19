@@ -19,13 +19,15 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	newVariableContext := context.MakeVariableContext()
 
 	for _, parameter := range parameters {
-		namedDecoratedExpression := decorated.NewNamedDecoratedExpression("___", nil, parameter)
+		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(parameter.Identifier().Name(), nil, parameter)
+		// namedDecoratedExpression.SetReferenced()
 		newVariableContext.Add(parameter.Identifier(), namedDecoratedExpression)
 	}
 
-	self := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", token.PositionLength{}, 0))
+	self := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.PositionLength{}, 0))
 	selfDef := decorated.NewFunctionParameterDefinition(self, forcedFunctionType)
 	namedDecoratedExpression := decorated.NewNamedDecoratedExpression(functionName.Name(), nil, selfDef)
+	namedDecoratedExpression.SetReferenced()
 	newVariableContext.Add(self, namedDecoratedExpression)
 
 	return newVariableContext
@@ -64,6 +66,16 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 	compatibleErr := dectype.CompatibleTypes(expectedReturnType, decoratedExpressionType)
 	if compatibleErr != nil {
 		return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, expression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
+	}
+
+	for _, functionVariable := range subVariableContext.InternalLookups() {
+		if !functionVariable.WasReferenced() {
+			_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
+			if !isAssemblerFunction {
+				sourceFileReference := potentialFunc.DebugFunctionIdentifier().SourceFile().ReferenceWithPositionString(potentialFunc.PositionLength().Position())
+				fmt.Printf("%s warning: '%v' not used in function %v\n", sourceFileReference, functionVariable.FullyQualifiedName(), potentialFunc.DebugFunctionIdentifier().Name())
+			}
+		}
 	}
 
 	return decorated.NewFunctionValue(forcedFunctionType, parameters, decoratedExpression), nil

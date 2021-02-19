@@ -8,10 +8,12 @@ package loader
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/token"
 )
 
 type ModuleReader interface {
@@ -96,5 +98,13 @@ func (l *ModuleRepository) FetchMainModuleInPackage(verboseFlag bool) (*decorate
 	emptyPackageRelativeModuleName := dectype.NewPackageRelativeModuleName(nil)
 	artifactFullyModuleName := l.moduleNamespace.Join(emptyPackageRelativeModuleName)
 
-	return l.FetchModuleInPackageEx(artifactFullyModuleName, emptyPackageRelativeModuleName, verboseFlag)
+	x, err := l.FetchModuleInPackageEx(artifactFullyModuleName, emptyPackageRelativeModuleName, verboseFlag)
+	if err != nil {
+		return nil, err
+	}
+
+	x.Definitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("main", nil, token.PositionLength{}, 0)))
+	x.Definitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("init", nil, token.PositionLength{}, 0)))
+
+	return x, nil
 }

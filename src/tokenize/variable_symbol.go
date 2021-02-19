@@ -29,5 +29,5 @@ func (t *Tokenizer) ParseVariableSymbol() (token.VariableSymbolToken, TokenError
 		}
 		a += string(ch)
 	}
-	return token.NewVariableSymbolToken(a, t.MakePositionLength(startPos), startPos.Indentation()), nil
+	return token.NewVariableSymbolToken(a, t.SourceFile(), t.MakePositionLength(startPos), startPos.Indentation()), nil
 }

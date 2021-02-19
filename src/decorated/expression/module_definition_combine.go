@@ -25,5 +25,7 @@ func (d *ModuleDefinitionsCombine) FindDefinitionExpression(identifier *ast.Vari
 		return d.importDefinitions.FindDefinition(identifier)
 	}
 
+	foundDef.MarkAsReferenced()
+
 	return foundDef
 }

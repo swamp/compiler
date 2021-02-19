@@ -92,7 +92,7 @@ func (d *ModuleReferenceDefinitions) AddDefinitions(definitions []*ModuleDefinit
 func (d *ModuleReferenceDefinitions) AddDefinitionsWithModulePrefix(definitions []*ModuleDefinition, relative dectype.PackageRelativeModuleName) error {
 	for _, def := range definitions {
 		completeName := relative.JoinLocalName(def.Identifier())
-		addErr := d.AddDefinition(ast.NewVariableIdentifier(token.NewVariableSymbolToken(completeName, token.PositionLength{}, 0)), def)
+		addErr := d.AddDefinition(ast.NewVariableIdentifier(token.NewVariableSymbolToken(completeName, nil, token.PositionLength{}, 0)), def)
 		if addErr != nil {
 			return addErr
 		}
@@ -105,6 +105,9 @@ func (d *ModuleReferenceDefinitions) FindDefinition(identifier *ast.VariableIden
 	if !wasFound {
 		return nil
 	}
+
+	def.MarkAsReferenced()
+
 	return def
 }
 

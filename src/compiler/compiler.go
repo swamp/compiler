@@ -24,6 +24,20 @@ import (
 	swampdisasm "github.com/swamp/disassembler/lib"
 )
 
+func CheckUnused(world *loader.World) {
+	for _, module := range world.AllModules() {
+		if module.IsInternal() {
+			continue
+		}
+		for _, def := range module.Definitions().Definitions() {
+			if !def.WasReferenced() {
+				sourceFileReference := def.Identifier().Symbol().SourceFile().ReferenceWithPositionString(def.Identifier().PositionLength().Position())
+				fmt.Printf("%s Warning: '%v:%v' is never referenced\n", sourceFileReference, module.FullyQualifiedModuleName(), def.Identifier().Name())
+			}
+		}
+	}
+}
+
 func CompileMain(mainSourceFile string, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
@@ -50,6 +64,8 @@ func CompileMain(mainSourceFile string, enforceStyle bool, verboseFlag bool) (*l
 		return nil, nil, libErr
 	}
 	// color.Cyan(fmt.Sprintf("=> importing package %v as top package", mainPrefix))
+
+	CheckUnused(world)
 
 	return world, libraryModule, nil
 }
@@ -88,7 +104,7 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 		allFunctions = append(allFunctions, functions...)
 		externalFunctions := module.ExternalFunctions()
 		for _, externalFunction := range externalFunctions {
-			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.FunctionName, token.PositionLength{}, 0)))
+			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.FunctionName, nil, token.PositionLength{}, 0)))
 			fakeFunc := generate.NewExternalFunction(fakeName, 0, externalFunction.ParameterCount)
 			allExternalFunctions = append(allExternalFunctions, fakeFunc)
 		}

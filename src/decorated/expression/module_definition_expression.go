@@ -15,6 +15,7 @@ type ModuleDefinition struct {
 	localIdentifier *ast.VariableIdentifier
 	createdIn       *ModuleDefinitions
 	expr            DecoratedExpression
+	wasReferenced   bool
 }
 
 func NewModuleDefinition(createdIn *ModuleDefinitions, identifier *ast.VariableIdentifier, expr DecoratedExpression) *ModuleDefinition {
@@ -41,4 +42,12 @@ func (d *ModuleDefinition) ShortString() string {
 
 func (d *ModuleDefinition) Expression() DecoratedExpression {
 	return d.expr
+}
+
+func (d *ModuleDefinition) MarkAsReferenced() {
+	d.wasReferenced = true
+}
+
+func (d *ModuleDefinition) WasReferenced() bool {
+	return d.wasReferenced
 }

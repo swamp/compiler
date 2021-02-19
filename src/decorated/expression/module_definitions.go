@@ -41,6 +41,7 @@ func (d *ModuleDefinitions) FindDefinitionExpression(identifier *ast.VariableIde
 	if !wasFound {
 		return nil
 	}
+	expressionDef.MarkAsReferenced()
 	return expressionDef
 }
 

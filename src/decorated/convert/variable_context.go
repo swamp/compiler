@@ -24,7 +24,14 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 
 func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) *decorated.NamedDecoratedExpression {
 	def := c.FindNamedDecoratedExpression(name)
+	if def != nil {
+		def.SetReferenced()
+	}
 	return def
+}
+
+func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecoratedExpression {
+	return c.lookup
 }
 
 func (c *VariableContext) FindNamedDecoratedExpression(name *ast.VariableIdentifier) *decorated.NamedDecoratedExpression {

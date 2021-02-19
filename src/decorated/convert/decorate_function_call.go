@@ -64,10 +64,10 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	beforeFakeIdentifier, wasIdentifier := call.FunctionExpression().(*ast.VariableIdentifier)
 
 	if wasIdentifier && beforeFakeIdentifier.Name() == "recur" {
-		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", token.PositionLength{}, 0))
+		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.PositionLength{}, 0))
 		namedDef := context.ResolveVariable(fakeIdent)
 
-		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(namedDef.FullyQualifiedName(), token.PositionLength{}, 0))
+		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(namedDef.FullyQualifiedName(), nil, token.PositionLength{}, 0))
 		getVar := decorated.NewGetVariable(fakeFunctionName, namedDef)
 		decoratedFunctionExpression = getVar
 	} else {
@@ -122,8 +122,9 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 
 	functionValueExpression := NewFakeExpression(fn)
 	functionValueDecoratedExpression := decorated.NewNamedDecoratedExpression("x", nil, functionValueExpression)
+	functionValueDecoratedExpression.SetReferenced()
 
-	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdentifier.Identifier().Name(), token.PositionLength{}, 8))
+	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdentifier.Identifier().Name(), nil, token.PositionLength{}, 8))
 	getVariableExpression := decorated.NewGetVariable(fakeVariable, functionValueDecoratedExpression)
 
 	if isCurrying {
