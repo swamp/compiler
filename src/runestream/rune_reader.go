@@ -30,8 +30,8 @@ type RuneReader struct {
 }
 
 // NewRuneReader :
-func NewRuneReader(r io.Reader, relativeFilename string) (*RuneReader, error) {
-	if len(relativeFilename) == 0 {
+func NewRuneReader(r io.Reader, absoluteFilename string) (*RuneReader, error) {
+	if len(absoluteFilename) == 0 {
 		panic("relative filename can not be null")
 	}
 	octets, octetsErr := ioutil.ReadAll(r)
@@ -39,7 +39,7 @@ func NewRuneReader(r io.Reader, relativeFilename string) (*RuneReader, error) {
 		return nil, octetsErr
 	}
 	octets = append(octets, 0)
-	return &RuneReader{octets: octets, relativeFilename: relativeFilename}, nil
+	return &RuneReader{octets: octets, relativeFilename: absoluteFilename}, nil
 }
 
 func (s *RuneReader) Octets() []byte {

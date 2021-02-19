@@ -10,6 +10,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/token"
 )
 
 type FullyQualifiedVariableName struct {
@@ -52,16 +53,17 @@ type Module struct {
 
 	externalFunctions []*ExternalFunction
 
-	isInternal bool
-
+	isInternal               bool
+	sourceFile               *token.SourceFile
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 }
 
-func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName) *Module {
+func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFile *token.SourceFile) *Module {
 	importedTypes := dectype.NewExposedTypes()
 	m := &Module{
 		fullyQualifiedModuleName: fullyQualifiedModuleName, exposedTypes: dectype.NewExposedTypes(),
 		importedTypes: importedTypes,
+		sourceFile:    sourceFile,
 	}
 	m.typeRepo = dectype.NewTypeRepo(fullyQualifiedModuleName, importedTypes)
 	m.definitions = NewModuleDefinitions(m)

@@ -21,7 +21,7 @@ import (
 func testGenerateInternal(code string) ([]*Function, error) {
 	const useCores = true
 	const errorsAsWarnings = false
-	module, compileErr := deccy.CompileToModuleOnce(code, useCores, errorsAsWarnings)
+	module, compileErr := deccy.CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
 	if compileErr != nil {
 		return nil, compileErr
 	}

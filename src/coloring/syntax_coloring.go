@@ -181,13 +181,16 @@ func SyntaxColor(code string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	const enforceStyle = true
+
 	tokenizer, tokenizerErr := tokenize.NewTokenizerInternal(runeReader, enforceStyle)
 	if tokenizerErr != nil {
 		return "", tokenizerErr
 	}
 
 	a := ""
+
 	for {
 		token, tokenErr := tokenizer.ReadTermToken()
 		if tokenErr != nil {

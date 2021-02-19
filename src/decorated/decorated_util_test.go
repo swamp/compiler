@@ -16,7 +16,7 @@ import (
 
 func testDecorateInternal(code string, useCores bool, errorsAsWarnings bool) (string, decshared.DecoratedError) {
 	code = strings.TrimSpace(code)
-	module, compileErr := CompileToModuleOnce(code, useCores, errorsAsWarnings)
+	module, compileErr := CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
 	if compileErr != nil {
 		return "", compileErr
 	}

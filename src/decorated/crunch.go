@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/token"
 
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
@@ -26,32 +27,37 @@ func (*NoImportModuleRepository) FetchModuleInPackage(moduleName dectype.Package
 	return nil, decorated.NewInternalError(fmt.Errorf("this is a no import module. Imports are not allowed"))
 }
 
-func CompileToModuleOnce(x string, useCores bool, errorsAsWarnings bool) (*decorated.Module, decshared.DecoratedError) {
+func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings bool) (*decorated.Module, decshared.DecoratedError) {
 	rootModules, importModules, rootModuleErr := CreateDefaultRootModule(useCores)
 	if rootModuleErr != nil {
 		return nil, rootModuleErr
 	}
+
 	importRepository := &NoImportModuleRepository{}
+
 	const verbose = true
+
 	const enforceStyle = true
-	return InternalCompileToModule(importRepository, rootModules, importModules, dectype.MakeArtifactFullyQualifiedModuleName(nil), "for test", x,
+
+	return InternalCompileToModule(importRepository, rootModules, importModules, dectype.MakeArtifactFullyQualifiedModuleName(nil), "for test", code,
 		enforceStyle, verbose, errorsAsWarnings)
 }
 
-func InternalCompileToProgram(moduleName dectype.ArtifactFullyQualifiedModuleName, relativeFilename string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.Program, decshared.DecoratedError) {
-	ioReader := strings.NewReader(x)
-	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, relativeFilename)
+func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.Program, decshared.DecoratedError) {
+	ioReader := strings.NewReader(code)
+	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, absoluteFilename)
 	if runeReaderErr != nil {
 		return nil, nil, decorated.NewInternalError(runeReaderErr)
 	}
+
 	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, enforceStyle)
 	if tokenizerErr != nil {
 		const errorsAsWarnings = false
-		parser.ShowError(tokenizer, relativeFilename, tokenizerErr, verbose, errorsAsWarnings)
+		parser.ShowError(tokenizer, absoluteFilename, tokenizerErr, verbose, errorsAsWarnings)
 		return tokenizer, nil, tokenizerErr
 	}
-	p := parser.NewParser(tokenizer, enforceStyle)
 
+	p := parser.NewParser(tokenizer, enforceStyle)
 	program, programErr := p.Parse()
 	if programErr != nil {
 		return tokenizer, nil, programErr
@@ -61,15 +67,16 @@ func InternalCompileToProgram(moduleName dectype.ArtifactFullyQualifiedModuleNam
 }
 
 func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*decorated.Module,
-	importModules []*decorated.Module, moduleName dectype.ArtifactFullyQualifiedModuleName, relativeFilename string, x string,
+	importModules []*decorated.Module, moduleName dectype.ArtifactFullyQualifiedModuleName, absoluteFilename string, code string,
 	enforceStyle bool, verbose bool, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
-	tokenizer, program, programErr := InternalCompileToProgram(moduleName, relativeFilename, x, enforceStyle, verbose)
+	tokenizer, program, programErr := InternalCompileToProgram(absoluteFilename, code, enforceStyle, verbose)
 	if programErr != nil {
-		parser.ShowError(tokenizer, relativeFilename, programErr, verbose, errorAsWarning)
+		parser.ShowError(tokenizer, absoluteFilename, programErr, verbose, errorAsWarning)
 		return nil, programErr
 	}
+	sourceFile := token.MakeSourceFile(absoluteFilename)
 
-	module := decorated.NewModule(moduleName)
+	module := decorated.NewModule(moduleName, sourceFile)
 
 	converter := NewDecorator(moduleRepository, module)
 
@@ -91,7 +98,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	definerScan := decorator.NewDefiner(converter, module.TypeRepo(), "compiletomodule")
 	generateErr := definerScan.Define(program)
 	if generateErr != nil {
-		parser.ShowError(tokenizer, relativeFilename, generateErr, verbose, errorAsWarning)
+		parser.ShowError(tokenizer, absoluteFilename, generateErr, verbose, errorAsWarning)
 		return nil, generateErr
 	}
 

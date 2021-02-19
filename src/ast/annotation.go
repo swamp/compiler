@@ -17,12 +17,12 @@ type Annotation struct {
 	commentBlock  token.CommentBlock
 }
 
-func NewAnnotation(NewAnnotation *VariableIdentifier, annotatedType Type, commentBlock token.CommentBlock) *Annotation {
+func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, commentBlock token.CommentBlock) *Annotation {
 	if annotatedType == nil {
 		panic("must set annotated type")
 	}
 
-	return &Annotation{symbol: NewAnnotation, annotatedType: annotatedType, commentBlock: commentBlock}
+	return &Annotation{symbol: variableIdentifier, annotatedType: annotatedType, commentBlock: commentBlock}
 }
 
 func (d *Annotation) CommentBlock() token.CommentBlock {

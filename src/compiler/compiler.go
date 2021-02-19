@@ -79,7 +79,7 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 	gen := generate.NewGenerator()
 	var allFunctions []*generate.Function
 	var allExternalFunctions []*generate.ExternalFunction
-	fakeMod := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(nil))
+	fakeMod := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), nil)
 
 	typeInformationChunk, err := typeinfo.Generate(world)
 	if err != nil {

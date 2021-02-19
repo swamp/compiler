@@ -17,7 +17,7 @@ import (
 func testColor(t *testing.T, code string) {
 	code = strings.TrimSpace(code)
 	const useCores = true
-	module, compileErr := deccy.CompileToModuleOnce(code, useCores, false)
+	module, compileErr := deccy.CompileToModuleOnceForTest(code, useCores, false)
 	if compileErr != nil {
 		t.Fatal(compileErr)
 	}

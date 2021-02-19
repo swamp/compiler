@@ -35,8 +35,8 @@ func (w *WorldDecorator) ImportModules() []*decorated.Module {
 	return w.importModules
 }
 
-func (w *WorldDecorator) RunesToModule(moduleRepository deccy.ModuleRepository, moduleName dectype.ArtifactFullyQualifiedModuleName, relativeFilename string, str string) (*decorated.Module, decshared.DecoratedError) {
+func (w *WorldDecorator) RunesToModule(moduleRepository deccy.ModuleRepository, moduleName dectype.ArtifactFullyQualifiedModuleName, absoluteFilename string, str string) (*decorated.Module, decshared.DecoratedError) {
 	const errorsAsWarnings = false
-	return deccy.InternalCompileToModule(moduleRepository, w.rootModules, w.importModules, moduleName, relativeFilename, str,
+	return deccy.InternalCompileToModule(moduleRepository, w.rootModules, w.importModules, moduleName, absoluteFilename, str,
 		w.forceStyle, w.verbose, errorsAsWarnings)
 }
