@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -14,6 +15,15 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
+
+func CheckForNoLint(commentBlock token.CommentBlock) string {
+	for _, comment := range commentBlock.Comments {
+		if strings.HasPrefix(comment.CommentString, "nolint:") {
+			return strings.TrimSpace(strings.TrimPrefix(comment.CommentString, "nolint:"))
+		}
+	}
+	return ""
+}
 
 func createVariableContextFromParameters(context *VariableContext, parameters []*decorated.FunctionParameterDefinition, forcedFunctionType *dectype.FunctionAtom, functionName *ast.VariableIdentifier) *VariableContext {
 	newVariableContext := context.MakeVariableContext()
@@ -34,7 +44,7 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 }
 
 func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom,
-	functionName *ast.VariableIdentifier, context *VariableContext, comments []ast.LocalComment) (decorated.DecoratedExpression, decshared.DecoratedError) {
+	functionName *ast.VariableIdentifier, context *VariableContext, comments token.CommentBlock) (decorated.DecoratedExpression, decshared.DecoratedError) {
 	if forcedFunctionType == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", potentialFunc))
 	}
@@ -68,15 +78,20 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 		return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, expression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
 	}
 
-	for _, functionVariable := range subVariableContext.InternalLookups() {
-		if !functionVariable.WasReferenced() {
-			_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
-			if !isAssemblerFunction {
-				sourceFileReference := potentialFunc.DebugFunctionIdentifier().SourceFile().ReferenceWithPositionString(potentialFunc.PositionLength().Position())
-				fmt.Printf("%s warning: '%v' not used in function %v\n", sourceFileReference, functionVariable.FullyQualifiedName(), potentialFunc.DebugFunctionIdentifier().Name())
+	checkForNoLint := CheckForNoLint(comments)
+	if checkForNoLint != "unused" {
+		for _, functionVariable := range subVariableContext.InternalLookups() {
+			if !functionVariable.WasReferenced() {
+				_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
+				if !isAssemblerFunction {
+					sourceFileReference := potentialFunc.DebugFunctionIdentifier().SourceFile().ReferenceWithPositionString(potentialFunc.PositionLength().Position())
+					fmt.Printf("%s warning: '%v' not used in function %v\n", sourceFileReference, functionVariable.FullyQualifiedName(), potentialFunc.DebugFunctionIdentifier().Name())
+				}
 			}
 		}
+	} else {
+		fmt.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
 	}
 
-	return decorated.NewFunctionValue(forcedFunctionType, parameters, decoratedExpression), nil
+	return decorated.NewFunctionValue(forcedFunctionType, parameters, decoratedExpression, comments), nil
 }

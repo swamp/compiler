@@ -17,11 +17,12 @@ import (
 )
 
 type Definer struct {
-	typeRepo        *dectype.TypeRepo
-	localAnnotation *LocalAnnotation
-	localComments   []ast.LocalComment
-	verboseFlag     bool
-	dectorateStream DecorateStream
+	typeRepo          *dectype.TypeRepo
+	localAnnotation   *LocalAnnotation
+	localComments     []ast.LocalComment
+	localCommentBlock token.CommentBlock
+	verboseFlag       bool
+	dectorateStream   DecorateStream
 }
 
 func NewDefiner(dectorateStream DecorateStream, typeRepo *dectype.TypeRepo, debugName string) *Definer {
@@ -158,11 +159,12 @@ func (g *Definer) handleDefinitionAssignment(d DecorateStream, assignment *ast.D
 	}
 	g.localAnnotation = nil
 	variableContext := d.NewVariableContext()
-	g.localComments = nil
-	_, decoratedExpressionErr := decorateDefinition(d, variableContext, name, expr, annotatedType, g.localComments)
+	_, decoratedExpressionErr := decorateDefinition(d, variableContext, name, expr, annotatedType, g.localCommentBlock)
 	if decoratedExpressionErr != nil {
 		return decoratedExpressionErr
 	}
+	g.localComments = nil
+
 	g.localAnnotation = nil
 	return nil
 }
@@ -172,13 +174,14 @@ func (g *Definer) handleAnnotation(declaration *ast.Annotation) decshared.Decora
 		return decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
 	}
 	annotatedType := declaration.AnnotatedType()
-	{
-		_, declareErr := g.functionAnnotation(declaration.Identifier(), annotatedType)
-		if declareErr != nil {
-			return declareErr
-		}
-		return nil
+	g.localCommentBlock = declaration.CommentBlock()
+
+	_, declareErr := g.functionAnnotation(declaration.Identifier(), annotatedType)
+	if declareErr != nil {
+		return declareErr
 	}
+
+	return nil
 }
 
 func (g *Definer) handleStatement(statement ast.Expression) decshared.DecoratedError {

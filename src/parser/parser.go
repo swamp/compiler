@@ -51,8 +51,6 @@ func NewParser(tokenizer *tokenize.Tokenizer, enforceStyle bool) *Parser {
 func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
 	var expressions []ast.Expression
 
-	var precedingComments token.CommentBlock
-
 	for !p.stream.tokenizer.MaybeEOF() {
 		report, skipLinesErr := p.stream.tokenizer.SkipWhitespaceAllowCommentsToNextIndentation()
 		if skipLinesErr != nil {
@@ -63,7 +61,7 @@ func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
 			return nil, parerr.NewExtraSpacing(p.stream.positionLength())
 		}
 
-		expression, expressionErr := p.parseExpressionStatement(precedingComments)
+		expression, expressionErr := p.parseExpressionStatement(report.Comments)
 		if expressionErr != nil {
 			return nil, expressionErr
 		}
@@ -76,8 +74,6 @@ func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
 		if mustHaveLineAfterStatementErr != nil {
 			return nil, parerr.NewExpectedTwoLinesAfterStatement(mustHaveLineAfterStatementErr)
 		}
-
-		precedingComments = report.Comments
 	}
 
 	program := ast.NewProgram(expressions)

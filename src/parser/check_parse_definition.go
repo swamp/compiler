@@ -27,5 +27,5 @@ func checkAndParseAnnotationOrDefinition(stream ParseStream, variableSymbol toke
 		return ParseAnnotation(stream, variableIdentifier, commentBlock)
 	}
 
-	return parseDefinition(stream, variableIdentifier)
+	return parseDefinition(stream, variableIdentifier, commentBlock)
 }

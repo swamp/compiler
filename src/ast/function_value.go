@@ -15,14 +15,23 @@ type FunctionValue struct {
 	parameters         []*VariableIdentifier
 	expression         Expression
 	debugAssignedValue token.VariableSymbolToken
+	commentBlock       token.CommentBlock
 }
 
-func NewFunctionValue(debugAssignedValue token.VariableSymbolToken, parameters []*VariableIdentifier, expression Expression) *FunctionValue {
-	return &FunctionValue{debugAssignedValue: debugAssignedValue, parameters: parameters, expression: expression}
+func NewFunctionValue(debugAssignedValue token.VariableSymbolToken, parameters []*VariableIdentifier,
+	expression Expression, commentBlock token.CommentBlock) *FunctionValue {
+	return &FunctionValue{
+		debugAssignedValue: debugAssignedValue, parameters: parameters,
+		expression: expression, commentBlock: commentBlock,
+	}
 }
 
 func (i *FunctionValue) Parameters() []*VariableIdentifier {
 	return i.parameters
+}
+
+func (i *FunctionValue) CommentBlock() token.CommentBlock {
+	return i.commentBlock
 }
 
 func (i *FunctionValue) Expression() Expression {

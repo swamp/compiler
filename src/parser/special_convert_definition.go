@@ -8,9 +8,11 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
+	"github.com/swamp/compiler/src/token"
 )
 
-func parseDefinition(p ParseStream, ident *ast.VariableIdentifier) (ast.Expression, parerr.ParseError) {
+func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
+	commentBlock token.CommentBlock) (ast.Expression, parerr.ParseError) {
 	var parameters []*ast.VariableIdentifier
 	keywordIndentation := ident.Symbol().FetchIndentation()
 	for {
@@ -40,7 +42,7 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier) (ast.Expressi
 		return nil, exprErr
 	}
 
-	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, expr)
+	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, expr, commentBlock)
 
 	return ast.NewDefinitionAssignment(ident, newFunction), nil
 }
