@@ -24,7 +24,7 @@ func (e *ExtraTypeParameterError) Error() string {
 	return fmt.Sprintf("you defined %v but wasn't used in type %v", e.extraParameter, e.searchedType)
 }
 
-func (e *ExtraTypeParameterError) FetchPositionLength() token.PositionLength {
+func (e *ExtraTypeParameterError) FetchPositionLength() token.Range {
 	return e.extraParameter.ident.Symbol().FetchPositionLength()
 }
 
@@ -38,7 +38,7 @@ func NewUndefinedTypeParameterError(extraParameter *TypeParameter,
 	return &UndefinedTypeParameterError{extraParameter: extraParameter, context: context}
 }
 
-func (e *UndefinedTypeParameterError) FetchPositionLength() token.PositionLength {
+func (e *UndefinedTypeParameterError) FetchPositionLength() token.Range {
 	return e.extraParameter.ident.Symbol().FetchPositionLength()
 }
 

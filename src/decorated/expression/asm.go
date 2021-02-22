@@ -35,6 +35,6 @@ func (i *AsmConstant) String() string {
 	return fmt.Sprintf("[asm %v]", i.asm.Asm())
 }
 
-func (i *AsmConstant) FetchPositionAndLength() token.PositionLength {
-	return i.asm.PositionLength()
+func (i *AsmConstant) FetchPositionLength() token.Range {
+	return i.asm.FetchPositionLength()
 }

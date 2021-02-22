@@ -6,6 +6,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -77,6 +79,16 @@ func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
 	}
 
 	program := ast.NewProgram(expressions)
+
+	lastLine := -1
+	for _, node := range p.stream.nodes {
+		rangeFound := node.FetchPositionLength()
+		if rangeFound.Start().Line() != lastLine {
+			fmt.Printf("\n")
+			lastLine = rangeFound.End().Line()
+		}
+		fmt.Printf("%v ", node)
+	}
 
 	return program, nil
 }
@@ -161,17 +173,6 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 		return nil, tErr
 	}
 
-	switch tok := t.(type) {
-	case token.MultiLineCommentToken:
-		{
-			return parseMultiLineComment(p.stream, tok)
-		}
-	case token.SingleLineCommentToken:
-		{
-			return parseSingleLineComment(p.stream, tok)
-		}
-	}
-
 	term, termErr := p.parseTermUsingToken(t, startIndentation)
 	if termErr != nil {
 		switch termErr.(type) {
@@ -195,6 +196,7 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 		}
 	}
 
+	p.stream.nodes = append(p.stream.nodes, leftExp)
 	_, isTypeIdentifier := term.(*ast.TypeIdentifier)
 	_, isVariableIdentifier := term.(*ast.VariableIdentifier)
 

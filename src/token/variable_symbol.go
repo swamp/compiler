@@ -9,14 +9,14 @@ import "fmt"
 
 // VariableSymbolToken :
 type VariableSymbolToken struct {
-	PositionLength
+	Range
 	raw         string
 	Indentation int
 	sourceFile  *SourceFile
 }
 
-func NewVariableSymbolToken(raw string, sourceFile *SourceFile, startPosition PositionLength, indentation int) VariableSymbolToken {
-	return VariableSymbolToken{raw: raw, PositionLength: startPosition, sourceFile: sourceFile, Indentation: indentation}
+func NewVariableSymbolToken(raw string, sourceFile *SourceFile, startPosition Range, indentation int) VariableSymbolToken {
+	return VariableSymbolToken{raw: raw, Range: startPosition, sourceFile: sourceFile, Indentation: indentation}
 }
 
 func (s VariableSymbolToken) Type() Type {

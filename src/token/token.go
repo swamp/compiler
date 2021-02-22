@@ -7,7 +7,7 @@ package token
 
 // Token :
 type Token interface {
-	FetchPositionLength() PositionLength
+	FetchPositionLength() Range
 	Type() Type
 	String() string
 }

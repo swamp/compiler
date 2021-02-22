@@ -24,7 +24,7 @@ func (i *FixedLiteral) Value() int32 {
 	return i.value
 }
 
-func (i *FixedLiteral) PositionLength() token.PositionLength {
+func (i *FixedLiteral) FetchPositionLength() token.Range {
 	return i.Token.FetchPositionLength()
 }
 

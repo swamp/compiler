@@ -38,6 +38,6 @@ func (c *FunctionCall) String() string {
 	return fmt.Sprintf("[fcall %v %v]", c.functionType, c.assignments)
 }
 
-func (c *FunctionCall) FetchPositionAndLength() token.PositionLength {
-	return c.assignments[0].FetchPositionAndLength()
+func (c *FunctionCall) FetchPositionLength() token.Range {
+	return c.assignments[0].FetchPositionLength()
 }

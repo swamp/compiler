@@ -9,14 +9,14 @@ import "fmt"
 
 // OperatorToken :
 type OperatorToken struct {
-	PositionLength
+	Range
 	operatorType Type
 	raw          string
 	debugString  string
 }
 
-func NewOperatorToken(operatorType Type, startPosition PositionLength, raw string, debugString string) OperatorToken {
-	return OperatorToken{operatorType: operatorType, PositionLength: startPosition, raw: raw, debugString: debugString}
+func NewOperatorToken(operatorType Type, startPosition Range, raw string, debugString string) OperatorToken {
+	return OperatorToken{operatorType: operatorType, Range: startPosition, raw: raw, debugString: debugString}
 }
 
 func (s OperatorToken) Type() Type {

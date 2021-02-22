@@ -9,12 +9,12 @@ import "fmt"
 
 // RuneToken :
 type RuneToken struct {
-	PositionLength
+	Range
 	text rune
 }
 
-func NewRuneToken(text rune, position PositionLength) RuneToken {
-	return RuneToken{text: text, PositionLength: position}
+func NewRuneToken(text rune, position Range) RuneToken {
+	return RuneToken{text: text, Range: position}
 }
 
 func (s RuneToken) Type() Type {

@@ -6,12 +6,12 @@
 package token
 
 type LambdaToken struct {
-	PositionLength
+	Range
 	debugString string
 }
 
-func NewLambdaToken(startPosition PositionLength, debugString string) LambdaToken {
-	return LambdaToken{PositionLength: startPosition, debugString: debugString}
+func NewLambdaToken(startPosition Range, debugString string) LambdaToken {
+	return LambdaToken{Range: startPosition, debugString: debugString}
 }
 
 func (s LambdaToken) Type() Type {

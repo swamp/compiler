@@ -7,11 +7,11 @@ package token
 
 // LineDelimiterToken :
 type LineDelimiterToken struct {
-	PositionLength
+	Range
 }
 
-func NewLineDelimiter(position PositionLength) LineDelimiterToken {
-	return LineDelimiterToken{PositionLength: position}
+func NewLineDelimiter(position Range) LineDelimiterToken {
+	return LineDelimiterToken{Range: position}
 }
 
 func (s LineDelimiterToken) String() string {

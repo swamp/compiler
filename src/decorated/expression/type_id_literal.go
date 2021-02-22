@@ -35,6 +35,6 @@ func (i *TypeIdLiteral) String() string {
 	return fmt.Sprintf("[typeid %v]", i.typeId)
 }
 
-func (i *TypeIdLiteral) FetchPositionAndLength() token.PositionLength {
-	return i.typeId.PositionLength()
+func (i *TypeIdLiteral) FetchPositionLength() token.Range {
+	return i.typeId.FetchPositionLength()
 }

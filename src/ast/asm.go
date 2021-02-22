@@ -13,10 +13,10 @@ import (
 
 type Asm struct {
 	tokens string
-	posLen token.PositionLength
+	posLen token.Range
 }
 
-func NewAsm(tokens string, posLen token.PositionLength) *Asm {
+func NewAsm(tokens string, posLen token.Range) *Asm {
 	return &Asm{tokens: tokens, posLen: posLen}
 }
 
@@ -24,7 +24,7 @@ func (d *Asm) Asm() string {
 	return d.tokens
 }
 
-func (d *Asm) PositionLength() token.PositionLength {
+func (d *Asm) FetchPositionLength() token.Range {
 	return d.posLen
 }
 

@@ -24,8 +24,8 @@ func (i *Lookups) ContextIdentifier() *VariableIdentifier {
 	return i.contextIdentifier
 }
 
-func (i *Lookups) PositionLength() token.PositionLength {
-	return i.contextIdentifier.PositionLength()
+func (i *Lookups) FetchPositionLength() token.Range {
+	return i.contextIdentifier.FetchPositionLength()
 }
 
 func (i *Lookups) FieldNames() []*VariableIdentifier {

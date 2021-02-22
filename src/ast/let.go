@@ -49,8 +49,8 @@ func (i *Let) Consequence() Expression {
 	return i.consequence
 }
 
-func (i *Let) PositionLength() token.PositionLength {
-	return i.consequence.PositionLength()
+func (i *Let) FetchPositionLength() token.Range {
+	return i.consequence.FetchPositionLength()
 }
 
 func (i *Let) String() string {

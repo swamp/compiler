@@ -34,7 +34,7 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 		newVariableContext.Add(parameter.Identifier(), namedDecoratedExpression)
 	}
 
-	self := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.PositionLength{}, 0))
+	self := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.Range{}, 0))
 	selfDef := decorated.NewFunctionParameterDefinition(self, forcedFunctionType)
 	namedDecoratedExpression := decorated.NewNamedDecoratedExpression(functionName.Name(), nil, selfDef)
 	namedDecoratedExpression.SetReferenced()
@@ -84,7 +84,7 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 			if !functionVariable.WasReferenced() {
 				_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
 				if !isAssemblerFunction {
-					sourceFileReference := potentialFunc.DebugFunctionIdentifier().SourceFile().ReferenceWithPositionString(potentialFunc.PositionLength().Position())
+					sourceFileReference := potentialFunc.DebugFunctionIdentifier().SourceFile().ReferenceWithPositionString(potentialFunc.FetchPositionLength().Position())
 					fmt.Printf("%s warning: '%v' not used in function %v\n", sourceFileReference, functionVariable.FullyQualifiedName(), potentialFunc.DebugFunctionIdentifier().Name())
 				}
 			}

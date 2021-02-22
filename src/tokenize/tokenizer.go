@@ -16,10 +16,10 @@ import (
 
 type TokenizerError struct {
 	err      error
-	position token.PositionLength
+	position token.Range
 }
 
-func (f TokenizerError) FetchPositionLength() token.PositionLength {
+func (f TokenizerError) FetchPositionLength() token.Range {
 	return f.position
 }
 
@@ -90,7 +90,7 @@ func (t *Tokenizer) SourceFile() *token.SourceFile {
 	return token.MakeSourceFile(t.r.RelativeFilename())
 }
 
-func (t *Tokenizer) MakePositionLength(pos token.PositionToken) token.PositionLength {
+func (t *Tokenizer) MakePositionLength(pos token.PositionToken) token.Range {
 	return token.NewPositionLength(pos.Position(), t.position.Position().Column()-pos.Position().Column(), pos.Indentation())
 }
 

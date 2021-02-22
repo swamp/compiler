@@ -35,7 +35,7 @@ func (i *AliasStatement) TypeIdentifier() *TypeIdentifier {
 	return i.name
 }
 
-func (i *AliasStatement) PositionLength() token.PositionLength {
+func (i *AliasStatement) FetchPositionLength() token.Range {
 	return i.name.symbolToken.FetchPositionLength()
 }
 

@@ -33,8 +33,8 @@ func (i *GuardExpression) DefaultExpression() Expression {
 	return i.defaultItem
 }
 
-func (i *GuardExpression) PositionLength() token.PositionLength {
-	return i.items[0].Condition.PositionLength()
+func (i *GuardExpression) FetchPositionLength() token.Range {
+	return i.items[0].Condition.FetchPositionLength()
 }
 
 func (i *GuardExpression) String() string {

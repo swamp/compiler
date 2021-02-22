@@ -34,6 +34,6 @@ func (i *BooleanLiteral) String() string {
 	return fmt.Sprintf("[bool %v]", i.boolean.Value())
 }
 
-func (i *BooleanLiteral) FetchPositionAndLength() token.PositionLength {
-	return i.boolean.PositionLength()
+func (i *BooleanLiteral) FetchPositionLength() token.Range {
+	return i.boolean.FetchPositionLength()
 }

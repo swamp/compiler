@@ -9,13 +9,13 @@ import "fmt"
 
 // GuardToken :
 type GuardToken struct {
-	PositionLength
+	Range
 	raw         string
 	debugString string
 }
 
-func NewGuardToken(startPosition PositionLength, raw string, debugString string) GuardToken {
-	return GuardToken{PositionLength: startPosition, raw: raw, debugString: debugString}
+func NewGuardToken(startPosition Range, raw string, debugString string) GuardToken {
+	return GuardToken{Range: startPosition, raw: raw, debugString: debugString}
 }
 
 func (s GuardToken) Type() Type {

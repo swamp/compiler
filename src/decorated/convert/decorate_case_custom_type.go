@@ -26,8 +26,8 @@ func (f *FakeLiteral) Type() dtype.Type {
 	return f.storedType
 }
 
-func (f *FakeLiteral) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
+func (f *FakeLiteral) FetchPositionLength() token.Range {
+	return token.Range{}
 }
 
 func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType, context *VariableContext) (*decorated.CaseCustomType, decshared.DecoratedError) {

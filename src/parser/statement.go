@@ -31,6 +31,7 @@ func (p *Parser) parseExpressionStatement(precedingComments token.CommentBlock) 
 	if !wasVariableSymbol {
 		return nil, parerr.NewUnknownStatement(variableSymbol)
 	}
+	p.stream.nodes = append(p.stream.nodes, variableSymbol)
 
 	switch variableSymbol.Name() {
 	case "type":

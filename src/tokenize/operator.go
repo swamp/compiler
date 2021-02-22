@@ -10,7 +10,7 @@ import (
 )
 
 type EndOfFile struct {
-	token.PositionLength
+	token.Range
 }
 
 func (e *EndOfFile) Position() token.Position {

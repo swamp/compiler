@@ -27,6 +27,7 @@ type ParseStreamImpl struct {
 	descent             int
 	parser              ParserInterface
 	disableEnforceStyle bool
+	nodes               []ast.Node
 }
 
 func NewParseStreamImpl(parser ParserInterface, tokenizer *tokenize.Tokenizer, enforceStyle bool) *ParseStreamImpl {
@@ -50,7 +51,7 @@ func (p *ParseStreamImpl) debugInfoRows(s string, rowCount int) {
 	fmt.Printf("%v\n---\n", extract)
 }
 
-func (p *ParseStreamImpl) positionLength() token.PositionLength {
+func (p *ParseStreamImpl) positionLength() token.Range {
 	pos := p.tokenizer.ParsingPosition().Position()
 	return token.NewPositionLength(pos, 1, pos.Column()/2)
 }
@@ -82,7 +83,7 @@ func (p *ParseStreamImpl) readTypeIdentifier() (*ast.TypeIdentifier, parerr.Pars
 	return typeIdent, nil
 }
 
-func (p *ParseStreamImpl) addWarning(description string, length token.PositionLength) {
+func (p *ParseStreamImpl) addWarning(description string, length token.Range) {
 	color.Yellow("%v:%d:%d: %v: %v", p.tokenizer.RelativeFilename(), length.Position().Line()+1,
 		length.Position().Column()+1, "Warning", description)
 }
@@ -95,6 +96,7 @@ func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, par
 		return nil, parerr.NewExpectedVariableIdentifierError(variableSymbolErr)
 	}
 	varIdent := ast.NewVariableIdentifier(variableSymbol)
+	p.addNode(varIdent)
 	return varIdent, nil
 }
 
@@ -255,7 +257,7 @@ func (p *ParseStreamImpl) readVariableIdentifierAssignOrUpdate() (*ast.VariableI
 	if spaceAfterUpdateErr != nil {
 		return nil, false, 0, spaceAfterUpdateErr
 	}
-	return ident, false, ident.PositionLength().FetchIndentation(), nil
+	return ident, false, ident.FetchPositionLength().FetchIndentation(), nil
 }
 
 func (p *ParseStreamImpl) readTermToken() (token.Token, parerr.ParseError) {
@@ -513,6 +515,14 @@ func (p *ParseStreamImpl) wasTypeIdentifier() (*ast.TypeIdentifier, bool) {
 	return typeIdent, true
 }
 
+func (p *ParseStreamImpl) addNode(node ast.Node) {
+	posLength := node.FetchPositionLength()
+	if posLength.Position().Line() == 0 && posLength.Position().Column() == 0 {
+		panic("suspicion")
+	}
+	p.nodes = append(p.nodes, node)
+}
+
 // ---------------------------------------------------------------------------------
 // MAYBE
 // ---------------------------------------------------------------------------------
@@ -527,6 +537,8 @@ func (p *ParseStreamImpl) maybeKeywordAlias() bool {
 	if !wasFound {
 		p.tokenizer.Seek(pos)
 	}
+	p.addNode(variableIdentifier)
+
 	return wasFound
 }
 
@@ -541,6 +553,7 @@ func (p *ParseStreamImpl) maybeKeywordExposing() bool {
 	if !wasFound {
 		p.tokenizer.Seek(pos)
 	}
+	p.addNode(variableIdentifier)
 	return wasFound
 }
 

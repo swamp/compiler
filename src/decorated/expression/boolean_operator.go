@@ -78,6 +78,6 @@ func (l *BooleanOperator) OperatorType() BooleanOperatorType {
 	return l.operatorType
 }
 
-func (l *BooleanOperator) FetchPositionAndLength() token.PositionLength {
-	return l.BinaryOperator.left.FetchPositionAndLength()
+func (l *BooleanOperator) FetchPositionLength() token.Range {
+	return l.BinaryOperator.left.FetchPositionLength()
 }

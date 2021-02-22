@@ -38,11 +38,11 @@ func colorFunctionParametersWithAlias(functionParameterTypes []dtype.Type, inden
 }
 
 func colorFunctionType(functionType *dectype.FunctionAtom, indentation int, inside bool, colorer coloring.Colorer) {
-	leftToken := token.NewOperatorToken(token.LeftParen, token.PositionLength{}, "(", "(")
+	leftToken := token.NewOperatorToken(token.LeftParen, token.Range{}, "(", "(")
 	colorer.Operator(leftToken)
 	colorFunctionParameters(functionType.FunctionParameterTypes(), indentation, inside, colorer)
 
-	rightToken := token.NewOperatorToken(token.RightParen, token.PositionLength{}, ")", ")")
+	rightToken := token.NewOperatorToken(token.RightParen, token.Range{}, ")", ")")
 	colorer.Operator(rightToken)
 }
 
@@ -65,7 +65,7 @@ func colorRecordType(recordType *dectype.RecordAtom, indentation int, inside boo
 			colorer.OneSpace()
 		}
 		colorer.VariableSymbol(fieldInType.VariableIdentifier().Symbol())
-		operatorToken := token.NewOperatorToken(token.Colon, token.PositionLength{}, ":", ":")
+		operatorToken := token.NewOperatorToken(token.Colon, token.Range{}, ":", ":")
 		colorer.OneSpace()
 		colorer.Operator(operatorToken)
 		colorer.OneSpace()
@@ -96,7 +96,7 @@ func colorCustomType(recordType *dectype.CustomTypeAtom, indentation int, inside
 
 func colorTypeEmbed(recordType *dectype.InvokerType, colorer coloring.Colorer) {
 	shortName := recordType.TypeGenerator().ShortName()
-	typeSymbolToken := token.NewTypeSymbolToken(shortName, token.PositionLength{}, 0)
+	typeSymbolToken := token.NewTypeSymbolToken(shortName, token.Range{}, 0)
 	colorer.TypeGeneratorName(typeSymbolToken)
 	colorer.OperatorString("(")
 	for index, fieldInType := range recordType.Params() {
@@ -109,7 +109,7 @@ func colorTypeEmbed(recordType *dectype.InvokerType, colorer coloring.Colorer) {
 }
 
 func colorPrimitive(primitive *dectype.PrimitiveAtom, indentation int, inside bool, colorer coloring.Colorer) {
-	fakeSymbol := token.NewTypeSymbolToken(primitive.HumanReadable(), token.PositionLength{}, 0)
+	fakeSymbol := token.NewTypeSymbolToken(primitive.HumanReadable(), token.Range{}, 0)
 	colorer.PrimitiveType(fakeSymbol)
 }
 
@@ -118,7 +118,7 @@ func colorLocalType(primitive *dectype.LocalType, indentation int, inside bool, 
 }
 
 func colorAny(indentation int, inside bool, colorer coloring.Colorer) {
-	fakeSymbol := token.NewTypeSymbolToken("ANY", token.PositionLength{}, 0)
+	fakeSymbol := token.NewTypeSymbolToken("ANY", token.Range{}, 0)
 	colorer.PrimitiveType(fakeSymbol)
 }
 

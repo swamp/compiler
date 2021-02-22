@@ -31,7 +31,7 @@ func CheckUnused(world *loader.World) {
 		}
 		for _, def := range module.Definitions().Definitions() {
 			if !def.WasReferenced() {
-				sourceFileReference := def.Identifier().Symbol().SourceFile().ReferenceWithPositionString(def.Identifier().PositionLength().Position())
+				sourceFileReference := def.Identifier().Symbol().SourceFile().ReferenceWithPositionString(def.Identifier().FetchPositionLength().Position())
 				fmt.Printf("%s Warning: '%v:%v' is never referenced\n", sourceFileReference, module.FullyQualifiedModuleName(), def.Identifier().Name())
 			}
 		}
@@ -104,7 +104,7 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 		allFunctions = append(allFunctions, functions...)
 		externalFunctions := module.ExternalFunctions()
 		for _, externalFunction := range externalFunctions {
-			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.FunctionName, nil, token.PositionLength{}, 0)))
+			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.FunctionName, nil, token.Range{}, 0)))
 			fakeFunc := generate.NewExternalFunction(fakeName, 0, externalFunction.ParameterCount)
 			allExternalFunctions = append(allExternalFunctions, fakeFunc)
 		}

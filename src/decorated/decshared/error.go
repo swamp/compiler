@@ -8,6 +8,6 @@ package decshared
 import "github.com/swamp/compiler/src/token"
 
 type DecoratedError interface {
-	FetchPositionLength() token.PositionLength
+	FetchPositionLength() token.Range
 	Error() string
 }

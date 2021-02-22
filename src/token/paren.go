@@ -7,14 +7,14 @@ package token
 
 // ParenToken :
 type ParenToken struct {
-	PositionLength
+	Range
 	operatorType Type
 	raw          string
 	debugString  string
 }
 
-func NewParenToken(raw string, operatorType Type, startPosition PositionLength, debugString string) ParenToken {
-	return ParenToken{operatorType: operatorType, PositionLength: startPosition, raw: raw, debugString: debugString}
+func NewParenToken(raw string, operatorType Type, startPosition Range, debugString string) ParenToken {
+	return ParenToken{operatorType: operatorType, Range: startPosition, raw: raw, debugString: debugString}
 }
 
 func (s ParenToken) Type() Type {

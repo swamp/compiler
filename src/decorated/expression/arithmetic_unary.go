@@ -8,7 +8,9 @@ package decorated
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	decshared "github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/token"
 )
 
 type ArithmeticUnaryOperatorType uint
@@ -20,10 +22,11 @@ const (
 type ArithmeticUnaryOperator struct {
 	UnaryOperator
 	operatorType ArithmeticUnaryOperatorType
+	unary        *ast.UnaryExpression
 }
 
-func NewArithmeticUnaryOperator(left DecoratedExpression, operatorType ArithmeticUnaryOperatorType) (*ArithmeticUnaryOperator, decshared.DecoratedError) {
-	a := &ArithmeticUnaryOperator{operatorType: operatorType}
+func NewArithmeticUnaryOperator(unary *ast.UnaryExpression, left DecoratedExpression, operatorType ArithmeticUnaryOperatorType) (*ArithmeticUnaryOperator, decshared.DecoratedError) {
+	a := &ArithmeticUnaryOperator{operatorType: operatorType, unary: unary}
 	a.UnaryOperator.left = left
 	a.UnaryOperator.DecoratedExpressionNode.decoratedType = left.Type()
 	return a, nil
@@ -39,4 +42,8 @@ func (a *ArithmeticUnaryOperator) Left() DecoratedExpression {
 
 func (a *ArithmeticUnaryOperator) String() string {
 	return fmt.Sprintf("[unaryarithmetic %v left:%v]", a.operatorType, a.left)
+}
+
+func (a *ArithmeticUnaryOperator) FetchPositionLength() token.Range {
+	return a.unary.FetchPositionLength()
 }

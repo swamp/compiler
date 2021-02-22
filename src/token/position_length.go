@@ -7,32 +7,43 @@ package token
 
 import "fmt"
 
-type PositionLength struct {
-	position    Position
-	runeWidth   int
+type Range struct {
+	start       Position
+	end         Position
 	indentation int
 }
 
-func NewPositionLength(position Position, runeCount int, indentation int) PositionLength {
-	return PositionLength{position: position, runeWidth: runeCount, indentation: indentation}
+func NewPositionLength(start Position, runeCount int, indentation int) Range {
+	return Range{start: start, end: Position{
+		line:   start.line,
+		column: start.column + runeCount - 1,
+	}, indentation: indentation}
 }
 
-func (p PositionLength) RuneWidth() int {
-	return p.runeWidth
+func (p Range) RuneWidth() int {
+	return p.end.column - p.start.column + 1
 }
 
-func (p PositionLength) Position() Position {
-	return p.position
+func (p Range) Position() Position {
+	return p.start
 }
 
-func (p PositionLength) FetchPositionLength() PositionLength {
+func (p Range) Start() Position {
+	return p.start
+}
+
+func (p Range) End() Position {
+	return p.start
+}
+
+func (p Range) FetchPositionLength() Range {
 	return p
 }
 
-func (p PositionLength) FetchIndentation() int {
+func (p Range) FetchIndentation() int {
 	return p.indentation
 }
 
-func (p PositionLength) String() string {
-	return fmt.Sprintf("[%v (%v)] ", p.position, p.indentation)
+func (p Range) String() string {
+	return fmt.Sprintf("[%v (%v)] ", p.start, p.indentation)
 }

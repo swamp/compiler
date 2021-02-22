@@ -16,7 +16,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func DecorateFunctionValueForCall(symbolToken token.PositionLength, resolvedFunction *dectype.FunctionAtom, encounteredArgumentTypes []dtype.Type) (bool, dtype.Type, *dectype.FunctionAtom, decshared.DecoratedError) {
+func DecorateFunctionValueForCall(symbolToken token.Range, resolvedFunction *dectype.FunctionAtom, encounteredArgumentTypes []dtype.Type) (bool, dtype.Type, *dectype.FunctionAtom, decshared.DecoratedError) {
 	resolvedFunctionArguments, _ := resolvedFunction.ParameterAndReturn()
 	isCurrying := len(encounteredArgumentTypes) < len(resolvedFunctionArguments)
 
@@ -64,10 +64,10 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	beforeFakeIdentifier, wasIdentifier := call.FunctionExpression().(*ast.VariableIdentifier)
 
 	if wasIdentifier && beforeFakeIdentifier.Name() == "recur" {
-		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.PositionLength{}, 0))
+		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.Range{}, 0))
 		namedDef := context.ResolveVariable(fakeIdent)
 
-		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(namedDef.FullyQualifiedName(), nil, token.PositionLength{}, 0))
+		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(namedDef.FullyQualifiedName(), nil, token.Range{}, 0))
 		getVar := decorated.NewGetVariable(fakeFunctionName, namedDef)
 		decoratedFunctionExpression = getVar
 	} else {
@@ -79,7 +79,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	}
 
 	if decoratedFunctionExpression == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("expression was not just a variable identifier %v %v", call.FunctionExpression(), call.PositionLength()))
+		return nil, decorated.NewInternalError(fmt.Errorf("expression was not just a variable identifier %v %v", call.FunctionExpression(), call.FetchPositionLength()))
 	}
 
 	callFunctionType := dectype.NewFunctionAtom(encounteredArgumentTypes)
@@ -113,7 +113,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		return nil, decorated.NewFunctionCallTypeMismatch(functionCompatibleErr, call, functionType, completeCalledFunction)
 	}
 
-	errorPosLength := call.FunctionExpression().PositionLength()
+	errorPosLength := call.FunctionExpression().FetchPositionLength()
 
 	isCurrying, fn, _, err := DecorateFunctionValueForCall(errorPosLength, functionType, encounteredArgumentTypes)
 	if err != nil {
@@ -124,7 +124,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	functionValueDecoratedExpression := decorated.NewNamedDecoratedExpression("x", nil, functionValueExpression)
 	functionValueDecoratedExpression.SetReferenced()
 
-	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdentifier.Identifier().Name(), nil, token.PositionLength{}, 8))
+	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdentifier.Identifier().Name(), nil, token.Range{}, 8))
 	getVariableExpression := decorated.NewGetVariable(fakeVariable, functionValueDecoratedExpression)
 
 	if isCurrying {

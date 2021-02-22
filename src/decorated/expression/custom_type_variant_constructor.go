@@ -69,6 +69,6 @@ func (c *CustomTypeVariantConstructor) String() string {
 	return fmt.Sprintf("[variant-constructor %v %v]", c.customTypeVariant, c.arguments)
 }
 
-func (c *CustomTypeVariantConstructor) FetchPositionAndLength() token.PositionLength {
+func (c *CustomTypeVariantConstructor) FetchPositionLength() token.Range {
 	return c.typeIdentifier.Symbol().FetchPositionLength()
 }

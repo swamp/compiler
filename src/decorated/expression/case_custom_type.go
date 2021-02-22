@@ -125,6 +125,6 @@ func (i *CaseCustomType) DebugString() string {
 	return "[dcase]"
 }
 
-func (i *CaseCustomType) FetchPositionAndLength() token.PositionLength {
-	return i.test.FetchPositionAndLength()
+func (i *CaseCustomType) FetchPositionLength() token.Range {
+	return i.test.FetchPositionLength()
 }

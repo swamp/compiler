@@ -203,7 +203,7 @@ func (g *Definer) handleStatement(statement ast.Expression) decshared.DecoratedE
 	case *ast.SingleLineComment:
 		return g.handleSinglelineComment(g.dectorateStream, v)
 	default:
-		return decorated.NewUnknownStatement(token.PositionLength{}, statement)
+		return decorated.NewUnknownStatement(token.Range{}, statement)
 	}
 }
 

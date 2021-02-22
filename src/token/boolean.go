@@ -11,13 +11,13 @@ import (
 
 // Keyword :
 type BooleanToken struct {
-	PositionLength
+	Range
 	value bool
 	raw   string
 }
 
-func NewBooleanToken(raw string, v bool, startPosition PositionLength) BooleanToken {
-	return BooleanToken{raw: raw, value: v, PositionLength: startPosition}
+func NewBooleanToken(raw string, v bool, startPosition Range) BooleanToken {
+	return BooleanToken{raw: raw, value: v, Range: startPosition}
 }
 
 func (s BooleanToken) Type() Type {

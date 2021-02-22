@@ -28,8 +28,8 @@ func (f *FakeExpression) Type() dtype.Type {
 	return f.storedType
 }
 
-func (f *FakeExpression) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
+func (f *FakeExpression) FetchPositionLength() token.Range {
+	return token.Range{}
 }
 
 func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatternMatching, context *VariableContext) (*decorated.CasePatternMatching, decshared.DecoratedError) {

@@ -28,7 +28,7 @@ func (i *ListLiteral) Expressions() []Expression {
 	return i.expressions
 }
 
-func (i *ListLiteral) PositionLength() token.PositionLength {
+func (i *ListLiteral) FetchPositionLength() token.Range {
 	return i.startListParen.FetchPositionLength()
 }
 

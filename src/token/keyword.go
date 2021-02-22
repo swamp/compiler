@@ -11,13 +11,13 @@ import (
 
 // Keyword :
 type Keyword struct {
-	PositionLength
+	Range
 	raw       string
 	tokenType Type
 }
 
-func NewKeyword(raw string, tokenType Type, startPosition PositionLength) Keyword {
-	return Keyword{raw: raw, tokenType: tokenType, PositionLength: startPosition}
+func NewKeyword(raw string, tokenType Type, startPosition Range) Keyword {
+	return Keyword{raw: raw, tokenType: tokenType, Range: startPosition}
 }
 
 func (s Keyword) Type() Type {

@@ -36,6 +36,6 @@ func (i *TypeId) DebugString() string {
 	return i.Name()
 }
 
-func (i *TypeId) PositionLength() token.PositionLength {
+func (i *TypeId) FetchPositionLength() token.Range {
 	return i.typeIdToken.FetchPositionLength()
 }

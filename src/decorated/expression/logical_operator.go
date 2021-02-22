@@ -58,6 +58,6 @@ func (l *LogicalOperator) String() string {
 	return fmt.Sprintf("[logical %v %v %v]", l.BinaryOperator.left, l.BinaryOperator.right, l.operatorType)
 }
 
-func (l *LogicalOperator) FetchPositionAndLength() token.PositionLength {
-	return l.BinaryOperator.left.FetchPositionAndLength()
+func (l *LogicalOperator) FetchPositionLength() token.Range {
+	return l.BinaryOperator.left.FetchPositionLength()
 }

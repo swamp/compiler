@@ -92,6 +92,6 @@ func (i *Guard) DebugString() string {
 	return fmt.Sprintf("[dguard]")
 }
 
-func (i *Guard) FetchPositionAndLength() token.PositionLength {
-	return i.defaultGuard.FetchPositionAndLength()
+func (i *Guard) FetchPositionLength() token.Range {
+	return i.defaultGuard.FetchPositionLength()
 }

@@ -42,7 +42,7 @@ func (i *CustomTypeStatement) Name() string {
 	return i.customTypeOrWrapped.Name()
 }
 
-func (i *CustomTypeStatement) PositionLength() token.PositionLength {
+func (i *CustomTypeStatement) FetchPositionLength() token.Range {
 	return i.name.symbolToken.FetchPositionLength()
 }
 

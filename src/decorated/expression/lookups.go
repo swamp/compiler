@@ -76,6 +76,6 @@ func (l *Lookups) String() string {
 	return fmt.Sprintf("[lookups %v %v]", l.variableLookup, l.lookupFields)
 }
 
-func (l *Lookups) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
+func (l *Lookups) FetchPositionLength() token.Range {
+	return token.Range{}
 }

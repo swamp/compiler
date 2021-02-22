@@ -37,7 +37,7 @@ func (i *UnaryExpression) OperatorToken() token.OperatorToken {
 	return i.operator
 }
 
-func (i *UnaryExpression) PositionLength() token.PositionLength {
+func (i *UnaryExpression) FetchPositionLength() token.Range {
 	return i.token.FetchPositionLength()
 }
 

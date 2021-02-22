@@ -38,7 +38,7 @@ func (i *FunctionValue) Expression() Expression {
 	return i.expression
 }
 
-func (i *FunctionValue) PositionLength() token.PositionLength {
+func (i *FunctionValue) FetchPositionLength() token.Range {
 	return i.debugAssignedValue.FetchPositionLength()
 }
 

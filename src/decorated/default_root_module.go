@@ -421,7 +421,7 @@ func compileToGlobal(rootModule *decorated.Module, globalModule *decorated.Modul
 	const verbose = true
 	const enforceStyle = true
 	const errorAsWarning = false
-	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(name, token.PositionLength{}, 0))
+	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(name, token.Range{}, 0))
 	newModule, err := InternalCompileToModule(nil, []*decorated.Module{globalModule, rootModule},
 		nil, dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{nameTypeIdentifier}),
 		name, strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
@@ -492,7 +492,7 @@ func addCores(m *decorated.Module, globalModule *decorated.Module) ([]*decorated
 }
 
 func createTypeIdentifier(name string) *ast.TypeIdentifier {
-	symbol := token.NewTypeSymbolToken(name, token.PositionLength{}, 0)
+	symbol := token.NewTypeSymbolToken(name, token.Range{}, 0)
 
 	return ast.NewTypeIdentifier(symbol)
 }
@@ -500,7 +500,7 @@ func createTypeIdentifier(name string) *ast.TypeIdentifier {
 func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorated.Module, decshared.DecoratedError) {
 	var importModules []*decorated.Module
 	var copyModules []*decorated.Module
-	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("root-module", token.PositionLength{}, 0))
+	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("root-module", token.Range{}, 0))
 	m := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{nameTypeIdentifier}), nil)
 	m.MarkAsInternal()
 	r := m.TypeRepo()
@@ -520,10 +520,10 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	r.DeclareType(boolType)
 	r.DeclareType(blobType)
 
-	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.PositionLength{}, 0))
-	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.PositionLength{}, 0))
+	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.Range{}, 0))
+	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.Range{}, 0))
 
-	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", nil, token.PositionLength{}, 0))
+	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", nil, token.Range{}, 0))
 	typeParameter := ast.NewTypeParameter(localTypeVariable)
 	localType := dectype.NewLocalType(typeParameter)
 	listType := dectype.NewPrimitiveType(listIdentifier, []dtype.Type{localType})
@@ -535,7 +535,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	r.DeclareType(arrayType)
 	r.DeclareAlias(arrayIdentifier, arrayType, nil)
 
-	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.PositionLength{}, 0))
+	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.Range{}, 0))
 	typeRefType := dectype.NewPrimitiveType(arrayIdentifier, []dtype.Type{localType})
 	r.DeclareType(typeRefType)
 	r.DeclareAlias(typeRefIdentifier, typeRefType, nil)
@@ -544,7 +544,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 
 	const enforceStyle = true
 
-	defaultImportName := ast.NewTypeIdentifier(token.NewTypeSymbolToken("DefaultImport", token.PositionLength{}, 0))
+	defaultImportName := ast.NewTypeIdentifier(token.NewTypeSymbolToken("DefaultImport", token.Range{}, 0))
 
 	globalModule, globalModuleErr := InternalCompileToModule(nil, nil, nil,
 		dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{defaultImportName}), "(internal root)",

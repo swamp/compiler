@@ -50,8 +50,8 @@ func (i *Import) ModuleName() []*TypeIdentifier {
 	return i.path
 }
 
-func (i *Import) PositionLength() token.PositionLength {
-	return i.keyword.PositionLength
+func (i *Import) FetchPositionLength() token.Range {
+	return i.keyword.Range
 }
 
 func (i *Import) String() string {

@@ -10,6 +10,7 @@ import (
 )
 
 type Node interface {
+	FetchPositionLength() token.Range
 	String() string
 }
 
@@ -20,7 +21,6 @@ type Statement interface {
 type Expression interface {
 	Node
 	DebugString() string
-	PositionLength() token.PositionLength
 }
 
 type Literal = Expression

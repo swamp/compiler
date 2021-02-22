@@ -13,7 +13,8 @@ import (
 )
 
 type ParseStream interface {
-	addWarning(description string, length token.PositionLength)
+	addWarning(description string, length token.Range)
+	addNode(node ast.Node)
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// read. Reads the symbol without any spacing
@@ -111,7 +112,7 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	// debug info
 	// -----------------------------------------------------------------------------------------------------------------
-	positionLength() token.PositionLength
+	positionLength() token.Range
 	debugInfo(s string)
 	debugInfoRows(s string, rowCount int)
 }

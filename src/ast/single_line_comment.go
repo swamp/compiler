@@ -27,14 +27,14 @@ func (i *SingleLineComment) String() string {
 	return fmt.Sprintf("[singlelinecomment '%v']", i.commentToken.Text())
 }
 
-func (i *SingleLineComment) PositionLength() token.PositionLength {
-	return i.commentToken.PositionLength
+func (i *SingleLineComment) PositionLength() token.Range {
+	return i.commentToken.Range
 }
 
 func (i *SingleLineComment) DebugString() string {
 	return i.String()
 }
 
-func (i *SingleLineComment) FetchPositionLength() token.PositionLength {
+func (i *SingleLineComment) FetchPositionLength() token.Range {
 	return i.commentToken.FetchPositionLength()
 }

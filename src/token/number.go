@@ -11,14 +11,14 @@ import (
 
 // NumberToken :
 type NumberToken struct {
-	PositionLength
+	Range
 	number  int32
 	raw     string
 	isFixed bool
 }
 
-func NewNumberToken(raw string, v int32, isFixed bool, startPosition PositionLength) NumberToken {
-	return NumberToken{raw: raw, number: v, isFixed: isFixed, PositionLength: startPosition}
+func NewNumberToken(raw string, v int32, isFixed bool, startPosition Range) NumberToken {
+	return NumberToken{raw: raw, number: v, isFixed: isFixed, Range: startPosition}
 }
 
 func (s NumberToken) Type() Type {

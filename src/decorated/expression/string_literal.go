@@ -34,6 +34,6 @@ func (i *StringLiteral) String() string {
 	return fmt.Sprintf("[str %v]", i.str.Value())
 }
 
-func (i *StringLiteral) FetchPositionAndLength() token.PositionLength {
+func (i *StringLiteral) FetchPositionLength() token.Range {
 	return i.str.Token.FetchPositionLength()
 }

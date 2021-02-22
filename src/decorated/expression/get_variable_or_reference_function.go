@@ -43,6 +43,6 @@ func NewGetVariable(ident *ast.VariableIdentifier,
 	return &GetVariableOrReferenceFunction{ident: ident, referencedExpression: referencedExpression}
 }
 
-func (g *GetVariableOrReferenceFunction) FetchPositionAndLength() token.PositionLength {
-	return g.ident.PositionLength()
+func (g *GetVariableOrReferenceFunction) FetchPositionLength() token.Range {
+	return g.ident.FetchPositionLength()
 }

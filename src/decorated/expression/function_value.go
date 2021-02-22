@@ -35,7 +35,7 @@ func (a *FunctionParameterDefinition) String() string {
 	return fmt.Sprintf("[arg %v = %v]", a.identifier, a.generatedType)
 }
 
-func (a *FunctionParameterDefinition) FetchPositionAndLength() token.PositionLength {
+func (a *FunctionParameterDefinition) FetchPositionLength() token.Range {
 	return a.identifier.Symbol().FetchPositionLength()
 }
 
@@ -101,8 +101,8 @@ func (f *FunctionValue) Expression() DecoratedExpression {
 	return f.decoratedExpression
 }
 
-func (f *FunctionValue) FetchPositionAndLength() token.PositionLength {
-	return f.decoratedExpression.FetchPositionAndLength()
+func (f *FunctionValue) FetchPositionLength() token.Range {
+	return f.decoratedExpression.FetchPositionLength()
 }
 
 func (f *FunctionValue) CommentBlock() token.CommentBlock {

@@ -32,7 +32,7 @@ func (i *ConstructorCall) OverwriteArguments(args []Expression) {
 	i.arguments = args
 }
 
-func (i *ConstructorCall) PositionLength() token.PositionLength {
+func (i *ConstructorCall) FetchPositionLength() token.Range {
 	return i.functionValue.symbolToken.FetchPositionLength()
 }
 

@@ -11,12 +11,12 @@ import (
 
 // Keyword :
 type AsmToken struct {
-	PositionLength
+	Range
 	asm string
 }
 
-func NewAsmToken(asm string, startPosition PositionLength) AsmToken {
-	return AsmToken{asm: asm, PositionLength: startPosition}
+func NewAsmToken(asm string, startPosition Range) AsmToken {
+	return AsmToken{asm: asm, Range: startPosition}
 }
 
 func (s AsmToken) Type() Type {
@@ -37,15 +37,15 @@ func (s AsmToken) String() string {
 
 // Keyword :
 type ExternalFunctionToken struct {
-	PositionLength
+	Range
 	functionName   string
 	parameterCount uint
 	raw            string
 	commentToken   IndentationReport
 }
 
-func NewExternalFunctionToken(raw string, functionName string, parameterCount uint, commentToken IndentationReport, startPosition PositionLength) ExternalFunctionToken {
-	return ExternalFunctionToken{raw: raw, functionName: functionName, parameterCount: parameterCount, commentToken: commentToken, PositionLength: startPosition}
+func NewExternalFunctionToken(raw string, functionName string, parameterCount uint, commentToken IndentationReport, startPosition Range) ExternalFunctionToken {
+	return ExternalFunctionToken{raw: raw, functionName: functionName, parameterCount: parameterCount, commentToken: commentToken, Range: startPosition}
 }
 
 func (s ExternalFunctionToken) Raw() string {

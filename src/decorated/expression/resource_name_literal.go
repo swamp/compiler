@@ -34,6 +34,6 @@ func (i *ResourceNameLiteral) String() string {
 	return fmt.Sprintf("[resource name %v]", i.resourceName.Value())
 }
 
-func (i *ResourceNameLiteral) FetchPositionAndLength() token.PositionLength {
+func (i *ResourceNameLiteral) FetchPositionLength() token.Range {
 	return i.resourceName.Token.FetchPositionLength()
 }

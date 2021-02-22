@@ -7,13 +7,13 @@ package token
 
 // TypeId :
 type TypeId struct {
-	PositionLength
+	Range
 	raw         string
 	Indentation int
 }
 
-func NewTypeId(raw string, startPosition PositionLength, indentation int) TypeId {
-	return TypeId{raw: raw, PositionLength: startPosition, Indentation: indentation}
+func NewTypeId(raw string, startPosition Range, indentation int) TypeId {
+	return TypeId{raw: raw, Range: startPosition, Indentation: indentation}
 }
 
 func (s TypeId) Type() Type {

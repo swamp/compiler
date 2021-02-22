@@ -7,12 +7,12 @@ package token
 
 // SpaceToken :
 type SpaceToken struct {
-	PositionLength
+	Range
 	r rune
 }
 
-func NewSpaceToken(position PositionLength, r rune) SpaceToken {
-	return SpaceToken{PositionLength: position, r: r}
+func NewSpaceToken(position Range, r rune) SpaceToken {
+	return SpaceToken{Range: position, r: r}
 }
 
 func (s SpaceToken) String() string {

@@ -10,9 +10,13 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type Node interface {
+	FetchPositionLength() token.Range
+}
+
 type DecoratedExpression interface {
+	Node
 	Type() dtype.Type
-	FetchPositionAndLength() token.PositionLength
 }
 
 type DecoratedExpressionNode struct {
@@ -21,8 +25,4 @@ type DecoratedExpressionNode struct {
 
 func (d DecoratedExpressionNode) Type() dtype.Type {
 	return d.decoratedType
-}
-
-func (d DecoratedExpressionNode) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
 }

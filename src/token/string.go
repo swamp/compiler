@@ -9,13 +9,13 @@ import "fmt"
 
 // StringToken :
 type StringToken struct {
-	PositionLength
+	Range
 	text string
 	raw  string
 }
 
-func NewStringToken(raw string, text string, position PositionLength) StringToken {
-	return StringToken{raw: raw, text: text, PositionLength: position}
+func NewStringToken(raw string, text string, position Range) StringToken {
+	return StringToken{raw: raw, text: text, Range: position}
 }
 
 func (s StringToken) Type() Type {

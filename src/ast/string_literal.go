@@ -28,7 +28,7 @@ func NewStringConstant(t token.StringToken, v string) *StringLiteral {
 	return &StringLiteral{value: v, Token: t}
 }
 
-func (i *StringLiteral) PositionLength() token.PositionLength {
+func (i *StringLiteral) FetchPositionLength() token.Range {
 	return i.Token.FetchPositionLength()
 }
 

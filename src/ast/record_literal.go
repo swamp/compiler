@@ -43,7 +43,7 @@ func (i *RecordLiteral) DebugString() string {
 	return fmt.Sprintf("[record-literal]")
 }
 
-func (i *RecordLiteral) PositionLength() token.PositionLength {
+func (i *RecordLiteral) FetchPositionLength() token.Range {
 	return i.parenToken.FetchPositionLength()
 }
 

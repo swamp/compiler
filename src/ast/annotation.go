@@ -37,8 +37,8 @@ func (d *Annotation) Identifier() *VariableIdentifier {
 	return d.symbol
 }
 
-func (d *Annotation) PositionLength() token.PositionLength {
-	return d.symbol.PositionLength()
+func (d *Annotation) FetchPositionLength() token.Range {
+	return d.symbol.FetchPositionLength()
 }
 
 func (d *Annotation) String() string {

@@ -28,7 +28,7 @@ func NewResourceNameLiteral(t token.ResourceName, v string) *ResourceNameLiteral
 	return &ResourceNameLiteral{value: v, Token: t}
 }
 
-func (i *ResourceNameLiteral) PositionLength() token.PositionLength {
+func (i *ResourceNameLiteral) FetchPositionLength() token.Range {
 	return i.Token.FetchPositionLength()
 }
 

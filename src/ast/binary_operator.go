@@ -57,7 +57,7 @@ func (i *BinaryOperator) OperatorToken() token.OperatorToken {
 	return i.operator
 }
 
-func (i *BinaryOperator) PositionLength() token.PositionLength {
+func (i *BinaryOperator) FetchPositionLength() token.Range {
 	return i.token.FetchPositionLength()
 }
 

@@ -42,6 +42,6 @@ func (l *If) Alternative() DecoratedExpression {
 	return l.alternative
 }
 
-func (l *If) FetchPositionAndLength() token.PositionLength {
-	return l.condition.FetchPositionAndLength()
+func (l *If) FetchPositionLength() token.Range {
+	return l.condition.FetchPositionLength()
 }

@@ -9,13 +9,13 @@ import "fmt"
 
 // ResourceName :
 type ResourceName struct {
-	PositionLength
+	Range
 	raw         string
 	Indentation int
 }
 
-func NewResourceName(raw string, startPosition PositionLength, indentation int) ResourceName {
-	return ResourceName{raw: raw, PositionLength: startPosition, Indentation: indentation}
+func NewResourceName(raw string, startPosition Range, indentation int) ResourceName {
+	return ResourceName{raw: raw, Range: startPosition, Indentation: indentation}
 }
 
 func (s ResourceName) Type() Type {

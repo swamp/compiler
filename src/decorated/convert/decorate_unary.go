@@ -44,7 +44,7 @@ func decorateUnary(d DecorateStream, unary *ast.UnaryExpression, context *Variab
 		if leftExpressionErr != nil {
 			return nil, leftExpressionErr
 		}
-		return decorated.NewBitwiseUnaryOperator(leftExpression, bitwiseUnaryOperatorType)
+		return decorated.NewBitwiseUnaryOperator(unary, leftExpression, bitwiseUnaryOperatorType)
 	}
 
 	logicalUnaryOperatorType, isLogicalUnary := tryConvertToLogicalUnaryOperator(unary.OperatorType())
@@ -53,7 +53,7 @@ func decorateUnary(d DecorateStream, unary *ast.UnaryExpression, context *Variab
 		if leftExpressionErr != nil {
 			return nil, leftExpressionErr
 		}
-		return decorated.NewLogicalUnaryOperator(leftExpression, logicalUnaryOperatorType)
+		return decorated.NewLogicalUnaryOperator(unary, leftExpression, logicalUnaryOperatorType)
 	}
 
 	arithmeticUnaryOperatorType, isLogicalUnary := tryConvertToArithmeticUnaryOperator(unary.OperatorType())
@@ -62,7 +62,7 @@ func decorateUnary(d DecorateStream, unary *ast.UnaryExpression, context *Variab
 		if leftExpressionErr != nil {
 			return nil, leftExpressionErr
 		}
-		return decorated.NewArithmeticUnaryOperator(leftExpression, arithmeticUnaryOperatorType)
+		return decorated.NewArithmeticUnaryOperator(unary, leftExpression, arithmeticUnaryOperatorType)
 	}
 
 	panic("unknown unary")

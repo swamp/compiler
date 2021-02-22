@@ -20,7 +20,7 @@ import (
 )
 
 func ShowSourceCode(tokenizer *tokenize.Tokenizer, highlightLine int,
-	highlightColumn int, posLength token.PositionLength) error {
+	highlightColumn int, posLength token.Range) error {
 	const beforeAndAfterCount = 3
 	startRow := highlightLine - beforeAndAfterCount
 	if startRow < 0 {
