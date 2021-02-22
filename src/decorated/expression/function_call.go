@@ -8,25 +8,31 @@ package decorated
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
 type FunctionCall struct {
-	functionType DecoratedExpression
-	assignments  []DecoratedExpression
-	returnType   dtype.Type
+	functionValueExpression Expression
+	assignments             []Expression
+	returnType              dtype.Type
+	astFunctionCall         *ast.FunctionCall
 }
 
-func NewFunctionCall(functionType DecoratedExpression, returnType dtype.Type, assignments []DecoratedExpression) *FunctionCall {
-	return &FunctionCall{functionType: functionType, assignments: assignments, returnType: returnType}
+func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionType Expression, returnType dtype.Type, assignments []Expression) *FunctionCall {
+	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionType, assignments: assignments, returnType: returnType}
 }
 
-func (c *FunctionCall) FunctionValue() DecoratedExpression {
-	return c.functionType
+func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
+	return c.astFunctionCall
 }
 
-func (c *FunctionCall) Arguments() []DecoratedExpression {
+func (c *FunctionCall) FunctionValue() Expression {
+	return c.functionValueExpression
+}
+
+func (c *FunctionCall) Arguments() []Expression {
 	return c.assignments
 }
 
@@ -35,9 +41,9 @@ func (c *FunctionCall) Type() dtype.Type {
 }
 
 func (c *FunctionCall) String() string {
-	return fmt.Sprintf("[fcall %v %v]", c.functionType, c.assignments)
+	return fmt.Sprintf("[fcall %v %v]", c.functionValueExpression, c.assignments)
 }
 
-func (c *FunctionCall) FetchPositionAndLength() token.PositionLength {
-	return c.assignments[0].FetchPositionAndLength()
+func (c *FunctionCall) FetchPositionLength() token.SourceFileReference {
+	return c.astFunctionCall.FetchPositionLength()
 }

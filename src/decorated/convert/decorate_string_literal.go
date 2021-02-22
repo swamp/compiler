@@ -12,7 +12,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateString(d DecorateStream, str *ast.StringLiteral) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateString(d DecorateStream, str *ast.StringLiteral) (decorated.Expression, decshared.DecoratedError) {
 	stringType := d.TypeRepo().FindTypeFromName("String")
 	if stringType == nil {
 		panic("internal error. String is an unknown type")

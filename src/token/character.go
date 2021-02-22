@@ -9,13 +9,13 @@ import "fmt"
 
 // CharacterToken :
 type CharacterToken struct {
-	PositionLength
+	SourceFileReference
 	text rune
 	raw  string
 }
 
-func NewCharacterToken(raw string, text rune, position PositionLength) CharacterToken {
-	return CharacterToken{raw: raw, text: text, PositionLength: position}
+func NewCharacterToken(raw string, text rune, position SourceFileReference) CharacterToken {
+	return CharacterToken{raw: raw, text: text, SourceFileReference: position}
 }
 
 func (s CharacterToken) Type() Type {
@@ -32,4 +32,8 @@ func (s CharacterToken) Raw() string {
 
 func (s CharacterToken) Character() rune {
 	return s.text
+}
+
+func (s CharacterToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

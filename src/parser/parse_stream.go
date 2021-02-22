@@ -13,14 +13,20 @@ import (
 )
 
 type ParseStream interface {
-	addWarning(description string, length token.PositionLength)
+	addWarning(description string, length token.SourceFileReference)
+	addNode(node ast.Node)
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// read. Reads the symbol without any spacing
 	// -----------------------------------------------------------------------------------------------------------------
 	readTypeIdentifier() (*ast.TypeIdentifier, parerr.ParseError)
 	readVariableIdentifier() (*ast.VariableIdentifier, parerr.ParseError)
+	readKeyword() (token.Keyword, parerr.ParseError)
 	readVariableIdentifierAssignOrUpdate() (*ast.VariableIdentifier, bool, int, parerr.ParseError)
+	readRightBracket() (token.ParenToken, parerr.ParseError)
+	readRightParen() (token.ParenToken, parerr.ParseError)
+	readRightArrayBracket() (token.ParenToken, parerr.ParseError)
+	readRightCurly() (token.ParenToken, parerr.ParseError)
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// eat. Similar to read, but discards the result
@@ -45,10 +51,6 @@ type ParseStream interface {
 	eatOperatorUpdate() parerr.ParseError
 	eatRightArrow() parerr.ParseError
 	eatLeftParen() parerr.ParseError
-	eatRightParen() parerr.ParseError
-	eatRightCurly() parerr.ParseError
-	eatRightBracket() parerr.ParseError
-	eatRightArrayBracket() parerr.ParseError
 	eatColon() parerr.ParseError
 	eatAccessor() parerr.ParseError
 	eatAssign() parerr.ParseError
@@ -80,7 +82,7 @@ type ParseStream interface {
 	maybeAssign() bool
 	maybeEllipsis() bool
 	maybeAccessor() bool
-	maybeRightBracket() bool
+	maybeRightBracket() (token.ParenToken, bool)
 	maybeRightParen() bool
 	maybeEmptyParen() bool
 	maybeColon() bool
@@ -88,8 +90,8 @@ type ParseStream interface {
 	maybeRightArrow() bool
 	maybeOneSpaceAndRightArrow() bool
 	maybeLeftParen() bool
-	maybeLeftCurly() bool
-	maybeRightArrayBracket() bool
+	maybeLeftCurly() (token.ParenToken, bool)
+	maybeRightArrayBracket() (token.ParenToken, bool)
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// detect. similar to maybe, but doesn't advance the token stream, only reports if the symbol is coming up.
@@ -111,7 +113,7 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	// debug info
 	// -----------------------------------------------------------------------------------------------------------------
-	positionLength() token.PositionLength
+	positionLength() token.SourceFileReference
 	debugInfo(s string)
 	debugInfoRows(s string, rowCount int)
 }

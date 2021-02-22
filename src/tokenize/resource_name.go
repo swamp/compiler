@@ -16,7 +16,7 @@ func (t *Tokenizer) parseResourceName(startPos token.PositionToken) (token.Token
 
 	if !isLowerCaseLetter(ch) {
 		t.unreadRune()
-		return token.ResourceName{}, NewExpectedVariableSymbolError(t.MakePositionLength(startPos), string(ch))
+		return token.ResourceName{}, NewExpectedVariableSymbolError(t.MakeSourceFileReference(startPos), string(ch))
 	}
 
 	a += string(ch)
@@ -30,5 +30,5 @@ func (t *Tokenizer) parseResourceName(startPos token.PositionToken) (token.Token
 		a += string(ch)
 	}
 
-	return token.NewResourceName(a, t.MakePositionLength(startPos), startPos.Indentation()), nil
+	return token.NewResourceName(a, t.MakeSourceFileReference(startPos), startPos.Indentation()), nil
 }

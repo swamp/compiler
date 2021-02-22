@@ -11,13 +11,13 @@ import (
 
 // Keyword :
 type BooleanToken struct {
-	PositionLength
+	SourceFileReference
 	value bool
 	raw   string
 }
 
-func NewBooleanToken(raw string, v bool, startPosition PositionLength) BooleanToken {
-	return BooleanToken{raw: raw, value: v, PositionLength: startPosition}
+func NewBooleanToken(raw string, v bool, sourceFileReference SourceFileReference) BooleanToken {
+	return BooleanToken{raw: raw, value: v, SourceFileReference: sourceFileReference}
 }
 
 func (s BooleanToken) Type() Type {
@@ -34,4 +34,8 @@ func (s BooleanToken) Raw() string {
 
 func (s BooleanToken) String() string {
 	return fmt.Sprintf("{bool: %v}", s.value)
+}
+
+func (s BooleanToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

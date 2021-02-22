@@ -7,7 +7,6 @@ package generate
 
 import (
 	"fmt"
-	"reflect"
 
 	asmcompile "github.com/swamp/assembler/compiler"
 	assembler "github.com/swamp/assembler/lib"
@@ -396,7 +395,7 @@ func generateBoolean(code *assembler.Code, target assembler.TargetVariable, oper
 
 func generateLet(code *assembler.Code, target assembler.TargetVariable, let *decorated.Let, genContext *generateContext) error {
 	for _, assignment := range let.Assignments() {
-		varName := assembler.NewVariableName(assignment.Name().Name())
+		varName := assembler.NewVariableName(assignment.LetVariable().Name().Name())
 		targetVar := genContext.context.AllocateVariable(varName)
 		genErr := generateExpression(code, targetVar, assignment.Expression(), genContext)
 		if genErr != nil {
@@ -412,17 +411,18 @@ func generateLet(code *assembler.Code, target assembler.TargetVariable, let *dec
 	return nil
 }
 
-func generateLookups(code *assembler.Code, target assembler.TargetVariable, lookups *decorated.Lookups, genContext *generateContext) error {
-	variableName := assembler.NewVariableName(lookups.Variable().Identifier().Name())
-	a := genContext.context.FindVariable(variableName)
-	if a == nil {
-		return fmt.Errorf("couldn't find name %v", lookups.Variable())
+func generateLookups(code *assembler.Code, target assembler.TargetVariable, lookups *decorated.RecordLookups, genContext *generateContext) error {
+	sourceVariable, err := generateExpressionWithSourceVar(code, lookups.Expression(), genContext, "lookups")
+	if err != nil {
+		return err
 	}
+
 	var structLookups []uint8
 	for _, indexLookups := range lookups.LookupFields() {
 		structLookups = append(structLookups, uint8(indexLookups.Index()))
 	}
-	code.Lookups(target, a, structLookups)
+	code.Lookups(target, sourceVariable, structLookups)
+
 	return nil
 }
 
@@ -710,8 +710,22 @@ func generateResourceNameLiteral(code *assembler.Code, target assembler.TargetVa
 	return nil
 }
 
-func generateGetVariable(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.GetVariableOrReferenceFunction, context *assembler.Context) error {
+func generateFunctionReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.FunctionReference, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.Identifier().Name())
+	variable := context.FindVariable(varName)
+	code.CopyVariable(target, variable)
+	return nil
+}
+
+func generateLocalFunctionParameterReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.FunctionParameterReference, context *assembler.Context) error {
+	varName := assembler.NewVariableName(getVar.Identifier().Name())
+	variable := context.FindVariable(varName)
+	code.CopyVariable(target, variable)
+	return nil
+}
+
+func generateLetVariableReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.LetVariableReference, context *assembler.Context) error {
+	varName := assembler.NewVariableName(getVar.LetVariable().Name().Name())
 	variable := context.FindVariable(varName)
 	code.CopyVariable(target, variable)
 	return nil
@@ -858,12 +872,30 @@ func generateArray(code *assembler.Code, target assembler.TargetVariable, array 
 	return nil
 }
 
-func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.DecoratedExpression, genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
-	getVar, _ := expr.(*decorated.GetVariableOrReferenceFunction)
-	if getVar != nil {
-		ident := getVar.Identifier()
-		getVarName := assembler.NewVariableName(ident.Name())
-		foundVar := genContext.context.FindVariable(getVarName)
+func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Expression, genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
+	switch t := expr.(type) {
+	case *decorated.StringLiteral:
+		constant := genContext.context.Constants().AllocateStringConstant(t.Value())
+		return constant, nil
+	case *decorated.IntegerLiteral:
+		constant := genContext.context.Constants().AllocateIntegerConstant(t.Value())
+		return constant, nil
+	case *decorated.CharacterLiteral:
+		constant := genContext.context.Constants().AllocateIntegerConstant(t.Value())
+		return constant, nil
+	case *decorated.BooleanLiteral:
+		constant := genContext.context.Constants().AllocateBooleanConstant(t.Value())
+		return constant, nil
+	case *decorated.LetVariableReference:
+		parameterReferenceName := assembler.NewVariableName(t.LetVariable().Name().Name())
+		return genContext.context.FindVariable(parameterReferenceName), nil
+	case *decorated.FunctionParameterReference:
+		parameterReferenceName := assembler.NewVariableName(t.Identifier().Name())
+		return genContext.context.FindVariable(parameterReferenceName), nil
+	case *decorated.FunctionReference:
+		ident := t.Identifier()
+		functionReferenceName := assembler.NewVariableName(ident.Name())
+		foundVar := genContext.context.FindVariable(functionReferenceName)
 		if foundVar != nil {
 			return foundVar, nil
 		}
@@ -874,29 +906,6 @@ func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Decora
 		fullyQualifiedName := foundNamedExpression.FullyQualifiedName()
 		refConstant, _ := genContext.context.Constants().AllocateFunctionReferenceConstant(fullyQualifiedName)
 		return refConstant, nil
-	}
-
-	stringConstant, _ := expr.(*decorated.StringLiteral)
-	if stringConstant != nil {
-		constant := genContext.context.Constants().AllocateStringConstant(stringConstant.Value())
-		return constant, nil
-	}
-	intConstant, _ := expr.(*decorated.IntegerLiteral)
-	if intConstant != nil {
-		constant := genContext.context.Constants().AllocateIntegerConstant(intConstant.Value())
-		return constant, nil
-	}
-
-	characterLiteralConstant, _ := expr.(*decorated.CharacterLiteral)
-	if characterLiteralConstant != nil {
-		constant := genContext.context.Constants().AllocateIntegerConstant(characterLiteralConstant.Value())
-		return constant, nil
-	}
-
-	booleanConstant, _ := expr.(*decorated.BooleanLiteral)
-	if booleanConstant != nil {
-		constant := genContext.context.Constants().AllocateBooleanConstant(booleanConstant.Value())
-		return constant, nil
 	}
 
 	newVar := genContext.context.AllocateTempVariable(debugName)
@@ -928,7 +937,7 @@ func isListLike(typeToCheck dtype.Type) bool {
 	return name == "List"
 }
 
-func generateExpression(code *assembler.Code, target assembler.TargetVariable, expr decorated.DecoratedExpression, genContext *generateContext) error {
+func generateExpression(code *assembler.Code, target assembler.TargetVariable, expr decorated.Expression, genContext *generateContext) error {
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)
@@ -964,7 +973,7 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	case *decorated.BooleanOperator:
 		return generateBoolean(code, target, e, genContext)
 
-	case *decorated.Lookups:
+	case *decorated.RecordLookups:
 		return generateLookups(code, target, e, genContext)
 
 	case *decorated.CaseCustomType:
@@ -1021,8 +1030,14 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	case *decorated.CustomTypeVariantConstructor:
 		return generateCustomTypeVariantConstructor(code, target, e, genContext)
 
-	case *decorated.GetVariableOrReferenceFunction:
-		return generateGetVariable(code, target, e, genContext.context)
+	case *decorated.FunctionReference:
+		return generateFunctionReference(code, target, e, genContext.context)
+
+	case *decorated.FunctionParameterReference:
+		return generateLocalFunctionParameterReference(code, target, e, genContext.context)
+
+	case *decorated.LetVariableReference:
+		return generateLetVariableReference(code, target, e, genContext.context)
 
 	case *decorated.ConsOperator:
 		return generateListCons(code, target, e, genContext)
@@ -1037,7 +1052,7 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 		return generateRecordSortedAssignments(code, target, e.SortedAssignments(), genContext)
 	}
 
-	return fmt.Errorf("generate: unknown node %v %v %v", expr, reflect.TypeOf(expr), genContext)
+	return fmt.Errorf("generate: unknown node %T %v %v", expr, expr, genContext)
 }
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariableName, f *decorated.FunctionValue, root *assembler.FunctionRootContext, definitions *decorator.VariableContext, lookup typeinfo.TypeLookup, verboseFlag bool) (*Function, error) {

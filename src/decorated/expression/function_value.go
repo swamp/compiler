@@ -17,6 +17,7 @@ import (
 type FunctionParameterDefinition struct {
 	identifier    *ast.VariableIdentifier
 	generatedType dtype.Type
+	references    []*FunctionParameterReference
 }
 
 func NewFunctionParameterDefinition(identifier *ast.VariableIdentifier, convertedType dtype.Type) *FunctionParameterDefinition {
@@ -35,22 +36,45 @@ func (a *FunctionParameterDefinition) String() string {
 	return fmt.Sprintf("[arg %v = %v]", a.identifier, a.generatedType)
 }
 
-func (a *FunctionParameterDefinition) FetchPositionAndLength() token.PositionLength {
-	return a.identifier.Symbol().FetchPositionLength()
+func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileReference {
+	return a.identifier.Symbol().SourceFileReference
+}
+
+func (a *FunctionParameterDefinition) AddReferee(ref *FunctionParameterReference) {
+	a.references = append(a.references, ref)
+}
+
+func (a *FunctionParameterDefinition) References() []*FunctionParameterReference {
+	return a.references
 }
 
 type FunctionValue struct {
 	forcedFunctionType  *dectype.FunctionAtom
-	decoratedExpression DecoratedExpression
+	decoratedExpression Expression
 	parameters          []*FunctionParameterDefinition
 	commentBlock        token.CommentBlock
+	astFunction         *ast.FunctionValue
+	sourceFileReference token.SourceFileReference
+	references          []*FunctionReference
+	annotation          *Annotation
 }
 
-func NewFunctionValue(forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression DecoratedExpression, commentBlock token.CommentBlock) *FunctionValue {
+func NewFunctionValue(annotation *Annotation, astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock token.CommentBlock) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
-	return &FunctionValue{forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock}
+
+	sourceFileReference := token.MakeInclusiveSourceFileReference(astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
+
+	return &FunctionValue{annotation: annotation, astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock, sourceFileReference: sourceFileReference}
+}
+
+func (f *FunctionValue) AstFunctionValue() *ast.FunctionValue {
+	return f.astFunction
+}
+
+func (f *FunctionValue) Annotation() *Annotation {
+	return f.annotation
 }
 
 func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
@@ -97,14 +121,22 @@ func (f *FunctionValue) Resolve() (dtype.Atom, error) {
 	return f.forcedFunctionType.Resolve()
 }
 
-func (f *FunctionValue) Expression() DecoratedExpression {
+func (f *FunctionValue) Expression() Expression {
 	return f.decoratedExpression
 }
 
-func (f *FunctionValue) FetchPositionAndLength() token.PositionLength {
-	return f.decoratedExpression.FetchPositionAndLength()
+func (f *FunctionValue) FetchPositionLength() token.SourceFileReference {
+	return f.sourceFileReference
 }
 
 func (f *FunctionValue) CommentBlock() token.CommentBlock {
 	return f.commentBlock
+}
+
+func (f *FunctionValue) AddReferee(ref *FunctionReference) {
+	f.references = append(f.references, ref)
+}
+
+func (f *FunctionValue) References() []*FunctionReference {
+	return f.references
 }

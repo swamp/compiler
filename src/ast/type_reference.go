@@ -5,7 +5,11 @@
 
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/token"
+)
 
 type TypeReference struct {
 	ident     *TypeIdentifier
@@ -40,4 +44,8 @@ func (i *TypeReference) Name() string {
 		s += argument.Name()
 	}
 	return fmt.Sprintf("%v<%v>", i.ident.Name(), s)
+}
+
+func (i *TypeReference) FetchPositionLength() token.SourceFileReference {
+	return i.ident.FetchPositionLength()
 }

@@ -31,8 +31,8 @@ func NewLookupField(structField *dectype.RecordField) LookupField {
 }
 
 type LookupVariable struct {
-	name *ast.VariableIdentifier
-	expr dtype.Type
+	name       *ast.VariableIdentifier
+	lookupType dtype.Type
 }
 
 func (l LookupVariable) Identifier() *ast.VariableIdentifier {
@@ -40,42 +40,42 @@ func (l LookupVariable) Identifier() *ast.VariableIdentifier {
 }
 
 func (l LookupVariable) String() string {
-	return fmt.Sprintf("[lookupvar %v (%v)]", l.name, l.expr)
+	return fmt.Sprintf("[lookupvar %v (%v)]", l.name, l.lookupType)
 }
 
 func (l LookupVariable) DecoratedExpression() dtype.Type {
-	return l.expr
+	return l.lookupType
 }
 
-func NewLookupVariable(name *ast.VariableIdentifier, expr dtype.Type) LookupVariable {
-	return LookupVariable{name: name, expr: expr}
+func NewLookupVariable(name *ast.VariableIdentifier, lookupType dtype.Type) LookupVariable {
+	return LookupVariable{name: name, lookupType: lookupType}
 }
 
-type Lookups struct {
-	DecoratedExpressionNode
-	variableLookup LookupVariable
-	lookupFields   []LookupField
+type RecordLookups struct {
+	ExpressionNode
+	expressionToRecord Expression
+	lookupFields       []LookupField
 }
 
-func NewLookups(variableLookup LookupVariable, lookupFields []LookupField) *Lookups {
-	l := &Lookups{variableLookup: variableLookup, lookupFields: lookupFields}
+func NewRecordLookups(expressionToRecord Expression, lookupFields []LookupField) *RecordLookups {
+	l := &RecordLookups{expressionToRecord: expressionToRecord, lookupFields: lookupFields}
 	count := len(lookupFields)
 	l.decoratedType = lookupFields[count-1].structField.Type()
 	return l
 }
 
-func (l *Lookups) Variable() LookupVariable {
-	return l.variableLookup
+func (l *RecordLookups) Expression() Expression {
+	return l.expressionToRecord
 }
 
-func (l *Lookups) LookupFields() []LookupField {
+func (l *RecordLookups) LookupFields() []LookupField {
 	return l.lookupFields
 }
 
-func (l *Lookups) String() string {
-	return fmt.Sprintf("[lookups %v %v]", l.variableLookup, l.lookupFields)
+func (l *RecordLookups) String() string {
+	return fmt.Sprintf("[lookups %v %v]", l.expressionToRecord, l.lookupFields)
 }
 
-func (l *Lookups) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
+func (l *RecordLookups) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }

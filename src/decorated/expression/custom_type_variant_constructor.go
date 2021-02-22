@@ -15,13 +15,13 @@ import (
 )
 
 type CustomTypeVariantConstructor struct {
-	arguments         []DecoratedExpression
+	arguments         []Expression
 	customTypeVariant *dectype.CustomTypeVariant
 	typeIdentifier    *ast.TypeIdentifier
 }
 
 func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customTypeVariant *dectype.CustomTypeVariant,
-	arguments []DecoratedExpression) *CustomTypeVariantConstructor {
+	arguments []Expression) *CustomTypeVariantConstructor {
 	if customTypeVariant == nil {
 		panic("custom customTypeVariant is nil")
 	}
@@ -48,7 +48,7 @@ func (c *CustomTypeVariantConstructor) CustomTypeVariant() *dectype.CustomTypeVa
 	return c.customTypeVariant
 }
 
-func (c *CustomTypeVariantConstructor) Arguments() []DecoratedExpression {
+func (c *CustomTypeVariantConstructor) Arguments() []Expression {
 	return c.arguments
 }
 
@@ -69,6 +69,6 @@ func (c *CustomTypeVariantConstructor) String() string {
 	return fmt.Sprintf("[variant-constructor %v %v]", c.customTypeVariant, c.arguments)
 }
 
-func (c *CustomTypeVariantConstructor) FetchPositionAndLength() token.PositionLength {
-	return c.typeIdentifier.Symbol().FetchPositionLength()
+func (c *CustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {
+	return c.typeIdentifier.Symbol().SourceFileReference
 }

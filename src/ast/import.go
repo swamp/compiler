@@ -19,19 +19,33 @@ type Import struct {
 	exposeAll           bool
 	keyword             token.VariableSymbolToken
 	precedingComments   token.CommentBlock
+	inclusive           token.SourceFileReference
 }
 
 func NewImport(keyword token.VariableSymbolToken, path []*TypeIdentifier,
 	optionalAlias *TypeIdentifier, typesToExpose []*TypeIdentifier,
 	definitionsToExpose []*VariableIdentifier,
 	exposeAll bool, precedingComments token.CommentBlock) *Import {
+	lastSourceRef := path[len(path)-1].FetchPositionLength()
+	if optionalAlias != nil {
+		lastSourceRef = optionalAlias.FetchPositionLength()
+	}
+	if definitionsToExpose != nil {
+		lastSourceRef = definitionsToExpose[len(definitionsToExpose)-1].FetchPositionLength()
+	}
+	inclusive := token.MakeInclusiveSourceFileReference(keyword.FetchPositionLength(), lastSourceRef)
 	return &Import{
 		keyword: keyword, path: path, optionalAlias: optionalAlias,
 		exposeAll:           exposeAll,
 		typesToExpose:       typesToExpose,
 		definitionsToExpose: definitionsToExpose,
 		precedingComments:   precedingComments,
+		inclusive:           inclusive,
 	}
+}
+
+func (i *Import) Keyword() token.VariableSymbolToken {
+	return i.keyword
 }
 
 func (i *Import) Path() []*TypeIdentifier {
@@ -50,8 +64,8 @@ func (i *Import) ModuleName() []*TypeIdentifier {
 	return i.path
 }
 
-func (i *Import) PositionLength() token.PositionLength {
-	return i.keyword.PositionLength
+func (i *Import) FetchPositionLength() token.SourceFileReference {
+	return i.inclusive
 }
 
 func (i *Import) String() string {

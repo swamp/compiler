@@ -19,7 +19,7 @@ func (t *Tokenizer) WasRune(requiredRune rune) (token.RuneToken, bool) {
 		t.unreadRune()
 		return token.RuneToken{}, false
 	}
-	return token.NewRuneToken(readRune, t.MakePositionLength(startPos)), true
+	return token.NewRuneToken(readRune, t.MakeSourceFileReference(startPos)), true
 }
 
 func (t *Tokenizer) WasSpacingRune(requiredRune rune) (token.RuneToken, bool) {
@@ -34,5 +34,5 @@ func (t *Tokenizer) WasSpacingRune(requiredRune rune) (token.RuneToken, bool) {
 		t.unreadRune()
 		return token.RuneToken{}, false
 	}
-	return token.NewRuneToken(readRune, t.MakePositionLength(startPos)), true
+	return token.NewRuneToken(readRune, t.MakeSourceFileReference(startPos)), true
 }

@@ -14,13 +14,13 @@ import (
 
 type NamedDecoratedExpression struct {
 	fullyQualifiedName string
-	expression         DecoratedExpression
+	expression         Expression
 	wasReferenced      bool
 	mDef               *ModuleDefinition
 }
 
 func NewNamedDecoratedExpression(fullyQualifiedName string, mDef *ModuleDefinition,
-	expression DecoratedExpression) *NamedDecoratedExpression {
+	expression Expression) *NamedDecoratedExpression {
 	if fullyQualifiedName == "" {
 		panic("must have qualified name")
 	}
@@ -51,7 +51,7 @@ func (n *NamedDecoratedExpression) WasReferenced() bool {
 	return n.wasReferenced
 }
 
-func (n *NamedDecoratedExpression) Expression() DecoratedExpression {
+func (n *NamedDecoratedExpression) Expression() Expression {
 	return n.expression
 }
 
@@ -63,6 +63,6 @@ func (n *NamedDecoratedExpression) Type() dtype.Type {
 	return n.expression.Type()
 }
 
-func (n *NamedDecoratedExpression) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
+func (n *NamedDecoratedExpression) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }

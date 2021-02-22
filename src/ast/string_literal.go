@@ -28,8 +28,8 @@ func NewStringConstant(t token.StringToken, v string) *StringLiteral {
 	return &StringLiteral{value: v, Token: t}
 }
 
-func (i *StringLiteral) PositionLength() token.PositionLength {
-	return i.Token.FetchPositionLength()
+func (i *StringLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.Token.SourceFileReference
 }
 
 func (i *StringLiteral) StringToken() token.StringToken {

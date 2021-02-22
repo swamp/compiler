@@ -53,16 +53,13 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 		fields = append(fields, field)
 
 		if !wasComma {
-			if err := p.eatRightCurly(); err != nil {
-				return nil, err
-			}
 			break
 		}
 	}
 	return fields, nil
 }
 
-func parseRecordType(p ParseStream, typeParameters []*ast.TypeParameter, keywordIndentation int,
+func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters []*ast.TypeParameter, keywordIndentation int,
 	precedingComments token.CommentBlock) (ast.Type, parerr.ParseError) {
 	if _, err := p.eatOneSpace("after record type left curly"); err != nil {
 		return nil, err
@@ -73,6 +70,13 @@ func parseRecordType(p ParseStream, typeParameters []*ast.TypeParameter, keyword
 		return nil, fieldsErr
 	}
 
-	recordType := ast.NewRecordType(fields, typeParameters)
+	var rightCurlyErr parerr.ParseError
+	var rightCurly token.ParenToken
+
+	if rightCurly, rightCurlyErr = p.readRightCurly(); rightCurlyErr != nil {
+		return nil, rightCurlyErr
+	}
+
+	recordType := ast.NewRecordType(startCurly, rightCurly, fields, typeParameters)
 	return recordType, nil
 }

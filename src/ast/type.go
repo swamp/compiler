@@ -5,9 +5,14 @@
 
 package ast
 
+import (
+	"github.com/swamp/compiler/src/token"
+)
+
 type Type interface {
 	Name() string
 	String() string
+	FetchPositionLength() token.SourceFileReference
 }
 
 func NewCustomType(customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter) *CustomType {

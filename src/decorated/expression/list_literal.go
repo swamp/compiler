@@ -8,24 +8,30 @@ package decorated
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
 type ListLiteral struct {
 	t           dtype.Type
-	expressions []DecoratedExpression
+	expressions []Expression
+	astLiteral  *ast.ListLiteral
 }
 
-func NewListLiteral(t dtype.Type, expressions []DecoratedExpression) *ListLiteral {
-	return &ListLiteral{t: t, expressions: expressions}
+func NewListLiteral(astLiteral *ast.ListLiteral, t dtype.Type, expressions []Expression) *ListLiteral {
+	return &ListLiteral{t: t, expressions: expressions, astLiteral: astLiteral}
 }
 
 func (c *ListLiteral) Type() dtype.Type {
 	return c.t
 }
 
-func (c *ListLiteral) Expressions() []DecoratedExpression {
+func (c *ListLiteral) AstListLiteral() *ast.ListLiteral {
+	return c.astLiteral
+}
+
+func (c *ListLiteral) Expressions() []Expression {
 	return c.expressions
 }
 
@@ -33,6 +39,6 @@ func (c *ListLiteral) String() string {
 	return fmt.Sprintf("[ListLiteral %v %v]", c.t.HumanReadable(), c.expressions)
 }
 
-func (c *ListLiteral) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
+func (c *ListLiteral) FetchPositionLength() token.SourceFileReference {
+	return c.astLiteral.FetchPositionLength()
 }

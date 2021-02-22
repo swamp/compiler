@@ -15,20 +15,20 @@ import (
 )
 
 type GuardItem struct {
-	condition     DecoratedExpression
-	consequence   DecoratedExpression
+	condition     Expression
+	consequence   Expression
 	internalIndex int
 }
 
-func NewGuardItem(internalIndex int, condition DecoratedExpression, consequence DecoratedExpression) *GuardItem {
+func NewGuardItem(internalIndex int, condition Expression, consequence Expression) *GuardItem {
 	return &GuardItem{internalIndex: internalIndex, condition: condition, consequence: consequence}
 }
 
-func (c *GuardItem) Expression() DecoratedExpression {
+func (c *GuardItem) Expression() Expression {
 	return c.consequence
 }
 
-func (c *GuardItem) Condition() DecoratedExpression {
+func (c *GuardItem) Condition() Expression {
 	return c.condition
 }
 
@@ -54,10 +54,10 @@ func guardConsequenceArrayToStringEx(expressions []*GuardItem, ch string) string
 
 type Guard struct {
 	items        []*GuardItem
-	defaultGuard DecoratedExpression
+	defaultGuard Expression
 }
 
-func NewGuard(items []*GuardItem, defaultGuard DecoratedExpression) (*Guard, decshared.DecoratedError) {
+func NewGuard(items []*GuardItem, defaultGuard Expression) (*Guard, decshared.DecoratedError) {
 	return &Guard{items: items, defaultGuard: defaultGuard}, nil
 }
 
@@ -76,7 +76,7 @@ func (i *Guard) String() string {
 	return fmt.Sprintf("[dguard: %v]", guardConsequenceArrayToStringEx(i.items, ";"))
 }
 
-func (i *Guard) Test() DecoratedExpression {
+func (i *Guard) Test() Expression {
 	return i.defaultGuard
 }
 
@@ -84,7 +84,7 @@ func (i *Guard) Items() []*GuardItem {
 	return i.items
 }
 
-func (i *Guard) DefaultGuard() DecoratedExpression {
+func (i *Guard) DefaultGuard() Expression {
 	return i.defaultGuard
 }
 
@@ -92,6 +92,6 @@ func (i *Guard) DebugString() string {
 	return fmt.Sprintf("[dguard]")
 }
 
-func (i *Guard) FetchPositionAndLength() token.PositionLength {
-	return i.defaultGuard.FetchPositionAndLength()
+func (i *Guard) FetchPositionLength() token.SourceFileReference {
+	return i.defaultGuard.FetchPositionLength()
 }

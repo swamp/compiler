@@ -42,8 +42,8 @@ func (i *CustomTypeStatement) Name() string {
 	return i.customTypeOrWrapped.Name()
 }
 
-func (i *CustomTypeStatement) PositionLength() token.PositionLength {
-	return i.name.symbolToken.FetchPositionLength()
+func (i *CustomTypeStatement) FetchPositionLength() token.SourceFileReference {
+	return i.name.symbolToken.SourceFileReference
 }
 
 func (i *CustomTypeStatement) DebugString() string {

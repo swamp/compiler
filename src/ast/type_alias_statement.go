@@ -35,8 +35,8 @@ func (i *AliasStatement) TypeIdentifier() *TypeIdentifier {
 	return i.name
 }
 
-func (i *AliasStatement) PositionLength() token.PositionLength {
-	return i.name.symbolToken.FetchPositionLength()
+func (i *AliasStatement) FetchPositionLength() token.SourceFileReference {
+	return i.name.symbolToken.SourceFileReference
 }
 
 func (i *AliasStatement) Type() Type {

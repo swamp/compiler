@@ -14,15 +14,17 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateLookups(d DecorateStream, lookups *ast.Lookups, context *VariableContext) (*decorated.Lookups, decshared.DecoratedError) {
-	expressionToLookup := context.ResolveVariable(lookups.ContextIdentifier())
+func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *VariableContext) (*decorated.RecordLookups, decshared.DecoratedError) {
+	expressionToLookup, expressionLookUpErr := context.ResolveVariable(lookups.ContextIdentifier())
+	if expressionLookUpErr != nil {
+		return nil, expressionLookUpErr
+	}
 	if expressionToLookup == nil {
 		return nil, decorated.NewCouldNotFindIdentifierInLookups(lookups)
 	}
 
 	var lookupFields []decorated.LookupField
 
-	first := decorated.NewLookupVariable(lookups.ContextIdentifier(), expressionToLookup.Expression().Type())
 	typeToLookup := dectype.Unalias(expressionToLookup.Type())
 	for _, lookupIdentifier := range lookups.FieldNames() {
 		recordTypeToCheck, lookupErr := dectype.ResolveToRecordType(typeToLookup)
@@ -46,5 +48,5 @@ func decorateLookups(d DecorateStream, lookups *ast.Lookups, context *VariableCo
 		panic("must have at least one lookup to be valid")
 	}
 
-	return decorated.NewLookups(first, lookupFields), nil
+	return decorated.NewRecordLookups(expressionToLookup, lookupFields), nil
 }

@@ -5,7 +5,7 @@
 
 package ast
 
-func LinePaddingBefore(expression Expression) int {
+func LinePaddingBefore(expression Node) int {
 	if expression == nil {
 		return 0
 	}
@@ -21,7 +21,7 @@ func LinePaddingBefore(expression Expression) int {
 	return lines
 }
 
-func LinePaddingAfter(expression Expression) int {
+func LinePaddingAfter(expression Node) int {
 	if expression == nil {
 		return 0
 	}
@@ -39,7 +39,7 @@ func LinePaddingAfter(expression Expression) int {
 	return lines
 }
 
-func ExpectedLinePaddingAfter(expression Expression) int {
+func ExpectedLinePaddingAfter(expression Node) int {
 	if expression == nil {
 		return 0
 	}

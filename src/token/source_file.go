@@ -4,22 +4,22 @@ import (
 	"fmt"
 )
 
-type SourceFile struct {
+type SourceFileURI struct {
 	name string
 }
 
-func MakeSourceFile(name string) *SourceFile {
-	return &SourceFile{name: name}
+func MakeSourceFileURI(name string) *SourceFileURI {
+	return &SourceFileURI{name: name}
 }
 
-func (s *SourceFile) String() string {
+func (s *SourceFileURI) String() string {
 	return s.name
 }
 
-func (s *SourceFile) ReferenceString() string {
+func (s *SourceFileURI) ReferenceString() string {
 	return fmt.Sprintf("%v:", s.name)
 }
 
-func (s *SourceFile) ReferenceWithPositionString(pos Position) string {
+func (s *SourceFileURI) ReferenceWithPositionString(pos Position) string {
 	return fmt.Sprintf("%v:%d:%d:", s.name, pos.line+1, pos.column+1)
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func parseExternalFunction(raw string, t *Tokenizer, pos token.PositionLength) (token.ExternalFunctionToken, TokenError) {
+func parseExternalFunction(raw string, t *Tokenizer, pos token.SourceFileReference) (token.ExternalFunctionToken, TokenError) {
 	comment, afterKeywordSpaceErr := t.EatOneSpace()
 	if afterKeywordSpaceErr != nil {
 		return token.ExternalFunctionToken{}, afterKeywordSpaceErr
@@ -32,7 +32,7 @@ func parseExternalFunction(raw string, t *Tokenizer, pos token.PositionLength) (
 	return token.NewExternalFunctionToken(raw, functionName.Name(), uint(numberOfParams.Value()), comment, pos), nil
 }
 
-func parseAsm(t *Tokenizer, pos token.PositionLength) (token.AsmToken, TokenError) {
+func parseAsm(t *Tokenizer, pos token.SourceFileReference) (token.AsmToken, TokenError) {
 	asm := t.ReadStringUntilEndOfLine()
 	asm = strings.TrimSpace(asm)
 	return token.NewAsmToken(asm, pos), nil
@@ -51,9 +51,9 @@ func (t *Tokenizer) ParseSpecialKeyword(pos token.PositionToken) (token.Token, T
 	}
 	switch a {
 	case "asm":
-		return parseAsm(t, t.MakePositionLength(pos))
+		return parseAsm(t, t.MakeSourceFileReference(pos))
 	case "externalfn":
-		return parseExternalFunction(a, t, t.MakePositionLength(pos))
+		return parseExternalFunction(a, t, t.MakeSourceFileReference(pos))
 	}
 
 	return nil, NewInternalError(fmt.Errorf("not a starting keyword"))

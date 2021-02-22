@@ -9,34 +9,36 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
 type CurryFunction struct {
-	functionType    DecoratedExpression
-	argumentsToSave []DecoratedExpression
+	functionValueExpression Expression
+	curryFunctionType       *dectype.FunctionAtom
+	argumentsToSave         []Expression
 }
 
-func NewCurryFunction(functionType DecoratedExpression, argumentsToSave []DecoratedExpression) *CurryFunction {
-	return &CurryFunction{functionType: functionType, argumentsToSave: argumentsToSave}
+func NewCurryFunction(curryFunctionType *dectype.FunctionAtom, functionValueExpression Expression, argumentsToSave []Expression) *CurryFunction {
+	return &CurryFunction{curryFunctionType: curryFunctionType, functionValueExpression: functionValueExpression, argumentsToSave: argumentsToSave}
 }
 
-func (c *CurryFunction) ArgumentsToSave() []DecoratedExpression {
+func (c *CurryFunction) ArgumentsToSave() []Expression {
 	return c.argumentsToSave
 }
 
-func (c *CurryFunction) FunctionValue() DecoratedExpression {
-	return c.functionType
+func (c *CurryFunction) FunctionValue() Expression {
+	return c.functionValueExpression
 }
 
 func (c *CurryFunction) Type() dtype.Type {
-	return c.functionType.Type()
+	return c.curryFunctionType
 }
 
 func (c *CurryFunction) String() string {
-	return fmt.Sprintf("[curry %v %v]", c.functionType, c.argumentsToSave)
+	return fmt.Sprintf("[curry %v %v]", c.functionValueExpression, c.argumentsToSave)
 }
 
-func (c *CurryFunction) FetchPositionAndLength() token.PositionLength {
-	return c.argumentsToSave[0].FetchPositionAndLength()
+func (c *CurryFunction) FetchPositionLength() token.SourceFileReference {
+	return c.argumentsToSave[0].FetchPositionLength()
 }

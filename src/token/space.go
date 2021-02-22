@@ -7,12 +7,12 @@ package token
 
 // SpaceToken :
 type SpaceToken struct {
-	PositionLength
+	SourceFileReference
 	r rune
 }
 
-func NewSpaceToken(position PositionLength, r rune) SpaceToken {
-	return SpaceToken{PositionLength: position, r: r}
+func NewSpaceToken(position SourceFileReference, r rune) SpaceToken {
+	return SpaceToken{SourceFileReference: position, r: r}
 }
 
 func (s SpaceToken) String() string {
@@ -21,4 +21,8 @@ func (s SpaceToken) String() string {
 
 func (s SpaceToken) Type() Type {
 	return Space
+}
+
+func (s SpaceToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

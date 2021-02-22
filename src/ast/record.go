@@ -5,15 +5,24 @@
 
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/token"
+)
 
 type Record struct {
 	typeParameters []*TypeParameter
 	fields         []*RecordField
+	startParen     token.ParenToken
+	endParen       token.ParenToken
+
+	inclusive token.SourceFileReference
 }
 
-func NewRecordType(fields []*RecordField, typeParameters []*TypeParameter) *Record {
-	return &Record{fields: fields, typeParameters: typeParameters}
+func NewRecordType(startParen token.ParenToken, endParen token.ParenToken, fields []*RecordField, typeParameters []*TypeParameter) *Record {
+	inclusive := token.MakeInclusiveSourceFileReference(startParen.SourceFileReference, endParen.SourceFileReference)
+	return &Record{fields: fields, typeParameters: typeParameters, inclusive: inclusive}
 }
 
 func (i *Record) TypeParameters() []*TypeParameter {
@@ -39,4 +48,8 @@ func (i *Record) FindField(name string) *RecordField {
 		}
 	}
 	return nil
+}
+
+func (i *Record) FetchPositionLength() token.SourceFileReference {
+	return i.inclusive
 }

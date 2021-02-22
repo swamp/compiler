@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
@@ -34,7 +35,7 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 		newVariableContext.Add(parameter.Identifier(), namedDecoratedExpression)
 	}
 
-	self := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.PositionLength{}, 0))
+	self := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", token.SourceFileReference{}, 0))
 	selfDef := decorated.NewFunctionParameterDefinition(self, forcedFunctionType)
 	namedDecoratedExpression := decorated.NewNamedDecoratedExpression(functionName.Name(), nil, selfDef)
 	namedDecoratedExpression.SetReferenced()
@@ -43,8 +44,8 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	return newVariableContext
 }
 
-func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom,
-	functionName *ast.VariableIdentifier, context *VariableContext, comments token.CommentBlock) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func DecorateFunctionValue(d DecorateStream, annotation *decorated.Annotation, potentialFunc *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom,
+	functionName *ast.VariableIdentifier, context *VariableContext, comments token.CommentBlock) (decorated.Expression, decshared.DecoratedError) {
 	if forcedFunctionType == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", potentialFunc))
 	}
@@ -56,7 +57,9 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 
 	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
 	identifiers := potentialFunc.Parameters()
+
 	var parameters []*decorated.FunctionParameterDefinition
+
 	for index, parameterType := range functionParameterTypes {
 		identifier := identifiers[index]
 		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)
@@ -69,10 +72,12 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 	if decoratedExpressionErr != nil {
 		return nil, decoratedExpressionErr
 	}
+
 	decoratedExpressionType := decoratedExpression.Type()
 	if decoratedExpressionType == nil {
 		fmt.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
 	}
+
 	compatibleErr := dectype.CompatibleTypes(expectedReturnType, decoratedExpressionType)
 	if compatibleErr != nil {
 		return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, expression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
@@ -84,14 +89,14 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 			if !functionVariable.WasReferenced() {
 				_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
 				if !isAssemblerFunction {
-					sourceFileReference := potentialFunc.DebugFunctionIdentifier().SourceFile().ReferenceWithPositionString(potentialFunc.PositionLength().Position())
-					fmt.Printf("%s warning: '%v' not used in function %v\n", sourceFileReference, functionVariable.FullyQualifiedName(), potentialFunc.DebugFunctionIdentifier().Name())
+					sourceFileReference := potentialFunc.DebugFunctionIdentifier().FetchPositionLength().ToReferenceString()
+					log.Printf("%s warning: '%v' not used in function %v\n", sourceFileReference, functionVariable.FullyQualifiedName(), potentialFunc.DebugFunctionIdentifier().Name())
 				}
 			}
 		}
 	} else {
-		fmt.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
+		// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
 	}
 
-	return decorated.NewFunctionValue(forcedFunctionType, parameters, decoratedExpression, comments), nil
+	return decorated.NewFunctionValue(annotation, potentialFunc, forcedFunctionType, parameters, decoratedExpression, comments), nil
 }

@@ -72,8 +72,8 @@ func (i *CaseCustomType) Keyword() token.Keyword {
 	return i.keyword
 }
 
-func (i *CaseCustomType) PositionLength() token.PositionLength {
-	return i.keyword.PositionLength
+func (i *CaseCustomType) FetchPositionLength() token.SourceFileReference {
+	return i.keyword.FetchPositionLength()
 }
 
 func (i *CaseCustomType) Consequences() []*CaseConsequenceCustomType {

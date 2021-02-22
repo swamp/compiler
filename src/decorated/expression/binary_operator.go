@@ -6,7 +6,7 @@
 package decorated
 
 type BinaryOperator struct {
-	DecoratedExpressionNode
-	left  DecoratedExpression
-	right DecoratedExpression
+	ExpressionNode
+	left  Expression
+	right Expression
 }

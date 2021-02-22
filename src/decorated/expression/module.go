@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -51,19 +52,23 @@ type Module struct {
 	exposedTypes       *dectype.ExposedTypes
 	exposedDefinitions *ModuleReferenceDefinitions
 
+	program *ast.SourceFile
+
 	externalFunctions []*ExternalFunction
 
 	isInternal               bool
-	sourceFile               *token.SourceFile
+	sourceFileUri            token.DocumentURI
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
+	rootNodes                []Node
+	nodes                    []TypeOrToken
 }
 
-func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFile *token.SourceFile) *Module {
+func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri token.DocumentURI) *Module {
 	importedTypes := dectype.NewExposedTypes()
 	m := &Module{
 		fullyQualifiedModuleName: fullyQualifiedModuleName, exposedTypes: dectype.NewExposedTypes(),
 		importedTypes: importedTypes,
-		sourceFile:    sourceFile,
+		sourceFileUri: sourceFileUri,
 	}
 	m.typeRepo = dectype.NewTypeRepo(fullyQualifiedModuleName, importedTypes)
 	m.definitions = NewModuleDefinitions(m)
@@ -72,6 +77,44 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	m.declarations = NewModuleDeclarations(m)
 
 	return m
+}
+
+func (m *Module) SetProgram(program *ast.SourceFile) {
+	m.program = program
+}
+
+func (m *Module) DocumentURI() token.DocumentURI {
+	return m.sourceFileUri
+}
+
+func (m *Module) SetRootNodes(nodes []Node) {
+	m.rootNodes = nodes
+	if false {
+		log.Printf("all root nodes in: %v\n", m.FullyQualifiedModuleName())
+		for _, x := range m.rootNodes {
+			log.Printf("root node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
+		}
+	}
+	m.nodes = ExpandAllChildNodes(nodes)
+
+	if false {
+		log.Printf("all nodes in: %v\n", m.FullyQualifiedModuleName())
+		for _, x := range m.nodes {
+			log.Printf("node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
+		}
+	}
+}
+
+func (m *Module) RootNodes() []Node {
+	return m.rootNodes
+}
+
+func (m *Module) Nodes() []TypeOrToken {
+	return m.nodes
+}
+
+func (m *Module) Program() *ast.SourceFile {
+	return m.program
 }
 
 func (m *Module) MarkAsInternal() {

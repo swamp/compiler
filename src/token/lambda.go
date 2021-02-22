@@ -6,12 +6,12 @@
 package token
 
 type LambdaToken struct {
-	PositionLength
+	SourceFileReference
 	debugString string
 }
 
-func NewLambdaToken(startPosition PositionLength, debugString string) LambdaToken {
-	return LambdaToken{PositionLength: startPosition, debugString: debugString}
+func NewLambdaToken(startPosition SourceFileReference, debugString string) LambdaToken {
+	return LambdaToken{SourceFileReference: startPosition, debugString: debugString}
 }
 
 func (s LambdaToken) Type() Type {
@@ -20,4 +20,8 @@ func (s LambdaToken) Type() Type {
 
 func (s LambdaToken) String() string {
 	return "lambda"
+}
+
+func (s LambdaToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

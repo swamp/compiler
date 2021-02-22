@@ -5,6 +5,10 @@
 
 package dtype
 
+import (
+	"github.com/swamp/compiler/src/token"
+)
+
 type Type interface {
 	HumanReadable() string
 	ShortString() string
@@ -15,4 +19,5 @@ type Type interface {
 	DecoratedName() string
 	ParameterCount() int
 	Generate(params []Type) (Type, error)
+	FetchPositionLength() token.SourceFileReference
 }

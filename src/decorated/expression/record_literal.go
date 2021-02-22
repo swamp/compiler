@@ -21,12 +21,12 @@ func (a ByAssignmentName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByAssignmentName) Less(i, j int) bool { return a[i].fieldName < a[j].fieldName }
 
 type RecordLiteralAssignment struct {
-	expression DecoratedExpression
+	expression Expression
 	index      int
 	fieldName  string
 }
 
-func NewRecordLiteralAssignment(index int, fieldName string, expression DecoratedExpression) *RecordLiteralAssignment {
+func NewRecordLiteralAssignment(index int, fieldName string, expression Expression) *RecordLiteralAssignment {
 	return &RecordLiteralAssignment{index: index, fieldName: fieldName, expression: expression}
 }
 
@@ -42,7 +42,7 @@ func (a *RecordLiteralAssignment) FieldName() string {
 	return a.fieldName
 }
 
-func (a *RecordLiteralAssignment) Expression() DecoratedExpression {
+func (a *RecordLiteralAssignment) Expression() Expression {
 	return a.expression
 }
 
@@ -50,10 +50,10 @@ type RecordLiteral struct {
 	t                       *dectype.RecordAtom
 	sortedAssignments       []*RecordLiteralAssignment
 	parseOrderedAssignments []*RecordLiteralAssignment
-	recordTemplate          DecoratedExpression
+	recordTemplate          Expression
 }
 
-func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate DecoratedExpression,
+func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate Expression,
 	parseOrderedAssignments []*RecordLiteralAssignment) *RecordLiteral {
 	lastFoundIndex := 0
 
@@ -86,7 +86,7 @@ func (c *RecordLiteral) ParseOrderedAssignments() []*RecordLiteralAssignment {
 	return c.parseOrderedAssignments
 }
 
-func (c *RecordLiteral) RecordTemplate() DecoratedExpression {
+func (c *RecordLiteral) RecordTemplate() Expression {
 	return c.recordTemplate
 }
 
@@ -94,6 +94,6 @@ func (c *RecordLiteral) String() string {
 	return fmt.Sprintf("[record-literal %v %v]", c.t, c.sortedAssignments)
 }
 
-func (c *RecordLiteral) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
+func (c *RecordLiteral) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }

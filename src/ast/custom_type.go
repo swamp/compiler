@@ -5,7 +5,11 @@
 
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/token"
+)
 
 type CustomType struct {
 	name           *TypeIdentifier
@@ -31,4 +35,8 @@ func (i *CustomType) Variants() []*CustomTypeVariant {
 
 func (i *CustomType) FindAllLocalTypes() []*TypeParameter {
 	return i.typeParameters
+}
+
+func (i *CustomType) FetchPositionLength() token.SourceFileReference {
+	return i.name.FetchPositionLength()
 }

@@ -10,6 +10,14 @@ type SingleLineCommentToken struct {
 	CommentToken
 }
 
-func NewSingleLineCommentToken(raw string, text string, forDocumentation bool, position PositionLength) SingleLineCommentToken {
-	return SingleLineCommentToken{CommentToken: CommentToken{RawString: raw, CommentString: text, PositionLength: position, ForDocumentation: forDocumentation}}
+func NewSingleLineCommentToken(raw string, text string, forDocumentation bool, sourceFileReference SourceFileReference) SingleLineCommentToken {
+	return SingleLineCommentToken{CommentToken: CommentToken{RawString: raw, CommentString: text, SourceFileReference: sourceFileReference, ForDocumentation: forDocumentation}}
+}
+
+func (s SingleLineCommentToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
+}
+
+func (s SingleLineCommentToken) String() string {
+	return s.CommentToken.Raw()
 }

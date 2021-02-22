@@ -14,10 +14,12 @@ import (
 type LetAssignment struct {
 	identifier *VariableIdentifier
 	expression Expression
+	inclusive  token.SourceFileReference
 }
 
 func NewLetAssignment(identifier *VariableIdentifier, expression Expression) LetAssignment {
-	return LetAssignment{identifier: identifier, expression: expression}
+	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), expression.FetchPositionLength())
+	return LetAssignment{identifier: identifier, expression: expression, inclusive: inclusive}
 }
 
 func (l LetAssignment) Identifier() *VariableIdentifier {
@@ -32,13 +34,29 @@ func (l LetAssignment) String() string {
 	return fmt.Sprintf("[letassign %v = %v]", l.identifier, l.expression)
 }
 
-type Let struct {
-	assignments []LetAssignment
-	consequence Expression
+func (l LetAssignment) FetchPositionLength() token.SourceFileReference {
+	return l.inclusive
 }
 
-func NewLet(assignments []LetAssignment, consequence Expression) *Let {
-	return &Let{assignments: assignments, consequence: consequence}
+type Let struct {
+	assignments         []LetAssignment
+	consequence         Expression
+	keyword             token.Keyword
+	inKeyword           token.Keyword
+	sourceFileReference token.SourceFileReference
+}
+
+func NewLet(keyword token.Keyword, inKeyword token.Keyword, assignments []LetAssignment, consequence Expression) *Let {
+	sourceFileReference := token.MakeInclusiveSourceFileReference(keyword.FetchPositionLength(), consequence.FetchPositionLength())
+	return &Let{keyword: keyword, inKeyword: inKeyword, assignments: assignments, consequence: consequence, sourceFileReference: sourceFileReference}
+}
+
+func (i *Let) Keyword() token.Keyword {
+	return i.keyword
+}
+
+func (i *Let) InKeyword() token.Keyword {
+	return i.inKeyword
 }
 
 func (i *Let) Assignments() []LetAssignment {
@@ -49,8 +67,8 @@ func (i *Let) Consequence() Expression {
 	return i.consequence
 }
 
-func (i *Let) PositionLength() token.PositionLength {
-	return i.consequence.PositionLength()
+func (i *Let) FetchPositionLength() token.SourceFileReference {
+	return i.sourceFileReference
 }
 
 func (i *Let) String() string {

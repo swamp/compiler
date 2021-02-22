@@ -9,14 +9,14 @@ import "fmt"
 
 // OperatorToken :
 type OperatorToken struct {
-	PositionLength
+	SourceFileReference
 	operatorType Type
 	raw          string
 	debugString  string
 }
 
-func NewOperatorToken(operatorType Type, startPosition PositionLength, raw string, debugString string) OperatorToken {
-	return OperatorToken{operatorType: operatorType, PositionLength: startPosition, raw: raw, debugString: debugString}
+func NewOperatorToken(operatorType Type, startPosition SourceFileReference, raw string, debugString string) OperatorToken {
+	return OperatorToken{operatorType: operatorType, SourceFileReference: startPosition, raw: raw, debugString: debugString}
 }
 
 func (s OperatorToken) Type() Type {
@@ -33,4 +33,8 @@ func (s OperatorToken) Raw() string {
 
 func (s OperatorToken) DebugString() string {
 	return fmt.Sprintf("[operator %s]", s.debugString)
+}
+
+func (s OperatorToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

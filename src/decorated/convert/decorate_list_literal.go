@@ -11,10 +11,11 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/token"
 )
 
-func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string) (*dectype.PrimitiveAtom, []decorated.DecoratedExpression, decshared.DecoratedError) {
-	var listExpressions []decorated.DecoratedExpression
+func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string) (*dectype.PrimitiveAtom, []decorated.Expression, decshared.DecoratedError) {
+	var listExpressions []decorated.Expression
 	var detectedType dtype.Type
 
 	if len(expressions) > 0 {
@@ -35,7 +36,7 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 		}
 	} else {
 		// Empty list
-		detectedType = dectype.NewAnyType()
+		detectedType = dectype.NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.SourceFileReference{}, 0)))
 	}
 
 	listType := d.TypeRepo().FindTypeFromAlias(containerName)
@@ -52,11 +53,11 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 	return wrapped, listExpressions, nil
 }
 
-func decorateListLiteral(d DecorateStream, list *ast.ListLiteral, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateListLiteral(d DecorateStream, list *ast.ListLiteral, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	wrappedType, listExpressions, err := decorateContainerLiteral(d, list.Expressions(), context, "List")
 	if err != nil {
 		return nil, err
 	}
 
-	return decorated.NewListLiteral(wrappedType, listExpressions), nil
+	return decorated.NewListLiteral(list, wrappedType, listExpressions), nil
 }

@@ -13,7 +13,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	if e == nil {
 		panic(fmt.Sprintf("expression is nil %v", context))
 	}
@@ -58,7 +58,7 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 	case *ast.RecordLiteral:
 		return decorateRecordLiteral(d, v, context)
 	case *ast.Lookups:
-		return decorateLookups(d, v, context)
+		return decorateRecordLookups(d, v, context)
 	case *ast.Asm:
 		return decorateAsm(d, v)
 	case *ast.BinaryOperator:
@@ -68,7 +68,7 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 	}
 }
 
-func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	expr, exprErr := internalDecorateExpression(d, e, context)
 	if exprErr != nil {
 		return nil, exprErr
@@ -77,5 +77,9 @@ func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableCon
 	if expr == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("expr is nil:%v", e))
 	}
+
+	// log.Printf("decorate expression before %T %v", e, e)
+	// log.Printf("decorate expression AFTER %T %v", expr, expr)
+
 	return expr, nil
 }

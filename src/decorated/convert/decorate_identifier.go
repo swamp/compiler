@@ -11,7 +11,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func isConstant(expression decorated.DecoratedExpression) (decorated.DecoratedExpression, bool) {
+func isConstant(expression decorated.Expression) (decorated.Expression, bool) {
 	functionValue, isFunctionValue := expression.(*decorated.FunctionValue)
 	if isFunctionValue {
 		hasParameters := len(functionValue.Parameters()) != 0
@@ -24,32 +24,11 @@ func isConstant(expression decorated.DecoratedExpression) (decorated.DecoratedEx
 	return nil, false
 }
 
-func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
-	def := context.ResolveVariable(ident)
-	if def == nil {
+func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	expression, expressionErr := context.ResolveVariable(ident)
+	if expressionErr != nil {
 		return nil, decorated.NewUnknownVariable(ident)
 	}
 
-	if constantExpression, wasConstant := isConstant(def.Expression()); wasConstant {
-		switch t := constantExpression.(type) {
-		case *decorated.IntegerLiteral:
-			return t, nil
-		case *decorated.StringLiteral:
-			return t, nil
-		case *decorated.CharacterLiteral:
-			return t, nil
-		case *decorated.TypeIdLiteral:
-			return t, nil
-		case *decorated.ResourceNameLiteral:
-			return t, nil
-		case *decorated.RecordLiteral:
-			return t, nil
-		case *decorated.ListLiteral:
-			return t, nil
-		case *decorated.FixedLiteral:
-			return t, nil
-		}
-	}
-
-	return decorated.NewGetVariable(ident, def), nil
+	return expression, nil
 }
