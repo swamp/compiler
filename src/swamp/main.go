@@ -80,7 +80,8 @@ func (c *LspCmd) Run() error {
 	service := lspservice.NewService(lspService, lspService)
 	fmt.Fprintf(os.Stderr, "LSP Server initiated. Will receive commands from stdin and send reply on stdout")
 	lspServ := lspserv.NewService(service)
-	lspServ.RunUntilClose(lspserv.StdInOutReadWriteCloser{})
+	const logOutput = false
+	lspServ.RunUntilClose(lspserv.StdInOutReadWriteCloser{}, logOutput)
 
 	return nil
 }

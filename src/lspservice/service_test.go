@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"testing"
 
@@ -60,15 +59,14 @@ func runCommand(service lspserv.Service, linuxEndings string) (string, error) {
 	linuxEndingsTrimmed = fmt.Sprintf("Content-Length: %d\n\n", octetSize) + linuxEndingsTrimmed
 	s := convertToCrLf(linuxEndingsTrimmed)
 
-	fmt.Fprintf(os.Stderr, "\nsending '%s'\n", s)
-
 	rwc := NewReadWriteCloserTester(s)
-	service.RunUntilClose(rwc)
+	const logOutput = false
+	service.RunUntilClose(rwc, logOutput)
 
 	r := rwc.Result()
 	r = convertFromCrLf(r)
 
-	fmt.Fprintf(os.Stderr, "\nreceived '%s'\n", r)
+	//	fmt.Fprintf(os.Stderr, "\nreceived '%s'\n", r)
 
 	return r, nil
 }
@@ -81,11 +79,10 @@ func testHelperWithTesting(t *testing.T, s string) string {
 
 	lspservService := lspserv.NewService(service)
 
-	initializeResult, initializeErr := runCommand(lspservService, initializeCommand)
+	_, initializeErr := runCommand(lspservService, initializeCommand)
 	if initializeErr != nil {
 		t.Fatal(initializeErr)
 	}
-	fmt.Fprintf(os.Stderr, initializeResult)
 
 	result, err := runCommand(lspservService, s)
 	if err != nil {

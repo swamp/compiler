@@ -89,7 +89,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{
 			Kind:  lsp.MUKMarkdown,
-			Value: "this is **markup** content\n---\nIs this the last line?", //  decoratedToken.String()
+			Value: decoratedToken.String(),
 		},
 		Range: tokenToLspRange(decoratedToken.FetchPositionLength()),
 	}

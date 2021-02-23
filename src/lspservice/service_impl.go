@@ -2,6 +2,7 @@ package lspservice
 
 import (
 	"fmt"
+	"log"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -35,7 +36,7 @@ func (l *LspImpl) FindToken(position token.Position) DecoratedTypeOrToken {
 	}
 	allNodes := l.module.Program().Nodes()
 	for _, node := range allNodes {
-		fmt.Printf("checking node:%v\n", node.FetchPositionLength())
+		log.Printf("checking node:%v\n", node.FetchPositionLength())
 		if node.FetchPositionLength().Contains(position) {
 			return node
 		}

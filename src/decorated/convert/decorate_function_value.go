@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
@@ -85,7 +86,7 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 				_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
 				if !isAssemblerFunction {
 					sourceFileReference := potentialFunc.DebugFunctionIdentifier().SourceFile().ReferenceWithPositionString(potentialFunc.FetchPositionLength().Position())
-					fmt.Printf("%s warning: '%v' not used in function %v\n", sourceFileReference, functionVariable.FullyQualifiedName(), potentialFunc.DebugFunctionIdentifier().Name())
+					log.Printf("%s warning: '%v' not used in function %v\n", sourceFileReference, functionVariable.FullyQualifiedName(), potentialFunc.DebugFunctionIdentifier().Name())
 				}
 			}
 		}
