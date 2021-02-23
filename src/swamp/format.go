@@ -18,7 +18,7 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-func parseToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.Program, decshared.DecoratedError) {
+func parseToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
 	ioReader := strings.NewReader(x)
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "")
 	if runeReaderErr != nil {

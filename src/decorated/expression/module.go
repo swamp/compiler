@@ -51,14 +51,16 @@ type Module struct {
 	exposedTypes       *dectype.ExposedTypes
 	exposedDefinitions *ModuleReferenceDefinitions
 
+	program *ast.SourceFile
+
 	externalFunctions []*ExternalFunction
 
 	isInternal               bool
-	sourceFile               *token.SourceFile
+	sourceFile               *token.SourceFileURI
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 }
 
-func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFile *token.SourceFile) *Module {
+func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFile *token.SourceFileURI) *Module {
 	importedTypes := dectype.NewExposedTypes()
 	m := &Module{
 		fullyQualifiedModuleName: fullyQualifiedModuleName, exposedTypes: dectype.NewExposedTypes(),
@@ -72,6 +74,14 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	m.declarations = NewModuleDeclarations(m)
 
 	return m
+}
+
+func (m *Module) SetProgram(program *ast.SourceFile) {
+	m.program = program
+}
+
+func (m *Module) Program() *ast.SourceFile {
+	return m.program
 }
 
 func (m *Module) MarkAsInternal() {

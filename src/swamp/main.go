@@ -13,13 +13,11 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/fatih/color"
+	"github.com/piot/lsp-server/lspserv"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
-	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/file"
-	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/lspservice"
-	"github.com/swamp/compiler/src/token"
 )
 
 var Version string
@@ -75,31 +73,15 @@ func (c *FmtCmd) Run() error {
 	return nil
 }
 
-type LspImpl struct {
-	world  *loader.World
-	module *decorated.Module
-}
-
-func (l *LspImpl) Compile(filename string) error {
-	const enforceStyle = true
-	const verboseFlag = false
-	world, _, err := swampcompiler.CompileMain(filename, enforceStyle, verboseFlag)
-	if err != nil {
-		return err
-	}
-
-	l.world = world
-	return nil
-}
-
-func (l *LspImpl) FindToken(position token.Position) lspservice.DecoratedTypeOrToken {
-	return nil
-}
-
 type LspCmd struct{}
 
 func (c *LspCmd) Run() error {
+	lspService := &lspservice.LspImpl{}
+	service := lspservice.NewService(lspService, lspService)
 	fmt.Fprintf(os.Stderr, "LSP Server initiated. Will receive commands from stdin and send reply on stdout")
+	lspServ := lspserv.NewService(service)
+	lspServ.RunUntilClose(lspserv.StdInOutReadWriteCloser{})
+
 	return nil
 }
 

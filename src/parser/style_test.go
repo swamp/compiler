@@ -20,7 +20,7 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-func compileToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.Program, decshared.DecoratedError) {
+func compileToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
 	ioReader := strings.NewReader(x)
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "style test")
 	if runeReaderErr != nil {

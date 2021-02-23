@@ -2,6 +2,7 @@ package lspservice
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/piot/go-lsp"
 	"github.com/piot/lsp-server/lspserv"
@@ -10,9 +11,9 @@ import (
 )
 
 type DecoratedTypeOrToken interface {
-	HumanReadableString() string
-	SourceFile() *token.SourceFile
-	Range() token.Range
+	String() string
+	// SourceFile() *token.SourceFileURI
+	FetchPositionLength() token.Range
 }
 
 type DecoratedType interface {
@@ -40,10 +41,6 @@ type Service struct {
 
 func NewService(compiler Compiler, scanner DecoratedTokenScanner) *Service {
 	return &Service{scanner: scanner, compiler: compiler}
-}
-
-func (s *Service) RunForever() {
-	lspserv.RunForever("", s)
 }
 
 func (s *Service) Reset() error {
@@ -75,7 +72,11 @@ func tokenToLspRange(rangeToken token.Range) *lsp.Range {
 }
 
 func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Hover, error) {
-	s.compiler.Compile(string(params.TextDocument.URI))
+	fullUrl, urlErr := url.Parse(string(params.TextDocument.URI))
+	if urlErr != nil {
+		return nil, urlErr
+	}
+	s.compiler.Compile(fullUrl.Path)
 
 	tokenPosition := lspToTokenPosition(params.Position)
 
@@ -88,9 +89,9 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{
 			Kind:  lsp.MUKMarkdown,
-			Value: fmt.Sprintf("%v", decoratedToken.HumanReadableString()),
+			Value: "this is **markup** content\n---\nIs this the last line?", //  decoratedToken.String()
 		},
-		Range: tokenToLspRange(decoratedToken.Range()),
+		Range: tokenToLspRange(decoratedToken.FetchPositionLength()),
 	}
 
 	return hover, nil
@@ -117,7 +118,62 @@ func (s *Service) HandleFindReferences(params lsp.ReferenceParams, conn lspserv.
 }
 
 func (s *Service) HandleSymbol(params lsp.DocumentSymbolParams, conn lspserv.Connection) ([]*lsp.DocumentSymbol, error) {
-	return nil, nil
+	return []*lsp.DocumentSymbol{
+		{
+			Name:   "name",
+			Detail: "String name",
+			Kind:   lsp.SKProperty,
+			Tags:   nil,
+			Range: lsp.Range{
+				Start: lsp.Position{
+					Line:      0,
+					Character: 0,
+				},
+				End: lsp.Position{
+					Line:      0,
+					Character: 4,
+				},
+			},
+			SelectionRange: lsp.Range{
+				Start: lsp.Position{
+					Line:      0,
+					Character: 0,
+				},
+				End: lsp.Position{
+					Line:      0,
+					Character: 4,
+				},
+			},
+			Children: nil,
+		},
+		{
+			Name:   "2",
+			Detail: "Int",
+			Kind:   lsp.SKNumber,
+			Tags:   nil,
+			Range: lsp.Range{
+				Start: lsp.Position{
+					Line:      0,
+					Character: 6,
+				},
+				End: lsp.Position{
+					Line:      0,
+					Character: 6,
+				},
+			},
+			SelectionRange: lsp.Range{
+				Start: lsp.Position{
+					Line:      0,
+					Character: 6,
+				},
+				End: lsp.Position{
+					Line:      0,
+					Character: 6,
+				},
+			},
+			Children: nil,
+		},
+	}, nil
 } // Used for outline
 
 func (s *Service) HandleCompletion(params lsp.CompletionParams, conn lspserv.Connection) (*lsp.CompletionList, error) {
@@ -154,11 +210,36 @@ func (s *Service) HandleRename(params lsp.RenameParams) (*lsp.WorkspaceEdit, err
 }
 
 func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (*lsp.SemanticTokens, error) {
-	return nil, nil
+	return &lsp.SemanticTokens{
+		ResultId: "",
+		Data: []uint{
+			0, 0, 5, 0, 1,
+			2, 0, 5, 3, 2,
+		},
+	}, nil
 }
 
 func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connection) ([]*lsp.CodeLens, error) {
-	return nil, nil
+	return []*lsp.CodeLens{
+		{
+			Range: lsp.Range{
+				Start: lsp.Position{
+					Line:      4,
+					Character: 0,
+				},
+				End: lsp.Position{
+					Line:      4,
+					Character: 4,
+				},
+			},
+			Command: lsp.Command{
+				Title:     "Some Command here",
+				Command:   "swamp.somecommand",
+				Arguments: nil,
+			},
+			Data: nil,
+		},
+	}, nil
 }
 
 func (s *Service) HandleCodeLensResolve(params lsp.CodeLens, conn lspserv.Connection) (*lsp.CodeLens, error) {
@@ -167,9 +248,4 @@ func (s *Service) HandleCodeLensResolve(params lsp.CodeLens, conn lspserv.Connec
 
 func (s *Service) HandleDidChangeWatchedFiles(params lsp.DidChangeWatchedFilesParams, conn lspserv.Connection) error {
 	return nil
-}
-
-func RunForever() {
-	service := &Service{}
-	lspserv.RunForever("", service)
 }

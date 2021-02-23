@@ -13,3 +13,6 @@ require (
 	github.com/swamp/opcodes v0.0.0-20210214095833-e3801acbc388
 	github.com/swamp/pack v0.0.0-20210122130807-560a9bc9af01
 )
+
+
+replace github.com/piot/lsp-server => ../../lsp-server

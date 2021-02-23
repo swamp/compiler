@@ -50,7 +50,24 @@ func NewParser(tokenizer *tokenize.Tokenizer, enforceStyle bool) *Parser {
 	return p
 }
 
-func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
+func (p *Parser) Nodes() []ast.Node {
+	return p.stream.nodes
+}
+
+func writeAllNodes(nodes []ast.Node) {
+	lastLine := -1
+
+	for _, node := range nodes {
+		rangeFound := node.FetchPositionLength()
+		if rangeFound.Start().Line() != lastLine {
+			fmt.Printf("\n")
+			lastLine = rangeFound.End().Line()
+		}
+		fmt.Printf("node pos %v ", node.FetchPositionLength())
+	}
+}
+
+func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 	var expressions []ast.Expression
 
 	for !p.stream.tokenizer.MaybeEOF() {
@@ -78,22 +95,14 @@ func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
 		}
 	}
 
-	program := ast.NewProgram(expressions)
+	program := ast.NewSourceFile(expressions)
 
-	lastLine := -1
-	for _, node := range p.stream.nodes {
-		rangeFound := node.FetchPositionLength()
-		if rangeFound.Start().Line() != lastLine {
-			fmt.Printf("\n")
-			lastLine = rangeFound.End().Line()
-		}
-		fmt.Printf("%v ", node)
-	}
+	program.SetNodes(p.stream.nodes)
 
 	return program, nil
 }
 
-func (p *Parser) ParseExpression() (*ast.Program, parerr.ParseError) {
+func (p *Parser) ParseExpression() (*ast.SourceFile, parerr.ParseError) {
 	expressions := []ast.Expression{}
 
 	expression, expressionErr := p.parseExpressionNormal(0)
@@ -104,7 +113,7 @@ func (p *Parser) ParseExpression() (*ast.Program, parerr.ParseError) {
 		panic("should not be nil")
 	}
 	expressions = append(expressions, expression)
-	program := ast.NewProgram(expressions)
+	program := ast.NewSourceFile(expressions)
 	return program, nil
 }
 

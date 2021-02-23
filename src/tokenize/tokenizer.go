@@ -86,8 +86,8 @@ func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, T
 	return NewTokenizerInternal(r, exactWhitespace)
 }
 
-func (t *Tokenizer) SourceFile() *token.SourceFile {
-	return token.MakeSourceFile(t.r.RelativeFilename())
+func (t *Tokenizer) SourceFile() *token.SourceFileURI {
+	return token.MakeSourceFileURI(t.r.RelativeFilename())
 }
 
 func (t *Tokenizer) MakePositionLength(pos token.PositionToken) token.Range {

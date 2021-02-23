@@ -38,6 +38,35 @@ func CheckUnused(world *loader.World) {
 	}
 }
 
+func CompileFile(sourceFile string, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
+	sourceFileRootDirectory := sourceFile
+	if file.IsDir(sourceFile) {
+	} else {
+		sourceFileRootDirectory = filepath.Dir(sourceFile)
+	}
+	world := loader.NewWorld()
+
+	worldDecorator, worldDecoratorErr := loader.NewWorldDecorator(enforceStyle, verboseFlag)
+	if worldDecoratorErr != nil {
+		return nil, nil, worldDecoratorErr
+	}
+	for _, rootModule := range worldDecorator.ImportModules() {
+		world.AddModule(rootModule.FullyQualifiedModuleName(), rootModule)
+	}
+
+	mainNamespace := dectype.MakePackageRootModuleName(nil)
+	rootPackage := NewPackageLoader(sourceFileRootDirectory, mainNamespace, world, worldDecorator)
+	repository := rootPackage.repository
+	packageRelative := dectype.MakePackageRelativeModuleNameFromString("test")
+	rootPrefix := dectype.MakePackageRootModuleNameFromString("")
+	module, readModuleErr := repository.InternalReader().ReadModule(repository, packageRelative, rootPrefix)
+	if readModuleErr != nil {
+		return nil, nil, decorated.NewModuleError(".swamp", readModuleErr)
+	}
+
+	return world, module, nil
+}
+
 func CompileMain(mainSourceFile string, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {

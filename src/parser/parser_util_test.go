@@ -16,7 +16,7 @@ import (
 	testutil "github.com/swamp/compiler/src/test"
 )
 
-func testParseInternal(code string, errorsAsWarnings bool) (*ast.Program, ParseStream, parerr.ParseError) {
+func testParseInternal(code string, errorsAsWarnings bool) (*ast.SourceFile, ParseStream, parerr.ParseError) {
 	code = strings.TrimSpace(code)
 	const enforceStyle = true
 	tokenizer, tokenizerErr := testutil.Setup(code)
@@ -32,7 +32,7 @@ func testParseInternal(code string, errorsAsWarnings bool) (*ast.Program, ParseS
 	return program, p.stream, programErr
 }
 
-func testParseExpressionInternal(code string, enforceStyle bool) (*ast.Program, ParseStream, parerr.ParseError) {
+func testParseExpressionInternal(code string, enforceStyle bool) (*ast.SourceFile, ParseStream, parerr.ParseError) {
 	const errorsAsWarnings = false
 	code = strings.TrimSpace(code)
 	tokenizer, tokenizerErr := testutil.Setup(code)

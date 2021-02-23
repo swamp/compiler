@@ -9,24 +9,25 @@ import (
 	"bytes"
 )
 
-type Program struct {
+type SourceFile struct {
 	statements []Expression
+	nodes      []Node
 }
 
-func (p *Program) Statements() []Expression {
+func (p *SourceFile) Statements() []Expression {
 	return p.statements
 }
 
-func NewProgram(expressions []Expression) *Program {
+func NewSourceFile(expressions []Expression) *SourceFile {
 	for _, expr := range expressions {
 		if expr == nil {
 			panic("nil expression")
 		}
 	}
-	return &Program{statements: expressions}
+	return &SourceFile{statements: expressions}
 }
 
-func (p *Program) String() string {
+func (p *SourceFile) String() string {
 	return expressionStatementsToString(p.statements)
 }
 
@@ -50,6 +51,14 @@ func expressionArrayToDebugStringEx(expressions []Expression, ch string, level i
 	return out.String()
 }
 
-func (p *Program) DebugString() string {
+func (p *SourceFile) DebugString() string {
 	return expressionArrayToDebugStringEx(p.statements, "\n", 0)
+}
+
+func (p *SourceFile) Nodes() []Node {
+	return p.nodes
+}
+
+func (p *SourceFile) SetNodes(nodes []Node) {
+	p.nodes = nodes
 }

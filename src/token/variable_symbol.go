@@ -12,10 +12,10 @@ type VariableSymbolToken struct {
 	Range
 	raw         string
 	Indentation int
-	sourceFile  *SourceFile
+	sourceFile  *SourceFileURI
 }
 
-func NewVariableSymbolToken(raw string, sourceFile *SourceFile, startPosition Range, indentation int) VariableSymbolToken {
+func NewVariableSymbolToken(raw string, sourceFile *SourceFileURI, startPosition Range, indentation int) VariableSymbolToken {
 	return VariableSymbolToken{raw: raw, Range: startPosition, sourceFile: sourceFile, Indentation: indentation}
 }
 
@@ -36,9 +36,9 @@ func (s VariableSymbolToken) FetchIndentation() int {
 }
 
 func (s VariableSymbolToken) String() string {
-	return fmt.Sprintf("$%s", s.raw)
+	return fmt.Sprintf("%s", s.raw) // TODO: BRING THIS BACK to $
 }
 
-func (s VariableSymbolToken) SourceFile() *SourceFile {
+func (s VariableSymbolToken) SourceFile() *SourceFileURI {
 	return s.sourceFile
 }

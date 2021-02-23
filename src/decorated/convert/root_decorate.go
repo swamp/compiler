@@ -207,7 +207,7 @@ func (g *Definer) handleStatement(statement ast.Expression) decshared.DecoratedE
 	}
 }
 
-func (g *Definer) firstPass(program *ast.Program) decshared.DecoratedError {
+func (g *Definer) firstPass(program *ast.SourceFile) decshared.DecoratedError {
 	for _, statement := range program.Statements() {
 		err := g.handleStatement(statement)
 		if err != nil {
@@ -218,7 +218,7 @@ func (g *Definer) firstPass(program *ast.Program) decshared.DecoratedError {
 	return nil
 }
 
-func (g *Definer) Define(program *ast.Program) decshared.DecoratedError {
+func (g *Definer) Define(program *ast.SourceFile) decshared.DecoratedError {
 	err := g.firstPass(program)
 	if err != nil {
 		return err

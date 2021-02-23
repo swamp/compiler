@@ -43,7 +43,7 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 		enforceStyle, verbose, errorsAsWarnings)
 }
 
-func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.Program, decshared.DecoratedError) {
+func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
 	ioReader := strings.NewReader(code)
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, absoluteFilename)
 	if runeReaderErr != nil {
@@ -62,6 +62,7 @@ func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle
 	if programErr != nil {
 		return tokenizer, nil, programErr
 	}
+	program.SetNodes(p.Nodes())
 
 	return tokenizer, program, nil
 }
@@ -74,7 +75,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 		parser.ShowError(tokenizer, absoluteFilename, programErr, verbose, errorAsWarning)
 		return nil, programErr
 	}
-	sourceFile := token.MakeSourceFile(absoluteFilename)
+	sourceFile := token.MakeSourceFileURI(absoluteFilename)
 
 	module := decorated.NewModule(moduleName, sourceFile)
 
@@ -104,6 +105,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 
 	module.ExposedTypes().AddTypes(module.TypeRepo().AllLocalTypes())
 	module.ExposedDefinitions().AddDefinitions(module.Definitions().Definitions())
+	module.SetProgram(program)
 
 	return module, nil
 }

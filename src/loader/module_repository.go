@@ -40,6 +40,10 @@ func (l *ModuleRepository) isReadingModule(moduleName dectype.PackageRelativeMod
 	return false
 }
 
+func (l *ModuleRepository) InternalReader() ModuleReader {
+	return l.moduleReader
+}
+
 func remove(s []dectype.PackageRelativeModuleName, r dectype.PackageRelativeModuleName) []dectype.PackageRelativeModuleName {
 	for i, v := range s {
 		if v.String() == r.String() {

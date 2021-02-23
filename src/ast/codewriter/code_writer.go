@@ -562,7 +562,7 @@ func writeExpression(expression ast.Expression, colorer coloring.Colorer, indent
 	}
 }
 
-func WriteCode(program *ast.Program, useColor bool) (string, error) {
+func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 	var colorer coloring.Colorer
 	if useColor {
 		colorer = coloring.NewColorerWithColor()

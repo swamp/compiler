@@ -24,6 +24,10 @@ func (p Range) RuneWidth() int {
 	return p.end.column - p.start.column + 1
 }
 
+func (p Range) Contains(pos Position) bool {
+	return (pos.line > p.start.line && pos.line < p.end.line) || (pos.line == p.start.line && pos.column >= p.start.column) || (pos.line == p.end.line && pos.column <= p.end.column)
+}
+
 func (p Range) Position() Position {
 	return p.start
 }
@@ -33,7 +37,7 @@ func (p Range) Start() Position {
 }
 
 func (p Range) End() Position {
-	return p.start
+	return p.end
 }
 
 func (p Range) FetchPositionLength() Range {
@@ -45,5 +49,5 @@ func (p Range) FetchIndentation() int {
 }
 
 func (p Range) String() string {
-	return fmt.Sprintf("[%v (%v)] ", p.start, p.indentation)
+	return fmt.Sprintf("[%v to %v (%v)] ", p.start, p.end, p.indentation)
 }
