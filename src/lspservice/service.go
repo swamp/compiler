@@ -2,6 +2,7 @@ package lspservice
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 
 	"github.com/piot/go-lsp"
@@ -65,9 +66,14 @@ func tokenToLspPosition(position token.Position) lsp.Position {
 }
 
 func tokenToLspRange(rangeToken token.Range) *lsp.Range {
+	exclusiveEndPosition := lsp.Position{
+		Line:      rangeToken.End().Line(),
+		Character: rangeToken.End().Column() + 1,
+	}
+
 	return &lsp.Range{
 		Start: tokenToLspPosition(rangeToken.Start()),
-		End:   tokenToLspPosition(rangeToken.End()),
+		End:   exclusiveEndPosition,
 	}
 }
 
