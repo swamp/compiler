@@ -58,7 +58,7 @@ func writeAllNodes(nodes []ast.Node) {
 	lastLine := -1
 
 	for _, node := range nodes {
-		rangeFound := node.FetchPositionLength()
+		rangeFound := node.FetchPositionLength().Range
 		if rangeFound.Start().Line() != lastLine {
 			fmt.Printf("\n")
 			lastLine = rangeFound.End().Line()
@@ -77,7 +77,7 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 		}
 
 		if report.SpacesUntilMaybeNewline > 0 && report.IndentationSpaces > 0 {
-			return nil, parerr.NewExtraSpacing(p.stream.positionLength())
+			return nil, parerr.NewExtraSpacing(p.stream.sourceFileReference())
 		}
 
 		expression, expressionErr := p.parseExpressionStatement(report.Comments)

@@ -11,15 +11,45 @@ import (
 
 type DocumentURI string
 
+type SourceFileDocument struct {
+	Uri DocumentURI
+}
+
 type SourceFileReference struct {
-	Range Range
-	Uri   DocumentURI
+	Range    Range
+	Document *SourceFileDocument
+}
+
+func (s SourceFileReference) ToReferenceString() string {
+	return fmt.Sprintf("%v:%d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1)
+}
+
+func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileReference) SourceFileReference {
+	if start.Document == nil {
+		panic("document can not be nil")
+	}
+	if start.Document != end.Document {
+		panic("source file reference can not span files")
+	}
+	tokenRange := MakeInclusiveRange(start.Range, end.Range)
+	return SourceFileReference{
+		Range:    tokenRange,
+		Document: nil,
+	}
 }
 
 type Range struct {
 	start       Position
 	end         Position
 	indentation int
+}
+
+func MakeInclusiveRange(start Range, end Range) Range {
+	return Range{
+		start:       start.Start(),
+		end:         end.End(),
+		indentation: start.FetchIndentation(),
+	}
 }
 
 func NewPositionLength(start Position, runeCount int, indentation int) Range {
@@ -47,10 +77,6 @@ func (p Range) Start() Position {
 
 func (p Range) End() Position {
 	return p.end
-}
-
-func (p Range) FetchPositionLength() Range {
-	return p
 }
 
 func (p Range) FetchIndentation() int {

@@ -37,6 +37,6 @@ func (i *CustomType) FindAllLocalTypes() []*TypeParameter {
 	return i.typeParameters
 }
 
-func (i *CustomType) FetchPositionLength() token.Range {
+func (i *CustomType) FetchPositionLength() token.SourceFileReference {
 	return i.name.FetchPositionLength()
 }

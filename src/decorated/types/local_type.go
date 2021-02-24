@@ -21,7 +21,7 @@ func (u *LocalType) String() string {
 	return fmt.Sprintf("[localtype %v]", u.identifier.Name())
 }
 
-func (u *LocalType) FetchPositionLength() token.Range {
+func (u *LocalType) FetchPositionLength() token.SourceFileReference {
 	return u.identifier.Identifier().FetchPositionLength()
 }
 

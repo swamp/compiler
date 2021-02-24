@@ -14,10 +14,10 @@ import (
 type ExternalFunction struct {
 	tokens         string
 	parameterCount uint
-	posLen         token.Range
+	posLen         token.SourceFileReference
 }
 
-func NewExternalFunction(tokens string, parameterCount uint, posLen token.Range) *ExternalFunction {
+func NewExternalFunction(tokens string, parameterCount uint, posLen token.SourceFileReference) *ExternalFunction {
 	return &ExternalFunction{tokens: tokens, parameterCount: parameterCount, posLen: posLen}
 }
 
@@ -29,7 +29,7 @@ func (d *ExternalFunction) ParameterCount() uint {
 	return d.parameterCount
 }
 
-func (d *ExternalFunction) FetchPositionLength() token.Range {
+func (d *ExternalFunction) FetchPositionLength() token.SourceFileReference {
 	return d.posLen
 }
 

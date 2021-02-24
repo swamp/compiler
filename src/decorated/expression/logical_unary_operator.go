@@ -44,6 +44,6 @@ func (a *LogicalUnaryOperator) String() string {
 	return fmt.Sprintf("[unarylogical %v left:%v]", a.operatorType, a.left)
 }
 
-func (a *LogicalUnaryOperator) FetchPositionLength() token.Range {
+func (a *LogicalUnaryOperator) FetchPositionLength() token.SourceFileReference {
 	return a.unary.FetchPositionLength()
 }

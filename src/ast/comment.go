@@ -40,6 +40,6 @@ func (i *MultilineComment) DebugString() string {
 	return i.String()
 }
 
-func (i *MultilineComment) FetchPositionLength() token.Range {
-	return i.commentToken.FetchPositionLength()
+func (i *MultilineComment) FetchPositionLength() token.SourceFileReference {
+	return i.commentToken.SourceFileReference
 }

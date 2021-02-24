@@ -51,9 +51,14 @@ func (p *ParseStreamImpl) debugInfoRows(s string, rowCount int) {
 	fmt.Printf("%v\n---\n", extract)
 }
 
-func (p *ParseStreamImpl) positionLength() token.Range {
-	pos := p.tokenizer.ParsingPosition().Position()
-	return token.NewPositionLength(pos, 1, pos.Column()/2)
+func (p *ParseStreamImpl) positionLength() token.SourceFileReference {
+	return p.sourceFileReference()
+}
+
+func (p *ParseStreamImpl) sourceFileReference() token.SourceFileReference {
+	pos := p.tokenizer.ParsingPosition()
+	reference := p.tokenizer.MakeSourceFileReference(pos)
+	return reference
 }
 
 func (p *ParseStreamImpl) getPrecedenceFromType(tType token.Type) Precedence {
@@ -83,9 +88,9 @@ func (p *ParseStreamImpl) readTypeIdentifier() (*ast.TypeIdentifier, parerr.Pars
 	return typeIdent, nil
 }
 
-func (p *ParseStreamImpl) addWarning(description string, length token.Range) {
-	color.Yellow("%v:%d:%d: %v: %v", p.tokenizer.RelativeFilename(), length.Position().Line()+1,
-		length.Position().Column()+1, "Warning", description)
+func (p *ParseStreamImpl) addWarning(description string, length token.SourceFileReference) {
+	color.Yellow("%v:%d:%d: %v: %v", p.tokenizer.RelativeFilename(), length.Range.Position().Line()+1,
+		length.Range.Position().Column()+1, "Warning", description)
 }
 
 func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, parerr.ParseError) {
@@ -257,7 +262,7 @@ func (p *ParseStreamImpl) readVariableIdentifierAssignOrUpdate() (*ast.VariableI
 	if spaceAfterUpdateErr != nil {
 		return nil, false, 0, spaceAfterUpdateErr
 	}
-	return ident, false, ident.FetchPositionLength().FetchIndentation(), nil
+	return ident, false, ident.FetchPositionLength().Range.FetchIndentation(), nil
 }
 
 func (p *ParseStreamImpl) readTermToken() (token.Token, parerr.ParseError) {
@@ -269,7 +274,7 @@ func (p *ParseStreamImpl) readTermToken() (token.Token, parerr.ParseError) {
 
 	switch t.(type) {
 	case token.SpaceToken:
-		posLength := p.tokenizer.MakePositionLength(pos)
+		posLength := p.tokenizer.MakeSourceFileReference(pos)
 
 		return nil, parerr.NewExtraSpacing(posLength)
 	}
@@ -517,7 +522,7 @@ func (p *ParseStreamImpl) wasTypeIdentifier() (*ast.TypeIdentifier, bool) {
 
 func (p *ParseStreamImpl) addNode(node ast.Node) {
 	posLength := node.FetchPositionLength()
-	if posLength.Position().Line() == 0 && posLength.Position().Column() == 0 {
+	if posLength.Range.Position().Line() == 0 && posLength.Range.Position().Column() == 0 {
 		panic("suspicion")
 	}
 	p.nodes = append(p.nodes, node)
@@ -700,7 +705,7 @@ func (p *ParseStreamImpl) eatCommaSeparatorOrTermination(expectedIndentation int
 			return true, report, nil
 		}
 
-		return false, report, parerr.NewExtraSpacing(p.positionLength())
+		return false, report, parerr.NewExtraSpacing(p.sourceFileReference())
 	}
 
 	// It was a termination, that should be handled, but we can still check that the space is correct

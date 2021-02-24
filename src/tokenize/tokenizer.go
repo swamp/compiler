@@ -16,10 +16,10 @@ import (
 
 type TokenizerError struct {
 	err      error
-	position token.Range
+	position token.SourceFileReference
 }
 
-func (f TokenizerError) FetchPositionLength() token.Range {
+func (f TokenizerError) FetchPositionLength() token.SourceFileReference {
 	return f.position
 }
 
@@ -32,6 +32,7 @@ type Tokenizer struct {
 	r                     *runestream.RuneReader
 	oldPosition           token.PositionToken
 	position              token.PositionToken
+	document              token.SourceFileDocument
 	lastTokenWasDelimiter bool
 	lastReport            token.IndentationReport
 	enforceStyleGuide     bool
@@ -45,7 +46,10 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 	for _, octet := range octets {
 		r := rune(octet)
 		if r != 0 && r != 10 && (r < 32 || r > 126) {
-			posLength := token.NewPositionLength(pos, 1, -1)
+			posLength := token.SourceFileReference{
+				Range:    token.NewPositionLength(pos, 1, -1),
+				Document: nil,
+			}
 			return NewUnexpectedEatTokenError(posLength, ' ', r)
 		}
 		if r == '\n' || r == 0 {
@@ -67,7 +71,10 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 // NewTokenizerInternal :
 func NewTokenizerInternal(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
 	t := &Tokenizer{
-		r:                     r,
+		r: r,
+		document: token.SourceFileDocument{
+			Uri: token.DocumentURI(r.RelativeFilename()),
+		},
 		position:              token.NewPositionToken(token.NewPositionTopLeft(), 0),
 		lastTokenWasDelimiter: true,
 		enforceStyleGuide:     exactWhitespace,
@@ -90,8 +97,16 @@ func (t *Tokenizer) SourceFile() *token.SourceFileURI {
 	return token.MakeSourceFileURI(t.r.RelativeFilename())
 }
 
-func (t *Tokenizer) MakePositionLength(pos token.PositionToken) token.Range {
+func (t *Tokenizer) MakeRange(pos token.PositionToken) token.Range {
 	return token.NewPositionLength(pos.Position(), t.position.Position().Column()-pos.Position().Column(), pos.Indentation())
+}
+
+func (t *Tokenizer) MakeSourceFileReference(pos token.PositionToken) token.SourceFileReference {
+	tokenRange := t.MakeRange(pos)
+	return token.SourceFileReference{
+		Range:    tokenRange,
+		Document: &t.document,
+	}
 }
 
 const SpacesForIndentation = 4
@@ -352,7 +367,10 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 			}
 			if spacesUntilMaybeNewline > 0 || detectedIndentationSpaces > 0 {
 				if t.enforceStyleGuide {
-					trailingPosLength := token.NewPositionLength(startPos.Position(), 1, startPos.Indentation())
+					trailingPosLength := token.SourceFileReference{
+						Range:    token.NewPositionLength(startPos.Position(), 1, startPos.Indentation()),
+						Document: &t.document,
+					}
 					return token.IndentationReport{}, NewTrailingSpaceError(trailingPosLength)
 				}
 			}
@@ -391,7 +409,10 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 				if found {
 					if allowComments == OwnLine {
 						if newLineCount == 0 {
-							trailingPosLength := token.NewPositionLength(startPos.Position(), 1, startPos.Indentation())
+							trailingPosLength := token.SourceFileReference{
+								Range:    token.NewPositionLength(startPos.Position(), 1, startPos.Indentation()),
+								Document: &t.document,
+							}
 							return token.IndentationReport{}, NewCommentNotAllowedHereError(trailingPosLength, fmt.Errorf("not allowed to have comment on same line"))
 						}
 					}
@@ -421,7 +442,7 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 				Comments:                  token.MakeCommentBlock(comments),
 				NewLineCount:              newLineCount,
 				StartPos:                  startPos,
-				PositionLength:            token.NewPositionLength(startPos.Position(), 1, startPos.Indentation()),
+				PositionLength:            t.MakeSourceFileReference(startPos),
 				TrailingSpacesFound:       hasTrailingSpaces,
 				SpacesUntilMaybeNewline:   spacesUntilMaybeNewline,
 				PreviousCloseIndentation:  t.lastReport.CloseIndentation,
@@ -533,7 +554,7 @@ func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.Cha
 	if terminator != '\'' {
 		return token.CharacterToken{}, fmt.Errorf("expected ' after character")
 	}
-	posLen := t.MakePositionLength(startPosition)
+	posLen := t.MakeSourceFileReference(startPosition)
 	return token.NewCharacterToken("'"+string(ch)+"'", ch, posLen), nil
 }
 
@@ -567,7 +588,7 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 
 		a += string(ch)
 	}
-	posLen := t.MakePositionLength(startPosition)
+	posLen := t.MakeSourceFileReference(startPosition)
 	return token.NewStringToken(raw, a, posLen), nil
 }
 
@@ -610,7 +631,7 @@ func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.
 		}
 		a += string(ch)
 	}
-	posLen := t.MakePositionLength(startPosition)
+	posLen := t.MakeSourceFileReference(startPosition)
 	return token.NewStringToken(raw, a, posLen), nil
 }
 
@@ -632,7 +653,7 @@ func (t *Tokenizer) ReadMultilineComment(positionToken token.PositionToken) (tok
 	if err != nil {
 		return token.MultiLineCommentToken{}, err
 	}
-	return token.NewMultiLineCommentToken("{-"+s, s, documentationComment, t.MakePositionLength(positionToken)), nil
+	return token.NewMultiLineCommentToken("{-"+s, s, documentationComment, t.MakeSourceFileReference(positionToken)), nil
 }
 
 func (t *Tokenizer) ReadSingleLineComment(positionToken token.PositionToken) token.MultiLineCommentToken {
@@ -644,7 +665,7 @@ func (t *Tokenizer) ReadSingleLineComment(positionToken token.PositionToken) tok
 		t.unreadRune()
 	}
 	s := t.ReadStringUntilEndOfLine()
-	return token.NewMultiLineCommentToken("--"+s, s, documentationComment, t.MakePositionLength(positionToken))
+	return token.NewMultiLineCommentToken("--"+s, s, documentationComment, t.MakeSourceFileReference(positionToken))
 }
 
 func (t *Tokenizer) ReadStringUntilEndOfMultilineComment() (string, bool, TokenError) {
@@ -694,7 +715,7 @@ func (t *Tokenizer) ParseStartingKeyword() (token.Token, TokenError) {
 func (t *Tokenizer) readEndOrSeparatorToken() (token.Token, error) {
 	posToken := t.position
 	r := t.nextRune()
-	singleCharLength := t.MakePositionLength(posToken)
+	singleCharLength := t.MakeSourceFileReference(posToken)
 	if r == ')' {
 		return token.NewParenToken(string(r), token.RightParen, singleCharLength, " )R "), nil
 	} else if r == '}' {
@@ -733,12 +754,12 @@ func (t *Tokenizer) ReadTermTokenOrEndOrSeparator() (token.Token, error) {
 func (t *Tokenizer) readTermToken() (token.Token, error) {
 	posToken := t.position
 	r := t.nextRune()
-	singleCharLength := t.MakePositionLength(posToken)
+	singleCharLength := t.MakeSourceFileReference(posToken)
 	if r == 0 {
 		return &EndOfFile{}, nil
 	}
 	if isNewLine(r) {
-		return token.NewLineDelimiter(t.MakePositionLength(posToken)), nil
+		return token.NewLineDelimiter(t.MakeSourceFileReference(posToken)), nil
 	}
 	t.lastTokenWasDelimiter = false
 	if isLetter(r) {
@@ -798,7 +819,7 @@ func (t *Tokenizer) readTermToken() (token.Token, error) {
 	} else if r == 0 {
 		return nil, nil
 	} else if r == ' ' {
-		return token.NewSpaceToken(t.MakePositionLength(t.position), r), nil
+		return token.NewSpaceToken(t.MakeSourceFileReference(t.position), r), nil
 	}
 	return nil, fmt.Errorf("unknown rune '%c' %v", r, r)
 }
@@ -807,7 +828,7 @@ func (t *Tokenizer) ReadTermToken() (token.Token, TokenError) {
 	startPos := t.position
 	token, err := t.readTermToken()
 	if err != nil {
-		return nil, TokenizerError{err: err, position: t.MakePositionLength(startPos)}
+		return nil, TokenizerError{err: err, position: t.MakeSourceFileReference(startPos)}
 	}
 	return token, nil
 }

@@ -125,6 +125,6 @@ func (i *CaseCustomType) DebugString() string {
 	return "[dcase]"
 }
 
-func (i *CaseCustomType) FetchPositionLength() token.Range {
+func (i *CaseCustomType) FetchPositionLength() token.SourceFileReference {
 	return i.test.FetchPositionLength()
 }

@@ -32,8 +32,8 @@ func (i *ConstructorCall) OverwriteArguments(args []Expression) {
 	i.arguments = args
 }
 
-func (i *ConstructorCall) FetchPositionLength() token.Range {
-	return i.functionValue.symbolToken.FetchPositionLength()
+func (i *ConstructorCall) FetchPositionLength() token.SourceFileReference {
+	return i.functionValue.symbolToken.SourceFileReference
 }
 
 func (i *ConstructorCall) String() string {

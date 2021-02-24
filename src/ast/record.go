@@ -45,6 +45,6 @@ func (i *Record) FindField(name string) *RecordField {
 	return nil
 }
 
-func (i *Record) FetchPositionLength() token.Range {
+func (i *Record) FetchPositionLength() token.SourceFileReference {
 	return i.fields[0].VariableIdentifier().FetchPositionLength()
 }

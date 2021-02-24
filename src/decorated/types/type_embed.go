@@ -33,7 +33,7 @@ func (u *InvokerType) Params() []dtype.Type {
 	return u.params
 }
 
-func (u *InvokerType) FetchPositionLength() token.Range {
+func (u *InvokerType) FetchPositionLength() token.SourceFileReference {
 	return u.typeToInvoke.FetchPositionLength()
 }
 

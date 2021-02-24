@@ -36,6 +36,6 @@ func (a *ConsOperator) String() string {
 	return fmt.Sprintf("[cons left:%v right:%v]", a.left, a.right)
 }
 
-func (a *ConsOperator) FetchPositionLength() token.Range {
+func (a *ConsOperator) FetchPositionLength() token.SourceFileReference {
 	return a.Left().FetchPositionLength()
 }

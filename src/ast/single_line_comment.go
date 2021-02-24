@@ -35,6 +35,6 @@ func (i *SingleLineComment) DebugString() string {
 	return i.String()
 }
 
-func (i *SingleLineComment) FetchPositionLength() token.Range {
-	return i.commentToken.FetchPositionLength()
+func (i *SingleLineComment) FetchPositionLength() token.SourceFileReference {
+	return i.commentToken.SourceFileReference
 }

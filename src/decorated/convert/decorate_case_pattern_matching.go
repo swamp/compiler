@@ -32,8 +32,8 @@ func (f *FakeExpression) String() string {
 	return "totally fake"
 }
 
-func (f *FakeExpression) FetchPositionLength() token.Range {
-	return token.Range{}
+func (f *FakeExpression) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }
 
 func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatternMatching, context *VariableContext) (*decorated.CasePatternMatching, decshared.DecoratedError) {

@@ -54,6 +54,6 @@ func (i *TypeIdentifier) IsDefaultSymbol() bool {
 	return i.symbolToken.Name() == "_"
 }
 
-func (i *TypeIdentifier) FetchPositionLength() token.Range {
-	return i.symbolToken.Range
+func (i *TypeIdentifier) FetchPositionLength() token.SourceFileReference {
+	return i.symbolToken.SourceFileReference
 }

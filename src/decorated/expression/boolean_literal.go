@@ -34,6 +34,6 @@ func (i *BooleanLiteral) String() string {
 	return fmt.Sprintf("[bool %v]", i.boolean.Value())
 }
 
-func (i *BooleanLiteral) FetchPositionLength() token.Range {
+func (i *BooleanLiteral) FetchPositionLength() token.SourceFileReference {
 	return i.boolean.FetchPositionLength()
 }

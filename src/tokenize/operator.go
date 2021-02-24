@@ -10,11 +10,15 @@ import (
 )
 
 type EndOfFile struct {
-	token.Range
+	token.SourceFileReference
 }
 
 func (e *EndOfFile) Position() token.Position {
 	return token.Position{}
+}
+
+func (e *EndOfFile) FetchPositionLength() token.SourceFileReference {
+	return e.SourceFileReference
 }
 
 func (e *EndOfFile) Type() token.Type {
@@ -37,9 +41,9 @@ func (t *Tokenizer) ParseUnaryOperator() (token.Token, TokenError) {
 		if next == ' ' {
 			t.unreadRune()
 			t.unreadRune()
-			return nil, NewUnexpectedEatTokenError(t.MakePositionLength(startPosition), 'x', ' ')
+			return nil, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), 'x', ' ')
 		} else if next == '>' {
-			return nil, NewUnexpectedEatTokenError(t.MakePositionLength(startPosition), 'y', ' ')
+			return nil, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), 'y', ' ')
 		}
 		t.unreadRune()
 		operatorType = token.OperatorUnaryMinus
@@ -47,7 +51,7 @@ func (t *Tokenizer) ParseUnaryOperator() (token.Token, TokenError) {
 		operatorType = token.OperatorUnaryNot
 
 	}
-	return token.NewOperatorToken(operatorType, t.MakePositionLength(startPosition), raw, debugString), nil
+	return token.NewOperatorToken(operatorType, t.MakeSourceFileReference(startPosition), raw, debugString), nil
 }
 
 func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
@@ -116,7 +120,7 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			raw += string(nch)
 		} else if nch == '-' {
 			commentString := t.ReadStringUntilEndOfLine()
-			return token.NewSingleLineCommentToken("--"+commentString, commentString, false, t.MakePositionLength(startPosition)), nil
+			return token.NewSingleLineCommentToken("--"+commentString, commentString, false, t.MakeSourceFileReference(startPosition)), nil
 		} else {
 			if isDigit(nch) {
 				t.unreadRune()
@@ -173,11 +177,11 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 		case '~':
 			operatorType = token.OperatorBitwiseNot
 		default:
-			return nil, NewUnexpectedEatTokenError(t.MakePositionLength(startPosition), ' ', ch)
+			return nil, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), ' ', ch)
 		}
 	}
 	if debugString == "" {
 		debugString = raw
 	}
-	return token.NewOperatorToken(operatorType, t.MakePositionLength(startPosition), raw, debugString), nil
+	return token.NewOperatorToken(operatorType, t.MakeSourceFileReference(startPosition), raw, debugString), nil
 }

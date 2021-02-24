@@ -204,7 +204,7 @@ func (g *Definer) handleStatement(statement ast.Expression) decshared.DecoratedE
 	case *ast.SingleLineComment:
 		return g.handleSinglelineComment(g.decorateStream, v)
 	default:
-		return decorated.NewUnknownStatement(token.Range{}, statement)
+		return decorated.NewUnknownStatement(token.SourceFileReference{}, statement)
 	}
 }
 

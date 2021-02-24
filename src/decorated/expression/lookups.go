@@ -76,6 +76,6 @@ func (l *RecordLookups) String() string {
 	return fmt.Sprintf("[lookups %v %v]", l.expressionToRecord, l.lookupFields)
 }
 
-func (l *RecordLookups) FetchPositionLength() token.Range {
-	return token.Range{}
+func (l *RecordLookups) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }

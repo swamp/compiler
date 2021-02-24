@@ -13,10 +13,10 @@ import (
 
 type Asm struct {
 	tokens string
-	posLen token.Range
+	posLen token.SourceFileReference
 }
 
-func NewAsm(tokens string, posLen token.Range) *Asm {
+func NewAsm(tokens string, posLen token.SourceFileReference) *Asm {
 	return &Asm{tokens: tokens, posLen: posLen}
 }
 
@@ -24,7 +24,7 @@ func (d *Asm) Asm() string {
 	return d.tokens
 }
 
-func (d *Asm) FetchPositionLength() token.Range {
+func (d *Asm) FetchPositionLength() token.SourceFileReference {
 	return d.posLen
 }
 

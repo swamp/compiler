@@ -27,6 +27,6 @@ func (i *LocalType) TypeParameter() *TypeParameter {
 	return i.typeParameterReference
 }
 
-func (i *LocalType) FetchPositionLength() token.Range {
+func (i *LocalType) FetchPositionLength() token.SourceFileReference {
 	return i.typeParameterReference.FetchPositionLength()
 }

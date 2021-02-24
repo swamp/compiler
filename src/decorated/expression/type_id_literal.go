@@ -35,6 +35,6 @@ func (i *TypeIdLiteral) String() string {
 	return fmt.Sprintf("[typeid %v]", i.typeId)
 }
 
-func (i *TypeIdLiteral) FetchPositionLength() token.Range {
+func (i *TypeIdLiteral) FetchPositionLength() token.SourceFileReference {
 	return i.typeId.FetchPositionLength()
 }

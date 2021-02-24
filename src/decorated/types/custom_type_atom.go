@@ -45,7 +45,7 @@ func (s *CustomTypeAtom) ShortString() string {
 	return str
 }
 
-func (s *CustomTypeAtom) FetchPositionLength() token.Range {
+func (s *CustomTypeAtom) FetchPositionLength() token.SourceFileReference {
 	return s.name.FetchPositionLength()
 }
 

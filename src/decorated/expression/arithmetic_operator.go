@@ -82,6 +82,6 @@ func (a *ArithmeticOperator) String() string {
 	return fmt.Sprintf("(arithmetic %v %v %v)", a.left, arithmeticOperatorToString(a.operatorType), a.right)
 }
 
-func (a *ArithmeticOperator) FetchPositionLength() token.Range {
+func (a *ArithmeticOperator) FetchPositionLength() token.SourceFileReference {
 	return a.Left().FetchPositionLength()
 }

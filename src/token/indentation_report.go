@@ -16,7 +16,7 @@ type IndentationReport struct {
 	NewLineCount              int
 	EndOfFile                 bool
 	StartPos                  PositionToken
-	PositionLength            Range
+	PositionLength            SourceFileReference
 	Comments                  CommentBlock
 	TrailingSpacesFound       bool
 }

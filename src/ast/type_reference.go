@@ -46,6 +46,6 @@ func (i *TypeReference) Name() string {
 	return fmt.Sprintf("%v<%v>", i.ident.Name(), s)
 }
 
-func (i *TypeReference) FetchPositionLength() token.Range {
+func (i *TypeReference) FetchPositionLength() token.SourceFileReference {
 	return i.ident.FetchPositionLength()
 }

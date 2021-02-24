@@ -14,9 +14,9 @@ import (
 func DetectUppercaseBoolean(t token.TypeSymbolToken) (token.BooleanToken, error) {
 	switch t.Name() {
 	case "True":
-		return token.NewBooleanToken(t.Raw(), true, t.FetchPositionLength()), nil
+		return token.NewBooleanToken(t.Raw(), true, t.SourceFileReference), nil
 	case "False":
-		return token.NewBooleanToken(t.Raw(), false, t.FetchPositionLength()), nil
+		return token.NewBooleanToken(t.Raw(), false, t.SourceFileReference), nil
 	}
 
 	return token.BooleanToken{}, fmt.Errorf("not found")

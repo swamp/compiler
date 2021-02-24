@@ -43,6 +43,6 @@ func NewLetVariableReference(ident *ast.VariableIdentifier,
 	return &LetVariableReference{ident: ident, decoratedExpression: decoratedExpression}
 }
 
-func (g *LetVariableReference) FetchPositionLength() token.Range {
+func (g *LetVariableReference) FetchPositionLength() token.SourceFileReference {
 	return g.ident.FetchPositionLength()
 }

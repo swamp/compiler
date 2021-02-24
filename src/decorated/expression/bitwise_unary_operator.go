@@ -45,6 +45,6 @@ func (a *BitwiseUnaryOperator) String() string {
 	return fmt.Sprintf("[unarybitwise %v left:%v]", a.operatorType, a.left)
 }
 
-func (a *BitwiseUnaryOperator) FetchPositionLength() token.Range {
+func (a *BitwiseUnaryOperator) FetchPositionLength() token.SourceFileReference {
 	return a.unary.FetchPositionLength()
 }

@@ -61,6 +61,6 @@ func (s *CustomTypeVariantConstructorType) Next() dtype.Type {
 	return s.variant
 }
 
-func (s *CustomTypeVariantConstructorType) FetchPositionLength() token.Range {
+func (s *CustomTypeVariantConstructorType) FetchPositionLength() token.SourceFileReference {
 	return s.variant.FetchPositionLength()
 }

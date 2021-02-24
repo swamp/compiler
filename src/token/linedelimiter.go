@@ -7,11 +7,11 @@ package token
 
 // LineDelimiterToken :
 type LineDelimiterToken struct {
-	Range
+	SourceFileReference
 }
 
-func NewLineDelimiter(position Range) LineDelimiterToken {
-	return LineDelimiterToken{Range: position}
+func NewLineDelimiter(position SourceFileReference) LineDelimiterToken {
+	return LineDelimiterToken{SourceFileReference: position}
 }
 
 func (s LineDelimiterToken) String() string {
@@ -20,4 +20,8 @@ func (s LineDelimiterToken) String() string {
 
 func (s LineDelimiterToken) Type() Type {
 	return NewLine
+}
+
+func (s LineDelimiterToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

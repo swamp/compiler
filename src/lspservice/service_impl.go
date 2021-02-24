@@ -45,7 +45,7 @@ func (l *LspImpl) FindToken(position token.Position) DecoratedTypeOrToken {
 	allNodes := l.module.Nodes()
 	for _, node := range allNodes {
 		log.Printf("checking node:%v '%v'\n", node.FetchPositionLength(), node.String())
-		if node.FetchPositionLength().Contains(position) {
+		if node.FetchPositionLength().Range.Contains(position) {
 			return l.drillDown(node, position)
 		}
 	}

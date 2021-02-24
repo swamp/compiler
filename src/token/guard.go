@@ -9,13 +9,13 @@ import "fmt"
 
 // GuardToken :
 type GuardToken struct {
-	Range
+	SourceFileReference
 	raw         string
 	debugString string
 }
 
-func NewGuardToken(startPosition Range, raw string, debugString string) GuardToken {
-	return GuardToken{Range: startPosition, raw: raw, debugString: debugString}
+func NewGuardToken(startPosition SourceFileReference, raw string, debugString string) GuardToken {
+	return GuardToken{SourceFileReference: startPosition, raw: raw, debugString: debugString}
 }
 
 func (s GuardToken) Type() Type {
@@ -32,4 +32,8 @@ func (s GuardToken) Raw() string {
 
 func (s GuardToken) DebugString() string {
 	return fmt.Sprintf("[guard %s]", s.debugString)
+}
+
+func (s GuardToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

@@ -33,6 +33,6 @@ func (c *ListLiteral) String() string {
 	return fmt.Sprintf("[ListLiteral %v %v]", c.t.HumanReadable(), c.expressions)
 }
 
-func (c *ListLiteral) FetchPositionLength() token.Range {
-	return token.Range{}
+func (c *ListLiteral) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }

@@ -33,6 +33,6 @@ func (c *ArrayLiteral) String() string {
 	return fmt.Sprintf("[ArrayLiteral %v %v]", c.t.HumanReadable(), c.expressions)
 }
 
-func (c *ArrayLiteral) FetchPositionLength() token.Range {
-	return token.Range{}
+func (c *ArrayLiteral) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }

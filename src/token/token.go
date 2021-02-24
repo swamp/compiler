@@ -7,7 +7,7 @@ package token
 
 // Token :
 type Token interface {
-	FetchPositionLength() Range
+	FetchPositionLength() SourceFileReference
 	Type() Type
 	String() string
 }

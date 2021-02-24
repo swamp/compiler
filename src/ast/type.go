@@ -12,7 +12,7 @@ import (
 type Type interface {
 	Name() string
 	String() string
-	FetchPositionLength() token.Range
+	FetchPositionLength() token.SourceFileReference
 }
 
 func NewCustomType(customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter) *CustomType {

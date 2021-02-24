@@ -9,13 +9,13 @@ import "fmt"
 
 // ResourceName :
 type ResourceName struct {
-	Range
+	SourceFileReference
 	raw         string
 	Indentation int
 }
 
-func NewResourceName(raw string, startPosition Range, indentation int) ResourceName {
-	return ResourceName{raw: raw, Range: startPosition, Indentation: indentation}
+func NewResourceName(raw string, startPosition SourceFileReference, indentation int) ResourceName {
+	return ResourceName{raw: raw, SourceFileReference: startPosition, Indentation: indentation}
 }
 
 func (s ResourceName) Type() Type {
@@ -36,4 +36,8 @@ func (s ResourceName) FetchIndentation() int {
 
 func (s ResourceName) String() string {
 	return fmt.Sprintf("@%s", s.raw)
+}
+
+func (s ResourceName) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

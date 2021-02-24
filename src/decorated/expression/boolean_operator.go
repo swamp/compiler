@@ -78,6 +78,6 @@ func (l *BooleanOperator) OperatorType() BooleanOperatorType {
 	return l.operatorType
 }
 
-func (l *BooleanOperator) FetchPositionLength() token.Range {
+func (l *BooleanOperator) FetchPositionLength() token.SourceFileReference {
 	return l.BinaryOperator.left.FetchPositionLength()
 }

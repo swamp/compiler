@@ -14,7 +14,7 @@ import (
 type DecoratedTypeOrToken interface {
 	String() string
 	// SourceFile() *token.SourceFileURI
-	FetchPositionLength() token.Range
+	FetchPositionLength() token.SourceFileReference
 }
 
 type DecoratedToken interface {
@@ -97,7 +97,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 			Kind:  lsp.MUKMarkdown,
 			Value: decoratedToken.String(),
 		},
-		Range: tokenToLspRange(decoratedToken.FetchPositionLength()),
+		Range: tokenToLspRange(decoratedToken.FetchPositionLength().Range),
 	}
 
 	return hover, nil

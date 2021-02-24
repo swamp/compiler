@@ -24,7 +24,7 @@ func (i *Lookups) ContextIdentifier() *VariableIdentifier {
 	return i.contextIdentifier
 }
 
-func (i *Lookups) FetchPositionLength() token.Range {
+func (i *Lookups) FetchPositionLength() token.SourceFileReference {
 	return i.contextIdentifier.FetchPositionLength()
 }
 

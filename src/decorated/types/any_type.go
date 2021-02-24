@@ -6,12 +6,12 @@
 package dectype
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
-
-import "fmt"
 
 type Any struct {
 	astTypeIdentifier *ast.TypeIdentifier
@@ -65,7 +65,7 @@ func (u *Any) Next() dtype.Type {
 	return nil
 }
 
-func (u *Any) FetchPositionLength() token.Range {
+func (u *Any) FetchPositionLength() token.SourceFileReference {
 	return u.astTypeIdentifier.FetchPositionLength()
 }
 

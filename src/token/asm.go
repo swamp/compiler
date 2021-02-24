@@ -11,12 +11,12 @@ import (
 
 // Keyword :
 type AsmToken struct {
-	Range
+	SourceFileReference
 	asm string
 }
 
-func NewAsmToken(asm string, startPosition Range) AsmToken {
-	return AsmToken{asm: asm, Range: startPosition}
+func NewAsmToken(asm string, startPosition SourceFileReference) AsmToken {
+	return AsmToken{asm: asm, SourceFileReference: startPosition}
 }
 
 func (s AsmToken) Type() Type {
@@ -35,17 +35,21 @@ func (s AsmToken) String() string {
 	return fmt.Sprintf("[asm %v]", s.asm)
 }
 
+func (s AsmToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
+}
+
 // Keyword :
 type ExternalFunctionToken struct {
-	Range
+	SourceFileReference
 	functionName   string
 	parameterCount uint
 	raw            string
 	commentToken   IndentationReport
 }
 
-func NewExternalFunctionToken(raw string, functionName string, parameterCount uint, commentToken IndentationReport, startPosition Range) ExternalFunctionToken {
-	return ExternalFunctionToken{raw: raw, functionName: functionName, parameterCount: parameterCount, commentToken: commentToken, Range: startPosition}
+func NewExternalFunctionToken(raw string, functionName string, parameterCount uint, commentToken IndentationReport, startPosition SourceFileReference) ExternalFunctionToken {
+	return ExternalFunctionToken{raw: raw, functionName: functionName, parameterCount: parameterCount, commentToken: commentToken, SourceFileReference: startPosition}
 }
 
 func (s ExternalFunctionToken) Raw() string {
@@ -66,4 +70,8 @@ func (s ExternalFunctionToken) ParameterCount() uint {
 
 func (s ExternalFunctionToken) String() string {
 	return fmt.Sprintf("[externalfn %v %d]", s.functionName, s.parameterCount)
+}
+
+func (s ExternalFunctionToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

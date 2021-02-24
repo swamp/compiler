@@ -11,7 +11,7 @@ import (
 )
 
 type Node interface {
-	FetchPositionLength() token.Range
+	FetchPositionLength() token.SourceFileReference
 	String() string
 }
 

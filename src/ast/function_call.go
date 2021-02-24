@@ -16,7 +16,7 @@ type FunctionCaller interface {
 	OverwriteArguments(args []Expression)
 	String() string
 	DebugString() string
-	FetchPositionLength() token.Range
+	FetchPositionLength() token.SourceFileReference
 }
 
 type FunctionCall struct {
@@ -36,7 +36,7 @@ func (i *FunctionCall) OverwriteArguments(args []Expression) {
 	i.arguments = args
 }
 
-func (i *FunctionCall) FetchPositionLength() token.Range {
+func (i *FunctionCall) FetchPositionLength() token.SourceFileReference {
 	return i.functionExpression.FetchPositionLength()
 }
 

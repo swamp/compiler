@@ -55,6 +55,6 @@ func (a *BitwiseOperator) String() string {
 	return fmt.Sprintf("[bitwise %v left:%v right:%v]", a.operatorType, a.left, a.right)
 }
 
-func (a *BitwiseOperator) FetchPositionLength() token.Range {
+func (a *BitwiseOperator) FetchPositionLength() token.SourceFileReference {
 	return a.left.FetchPositionLength()
 }

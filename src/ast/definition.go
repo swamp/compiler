@@ -28,7 +28,7 @@ func (i *DefinitionAssignment) Expression() Expression {
 	return i.expression
 }
 
-func (i *DefinitionAssignment) FetchPositionLength() token.Range {
+func (i *DefinitionAssignment) FetchPositionLength() token.SourceFileReference {
 	return i.identifier.FetchPositionLength()
 }
 

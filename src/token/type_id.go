@@ -7,13 +7,13 @@ package token
 
 // TypeId :
 type TypeId struct {
-	Range
+	SourceFileReference
 	raw         string
 	Indentation int
 }
 
-func NewTypeId(raw string, startPosition Range, indentation int) TypeId {
-	return TypeId{raw: raw, Range: startPosition, Indentation: indentation}
+func NewTypeId(raw string, startPosition SourceFileReference, indentation int) TypeId {
+	return TypeId{raw: raw, SourceFileReference: startPosition, Indentation: indentation}
 }
 
 func (s TypeId) Type() Type {
@@ -34,4 +34,8 @@ func (s TypeId) FetchIndentation() int {
 
 func (s TypeId) String() string {
 	return "@"
+}
+
+func (s TypeId) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

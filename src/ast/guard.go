@@ -33,7 +33,7 @@ func (i *GuardExpression) DefaultExpression() Expression {
 	return i.defaultItem
 }
 
-func (i *GuardExpression) FetchPositionLength() token.Range {
+func (i *GuardExpression) FetchPositionLength() token.SourceFileReference {
 	return i.items[0].Condition.FetchPositionLength()
 }
 

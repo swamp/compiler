@@ -42,6 +42,6 @@ func (l *If) Alternative() DecoratedExpression {
 	return l.alternative
 }
 
-func (l *If) FetchPositionLength() token.Range {
+func (l *If) FetchPositionLength() token.SourceFileReference {
 	return l.condition.FetchPositionLength()
 }

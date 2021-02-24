@@ -12,7 +12,7 @@ import (
 )
 
 func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError) {
-	keywordIndentation := t.FetchIndentation()
+	keywordIndentation := t.FetchPositionLength().Range.FetchIndentation()
 
 	var assignments []ast.LetAssignment
 

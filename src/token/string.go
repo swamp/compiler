@@ -9,13 +9,13 @@ import "fmt"
 
 // StringToken :
 type StringToken struct {
-	Range
+	SourceFileReference
 	text string
 	raw  string
 }
 
-func NewStringToken(raw string, text string, position Range) StringToken {
-	return StringToken{raw: raw, text: text, Range: position}
+func NewStringToken(raw string, text string, position SourceFileReference) StringToken {
+	return StringToken{raw: raw, text: text, SourceFileReference: position}
 }
 
 func (s StringToken) Type() Type {
@@ -32,4 +32,8 @@ func (s StringToken) Raw() string {
 
 func (s StringToken) Text() string {
 	return s.text
+}
+
+func (s StringToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

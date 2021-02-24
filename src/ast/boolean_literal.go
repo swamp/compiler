@@ -35,6 +35,6 @@ func (i *BooleanLiteral) DebugString() string {
 	return i.String()
 }
 
-func (i *BooleanLiteral) FetchPositionLength() token.Range {
-	return i.booleanToken.FetchPositionLength()
+func (i *BooleanLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.booleanToken.SourceFileReference
 }

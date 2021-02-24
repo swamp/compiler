@@ -31,7 +31,7 @@ func (u *Alias) TypeIdentifier() *ast.TypeIdentifier {
 	return u.name
 }
 
-func (u *Alias) FetchPositionLength() token.Range {
+func (u *Alias) FetchPositionLength() token.SourceFileReference {
 	return u.name.FetchPositionLength()
 }
 

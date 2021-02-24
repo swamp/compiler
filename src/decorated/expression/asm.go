@@ -20,7 +20,7 @@ type AsmConstant struct {
 }
 
 func NewAsmConstant(asm *ast.Asm) *AsmConstant {
-	return &AsmConstant{asm: asm, doNotCheckType: dectype.NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.Range{}, 0)))}
+	return &AsmConstant{asm: asm, doNotCheckType: dectype.NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.SourceFileReference{}, 0)))}
 }
 
 func (i *AsmConstant) Type() dtype.Type {
@@ -35,6 +35,6 @@ func (i *AsmConstant) String() string {
 	return fmt.Sprintf("[asm %v]", i.asm.Asm())
 }
 
-func (i *AsmConstant) FetchPositionLength() token.Range {
+func (i *AsmConstant) FetchPositionLength() token.SourceFileReference {
 	return i.asm.FetchPositionLength()
 }

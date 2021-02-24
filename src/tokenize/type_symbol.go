@@ -17,7 +17,7 @@ func (t *Tokenizer) ParseTypeSymbol() (token.TypeSymbolToken, TokenError) {
 	ch := t.nextRune()
 	if !isUpperCaseLetter(ch) {
 		t.unreadRune()
-		return token.TypeSymbolToken{}, NewExpectedTypeSymbolError(t.MakePositionLength(startPos), string(ch))
+		return token.TypeSymbolToken{}, NewExpectedTypeSymbolError(t.MakeSourceFileReference(startPos), string(ch))
 	}
 
 	a += string(ch)
@@ -30,5 +30,5 @@ func (t *Tokenizer) ParseTypeSymbol() (token.TypeSymbolToken, TokenError) {
 		}
 		a += string(ch)
 	}
-	return token.NewTypeSymbolToken(a, t.MakePositionLength(startPos), startPos.Indentation()), nil
+	return token.NewTypeSymbolToken(a, t.MakeSourceFileReference(startPos), startPos.Indentation()), nil
 }

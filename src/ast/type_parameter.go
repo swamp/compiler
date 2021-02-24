@@ -31,6 +31,6 @@ func (t *TypeParameter) Name() string {
 	return t.ident.Name()
 }
 
-func (t *TypeParameter) FetchPositionLength() token.Range {
+func (t *TypeParameter) FetchPositionLength() token.SourceFileReference {
 	return t.ident.FetchPositionLength()
 }

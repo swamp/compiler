@@ -20,7 +20,7 @@ import (
 )
 
 func ShowSourceCode(tokenizer *tokenize.Tokenizer, highlightLine int,
-	highlightColumn int, posLength token.Range) error {
+	highlightColumn int, posLength token.SourceFileReference) error {
 	const beforeAndAfterCount = 3
 	startRow := highlightLine - beforeAndAfterCount
 	if startRow < 0 {
@@ -48,7 +48,7 @@ func ShowSourceCode(tokenizer *tokenize.Tokenizer, highlightLine int,
 		if actualRow == highlightLine {
 			skipSpaces := highlightColumn
 			indentString := strings.Repeat(" ", skipSpaces)
-			repeatCount := posLength.RuneWidth()
+			repeatCount := posLength.Range.RuneWidth()
 			if repeatCount < 1 {
 				repeatCount = 1
 			}
@@ -129,8 +129,8 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	}
 
 	posLength := parserError.FetchPositionLength()
-	highlightLine := posLength.Position().Line()
-	highlightColumn := posLength.Position().Column()
+	highlightLine := posLength.Range.Position().Line()
+	highlightColumn := posLength.Range.Position().Column()
 
 	messageError := parserError.Error()
 	severityString := "error"

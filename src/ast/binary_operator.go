@@ -57,7 +57,7 @@ func (i *BinaryOperator) OperatorToken() token.OperatorToken {
 	return i.operator
 }
 
-func (i *BinaryOperator) FetchPositionLength() token.Range {
+func (i *BinaryOperator) FetchPositionLength() token.SourceFileReference {
 	return i.token.FetchPositionLength()
 }
 

@@ -107,8 +107,8 @@ func (l *ModuleRepository) FetchMainModuleInPackage(verboseFlag bool) (*decorate
 		return nil, err
 	}
 
-	x.Definitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("main", nil, token.Range{}, 0)))
-	x.Definitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("init", nil, token.Range{}, 0)))
+	x.Definitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("main", token.SourceFileReference{}, 0)))
+	x.Definitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("init", token.SourceFileReference{}, 0)))
 
 	return x, nil
 }

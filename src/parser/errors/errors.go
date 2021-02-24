@@ -14,7 +14,7 @@ import (
 )
 
 type ParseError interface {
-	FetchPositionLength() token.Range
+	FetchPositionLength() token.SourceFileReference
 	Error() string
 }
 
@@ -29,7 +29,7 @@ func NewSubError(err tokenize.TokenError) SubError {
 	return SubError{SubErr: err}
 }
 
-func (e SubError) FetchPositionLength() token.Range {
+func (e SubError) FetchPositionLength() token.SourceFileReference {
 	return e.SubErr.FetchPositionLength()
 }
 
@@ -41,7 +41,7 @@ func NewSubParserError(err ParseError) SubParserError {
 	return SubParserError{SubErr: err}
 }
 
-func (e SubParserError) FetchPositionLength() token.Range {
+func (e SubParserError) FetchPositionLength() token.SourceFileReference {
 	return e.SubErr.FetchPositionLength()
 }
 
@@ -62,16 +62,20 @@ func (e ExpectedTypeOrParenError) Error() string {
 }
 
 type InternalError struct {
-	token.Range
+	token.SourceFileReference
 	internalError error
 }
 
-func NewInternalError(t token.Range, internalError error) InternalError {
-	return InternalError{Range: t, internalError: internalError}
+func NewInternalError(t token.SourceFileReference, internalError error) InternalError {
+	return InternalError{SourceFileReference: t, internalError: internalError}
 }
 
 func (e InternalError) Error() string {
 	return fmt.Sprintf("parser internal error %v", e.internalError)
+}
+
+func (e InternalError) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }
 
 type NotATermError struct {
@@ -114,11 +118,11 @@ func (e ExpectedTwoLinesAfterStatement) Error() string {
 }
 
 type ExpectedIndentationError struct {
-	posLength           token.Range
+	posLength           token.SourceFileReference
 	expectedIndentation int
 }
 
-func NewExpectedIndentationError(posLength token.Range, expectedIndentation int) ExpectedIndentationError {
+func NewExpectedIndentationError(posLength token.SourceFileReference, expectedIndentation int) ExpectedIndentationError {
 	return ExpectedIndentationError{posLength: posLength, expectedIndentation: expectedIndentation}
 }
 
@@ -126,15 +130,15 @@ func (e ExpectedIndentationError) Error() string {
 	return fmt.Sprintf("surprised by the indentation %v", e.posLength)
 }
 
-func (e ExpectedIndentationError) FetchPositionLength() token.Range {
+func (e ExpectedIndentationError) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
 type ExpectedTypeReferenceError struct {
-	posLength token.Range
+	posLength token.SourceFileReference
 }
 
-func NewExpectedTypeReferenceError(posLength token.Range) ExpectedTypeReferenceError {
+func NewExpectedTypeReferenceError(posLength token.SourceFileReference) ExpectedTypeReferenceError {
 	return ExpectedTypeReferenceError{posLength: posLength}
 }
 
@@ -142,7 +146,7 @@ func (e ExpectedTypeReferenceError) Error() string {
 	return fmt.Sprintf("expected a type reference here %v", e.posLength)
 }
 
-func (e ExpectedTypeReferenceError) FetchPositionLength() token.Range {
+func (e ExpectedTypeReferenceError) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
@@ -182,15 +186,15 @@ func (e TypeMustBeFollowedByTypeArgumentOrEqualError) Error() string {
 	return fmt.Sprintf("type can only be followed by type parameters or = (%v)", e.subError)
 }
 
-func (e TypeMustBeFollowedByTypeArgumentOrEqualError) FetchPositionLength() token.Range {
+func (e TypeMustBeFollowedByTypeArgumentOrEqualError) FetchPositionLength() token.SourceFileReference {
 	return e.subError.FetchPositionLength()
 }
 
 type MustHaveAtLeastOneParameterError struct {
-	posLength token.Range
+	posLength token.SourceFileReference
 }
 
-func NewMustHaveAtLeastOneParameterError(posLength token.Range) MustHaveAtLeastOneParameterError {
+func NewMustHaveAtLeastOneParameterError(posLength token.SourceFileReference) MustHaveAtLeastOneParameterError {
 	return MustHaveAtLeastOneParameterError{posLength: posLength}
 }
 
@@ -198,7 +202,7 @@ func (e MustHaveAtLeastOneParameterError) Error() string {
 	return fmt.Sprintf("must have at least one parameter %v", e.posLength)
 }
 
-func (e MustHaveAtLeastOneParameterError) FetchPositionLength() token.Range {
+func (e MustHaveAtLeastOneParameterError) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
@@ -214,7 +218,7 @@ func (e ImportMustHaveUppercaseIdentifierError) Error() string {
 	return fmt.Sprintf("import must be followed bu uppercase identifier (%v)", e.subError)
 }
 
-func (e ImportMustHaveUppercaseIdentifierError) FetchPositionLength() token.Range {
+func (e ImportMustHaveUppercaseIdentifierError) FetchPositionLength() token.SourceFileReference {
 	return e.subError.FetchPositionLength()
 }
 
@@ -230,7 +234,7 @@ func (e ImportMustHaveUppercasePathError) Error() string {
 	return fmt.Sprintf("import must be followed bu uppercase identifier (%v)", e.subError)
 }
 
-func (e ImportMustHaveUppercasePathError) FetchPositionLength() token.Range {
+func (e ImportMustHaveUppercasePathError) FetchPositionLength() token.SourceFileReference {
 	return e.subError.FetchPositionLength()
 }
 
@@ -319,10 +323,10 @@ func (e ExpectedBlockSpacing) Error() string {
 }
 
 type ExpectedContinuationLineOrOneSpace struct {
-	posLength token.Range
+	posLength token.SourceFileReference
 }
 
-func NewExpectedContinuationLineOrOneSpace(posLength token.Range) ExpectedContinuationLineOrOneSpace {
+func NewExpectedContinuationLineOrOneSpace(posLength token.SourceFileReference) ExpectedContinuationLineOrOneSpace {
 	return ExpectedContinuationLineOrOneSpace{posLength: posLength}
 }
 
@@ -330,7 +334,7 @@ func (e ExpectedContinuationLineOrOneSpace) Error() string {
 	return fmt.Sprintf("expected a new line with extra indentation or just a space (%v)", e.posLength)
 }
 
-func (e ExpectedContinuationLineOrOneSpace) FetchPositionLength() token.Range {
+func (e ExpectedContinuationLineOrOneSpace) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
@@ -394,7 +398,7 @@ func (e MissingElseExpression) Error() string {
 	return fmt.Sprintf("missing else expression %v", e.other)
 }
 
-func (e MissingElseExpression) FetchPositionLength() token.Range {
+func (e MissingElseExpression) FetchPositionLength() token.SourceFileReference {
 	return e.other.FetchPositionLength()
 }
 
@@ -423,10 +427,10 @@ func (e UnknownPrefixInExpression) Error() string {
 }
 
 type ExtraSpacing struct {
-	posLength token.Range
+	posLength token.SourceFileReference
 }
 
-func NewExtraSpacing(posLength token.Range) ExtraSpacing {
+func NewExtraSpacing(posLength token.SourceFileReference) ExtraSpacing {
 	return ExtraSpacing{posLength: posLength}
 }
 
@@ -434,7 +438,7 @@ func (e ExtraSpacing) Error() string {
 	return fmt.Sprintf("extra spacing")
 }
 
-func (e ExtraSpacing) FetchPositionLength() token.Range {
+func (e ExtraSpacing) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
@@ -570,7 +574,7 @@ func (e ExpectedDefaultLastError) Error() string {
 	return fmt.Sprintf("default '_' must come last of the conditions. %v", e.expression)
 }
 
-func (e ExpectedDefaultLastError) FetchPositionLength() token.Range {
+func (e ExpectedDefaultLastError) FetchPositionLength() token.SourceFileReference {
 	return e.expression.FetchPositionLength()
 }
 
@@ -586,6 +590,6 @@ func (e MustHaveDefaultInConditionsError) Error() string {
 	return fmt.Sprintf("must include a default '_' in conditions. %v", e.expression)
 }
 
-func (e MustHaveDefaultInConditionsError) FetchPositionLength() token.Range {
+func (e MustHaveDefaultInConditionsError) FetchPositionLength() token.SourceFileReference {
 	return e.expression.FetchPositionLength()
 }

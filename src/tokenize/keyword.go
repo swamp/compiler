@@ -12,7 +12,7 @@ import (
 )
 
 func DetectLowercaseKeyword(t token.VariableSymbolToken) (token.Token, error) {
-	pos := t.FetchPositionLength()
+	pos := t.SourceFileReference
 	raw := t.Name()
 	switch raw {
 	case "if":

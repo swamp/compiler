@@ -29,7 +29,7 @@ func MakeModuleNameFromString(name string) ModuleName {
 	parts := strings.Split(name, ".")
 	var typeIdents []*ast.TypeIdentifier
 	for _, part := range parts {
-		typeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(part, token.Range{}, 0))
+		typeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(part, token.SourceFileReference{}, 0))
 		typeIdents = append(typeIdents, typeIdentifier)
 	}
 

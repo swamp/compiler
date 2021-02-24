@@ -36,7 +36,7 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 		}
 	} else {
 		// Empty list
-		detectedType = dectype.NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.Range{}, 0)))
+		detectedType = dectype.NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.SourceFileReference{}, 0)))
 	}
 
 	listType := d.TypeRepo().FindTypeFromAlias(containerName)

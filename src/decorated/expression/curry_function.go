@@ -37,6 +37,6 @@ func (c *CurryFunction) String() string {
 	return fmt.Sprintf("[curry %v %v]", c.functionType, c.argumentsToSave)
 }
 
-func (c *CurryFunction) FetchPositionLength() token.Range {
+func (c *CurryFunction) FetchPositionLength() token.SourceFileReference {
 	return c.argumentsToSave[0].FetchPositionLength()
 }

@@ -28,8 +28,8 @@ func (i *ArrayLiteral) Expressions() []Expression {
 	return i.expressions
 }
 
-func (i *ArrayLiteral) FetchPositionLength() token.Range {
-	return i.startListParen.FetchPositionLength()
+func (i *ArrayLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.startListParen.SourceFileReference
 }
 
 func (i *ArrayLiteral) ParenToken() token.ParenToken {

@@ -55,7 +55,7 @@ func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
 	return nil
 }
 
-func (u *PrimitiveAtom) FetchPositionLength() token.Range {
+func (u *PrimitiveAtom) FetchPositionLength() token.SourceFileReference {
 	return u.name.FetchPositionLength()
 }
 

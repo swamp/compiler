@@ -72,8 +72,8 @@ func (i *CasePatternMatching) Keyword() token.Keyword {
 	return i.keyword
 }
 
-func (i *CasePatternMatching) FetchPositionLength() token.Range {
-	return i.keyword.Range
+func (i *CasePatternMatching) FetchPositionLength() token.SourceFileReference {
+	return i.keyword.FetchPositionLength()
 }
 
 func (i *CasePatternMatching) Consequences() []*CaseConsequencePatternMatching {

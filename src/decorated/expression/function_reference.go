@@ -43,6 +43,6 @@ func NewFunctionReference(ident *ast.VariableIdentifier,
 	return &FunctionReference{ident: ident, referencedFunctionValue: referencedFunctionValue}
 }
 
-func (g *FunctionReference) FetchPositionLength() token.Range {
+func (g *FunctionReference) FetchPositionLength() token.SourceFileReference {
 	return g.ident.FetchPositionLength()
 }

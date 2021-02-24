@@ -92,6 +92,6 @@ func (i *Guard) DebugString() string {
 	return fmt.Sprintf("[dguard]")
 }
 
-func (i *Guard) FetchPositionLength() token.Range {
+func (i *Guard) FetchPositionLength() token.SourceFileReference {
 	return i.defaultGuard.FetchPositionLength()
 }

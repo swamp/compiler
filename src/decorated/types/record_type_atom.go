@@ -46,7 +46,7 @@ func (s *RecordAtom) HumanReadable() string {
 	return str
 }
 
-func (s *RecordAtom) FetchPositionLength() token.Range {
+func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
 	return s.record.FetchPositionLength()
 }
 

@@ -41,7 +41,7 @@ func (i *FunctionType) String() string {
 	return s
 }
 
-func (i *FunctionType) FetchPositionLength() token.Range {
+func (i *FunctionType) FetchPositionLength() token.SourceFileReference {
 	return i.functionParameters[0].FetchPositionLength()
 }
 

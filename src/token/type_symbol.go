@@ -9,13 +9,13 @@ import "fmt"
 
 // VariableSymbolToken :
 type TypeSymbolToken struct {
-	Range
+	SourceFileReference
 	raw         string
 	Indentation int
 }
 
-func NewTypeSymbolToken(raw string, startPosition Range, indentation int) TypeSymbolToken {
-	return TypeSymbolToken{raw: raw, Range: startPosition, Indentation: indentation}
+func NewTypeSymbolToken(raw string, sourceFileReference SourceFileReference, indentation int) TypeSymbolToken {
+	return TypeSymbolToken{raw: raw, SourceFileReference: sourceFileReference, Indentation: indentation}
 }
 
 func (s TypeSymbolToken) Type() Type {
@@ -36,4 +36,8 @@ func (s TypeSymbolToken) FetchIndentation() int {
 
 func (s TypeSymbolToken) String() string {
 	return fmt.Sprintf("$%s", s.raw)
+}
+
+func (s TypeSymbolToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

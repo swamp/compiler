@@ -39,7 +39,7 @@ func (s *CustomTypeVariant) AttachToCustomType(c *CustomTypeAtom) {
 	s.inCustomType = c
 }
 
-func (s *CustomTypeVariant) FetchPositionLength() token.Range {
+func (s *CustomTypeVariant) FetchPositionLength() token.SourceFileReference {
 	return s.name.FetchPositionLength()
 }
 

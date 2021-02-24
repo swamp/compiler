@@ -37,7 +37,7 @@ func (d *Annotation) Identifier() *VariableIdentifier {
 	return d.symbol
 }
 
-func (d *Annotation) FetchPositionLength() token.Range {
+func (d *Annotation) FetchPositionLength() token.SourceFileReference {
 	return d.symbol.FetchPositionLength()
 }
 

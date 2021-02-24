@@ -16,7 +16,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func DecorateFunctionValueForCall(symbolToken token.Range, resolvedFunction *dectype.FunctionAtom, encounteredArgumentTypes []dtype.Type) (bool, dtype.Type, *dectype.FunctionAtom, decshared.DecoratedError) {
+func DecorateFunctionValueForCall(symbolToken token.SourceFileReference, resolvedFunction *dectype.FunctionAtom, encounteredArgumentTypes []dtype.Type) (bool, dtype.Type, *dectype.FunctionAtom, decshared.DecoratedError) {
 	resolvedFunctionArguments, _ := resolvedFunction.ParameterAndReturn()
 	isCurrying := len(encounteredArgumentTypes) < len(resolvedFunctionArguments)
 
@@ -64,10 +64,10 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	beforeFakeIdentifier, wasIdentifier := call.FunctionExpression().(*ast.VariableIdentifier)
 
 	if wasIdentifier && beforeFakeIdentifier.Name() == "recur" {
-		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.Range{}, 0))
+		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", token.SourceFileReference{}, 0))
 		namedDef := context.ResolveVariable(fakeIdent)
 
-		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdent.Name(), nil, token.Range{}, 0))
+		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdent.Name(), token.SourceFileReference{}, 0))
 		getVar := decorated.NewFunctionReference(fakeFunctionName, namedDef.(*decorated.FunctionValue))
 		decoratedFunctionExpression = getVar
 	} else {
@@ -127,7 +127,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	functionValueDecoratedExpression := decorated.NewNamedDecoratedExpression("x", nil, functionValueExpression)
 	functionValueDecoratedExpression.SetReferenced()
 
-	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(functionReference.Identifier().Name(), nil, token.Range{}, 8))
+	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(functionReference.Identifier().Name(), token.SourceFileReference{}, 8))
 	getVariableExpression := decorated.NewFunctionReference(fakeVariable, functionValueExpression.FunctionValue())
 
 	if isCurrying {

@@ -33,6 +33,6 @@ func (c *RecurCall) String() string {
 	return fmt.Sprintf("[rcall %v]", c.assignments)
 }
 
-func (c *RecurCall) FetchPositionLength() token.Range {
+func (c *RecurCall) FetchPositionLength() token.SourceFileReference {
 	return c.assignments[0].FetchPositionLength()
 }

@@ -32,6 +32,6 @@ func (i *Alias) ReferencedType() Type {
 	return i.referencedType
 }
 
-func (i *Alias) FetchPositionLength() token.Range {
+func (i *Alias) FetchPositionLength() token.SourceFileReference {
 	return i.aliasName.FetchPositionLength()
 }

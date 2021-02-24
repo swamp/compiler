@@ -94,6 +94,6 @@ func (c *RecordLiteral) String() string {
 	return fmt.Sprintf("[record-literal %v %v]", c.t, c.sortedAssignments)
 }
 
-func (c *RecordLiteral) FetchPositionLength() token.Range {
-	return token.Range{}
+func (c *RecordLiteral) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }

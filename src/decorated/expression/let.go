@@ -59,6 +59,6 @@ func (l *Let) String() string {
 	return fmt.Sprintf("[let %v in %v]", l.assignments, l.consequence)
 }
 
-func (l *Let) FetchPositionLength() token.Range {
+func (l *Let) FetchPositionLength() token.SourceFileReference {
 	return l.consequence.FetchPositionLength()
 }

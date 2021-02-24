@@ -94,6 +94,6 @@ func (i *CasePatternMatching) DebugString() string {
 	return "[dpmcase]"
 }
 
-func (i *CasePatternMatching) FetchPositionLength() token.Range {
+func (i *CasePatternMatching) FetchPositionLength() token.SourceFileReference {
 	return i.test.FetchPositionLength()
 }

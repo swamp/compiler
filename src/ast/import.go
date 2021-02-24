@@ -50,8 +50,8 @@ func (i *Import) ModuleName() []*TypeIdentifier {
 	return i.path
 }
 
-func (i *Import) FetchPositionLength() token.Range {
-	return i.keyword.Range
+func (i *Import) FetchPositionLength() token.SourceFileReference {
+	return i.keyword.SourceFileReference
 }
 
 func (i *Import) String() string {

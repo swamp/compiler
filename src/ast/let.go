@@ -49,7 +49,7 @@ func (i *Let) Consequence() Expression {
 	return i.consequence
 }
 
-func (i *Let) FetchPositionLength() token.Range {
+func (i *Let) FetchPositionLength() token.SourceFileReference {
 	return i.consequence.FetchPositionLength()
 }
 

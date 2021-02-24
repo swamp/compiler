@@ -13,7 +13,7 @@ import (
 )
 
 type ParseStream interface {
-	addWarning(description string, length token.Range)
+	addWarning(description string, length token.SourceFileReference)
 	addNode(node ast.Node)
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	// debug info
 	// -----------------------------------------------------------------------------------------------------------------
-	positionLength() token.Range
+	positionLength() token.SourceFileReference
 	debugInfo(s string)
 	debugInfoRows(s string, rowCount int)
 }

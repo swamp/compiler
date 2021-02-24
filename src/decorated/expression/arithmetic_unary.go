@@ -44,6 +44,6 @@ func (a *ArithmeticUnaryOperator) String() string {
 	return fmt.Sprintf("[unaryarithmetic %v left:%v]", a.operatorType, a.left)
 }
 
-func (a *ArithmeticUnaryOperator) FetchPositionLength() token.Range {
+func (a *ArithmeticUnaryOperator) FetchPositionLength() token.SourceFileReference {
 	return a.unary.FetchPositionLength()
 }

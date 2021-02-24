@@ -29,7 +29,7 @@ func (e *UnMatchingBinaryOperatorTypes) Error() string {
 	return fmt.Sprintf("binary operator \n%v resolves to %v\n and \n %v resolves to %v", e.operator.Left(), e.typeA.HumanReadable(), e.operator.Right(), e.typeB.HumanReadable())
 }
 
-func (e *UnMatchingBinaryOperatorTypes) FetchPositionLength() token.Range {
+func (e *UnMatchingBinaryOperatorTypes) FetchPositionLength() token.SourceFileReference {
 	return e.operator.Token().FetchPositionLength()
 }
 
@@ -47,7 +47,7 @@ func (e *UnMatchingArithmeticOperatorTypes) Error() string {
 	return fmt.Sprintf("arithmetic operator %v has different types %v, %v", e.operator, e.typeA, e.typeB)
 }
 
-func (e *UnMatchingArithmeticOperatorTypes) FetchPositionLength() token.Range {
+func (e *UnMatchingArithmeticOperatorTypes) FetchPositionLength() token.SourceFileReference {
 	return e.typeA.FetchPositionLength()
 }
 
@@ -63,8 +63,8 @@ func (e *TypeNotFound) Error() string {
 	return fmt.Sprintf("type %v not found", e.requestedType)
 }
 
-func (e *TypeNotFound) FetchPositionLength() token.Range {
-	return token.Range{}
+func (e *TypeNotFound) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }
 
 type UnmatchingBitwiseOperatorTypes struct {
@@ -81,7 +81,7 @@ func (e *UnmatchingBitwiseOperatorTypes) Error() string {
 	return fmt.Sprintf("bitwise operator %v has different types %v, %v", e.operator, e.typeA, e.typeB)
 }
 
-func (e *UnmatchingBitwiseOperatorTypes) FetchPositionLength() token.Range {
+func (e *UnmatchingBitwiseOperatorTypes) FetchPositionLength() token.SourceFileReference {
 	return e.typeA.FetchPositionLength()
 }
 
@@ -99,7 +99,7 @@ func (e *UnMatchingBooleanOperatorTypes) Error() string {
 	return fmt.Sprintf("boolean operator %v has different types %v, %v", e.operator, e.typeA, e.typeB)
 }
 
-func (e *UnMatchingBooleanOperatorTypes) FetchPositionLength() token.Range {
+func (e *UnMatchingBooleanOperatorTypes) FetchPositionLength() token.SourceFileReference {
 	return e.typeA.FetchPositionLength()
 }
 
@@ -117,7 +117,7 @@ func (e *UnknownBinaryOperator) Error() string {
 	return fmt.Sprintf("unknown binary operator %v  %v, %v", e.operator, e.typeA, e.typeB)
 }
 
-func (e *UnknownBinaryOperator) FetchPositionLength() token.Range {
+func (e *UnknownBinaryOperator) FetchPositionLength() token.SourceFileReference {
 	return e.typeA.FetchPositionLength()
 }
 
@@ -135,7 +135,7 @@ func (e *LogicalOperatorLeftMustBeBoolean) Error() string {
 	return fmt.Sprintf("logical operator %v  must have left boolean %v  %v  %v  %p vs %p ", e.operator, e.typeA, e.typeA.Type(), e.booleanType, e.typeA.Type(), e.booleanType)
 }
 
-func (e *LogicalOperatorLeftMustBeBoolean) FetchPositionLength() token.Range {
+func (e *LogicalOperatorLeftMustBeBoolean) FetchPositionLength() token.SourceFileReference {
 	return e.typeA.FetchPositionLength()
 }
 
@@ -153,7 +153,7 @@ func (e *LogicalOperatorsMustBeBoolean) Error() string {
 	return fmt.Sprintf("logical operator %v  must have booleans %v vs %v. %v vs %v", e.operator, e.typeA, e.typeB, e.typeA.Type(), e.typeB.Type())
 }
 
-func (e *LogicalOperatorsMustBeBoolean) FetchPositionLength() token.Range {
+func (e *LogicalOperatorsMustBeBoolean) FetchPositionLength() token.SourceFileReference {
 	return e.typeA.FetchPositionLength()
 }
 
@@ -170,7 +170,7 @@ func (e *LogicalOperatorRightMustBeBoolean) Error() string {
 	return fmt.Sprintf("logical operator %v  must have right boolean %v", e.operator, e.typeA)
 }
 
-func (e *LogicalOperatorRightMustBeBoolean) FetchPositionLength() token.Range {
+func (e *LogicalOperatorRightMustBeBoolean) FetchPositionLength() token.SourceFileReference {
 	return e.typeA.FetchPositionLength()
 }
 
@@ -186,7 +186,7 @@ func (e *MustBeCustomType) Error() string {
 	return fmt.Sprintf("must be a custom type %v", e.typeA)
 }
 
-func (e *MustBeCustomType) FetchPositionLength() token.Range {
+func (e *MustBeCustomType) FetchPositionLength() token.SourceFileReference {
 	return e.typeA.FetchPositionLength()
 }
 
@@ -203,8 +203,8 @@ func (e *CaseCouldNotFindCustomVariantType) Error() string {
 	return fmt.Sprintf("couldn't find custom variant in case consequence %v (%v)", e.consequence, e.caseExpression)
 }
 
-func (e *CaseCouldNotFindCustomVariantType) FetchPositionLength() token.Range {
-	return e.consequence.Identifier().Symbol().FetchPositionLength()
+func (e *CaseCouldNotFindCustomVariantType) FetchPositionLength() token.SourceFileReference {
+	return e.consequence.Identifier().Symbol().SourceFileReference
 }
 
 type UnMatchingTypesError struct {
@@ -239,7 +239,7 @@ func (e *UnMatchingTypesExpression) Error() string {
 	return fmt.Sprintf("unmatching types %v\nvs\n%v\n %v\n%v", expectedAtom.AtomName(), hasAtom.AtomName(), e.UnMatchingTypesError.Error(), e.err)
 }
 
-func (e *UnMatchingTypesExpression) FetchPositionLength() token.Range {
+func (e *UnMatchingTypesExpression) FetchPositionLength() token.SourceFileReference {
 	return e.expression.FetchPositionLength()
 }
 
@@ -264,7 +264,7 @@ func (e *UnMatchingFunctionReturnTypesInFunctionValue) Error() string {
 	return fmt.Sprintf("unmatching function return types %v", e.HasType)
 }
 
-func (e *UnMatchingFunctionReturnTypesInFunctionValue) FetchPositionLength() token.Range {
+func (e *UnMatchingFunctionReturnTypesInFunctionValue) FetchPositionLength() token.SourceFileReference {
 	return e.fn.Expression().FetchPositionLength()
 }
 
@@ -273,10 +273,10 @@ type FunctionArgumentTypeMismatch struct {
 	expression        ast.Expression
 	err               error
 	decoratedArgument DecoratedExpression
-	symbolToken       token.Range
+	symbolToken       token.SourceFileReference
 }
 
-func NewFunctionArgumentTypeMismatch(symbolToken token.Range, decoratedArgument DecoratedExpression, expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *FunctionArgumentTypeMismatch {
+func NewFunctionArgumentTypeMismatch(symbolToken token.SourceFileReference, decoratedArgument DecoratedExpression, expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *FunctionArgumentTypeMismatch {
 	return &FunctionArgumentTypeMismatch{
 		symbolToken: symbolToken, decoratedArgument: decoratedArgument,
 		expression:           expression,
@@ -288,8 +288,8 @@ func (e *FunctionArgumentTypeMismatch) Error() string {
 	return fmt.Sprintf("function argument type mismatch\n\n%v\n\n in expression %v\n%v\n%v\n", e.UnMatchingTypesError.Error(), e.expression, e.decoratedArgument, e.err)
 }
 
-func (e *FunctionArgumentTypeMismatch) FetchPositionLength() token.Range {
-	return e.symbolToken.FetchPositionLength()
+func (e *FunctionArgumentTypeMismatch) FetchPositionLength() token.SourceFileReference {
+	return e.symbolToken
 }
 
 type RecordLiteralFieldTypeMismatch struct {
@@ -310,7 +310,7 @@ func (e *RecordLiteralFieldTypeMismatch) Error() string {
 	return fmt.Sprintf("record literal type field mismatch %v  %v %v\n", e.field, e.UnMatchingTypesError.Error(), e.err)
 }
 
-func (e *RecordLiteralFieldTypeMismatch) FetchPositionLength() token.Range {
+func (e *RecordLiteralFieldTypeMismatch) FetchPositionLength() token.SourceFileReference {
 	return e.assignment.Expression().FetchPositionLength()
 }
 
@@ -327,7 +327,7 @@ func (e *NewRecordLiteralFieldNotInType) Error() string {
 	return fmt.Sprintf("record literal field not in type %v %v\n", e.assignment, e.recordType)
 }
 
-func (e *NewRecordLiteralFieldNotInType) FetchPositionLength() token.Range {
+func (e *NewRecordLiteralFieldNotInType) FetchPositionLength() token.SourceFileReference {
 	return e.assignment.Identifier().FetchPositionLength()
 }
 
@@ -346,8 +346,8 @@ func (e *ConstructorArgumentTypeMismatch) Error() string {
 	return fmt.Sprintf("expected constructor argument %v but has %v in expression %v\n\n%v but received %v\n%v\n", e.expectedType, e.hasType, e.call, e.expectedType, e.hasType, e.err)
 }
 
-func (e *ConstructorArgumentTypeMismatch) FetchPositionLength() token.Range {
-	return e.call.TypeIdentifier().Symbol().FetchPositionLength()
+func (e *ConstructorArgumentTypeMismatch) FetchPositionLength() token.SourceFileReference {
+	return e.call.TypeIdentifier().Symbol().SourceFileReference
 }
 
 type ExpectedCustomTypeVariantConstructor struct {
@@ -363,8 +363,8 @@ func (e *ExpectedCustomTypeVariantConstructor) Error() string {
 	return fmt.Sprintf("expected constructor %v", e.call.TypeIdentifier())
 }
 
-func (e *ExpectedCustomTypeVariantConstructor) FetchPositionLength() token.Range {
-	return e.call.TypeIdentifier().Symbol().FetchPositionLength()
+func (e *ExpectedCustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {
+	return e.call.TypeIdentifier().Symbol().SourceFileReference
 }
 
 type WrongTypeForRecordConstructorField struct {
@@ -387,8 +387,8 @@ func (e *WrongTypeForRecordConstructorField) Error() string {
 	return fmt.Sprintf("wrong type for constructor field %v\nexpected\n%v\nvs\n%v", e.recordField.Name(), e.UnMatchingTypesError.ExpectedType.HumanReadable(), e.UnMatchingTypesError.HasType.HumanReadable())
 }
 
-func (e *WrongTypeForRecordConstructorField) FetchPositionLength() token.Range {
-	return e.call.TypeIdentifier().Symbol().FetchPositionLength()
+func (e *WrongTypeForRecordConstructorField) FetchPositionLength() token.SourceFileReference {
+	return e.call.TypeIdentifier().Symbol().SourceFileReference
 }
 
 type WrongNumberOfFieldsInConstructor struct {
@@ -407,8 +407,8 @@ func (e *WrongNumberOfFieldsInConstructor) Error() string {
 	return fmt.Sprintf("wrong number of fields in constructor %v, %v", e.record, e.call)
 }
 
-func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.Range {
-	return e.call.TypeIdentifier().Symbol().FetchPositionLength()
+func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.SourceFileReference {
+	return e.call.TypeIdentifier().Symbol().SourceFileReference
 }
 
 type UnhandledCustomTypeVariants struct {
@@ -424,7 +424,7 @@ func (e *UnhandledCustomTypeVariants) Error() string {
 	return fmt.Sprintf("unhandled custom type variants %v", e.unhandledVariants)
 }
 
-func (e *UnhandledCustomTypeVariants) FetchPositionLength() token.Range {
+func (e *UnhandledCustomTypeVariants) FetchPositionLength() token.SourceFileReference {
 	return e.caseExpression.Keyword().FetchPositionLength()
 }
 
@@ -442,8 +442,8 @@ func (e *AlreadyHandledCustomTypeVariant) Error() string {
 	return fmt.Sprintf("already handled variant %v", e.unhandledVariant)
 }
 
-func (e *AlreadyHandledCustomTypeVariant) FetchPositionLength() token.Range {
-	return e.consequence.Identifier().Symbol().FetchPositionLength()
+func (e *AlreadyHandledCustomTypeVariant) FetchPositionLength() token.SourceFileReference {
+	return e.consequence.Identifier().Symbol().SourceFileReference
 }
 
 type ExpectedFunctionType struct {
@@ -459,7 +459,7 @@ func (e *ExpectedFunctionType) Error() string {
 	return fmt.Sprintf("supposed to be function %v %T", e.expected, e.expected)
 }
 
-func (e *ExpectedFunctionType) FetchPositionLength() token.Range {
+func (e *ExpectedFunctionType) FetchPositionLength() token.SourceFileReference {
 	return e.encountered.FetchPositionLength()
 }
 
@@ -475,7 +475,7 @@ func (e *ExpectedFunctionTypeForCall) Error() string {
 	return fmt.Sprintf("this must be a function type that you are calling, but was something completely else %v", e.encountered)
 }
 
-func (e *ExpectedFunctionTypeForCall) FetchPositionLength() token.Range {
+func (e *ExpectedFunctionTypeForCall) FetchPositionLength() token.SourceFileReference {
 	return e.encountered.FetchPositionLength()
 }
 
@@ -494,7 +494,7 @@ func (e *FunctionCallTypeMismatch) Error() string {
 	return fmt.Sprintf("mismatch function type %v\n %v vs %v\n%v\n", e.err, e.expected, e.encountered, e.call)
 }
 
-func (e *FunctionCallTypeMismatch) FetchPositionLength() token.Range {
+func (e *FunctionCallTypeMismatch) FetchPositionLength() token.SourceFileReference {
 	return e.call.FetchPositionLength()
 }
 
@@ -513,7 +513,7 @@ func (e *CouldNotSmashFunctions) Error() string {
 	return fmt.Sprintf("could not smash function types \n%v\n and\n%v\n%v\n%v", e.expected.HumanReadable(), e.encountered.HumanReadable(), e.call, e.err)
 }
 
-func (e *CouldNotSmashFunctions) FetchPositionLength() token.Range {
+func (e *CouldNotSmashFunctions) FetchPositionLength() token.SourceFileReference {
 	return e.call.FetchPositionLength()
 }
 
@@ -526,10 +526,10 @@ type CaseWrongParameterCountInCustomTypeVariant struct {
 type ExtraFunctionArguments struct {
 	expected    []dtype.Type
 	encountered []dtype.Type
-	posLength   token.Range
+	posLength   token.SourceFileReference
 }
 
-func NewExtraFunctionArguments(posLength token.Range, expected []dtype.Type, encountered []dtype.Type) *ExtraFunctionArguments {
+func NewExtraFunctionArguments(posLength token.SourceFileReference, expected []dtype.Type, encountered []dtype.Type) *ExtraFunctionArguments {
 	return &ExtraFunctionArguments{posLength: posLength, expected: expected, encountered: encountered}
 }
 
@@ -537,7 +537,7 @@ func (e *ExtraFunctionArguments) Error() string {
 	return fmt.Sprintf("you can not define more arguments than what is expected of you. function:\n%v\nEncountered:\n%v\n", e.expected, e.encountered)
 }
 
-func (e *ExtraFunctionArguments) FetchPositionLength() token.Range {
+func (e *ExtraFunctionArguments) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
@@ -549,8 +549,8 @@ func (e *CaseWrongParameterCountInCustomTypeVariant) Error() string {
 	return fmt.Sprintf("wrong parameter count in custom type variant %v (%v)", e.consequence, e.caseExpression)
 }
 
-func (e *CaseWrongParameterCountInCustomTypeVariant) FetchPositionLength() token.Range {
-	return e.consequence.Identifier().Symbol().FetchPositionLength()
+func (e *CaseWrongParameterCountInCustomTypeVariant) FetchPositionLength() token.SourceFileReference {
+	return e.consequence.Identifier().Symbol().SourceFileReference
 }
 
 type YouCanOnlySetFieldInRecordOnce struct {
@@ -566,8 +566,8 @@ func (e *YouCanOnlySetFieldInRecordOnce) Error() string {
 	return fmt.Sprintf("you can only set field in record once %v %v", e.fieldName, e.recordType)
 }
 
-func (e *YouCanOnlySetFieldInRecordOnce) FetchPositionLength() token.Range {
-	return e.fieldName.Symbol().FetchPositionLength()
+func (e *YouCanOnlySetFieldInRecordOnce) FetchPositionLength() token.SourceFileReference {
+	return e.fieldName.Symbol().SourceFileReference
 }
 
 type WrongNumberOfArgumentsInFunctionValue struct {
@@ -601,7 +601,7 @@ func (e *WrongNumberOfArgumentsInFunctionValue) Error() string {
 	return fmt.Sprintf("wrong number of arguments in functionvalue %v", e.encounteredFunction)
 }
 
-func (e *WrongNumberOfArgumentsInFunctionValue) FetchPositionLength() token.Range {
+func (e *WrongNumberOfArgumentsInFunctionValue) FetchPositionLength() token.SourceFileReference {
 	return e.encounteredFunction.FetchPositionLength()
 }
 
@@ -618,7 +618,7 @@ func (e *IfTestMustHaveBooleanType) Error() string {
 	return fmt.Sprintf("if test must have Bool type %v", e.ifExpression)
 }
 
-func (e *IfTestMustHaveBooleanType) FetchPositionLength() token.Range {
+func (e *IfTestMustHaveBooleanType) FetchPositionLength() token.SourceFileReference {
 	return e.ifTestExpression.FetchPositionLength()
 }
 
@@ -637,7 +637,7 @@ func (e *IfConsequenceAndAlternativeMustHaveSameType) Error() string {
 	return fmt.Sprintf("if: consequence and alternative must have same type %v\nvs\n%v\n", e.consequence.Type().HumanReadable(), e.alternative.Type().HumanReadable())
 }
 
-func (e *IfConsequenceAndAlternativeMustHaveSameType) FetchPositionLength() token.Range {
+func (e *IfConsequenceAndAlternativeMustHaveSameType) FetchPositionLength() token.SourceFileReference {
 	return e.consequence.FetchPositionLength()
 }
 
@@ -657,7 +657,7 @@ func (e *EveryItemInThelistMustHaveTheSameType) Error() string {
 	return fmt.Sprintf("every item in the list must have same type %v", e.list)
 }
 
-func (e *EveryItemInThelistMustHaveTheSameType) FetchPositionLength() token.Range {
+func (e *EveryItemInThelistMustHaveTheSameType) FetchPositionLength() token.SourceFileReference {
 	return e.faultyExpression.FetchPositionLength()
 }
 
@@ -674,8 +674,8 @@ func (e *CouldNotFindDefinitionOrTypeForIdentifier) Error() string {
 	return fmt.Sprintf("could not find %v", e.ident)
 }
 
-func (e *CouldNotFindDefinitionOrTypeForIdentifier) FetchPositionLength() token.Range {
-	return e.ident.Symbol().FetchPositionLength()
+func (e *CouldNotFindDefinitionOrTypeForIdentifier) FetchPositionLength() token.SourceFileReference {
+	return e.ident.Symbol().SourceFileReference
 }
 
 type CouldNotFindTypeForTypeIdentifier struct {
@@ -691,8 +691,8 @@ func (e *CouldNotFindTypeForTypeIdentifier) Error() string {
 	return fmt.Sprintf("could not find %v", e.ident)
 }
 
-func (e *CouldNotFindTypeForTypeIdentifier) FetchPositionLength() token.Range {
-	return e.ident.Symbol().FetchPositionLength()
+func (e *CouldNotFindTypeForTypeIdentifier) FetchPositionLength() token.SourceFileReference {
+	return e.ident.Symbol().SourceFileReference
 }
 
 type CouldNotFindIdentifierInLookups struct {
@@ -707,8 +707,8 @@ func (e *CouldNotFindIdentifierInLookups) Error() string {
 	return fmt.Sprintf("could not find %v", e.lookups)
 }
 
-func (e *CouldNotFindIdentifierInLookups) FetchPositionLength() token.Range {
-	return e.lookups.ContextIdentifier().Symbol().FetchPositionLength()
+func (e *CouldNotFindIdentifierInLookups) FetchPositionLength() token.SourceFileReference {
+	return e.lookups.ContextIdentifier().Symbol().SourceFileReference
 }
 
 type CouldNotFindFieldInLookup struct {
@@ -725,8 +725,8 @@ func (e *CouldNotFindFieldInLookup) Error() string {
 	return fmt.Sprintf("could not find %v", e.lookups)
 }
 
-func (e *CouldNotFindFieldInLookup) FetchPositionLength() token.Range {
-	return e.variable.Symbol().FetchPositionLength()
+func (e *CouldNotFindFieldInLookup) FetchPositionLength() token.SourceFileReference {
+	return e.variable.Symbol().SourceFileReference
 }
 
 type MustHaveAnnotationJustBeforeThisDefinition struct {
@@ -741,8 +741,8 @@ func (e *MustHaveAnnotationJustBeforeThisDefinition) Error() string {
 	return fmt.Sprintf("must have annotation before this definition %v", e.assignment)
 }
 
-func (e *MustHaveAnnotationJustBeforeThisDefinition) FetchPositionLength() token.Range {
-	return e.assignment.Identifier().Symbol().FetchPositionLength()
+func (e *MustHaveAnnotationJustBeforeThisDefinition) FetchPositionLength() token.SourceFileReference {
+	return e.assignment.Identifier().Symbol().SourceFileReference
 }
 
 type AlreadyHaveAnnotationForThisName struct {
@@ -758,16 +758,16 @@ func (e *AlreadyHaveAnnotationForThisName) Error() string {
 	return fmt.Sprintf("already have annotation for this name %v", e.annotation)
 }
 
-func (e *AlreadyHaveAnnotationForThisName) FetchPositionLength() token.Range {
-	return e.annotation.Identifier().Symbol().FetchPositionLength()
+func (e *AlreadyHaveAnnotationForThisName) FetchPositionLength() token.SourceFileReference {
+	return e.annotation.Identifier().Symbol().SourceFileReference
 }
 
 type UnknownStatement struct {
 	statement ast.Expression
-	posLength token.Range
+	posLength token.SourceFileReference
 }
 
-func NewUnknownStatement(posLength token.Range, statement ast.Expression) *UnknownStatement {
+func NewUnknownStatement(posLength token.SourceFileReference, statement ast.Expression) *UnknownStatement {
 	return &UnknownStatement{statement: statement}
 }
 
@@ -775,7 +775,7 @@ func (e *UnknownStatement) Error() string {
 	return fmt.Sprintf("unknown statement %v %T", e.statement, e.statement)
 }
 
-func (e *UnknownStatement) FetchPositionLength() token.Range {
+func (e *UnknownStatement) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
@@ -791,7 +791,7 @@ func (e *UnknownVariable) Error() string {
 	return fmt.Sprintf("unknown variable '%v'", e.ident)
 }
 
-func (e *UnknownVariable) FetchPositionLength() token.Range {
+func (e *UnknownVariable) FetchPositionLength() token.SourceFileReference {
 	return e.ident.FetchPositionLength()
 }
 
@@ -808,8 +808,8 @@ func (e *AnnotationMismatch) Error() string {
 	return fmt.Sprintf("annotation mismatch %v", e.assignment)
 }
 
-func (e *AnnotationMismatch) FetchPositionLength() token.Range {
-	return e.assignment.Identifier().Symbol().FetchPositionLength()
+func (e *AnnotationMismatch) FetchPositionLength() token.SourceFileReference {
+	return e.assignment.Identifier().Symbol().SourceFileReference
 }
 
 type ModuleError struct {
@@ -829,7 +829,7 @@ func (e *ModuleError) Error() string {
 	return fmt.Sprintf("module error '%v': %v", e.sourceFile, e.err)
 }
 
-func (e *ModuleError) FetchPositionLength() token.Range {
+func (e *ModuleError) FetchPositionLength() token.SourceFileReference {
 	return e.err.FetchPositionLength()
 }
 
@@ -845,8 +845,8 @@ func (e *InternalError) Error() string {
 	return fmt.Sprintf("decoration internal error %v", e.err)
 }
 
-func (e *InternalError) FetchPositionLength() token.Range {
-	return token.Range{}
+func (e *InternalError) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }
 
 type UnknownAnnotationTypeReference struct {
@@ -862,8 +862,8 @@ func (e *UnknownAnnotationTypeReference) Error() string {
 	return fmt.Sprintf("unknown type in annotation %v %v", e.annotationIdentifier, e.err)
 }
 
-func (e *UnknownAnnotationTypeReference) FetchPositionLength() token.Range {
-	return e.annotationIdentifier.Symbol().FetchPositionLength()
+func (e *UnknownAnnotationTypeReference) FetchPositionLength() token.SourceFileReference {
+	return e.annotationIdentifier.Symbol().SourceFileReference
 }
 
 type UnknownTypeAliasType struct {
@@ -879,8 +879,8 @@ func (e *UnknownTypeAliasType) Error() string {
 	return fmt.Sprintf("unknown type in alias %v %v", e.alias, e.err)
 }
 
-func (e *UnknownTypeAliasType) FetchPositionLength() token.Range {
-	return e.alias.TypeIdentifier().Symbol().FetchPositionLength()
+func (e *UnknownTypeAliasType) FetchPositionLength() token.SourceFileReference {
+	return e.alias.TypeIdentifier().Symbol().SourceFileReference
 }
 
 type UnknownTypeInCustomTypeVariant struct {
@@ -896,6 +896,6 @@ func (e *UnknownTypeInCustomTypeVariant) Error() string {
 	return fmt.Sprintf("unknown type in custom type variant %v %v", e.variant, e.err)
 }
 
-func (e *UnknownTypeInCustomTypeVariant) FetchPositionLength() token.Range {
-	return e.variant.TypeIdentifier().Symbol().FetchPositionLength()
+func (e *UnknownTypeInCustomTypeVariant) FetchPositionLength() token.SourceFileReference {
+	return e.variant.TypeIdentifier().Symbol().SourceFileReference
 }

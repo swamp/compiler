@@ -63,6 +63,6 @@ func (n *NamedDecoratedExpression) Type() dtype.Type {
 	return n.expression.Type()
 }
 
-func (n *NamedDecoratedExpression) FetchPositionLength() token.Range {
-	return token.Range{}
+func (n *NamedDecoratedExpression) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }

@@ -33,7 +33,7 @@ func (i *IfExpression) Alternative() Expression {
 	return i.alternative
 }
 
-func (i *IfExpression) FetchPositionLength() token.Range {
+func (i *IfExpression) FetchPositionLength() token.SourceFileReference {
 	return i.consequence.FetchPositionLength()
 }
 

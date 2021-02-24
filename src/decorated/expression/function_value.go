@@ -35,8 +35,8 @@ func (a *FunctionParameterDefinition) String() string {
 	return fmt.Sprintf("[arg %v = %v]", a.identifier, a.generatedType)
 }
 
-func (a *FunctionParameterDefinition) FetchPositionLength() token.Range {
-	return a.identifier.Symbol().FetchPositionLength()
+func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileReference {
+	return a.identifier.Symbol().SourceFileReference
 }
 
 type FunctionValue struct {
@@ -51,8 +51,7 @@ func NewFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType *dectyp
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
-	start := astFunction.DebugFunctionIdentifier().FetchPositionLength().Start()
-	end := decoratedExpression.FetchPositionLength().End()
+	token.MakeInclusiveSourceFileReference(astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
 
 	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock}
 }
@@ -105,7 +104,7 @@ func (f *FunctionValue) Expression() DecoratedExpression {
 	return f.decoratedExpression
 }
 
-func (f *FunctionValue) FetchPositionLength() token.Range {
+func (f *FunctionValue) FetchPositionLength() token.SourceFileReference {
 	return f.decoratedExpression.FetchPositionLength()
 }
 

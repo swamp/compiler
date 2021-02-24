@@ -125,7 +125,7 @@ func (u *FunctionAtom) ShortName() string {
 	return s
 }
 
-func (u *FunctionAtom) FetchPositionLength() token.Range {
+func (u *FunctionAtom) FetchPositionLength() token.SourceFileReference {
 	return u.astFunctionType.FetchPositionLength()
 }
 

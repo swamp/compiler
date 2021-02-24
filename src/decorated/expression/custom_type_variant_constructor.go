@@ -69,6 +69,6 @@ func (c *CustomTypeVariantConstructor) String() string {
 	return fmt.Sprintf("[variant-constructor %v %v]", c.customTypeVariant, c.arguments)
 }
 
-func (c *CustomTypeVariantConstructor) FetchPositionLength() token.Range {
-	return c.typeIdentifier.Symbol().FetchPositionLength()
+func (c *CustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {
+	return c.typeIdentifier.Symbol().SourceFileReference
 }
