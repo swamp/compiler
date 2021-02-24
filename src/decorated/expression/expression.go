@@ -12,6 +12,7 @@ import (
 
 type Node interface {
 	FetchPositionLength() token.Range
+	String() string
 }
 
 type DecoratedExpression interface {

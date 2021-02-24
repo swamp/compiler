@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -58,6 +59,7 @@ type Module struct {
 	isInternal               bool
 	sourceFile               *token.SourceFileURI
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
+	nodes                    []Node
 }
 
 func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFile *token.SourceFileURI) *Module {
@@ -78,6 +80,19 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 
 func (m *Module) SetProgram(program *ast.SourceFile) {
 	m.program = program
+}
+
+func (m *Module) SetNodes(nodes []Node) {
+	m.nodes = nodes
+
+	log.Printf("all nodes in: %v\n", m.FullyQualifiedModuleName())
+	for _, x := range m.nodes {
+		log.Printf("node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
+	}
+}
+
+func (m *Module) Nodes() []Node {
+	return m.nodes
 }
 
 func (m *Module) Program() *ast.SourceFile {

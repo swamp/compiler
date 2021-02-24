@@ -107,7 +107,7 @@ func testHelperWithTestingStrings(t *testing.T, cmds []string, expectedResult st
 
 func TestSomething(t *testing.T) {
 	testHelperWithTestingStrings(t, []string{`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///home/peter/test.swamp","languageId":"swamp","version":1,"text":"test : Int -> Int\ntest a =\n    4\n"}}}`, `
-{"jsonrpc":"2.0","id":1,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":0,"character":3}}}
+{"jsonrpc":"2.0","id":1,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":0,"character":18}}}
 `}, `Content-Length: 156
 
 {"id":1,"result":{"contents":{"kind":"markdown","value":"$test"},"range":{"start":{"line":0,"character":0},"end":{"line":0,"character":3}}},"jsonrpc":"2.0"}`)

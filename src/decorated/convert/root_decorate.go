@@ -22,11 +22,11 @@ type Definer struct {
 	localComments     []ast.LocalComment
 	localCommentBlock token.CommentBlock
 	verboseFlag       bool
-	dectorateStream   DecorateStream
+	decorateStream    DecorateStream
 }
 
 func NewDefiner(dectorateStream DecorateStream, typeRepo *dectype.TypeRepo, debugName string) *Definer {
-	g := &Definer{verboseFlag: false, localAnnotation: nil, dectorateStream: dectorateStream, typeRepo: typeRepo}
+	g := &Definer{verboseFlag: false, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo}
 	return g
 }
 
@@ -72,7 +72,7 @@ func (g *Definer) functionAnnotation(identifier *ast.VariableIdentifier, constan
 	}
 	checkedType, _ := convertedType.(dtype.Type)
 	if checkedType != nil {
-		g.dectorateStream.AddDeclaration(identifier, checkedType)
+		g.decorateStream.AddDeclaration(identifier, checkedType)
 	}
 	g.AnnotateFunc(identifier, convertedType)
 
@@ -169,17 +169,18 @@ func (g *Definer) handleDefinitionAssignment(d DecorateStream, assignment *ast.D
 	return nil
 }
 
-func (g *Definer) handleAnnotation(declaration *ast.Annotation) decshared.DecoratedError {
+func (g *Definer) handleAnnotation(d DecorateStream, declaration *ast.Annotation) decshared.DecoratedError {
 	if g.localAnnotation != nil {
 		return decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
 	}
 	annotatedType := declaration.AnnotatedType()
 	g.localCommentBlock = declaration.CommentBlock()
 
-	_, declareErr := g.functionAnnotation(declaration.Identifier(), annotatedType)
+	annotation, declareErr := g.functionAnnotation(declaration.Identifier(), annotatedType)
 	if declareErr != nil {
 		return declareErr
 	}
+	d.InternalAddNode(annotation)
 
 	return nil
 }
@@ -191,17 +192,17 @@ func (g *Definer) handleStatement(statement ast.Expression) decshared.DecoratedE
 	case *ast.CustomTypeStatement:
 		return g.handleCustomTypeStatement(v)
 	case *ast.Annotation:
-		return g.handleAnnotation(v)
+		return g.handleAnnotation(g.decorateStream, v)
 	case *ast.DefinitionAssignment:
-		return g.handleDefinitionAssignment(g.dectorateStream, v)
+		return g.handleDefinitionAssignment(g.decorateStream, v)
 	case *ast.Import:
-		return g.handleImport(g.dectorateStream, v)
+		return g.handleImport(g.decorateStream, v)
 	case *ast.ExternalFunction:
-		return g.handleExternalFunction(g.dectorateStream, v)
+		return g.handleExternalFunction(g.decorateStream, v)
 	case *ast.MultilineComment:
-		return g.handleMultilineComment(g.dectorateStream, v)
+		return g.handleMultilineComment(g.decorateStream, v)
 	case *ast.SingleLineComment:
-		return g.handleSinglelineComment(g.dectorateStream, v)
+		return g.handleSinglelineComment(g.decorateStream, v)
 	default:
 		return decorated.NewUnknownStatement(token.Range{}, statement)
 	}

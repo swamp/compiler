@@ -5,6 +5,10 @@
 
 package ast
 
+import (
+	"github.com/swamp/compiler/src/token"
+)
+
 type FunctionType struct {
 	functionParameters []Type
 }
@@ -35,6 +39,10 @@ func (i *FunctionType) String() string {
 	}
 	s += "]"
 	return s
+}
+
+func (i *FunctionType) FetchPositionLength() token.Range {
+	return i.functionParameters[0].FetchPositionLength()
 }
 
 func NewFunctionType(functionParameters []Type) *FunctionType {

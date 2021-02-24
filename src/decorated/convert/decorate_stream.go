@@ -14,6 +14,7 @@ import (
 )
 
 type DecorateStream interface {
+	InternalAddNode(node decorated.Node)
 	TypeRepo() *dectype.TypeRepo
 	AddDefinition(identifier *ast.VariableIdentifier, expr decorated.DecoratedExpression) error
 	AddDeclaration(identifier *ast.VariableIdentifier, declaredType dtype.Type) error

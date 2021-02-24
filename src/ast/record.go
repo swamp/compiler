@@ -5,7 +5,11 @@
 
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/token"
+)
 
 type Record struct {
 	typeParameters []*TypeParameter
@@ -39,4 +43,8 @@ func (i *Record) FindField(name string) *RecordField {
 		}
 	}
 	return nil
+}
+
+func (i *Record) FetchPositionLength() token.Range {
+	return i.fields[0].VariableIdentifier().FetchPositionLength()
 }

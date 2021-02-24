@@ -40,6 +40,7 @@ func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *a
 		if decoratedFunctionErr != nil {
 			return nil, decoratedFunctionErr
 		}
+		d.InternalAddNode(decoratedFunction)
 		decoratedExpression = decoratedFunction
 	default:
 		return nil, decorated.NewInternalError(fmt.Errorf("unknown root definition:%v %T", e, e))

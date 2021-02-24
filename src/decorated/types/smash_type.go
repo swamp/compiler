@@ -89,7 +89,7 @@ func fillContextFromRecordType(context *TypeParameterContextOther, original *Rec
 		return original, nil
 	}
 
-	return NewRecordType(other.SortedFields(), converted), nil
+	return NewRecordType(original.AstRecord(), other.SortedFields(), converted), nil
 }
 
 func fillContextFromCustomType(context *TypeParameterContextOther, original *CustomTypeAtom, other *CustomTypeAtom) (*CustomTypeAtom, error) {
@@ -163,7 +163,7 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 		converted = append(converted, convertedType)
 	}
 
-	return NewFunctionAtom(converted), nil
+	return NewFunctionAtom(original.astFunctionType, converted), nil
 }
 
 func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUnchanged dtype.Type) (dtype.Type, error) {

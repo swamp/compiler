@@ -106,6 +106,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	module.ExposedTypes().AddTypes(module.TypeRepo().AllLocalTypes())
 	module.ExposedDefinitions().AddDefinitions(module.Definitions().Definitions())
 	module.SetProgram(program)
+	module.SetNodes(converter.Nodes())
 
 	return module, nil
 }

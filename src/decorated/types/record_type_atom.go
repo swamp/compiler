@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type RecordAtom struct {
@@ -17,10 +19,15 @@ type RecordAtom struct {
 	parsedOrderFields []*RecordField
 	sortedFields      []*RecordField
 	genericTypes      []dtype.Type
+	record            *ast.Record
 }
 
 func (s *RecordAtom) GenericTypes() []dtype.Type {
 	return s.genericTypes
+}
+
+func (s *RecordAtom) AstRecord() *ast.Record {
+	return s.record
 }
 
 func (s *RecordAtom) String() string {
@@ -37,6 +44,10 @@ func (s *RecordAtom) HumanReadable() string {
 	}
 	str += "}"
 	return str
+}
+
+func (s *RecordAtom) FetchPositionLength() token.Range {
+	return s.record.FetchPositionLength()
 }
 
 func (s *RecordAtom) ShortString() string {
@@ -81,7 +92,7 @@ func (a ByFieldName) Len() int           { return len(a) }
 func (a ByFieldName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByFieldName) Less(i, j int) bool { return a[i].Name() < a[j].Name() }
 
-func NewRecordType(fields []*RecordField, genericTypes []dtype.Type) *RecordAtom {
+func NewRecordType(info *ast.Record, fields []*RecordField, genericTypes []dtype.Type) *RecordAtom {
 	sortedFields := make([]*RecordField, len(fields))
 	copy(sortedFields, fields)
 	sort.Sort(ByFieldName(sortedFields))
@@ -96,7 +107,10 @@ func NewRecordType(fields []*RecordField, genericTypes []dtype.Type) *RecordAtom
 		nameToField[name] = field
 	}
 
-	return &RecordAtom{sortedFields: sortedFields, parsedOrderFields: fields, nameToField: nameToField, genericTypes: genericTypes}
+	return &RecordAtom{
+		sortedFields: sortedFields, record: info, parsedOrderFields: fields,
+		nameToField: nameToField, genericTypes: genericTypes,
+	}
 }
 
 func (s *RecordAtom) SortedFields() []*RecordField {

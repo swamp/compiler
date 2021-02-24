@@ -6,12 +6,16 @@
 package dectype
 
 import (
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 import "fmt"
 
-type Any struct{}
+type Any struct {
+	astTypeIdentifier *ast.TypeIdentifier
+}
 
 func (u *Any) String() string {
 	return fmt.Sprintf("[any]")
@@ -61,6 +65,10 @@ func (u *Any) Next() dtype.Type {
 	return nil
 }
 
-func NewAnyType() *Any {
-	return &Any{}
+func (u *Any) FetchPositionLength() token.Range {
+	return u.astTypeIdentifier.FetchPositionLength()
+}
+
+func NewAnyType(astTypeIdentifier *ast.TypeIdentifier) *Any {
+	return &Any{astTypeIdentifier: astTypeIdentifier}
 }

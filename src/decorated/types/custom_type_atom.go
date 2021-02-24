@@ -10,6 +10,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type CustomTypeAtom struct {
@@ -42,6 +43,10 @@ func (s *CustomTypeAtom) ShortString() string {
 
 	str += "]"
 	return str
+}
+
+func (s *CustomTypeAtom) FetchPositionLength() token.Range {
+	return s.name.FetchPositionLength()
 }
 
 func (s *CustomTypeAtom) TypeIdentifier() *ast.TypeIdentifier {

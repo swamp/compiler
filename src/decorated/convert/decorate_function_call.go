@@ -35,7 +35,7 @@ func DecorateFunctionValueForCall(symbolToken token.Range, resolvedFunction *dec
 		providedArgumentCount := len(encounteredArgumentTypes)
 		allFunctionTypes := resolvedFunction.FunctionParameterTypes()
 		curryFunctionTypes := allFunctionTypes[providedArgumentCount:]
-		curryFunctionType := dectype.NewFunctionAtom(curryFunctionTypes)
+		curryFunctionType := dectype.NewFunctionAtom(nil, curryFunctionTypes)
 		return isCurrying, curryFunctionType, curryFunctionType, nil
 	}
 
@@ -82,7 +82,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		return nil, decorated.NewInternalError(fmt.Errorf("expression was not just a variable identifier %v %v", call.FunctionExpression(), call.FetchPositionLength()))
 	}
 
-	callFunctionType := dectype.NewFunctionAtom(encounteredArgumentTypes)
+	callFunctionType := dectype.NewFunctionAtom(nil, encounteredArgumentTypes)
 	hopefullyFunctionType := decoratedFunctionExpression.Type()
 	functionTypeOriginal, wasFunction := hopefullyFunctionType.(*dectype.FunctionAtom)
 	if !wasFunction {
@@ -106,7 +106,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		complete = append(complete, extraParameter)
 	}
 
-	completeCalledFunction := dectype.NewFunctionAtom(complete)
+	completeCalledFunction := dectype.NewFunctionAtom(nil, complete)
 
 	functionCompatibleErr := dectype.CompatibleTypes(functionType, completeCalledFunction)
 	if functionCompatibleErr != nil {

@@ -28,6 +28,10 @@ func (f *FakeExpression) Type() dtype.Type {
 	return f.storedType
 }
 
+func (f *FakeExpression) String() string {
+	return "totally fake"
+}
+
 func (f *FakeExpression) FetchPositionLength() token.Range {
 	return token.Range{}
 }

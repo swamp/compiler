@@ -5,7 +5,11 @@
 
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/token"
+)
 
 type LocalType struct {
 	typeParameterReference *TypeParameter
@@ -21,4 +25,8 @@ func (i *LocalType) Name() string {
 
 func (i *LocalType) TypeParameter() *TypeParameter {
 	return i.typeParameterReference
+}
+
+func (i *LocalType) FetchPositionLength() token.Range {
+	return i.typeParameterReference.FetchPositionLength()
 }

@@ -5,7 +5,11 @@
 
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/token"
+)
 
 type TypeParameter struct {
 	ident *VariableIdentifier
@@ -25,4 +29,8 @@ func (t *TypeParameter) String() string {
 
 func (t *TypeParameter) Name() string {
 	return t.ident.Name()
+}
+
+func (t *TypeParameter) FetchPositionLength() token.Range {
+	return t.ident.FetchPositionLength()
 }

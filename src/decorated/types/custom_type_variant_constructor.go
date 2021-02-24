@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type CustomTypeVariantConstructorType struct {
@@ -58,4 +59,8 @@ func (s *CustomTypeVariantConstructorType) Resolve() (dtype.Atom, error) {
 
 func (s *CustomTypeVariantConstructorType) Next() dtype.Type {
 	return s.variant
+}
+
+func (s *CustomTypeVariantConstructorType) FetchPositionLength() token.Range {
+	return s.variant.FetchPositionLength()
 }

@@ -57,7 +57,9 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 
 	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
 	identifiers := potentialFunc.Parameters()
+
 	var parameters []*decorated.FunctionParameterDefinition
+
 	for index, parameterType := range functionParameterTypes {
 		identifier := identifiers[index]
 		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)
@@ -70,10 +72,12 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 	if decoratedExpressionErr != nil {
 		return nil, decoratedExpressionErr
 	}
+
 	decoratedExpressionType := decoratedExpression.Type()
 	if decoratedExpressionType == nil {
 		fmt.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
 	}
+
 	compatibleErr := dectype.CompatibleTypes(expectedReturnType, decoratedExpressionType)
 	if compatibleErr != nil {
 		return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, expression, expectedReturnType, decoratedExpression.Type(), compatibleErr)

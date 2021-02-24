@@ -6,11 +6,12 @@
 package dectype
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
-
-import "fmt"
 
 type LocalType struct {
 	identifier *ast.TypeParameter
@@ -18,6 +19,10 @@ type LocalType struct {
 
 func (u *LocalType) String() string {
 	return fmt.Sprintf("[localtype %v]", u.identifier.Name())
+}
+
+func (u *LocalType) FetchPositionLength() token.Range {
+	return u.identifier.Identifier().FetchPositionLength()
 }
 
 func (u *LocalType) HumanReadable() string {

@@ -34,9 +34,9 @@ func (l *LspImpl) FindToken(position token.Position) DecoratedTypeOrToken {
 	if l.module == nil {
 		return nil
 	}
-	allNodes := l.module.Program().Nodes()
+	allNodes := l.module.Nodes()
 	for _, node := range allNodes {
-		log.Printf("checking node:%v\n", node.FetchPositionLength())
+		log.Printf("checking node:%v '%v'\n", node.FetchPositionLength(), node.String())
 		if node.FetchPositionLength().Contains(position) {
 			return node
 		}

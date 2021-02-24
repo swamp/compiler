@@ -21,11 +21,20 @@ type ModuleRepository interface {
 type Decorator struct {
 	module           *decorated.Module
 	moduleRepository ModuleRepository
+	nodes            []decorated.Node
 }
 
 func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module) *Decorator {
 	d := &Decorator{module: module, moduleRepository: moduleRepository}
 	return d
+}
+
+func (d *Decorator) InternalAddNode(node decorated.Node) {
+	d.nodes = append(d.nodes, node)
+}
+
+func (d *Decorator) Nodes() []decorated.Node {
+	return d.nodes
 }
 
 func (d *Decorator) Import(source *decorated.Module, relativeName dectype.PackageRelativeModuleName, exposeAll bool) error {

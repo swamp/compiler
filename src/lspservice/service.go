@@ -8,6 +8,7 @@ import (
 	"github.com/piot/go-lsp"
 	"github.com/piot/lsp-server/lspserv"
 
+	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -17,14 +18,9 @@ type DecoratedTypeOrToken interface {
 	FetchPositionLength() token.Range
 }
 
-type DecoratedType interface {
-	DecoratedTypeOrToken
-	DecoratedHumanReadableString() string
-}
-
 type DecoratedToken interface {
 	DecoratedTypeOrToken
-	DecoratedType() DecoratedType
+	Type() dtype.Type
 }
 
 type DecoratedTokenScanner interface {
@@ -91,6 +87,10 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 	if decoratedToken == nil {
 		return nil, fmt.Errorf("couldn't find a token at %v", tokenPosition)
 	}
+
+	_, isItAType := decoratedToken.(dtype.Type)
+
+	log.Printf("the token is %T and type:%v\n", decoratedToken, isItAType)
 
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{

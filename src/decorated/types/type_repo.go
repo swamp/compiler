@@ -80,8 +80,8 @@ func (t *TypeRepo) DeclareType(realType dtype.Type) error {
 	return nil
 }
 
-func (t *TypeRepo) AddFunctionAtom(parameterTypes []dtype.Type) *FunctionAtom {
-	newType := NewFunctionAtom(parameterTypes)
+func (t *TypeRepo) AddFunctionAtom(astFunctionType *ast.FunctionType, parameterTypes []dtype.Type) *FunctionAtom {
+	newType := NewFunctionAtom(astFunctionType, parameterTypes)
 	existing := t.FindTypeFromSignature(newType.DecoratedName())
 	if existing != nil {
 		return existing.(*FunctionAtom)

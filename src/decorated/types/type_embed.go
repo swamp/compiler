@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type InvokerType struct {
@@ -30,6 +31,10 @@ func (u *InvokerType) TypeGenerator() dtype.Type {
 
 func (u *InvokerType) Params() []dtype.Type {
 	return u.params
+}
+
+func (u *InvokerType) FetchPositionLength() token.Range {
+	return u.typeToInvoke.FetchPositionLength()
 }
 
 func (u *InvokerType) String() string {

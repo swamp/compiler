@@ -72,7 +72,7 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 		}
 	}
 
-	recordType := dectype.NewRecordType(recordTypeFields, nil) // TODO: FIX
+	recordType := dectype.NewRecordType(nil, recordTypeFields, nil) // TODO: FIX
 	typeRepoRecordType := d.TypeRepo().DeclareRecordType(recordType)
 
 	for _, assignment := range record.ParseOrderedAssignments() {

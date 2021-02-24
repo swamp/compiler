@@ -10,6 +10,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type Alias struct {
@@ -28,6 +29,10 @@ func (u *Alias) HumanReadable() string {
 
 func (u *Alias) TypeIdentifier() *ast.TypeIdentifier {
 	return u.name
+}
+
+func (u *Alias) FetchPositionLength() token.Range {
+	return u.name.FetchPositionLength()
 }
 
 func (u *Alias) ArtifactTypeName() ArtifactFullyQualifiedTypeName {
