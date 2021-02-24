@@ -10,7 +10,8 @@ import (
 )
 
 type FunctionType struct {
-	functionParameters []Type
+	functionParameters  []Type
+	sourceFileReference token.SourceFileReference
 }
 
 func (i *FunctionType) Name() string {
@@ -42,9 +43,12 @@ func (i *FunctionType) String() string {
 }
 
 func (i *FunctionType) FetchPositionLength() token.SourceFileReference {
-	return i.functionParameters[0].FetchPositionLength()
+	return i.sourceFileReference
 }
 
 func NewFunctionType(functionParameters []Type) *FunctionType {
-	return &FunctionType{functionParameters: functionParameters}
+	first := functionParameters[0].FetchPositionLength()
+	last := functionParameters[len(functionParameters)-1].FetchPositionLength()
+	sourceFileReference := token.MakeInclusiveSourceFileReference(first, last)
+	return &FunctionType{functionParameters: functionParameters, sourceFileReference: sourceFileReference}
 }

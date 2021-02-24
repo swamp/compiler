@@ -1,6 +1,7 @@
 package lspservice
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 
@@ -18,7 +19,6 @@ type DecoratedTypeOrToken interface {
 }
 
 type DecoratedToken interface {
-	DecoratedTypeOrToken
 	Type() dtype.Type
 }
 
@@ -92,10 +92,16 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 
 	log.Printf("the token is %T and type:%v\n", decoratedToken, isItAType)
 
+	showString := decoratedToken.String()
+	if !isItAType {
+		normalToken, _ := decoratedToken.(DecoratedToken)
+		showString += fmt.Sprintf(" : %v", normalToken.Type().HumanReadable())
+	}
+
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{
 			Kind:  lsp.MUKMarkdown,
-			Value: decoratedToken.String(),
+			Value: showString,
 		},
 		Range: tokenToLspRange(decoratedToken.FetchPositionLength().Range),
 	}
@@ -227,7 +233,7 @@ func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn
 
 func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connection) ([]*lsp.CodeLens, error) {
 	return []*lsp.CodeLens{
-		{
+		/*{
 			Range: lsp.Range{
 				Start: lsp.Position{
 					Line:      4,
@@ -244,7 +250,7 @@ func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connect
 				Arguments: nil,
 			},
 			Data: nil,
-		},
+		},*/
 	}, nil
 }
 

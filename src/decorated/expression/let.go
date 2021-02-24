@@ -13,34 +13,71 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type LetVariable struct {
+	name         *ast.VariableIdentifier
+	variableType dtype.Type
+}
+
+func (l *LetVariable) String() string {
+	return fmt.Sprintf("[letvariable %v]", l.name)
+}
+
+func (l *LetVariable) Type() dtype.Type {
+	return l.variableType
+}
+
+func (l *LetVariable) Name() *ast.VariableIdentifier {
+	return l.name
+}
+
+func NewLetVariable(name *ast.VariableIdentifier, variableType dtype.Type) *LetVariable {
+	return &LetVariable{
+		name:         name,
+		variableType: variableType,
+	}
+}
+
+func (l *LetVariable) FetchPositionLength() token.SourceFileReference {
+	return l.name.FetchPositionLength()
+}
+
 type LetAssignment struct {
-	expression DecoratedExpression
-	name       *ast.VariableIdentifier
+	expression  DecoratedExpression
+	letVariable *LetVariable
+	inclusive   token.SourceFileReference
 }
 
 func NewLetAssignment(name *ast.VariableIdentifier, expression DecoratedExpression) *LetAssignment {
-	return &LetAssignment{name: name, expression: expression}
+	letVar := NewLetVariable(name, expression.Type())
+	inclusive := token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), expression.FetchPositionLength())
+	return &LetAssignment{letVariable: letVar, expression: expression, inclusive: inclusive}
 }
 
 func (l *LetAssignment) String() string {
-	return fmt.Sprintf("[letassign %v = %v]", l.name, l.expression)
+	return fmt.Sprintf("[letassign %v = %v]", l.letVariable, l.expression)
 }
 
-func (l *LetAssignment) Name() *ast.VariableIdentifier {
-	return l.name
+func (l *LetAssignment) LetVariable() *LetVariable {
+	return l.letVariable
 }
 
 func (l *LetAssignment) Expression() DecoratedExpression {
 	return l.expression
 }
 
+func (l *LetAssignment) FetchPositionLength() token.SourceFileReference {
+	return l.inclusive
+}
+
 type Let struct {
 	assignments []*LetAssignment
 	consequence DecoratedExpression
+	inclusive   token.SourceFileReference
 }
 
-func NewLet(assignments []*LetAssignment, consequence DecoratedExpression) *Let {
-	return &Let{assignments: assignments, consequence: consequence}
+func NewLet(let *ast.Let, assignments []*LetAssignment, consequence DecoratedExpression) *Let {
+	inclusive := token.MakeInclusiveSourceFileReference(let.FetchPositionLength(), consequence.FetchPositionLength())
+	return &Let{assignments: assignments, consequence: consequence, inclusive: inclusive}
 }
 
 func (l *Let) Assignments() []*LetAssignment {
@@ -60,5 +97,5 @@ func (l *Let) String() string {
 }
 
 func (l *Let) FetchPositionLength() token.SourceFileReference {
-	return l.consequence.FetchPositionLength()
+	return l.inclusive
 }

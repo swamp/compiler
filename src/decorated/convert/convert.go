@@ -49,7 +49,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 
 	case *ast.TypeIdentifier:
 		refName := info.Symbol().Name()
-		foundType := t.FindTypeFromAlias(refName)
+		foundType := t.CreateTypeReference(info)
 		if foundType == nil {
 			return nil, fmt.Errorf("couldn't find type identifier %v", refName)
 		}
@@ -59,8 +59,8 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		return dectype.NewLocalType(info.TypeParameter()), nil
 
 	case *ast.TypeReference:
-		refName := info.TypeResolver().Name()
-		foundType := t.FindTypeFromAlias(refName)
+		refName := info.TypeResolver()
+		foundType := t.CreateTypeReference(refName)
 		if foundType == nil {
 			return nil, fmt.Errorf("couldn't find type reference %v", refName)
 		}

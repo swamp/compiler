@@ -25,12 +25,15 @@ func (s SourceFileReference) ToReferenceString() string {
 }
 
 func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileReference) SourceFileReference {
-	if start.Document == nil {
-		panic("document can not be nil")
-	}
-	if start.Document != end.Document {
-		panic("source file reference can not span files")
-	}
+	/*
+		if start.Document == nil {
+			panic("document can not be nil")
+		}
+		if start.Document != end.Document {
+			panic("source file reference can not span files")
+		}
+
+	*/
 	tokenRange := MakeInclusiveRange(start.Range, end.Range)
 	return SourceFileReference{
 		Range:    tokenRange,
@@ -38,10 +41,45 @@ func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileR
 	}
 }
 
+type SourceFileReferenceProvider interface {
+	FetchPositionLength() SourceFileReference
+}
+
+func MakeInclusiveSourceFileReferenceSlice(references []SourceFileReferenceProvider) SourceFileReference {
+	if len(references) < 1 {
+		panic("MakeInclusiveSourceFileReferenceSlice can not be empty")
+	}
+
+	first := references[0]
+	last := references[len(references)-1]
+	return MakeInclusiveSourceFileReference(first.FetchPositionLength(), last.FetchPositionLength())
+}
+
 type Range struct {
 	start       Position
 	end         Position
 	indentation int
+}
+
+func MakeRange(start Position, end Position) Range {
+	return Range{start: start, end: end, indentation: -1}
+}
+
+func (r Range) SmallerThan(other Range) bool {
+	diffLineOther := other.end.line - other.start.line
+	diffLine := r.end.line - other.start.line
+	if diffLine > diffLineOther {
+		return false
+	}
+
+	if diffLine == diffLineOther {
+		diffColOther := other.end.column - other.start.column
+		diffCol := r.end.column - r.start.column
+
+		return diffCol < diffColOther
+	}
+
+	return true
 }
 
 func MakeInclusiveRange(start Range, end Range) Range {
@@ -64,7 +102,25 @@ func (p Range) RuneWidth() int {
 }
 
 func (p Range) Contains(pos Position) bool {
-	return (pos.line > p.start.line && pos.line < p.end.line) || (pos.line == p.start.line && pos.column >= p.start.column) || (pos.line == p.end.line && pos.column <= p.end.column)
+	if pos.line < p.start.line || pos.line > p.end.line {
+		return false
+	}
+
+	if pos.line > p.start.line && pos.line < p.end.line {
+		return true
+	}
+
+	if p.start.line == p.end.line {
+		return pos.column >= p.start.column && pos.column <= p.end.column
+	}
+
+	if pos.line == p.start.line {
+		return pos.column >= p.start.column
+	}
+	if pos.line == p.end.line {
+		return pos.column <= p.end.column
+	}
+	panic("what happened")
 }
 
 func (p Range) Position() Position {

@@ -11,18 +11,21 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type LocalAnnotation struct {
-	name *ast.VariableIdentifier
-	t    dtype.Type
+	name      *ast.VariableIdentifier
+	t         dtype.Type
+	inclusive token.SourceFileReference
 }
 
 func NewLocalAnnotation(identifier *ast.VariableIdentifier, t dtype.Type) *LocalAnnotation {
 	if reflect.ValueOf(t).IsNil() {
 		panic("not great")
 	}
-	return &LocalAnnotation{name: identifier, t: t}
+	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), t.FetchPositionLength())
+	return &LocalAnnotation{name: identifier, t: t, inclusive: inclusive}
 }
 
 func (d *LocalAnnotation) Identifier() *ast.VariableIdentifier {
@@ -35,4 +38,8 @@ func (d *LocalAnnotation) String() string {
 
 func (d *LocalAnnotation) Type() dtype.Type {
 	return d.t
+}
+
+func (d *LocalAnnotation) FetchPositionLength() token.SourceFileReference {
+	return d.inclusive
 }

@@ -77,7 +77,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 	if consequenceErr != nil {
 		return nil, consequenceErr
 	}
-	a := ast.NewLet(assignments, consequence)
+	a := ast.NewLet(t, assignments, consequence)
 
 	return a, nil
 }

@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -45,15 +46,20 @@ type FunctionValue struct {
 	parameters          []*FunctionParameterDefinition
 	commentBlock        token.CommentBlock
 	astFunction         *ast.FunctionValue
+	sourceFileReference token.SourceFileReference
 }
 
 func NewFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression DecoratedExpression, commentBlock token.CommentBlock) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
-	token.MakeInclusiveSourceFileReference(astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
+	for _, parameter := range parameters {
+		log.Printf("param %v %v\n", parameter.FetchPositionLength(), parameter)
+	}
 
-	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock}
+	sourceFileReference := token.MakeInclusiveSourceFileReference(astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
+
+	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock, sourceFileReference: sourceFileReference}
 }
 
 func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
@@ -105,7 +111,7 @@ func (f *FunctionValue) Expression() DecoratedExpression {
 }
 
 func (f *FunctionValue) FetchPositionLength() token.SourceFileReference {
-	return f.decoratedExpression.FetchPositionLength()
+	return f.sourceFileReference
 }
 
 func (f *FunctionValue) CommentBlock() token.CommentBlock {

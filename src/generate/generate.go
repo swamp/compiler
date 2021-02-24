@@ -395,7 +395,7 @@ func generateBoolean(code *assembler.Code, target assembler.TargetVariable, oper
 
 func generateLet(code *assembler.Code, target assembler.TargetVariable, let *decorated.Let, genContext *generateContext) error {
 	for _, assignment := range let.Assignments() {
-		varName := assembler.NewVariableName(assignment.Name().Name())
+		varName := assembler.NewVariableName(assignment.LetVariable().Name().Name())
 		targetVar := genContext.context.AllocateVariable(varName)
 		genErr := generateExpression(code, targetVar, assignment.Expression(), genContext)
 		if genErr != nil {

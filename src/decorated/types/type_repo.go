@@ -67,6 +67,14 @@ func (t *TypeRepo) FindTypeFromName(alias string) dtype.Type {
 	return foundType
 }
 
+func (t *TypeRepo) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) dtype.Type {
+	foundType := t.FindTypeFromSignature(typeIdentifier.Name())
+	if foundType == nil {
+		return nil
+	}
+	return NewTypeReference(typeIdentifier, foundType)
+}
+
 // -----------------------------------------------------
 //                    Declare
 // -----------------------------------------------------

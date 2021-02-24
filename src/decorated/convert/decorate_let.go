@@ -31,5 +31,5 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 	if decoratedConsequenceErr != nil {
 		return nil, decoratedConsequenceErr
 	}
-	return decorated.NewLet(decoratedAssignments, decoratedConsequence), nil
+	return decorated.NewLet(let, decoratedAssignments, decoratedConsequence), nil
 }

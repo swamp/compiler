@@ -50,6 +50,8 @@ func (g *Definer) AnnotateConstant(identifier *ast.VariableIdentifier, realType 
 
 func (g *Definer) AnnotateFunc(identifier *ast.VariableIdentifier, funcType dtype.Type) error {
 	g.localAnnotation = NewLocalAnnotation(identifier, funcType)
+	g.decorateStream.InternalAddNode(g.localAnnotation)
+
 	return nil
 }
 

@@ -18,6 +18,11 @@ func Unalias(t dtype.Type) dtype.Type {
 		return Unalias(alias.referencedType)
 	}
 
+	typeRef, wasTypeRef := t.(*TypeReference)
+	if wasTypeRef {
+		return Unalias(typeRef.Next())
+	}
+
 	return t
 }
 
@@ -25,6 +30,11 @@ func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 	alias, wasAlias := t.(*Alias)
 	if wasAlias {
 		return Unalias(alias.referencedType)
+	}
+
+	typeRef, wasTypeRef := t.(*TypeReference)
+	if wasTypeRef {
+		return Unalias(typeRef.Next())
 	}
 	call, wasCall := t.(*InvokerType)
 	if wasCall {
