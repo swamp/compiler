@@ -22,12 +22,21 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 	return &VariableContext{parent: nil, parentDefinitions: parentDefinitions, lookup: make(map[string]*decorated.NamedDecoratedExpression)}
 }
 
-func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) *decorated.NamedDecoratedExpression {
+func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) decorated.DecoratedExpression {
 	def := c.FindNamedDecoratedExpression(name)
 	if def != nil {
 		def.SetReferenced()
 	}
-	return def
+
+	switch t := def.Expression().(type) {
+	case *decorated.FunctionValue:
+		return decorated.NewFunctionReference(name, t)
+	case *decorated.FunctionParameterDefinition:
+		return decorated.NewFunctionParameterReference(name, t)
+	default:
+		return decorated.NewLetVariableReference(name, t)
+		//		panic(fmt.Errorf("what to do with '%v' => %T", name, t))
+	}
 }
 
 func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecoratedExpression {

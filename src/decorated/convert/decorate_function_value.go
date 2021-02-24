@@ -98,5 +98,5 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 		fmt.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
 	}
 
-	return decorated.NewFunctionValue(forcedFunctionType, parameters, decoratedExpression, comments), nil
+	return decorated.NewFunctionValue(potentialFunc, forcedFunctionType, parameters, decoratedExpression, comments), nil
 }

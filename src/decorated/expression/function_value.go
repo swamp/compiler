@@ -44,13 +44,17 @@ type FunctionValue struct {
 	decoratedExpression DecoratedExpression
 	parameters          []*FunctionParameterDefinition
 	commentBlock        token.CommentBlock
+	astFunction         *ast.FunctionValue
 }
 
-func NewFunctionValue(forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression DecoratedExpression, commentBlock token.CommentBlock) *FunctionValue {
+func NewFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression DecoratedExpression, commentBlock token.CommentBlock) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
-	return &FunctionValue{forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock}
+	start := astFunction.DebugFunctionIdentifier().FetchPositionLength().Start()
+	end := decoratedExpression.FetchPositionLength().End()
+
+	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock}
 }
 
 func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {

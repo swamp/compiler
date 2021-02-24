@@ -30,6 +30,14 @@ func (l *LspImpl) Compile(filename string) error {
 	return nil
 }
 
+func (l *LspImpl) drillDown(node decorated.Node, position token.Position) DecoratedTypeOrToken {
+	switch t := node.(type) {
+	default:
+		log.Printf("do not know how to fix this: %T %v\n", t, t)
+		return node
+	}
+}
+
 func (l *LspImpl) FindToken(position token.Position) DecoratedTypeOrToken {
 	if l.module == nil {
 		return nil
@@ -38,7 +46,7 @@ func (l *LspImpl) FindToken(position token.Position) DecoratedTypeOrToken {
 	for _, node := range allNodes {
 		log.Printf("checking node:%v '%v'\n", node.FetchPositionLength(), node.String())
 		if node.FetchPositionLength().Contains(position) {
-			return node
+			return l.drillDown(node, position)
 		}
 	}
 	return nil

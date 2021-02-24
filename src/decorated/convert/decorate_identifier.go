@@ -6,6 +6,8 @@
 package decorator
 
 import (
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -25,12 +27,12 @@ func isConstant(expression decorated.DecoratedExpression) (decorated.DecoratedEx
 }
 
 func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
-	def := context.ResolveVariable(ident)
-	if def == nil {
+	expression := context.ResolveVariable(ident)
+	if expression == nil {
 		return nil, decorated.NewUnknownVariable(ident)
 	}
 
-	if constantExpression, wasConstant := isConstant(def.Expression()); wasConstant {
+	if constantExpression, wasConstant := isConstant(expression); wasConstant {
 		switch t := constantExpression.(type) {
 		case *decorated.IntegerLiteral:
 			return t, nil
@@ -51,5 +53,7 @@ func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context
 		}
 	}
 
-	return decorated.NewGetVariable(ident, def), nil
+	log.Printf("found variable: %T '%v'\n", expression, expression)
+
+	return expression, nil
 }

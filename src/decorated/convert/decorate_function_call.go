@@ -67,8 +67,8 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", nil, token.Range{}, 0))
 		namedDef := context.ResolveVariable(fakeIdent)
 
-		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(namedDef.FullyQualifiedName(), nil, token.Range{}, 0))
-		getVar := decorated.NewGetVariable(fakeFunctionName, namedDef)
+		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdent.Name(), nil, token.Range{}, 0))
+		getVar := decorated.NewFunctionReference(fakeFunctionName, namedDef.(*decorated.FunctionValue))
 		decoratedFunctionExpression = getVar
 	} else {
 		var functionErr decshared.DecoratedError
@@ -93,9 +93,12 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	if smashErr != nil {
 		return nil, decorated.NewCouldNotSmashFunctions(call, functionTypeOriginal, callFunctionType, smashErr)
 	}
-	fakeIdentifier, _ := decoratedFunctionExpression.(*decorated.GetVariableOrReferenceFunction)
+	functionReference, _ := decoratedFunctionExpression.(*decorated.FunctionReference)
+	if functionReference == nil {
+		return nil, decorated.NewInternalError(fmt.Errorf("functionReference"))
+	}
 
-	// fmt.Printf("\n\ncall %v\n", fakeIdentifier)
+	// fmt.Printf("\n\ncall %v\n", functionReference)
 	var complete []dtype.Type
 	complete = append(complete, callFunctionType.FunctionParameterTypes()...)
 	extraParameters := functionType.FunctionParameterTypes()[len(callFunctionType.FunctionParameterTypes()):]
@@ -115,17 +118,17 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 
 	errorPosLength := call.FunctionExpression().FetchPositionLength()
 
-	isCurrying, fn, _, err := DecorateFunctionValueForCall(errorPosLength, functionType, encounteredArgumentTypes)
+	isCurrying, _, _, err := DecorateFunctionValueForCall(errorPosLength, functionType, encounteredArgumentTypes)
 	if err != nil {
 		return nil, err
 	}
 
-	functionValueExpression := NewFakeExpression(fn)
+	functionValueExpression := decorated.NewFunctionReference(functionReference.Identifier(), functionReference.FunctionValue())
 	functionValueDecoratedExpression := decorated.NewNamedDecoratedExpression("x", nil, functionValueExpression)
 	functionValueDecoratedExpression.SetReferenced()
 
-	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdentifier.Identifier().Name(), nil, token.Range{}, 8))
-	getVariableExpression := decorated.NewGetVariable(fakeVariable, functionValueDecoratedExpression)
+	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(functionReference.Identifier().Name(), nil, token.Range{}, 8))
+	getVariableExpression := decorated.NewFunctionReference(fakeVariable, functionValueExpression.FunctionValue())
 
 	if isCurrying {
 		return decorated.NewCurryFunction(getVariableExpression, decoratedExpressions), nil

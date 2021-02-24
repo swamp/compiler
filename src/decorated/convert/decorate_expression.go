@@ -58,7 +58,7 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 	case *ast.RecordLiteral:
 		return decorateRecordLiteral(d, v, context)
 	case *ast.Lookups:
-		return decorateLookups(d, v, context)
+		return decorateRecordLookups(d, v, context)
 	case *ast.Asm:
 		return decorateAsm(d, v)
 	case *ast.BinaryOperator:

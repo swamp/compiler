@@ -1,7 +1,6 @@
 package lspservice
 
 import (
-	"fmt"
 	"log"
 	"net/url"
 
@@ -85,7 +84,8 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 	decoratedToken := s.scanner.FindToken(tokenPosition)
 
 	if decoratedToken == nil {
-		return nil, fmt.Errorf("couldn't find a token at %v", tokenPosition)
+		log.Printf("couldn't find a token at %v\n", tokenPosition)
+		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
 	}
 
 	_, isItAType := decoratedToken.(dtype.Type)

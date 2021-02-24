@@ -5,7 +5,16 @@
 
 package token
 
-import "fmt"
+import (
+	"fmt"
+)
+
+type DocumentURI string
+
+type SourceFileReference struct {
+	Range Range
+	Uri   DocumentURI
+}
 
 type Range struct {
 	start       Position
