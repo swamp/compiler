@@ -15,13 +15,13 @@ import (
 )
 
 type CustomTypeVariantConstructor struct {
-	arguments         []DecoratedExpression
+	arguments         []Expression
 	customTypeVariant *dectype.CustomTypeVariant
 	typeIdentifier    *ast.TypeIdentifier
 }
 
 func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customTypeVariant *dectype.CustomTypeVariant,
-	arguments []DecoratedExpression) *CustomTypeVariantConstructor {
+	arguments []Expression) *CustomTypeVariantConstructor {
 	if customTypeVariant == nil {
 		panic("custom customTypeVariant is nil")
 	}
@@ -48,7 +48,7 @@ func (c *CustomTypeVariantConstructor) CustomTypeVariant() *dectype.CustomTypeVa
 	return c.customTypeVariant
 }
 
-func (c *CustomTypeVariantConstructor) Arguments() []DecoratedExpression {
+func (c *CustomTypeVariantConstructor) Arguments() []Expression {
 	return c.arguments
 }
 

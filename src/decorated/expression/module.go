@@ -60,7 +60,7 @@ type Module struct {
 	sourceFile               *token.SourceFileURI
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	rootNodes                []Node
-	nodes                    []DecoratedTypeOrToken
+	nodes                    []TypeOrToken
 }
 
 func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFile *token.SourceFileURI) *Module {
@@ -98,7 +98,7 @@ func (m *Module) RootNodes() []Node {
 	return m.rootNodes
 }
 
-func (m *Module) Nodes() []DecoratedTypeOrToken {
+func (m *Module) Nodes() []TypeOrToken {
 	return m.nodes
 }
 

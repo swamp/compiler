@@ -39,19 +39,19 @@ func NewCaseConsequenceParameter(name *ast.VariableIdentifier, parameterType dty
 type CaseConsequenceCustomType struct {
 	variantName   *ast.TypeIdentifier
 	parameters    []*CaseConsequenceParameter
-	expression    DecoratedExpression
+	expression    Expression
 	internalIndex int
 }
 
 func NewCaseConsequenceCustomType(internalIndex int, variantName *ast.TypeIdentifier, parameters []*CaseConsequenceParameter,
-	expression DecoratedExpression) *CaseConsequenceCustomType {
+	expression Expression) *CaseConsequenceCustomType {
 	return &CaseConsequenceCustomType{
 		internalIndex: internalIndex, variantName: variantName, parameters: parameters,
 		expression: expression,
 	}
 }
 
-func (c *CaseConsequenceCustomType) Expression() DecoratedExpression {
+func (c *CaseConsequenceCustomType) Expression() Expression {
 	return c.expression
 }
 
@@ -84,12 +84,12 @@ func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceCustomType, ch
 }
 
 type CaseCustomType struct {
-	test        DecoratedExpression
+	test        Expression
 	cases       []*CaseConsequenceCustomType
-	defaultCase DecoratedExpression
+	defaultCase Expression
 }
 
-func NewCaseCustomType(test DecoratedExpression, cases []*CaseConsequenceCustomType, defaultCase DecoratedExpression) (*CaseCustomType, decshared.DecoratedError) {
+func NewCaseCustomType(test Expression, cases []*CaseConsequenceCustomType, defaultCase Expression) (*CaseCustomType, decshared.DecoratedError) {
 	return &CaseCustomType{test: test, cases: cases, defaultCase: defaultCase}, nil
 }
 
@@ -109,7 +109,7 @@ func (i *CaseCustomType) String() string {
 	return fmt.Sprintf("[dcase: %v of %v]", i.test, caseConsequenceArrayToStringEx(i.cases, ";"))
 }
 
-func (i *CaseCustomType) Test() DecoratedExpression {
+func (i *CaseCustomType) Test() Expression {
 	return i.test
 }
 
@@ -117,7 +117,7 @@ func (i *CaseCustomType) Consequences() []*CaseConsequenceCustomType {
 	return i.cases
 }
 
-func (i *CaseCustomType) DefaultCase() DecoratedExpression {
+func (i *CaseCustomType) DefaultCase() Expression {
 	return i.defaultCase
 }
 

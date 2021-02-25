@@ -15,16 +15,16 @@ import (
 )
 
 type CaseConsequencePatternMatching struct {
-	literal       DecoratedExpression
-	expression    DecoratedExpression
+	literal       Expression
+	expression    Expression
 	internalIndex int
 }
 
-func NewCaseConsequencePatternMatching(internalIndex int, literal DecoratedExpression, expression DecoratedExpression) *CaseConsequencePatternMatching {
+func NewCaseConsequencePatternMatching(internalIndex int, literal Expression, expression Expression) *CaseConsequencePatternMatching {
 	return &CaseConsequencePatternMatching{internalIndex: internalIndex, literal: literal, expression: expression}
 }
 
-func (c *CaseConsequencePatternMatching) Expression() DecoratedExpression {
+func (c *CaseConsequencePatternMatching) Expression() Expression {
 	return c.expression
 }
 
@@ -32,7 +32,7 @@ func (c *CaseConsequencePatternMatching) InternalIndex() int {
 	return c.internalIndex
 }
 
-func (c *CaseConsequencePatternMatching) Literal() DecoratedExpression {
+func (c *CaseConsequencePatternMatching) Literal() Expression {
 	return c.literal
 }
 
@@ -53,12 +53,12 @@ func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequenc
 }
 
 type CasePatternMatching struct {
-	test        DecoratedExpression
+	test        Expression
 	cases       []*CaseConsequencePatternMatching
-	defaultCase DecoratedExpression
+	defaultCase Expression
 }
 
-func NewCasePatternMatching(test DecoratedExpression, cases []*CaseConsequencePatternMatching, defaultCase DecoratedExpression) (*CasePatternMatching, decshared.DecoratedError) {
+func NewCasePatternMatching(test Expression, cases []*CaseConsequencePatternMatching, defaultCase Expression) (*CasePatternMatching, decshared.DecoratedError) {
 	return &CasePatternMatching{test: test, cases: cases, defaultCase: defaultCase}, nil
 }
 
@@ -78,7 +78,7 @@ func (i *CasePatternMatching) String() string {
 	return fmt.Sprintf("[dpmcase: %v of %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"))
 }
 
-func (i *CasePatternMatching) Test() DecoratedExpression {
+func (i *CasePatternMatching) Test() Expression {
 	return i.test
 }
 
@@ -86,7 +86,7 @@ func (i *CasePatternMatching) Consequences() []*CaseConsequencePatternMatching {
 	return i.cases
 }
 
-func (i *CasePatternMatching) DefaultCase() DecoratedExpression {
+func (i *CasePatternMatching) DefaultCase() Expression {
 	return i.defaultCase
 }
 

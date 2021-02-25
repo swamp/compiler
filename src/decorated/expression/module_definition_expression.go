@@ -14,11 +14,11 @@ import (
 type ModuleDefinition struct {
 	localIdentifier *ast.VariableIdentifier
 	createdIn       *ModuleDefinitions
-	expr            DecoratedExpression
+	expr            Expression
 	wasReferenced   bool
 }
 
-func NewModuleDefinition(createdIn *ModuleDefinitions, identifier *ast.VariableIdentifier, expr DecoratedExpression) *ModuleDefinition {
+func NewModuleDefinition(createdIn *ModuleDefinitions, identifier *ast.VariableIdentifier, expr Expression) *ModuleDefinition {
 	return &ModuleDefinition{
 		createdIn: createdIn, localIdentifier: identifier, expr: expr,
 	}
@@ -40,7 +40,7 @@ func (d *ModuleDefinition) ShortString() string {
 	return fmt.Sprintf("%v = %v", d.localIdentifier.Name(), d.expr)
 }
 
-func (d *ModuleDefinition) Expression() DecoratedExpression {
+func (d *ModuleDefinition) Expression() Expression {
 	return d.expr
 }
 

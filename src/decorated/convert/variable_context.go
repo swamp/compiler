@@ -22,7 +22,7 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 	return &VariableContext{parent: nil, parentDefinitions: parentDefinitions, lookup: make(map[string]*decorated.NamedDecoratedExpression)}
 }
 
-func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) decorated.DecoratedExpression {
+func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) decorated.Expression {
 	def := c.FindNamedDecoratedExpression(name)
 	if def != nil {
 		def.SetReferenced()

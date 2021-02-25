@@ -6,6 +6,6 @@
 package decorated
 
 type UnaryOperator struct {
-	DecoratedExpressionNode
-	left DecoratedExpression
+	ExpressionNode
+	left Expression
 }

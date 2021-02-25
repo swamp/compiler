@@ -15,7 +15,7 @@ import (
 
 type LetVariableReference struct {
 	ident               *ast.VariableIdentifier
-	decoratedExpression DecoratedExpression
+	decoratedExpression Expression
 }
 
 func (g *LetVariableReference) Type() dtype.Type {
@@ -30,12 +30,12 @@ func (g *LetVariableReference) Identifier() *ast.VariableIdentifier {
 	return g.ident
 }
 
-func (g *LetVariableReference) Expression() DecoratedExpression {
+func (g *LetVariableReference) Expression() Expression {
 	return g.decoratedExpression
 }
 
 func NewLetVariableReference(ident *ast.VariableIdentifier,
-	decoratedExpression DecoratedExpression) *LetVariableReference {
+	decoratedExpression Expression) *LetVariableReference {
 	if decoratedExpression == nil {
 		panic("cant be nil")
 	}

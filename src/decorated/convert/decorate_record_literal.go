@@ -21,10 +21,10 @@ func findField(name string, fields []*dectype.RecordField) *dectype.RecordField 
 	return nil
 }
 
-func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	var sortedRecordAssignment []*decorated.RecordLiteralAssignment
 	var recordTypeFields []*dectype.RecordField
-	var decoratedRecordLiteralExpression decorated.DecoratedExpression
+	var decoratedRecordLiteralExpression decorated.Expression
 	var decoratedRecordLiteralExpressionErr decshared.DecoratedError
 
 	allowToAddFields := true

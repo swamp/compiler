@@ -14,7 +14,7 @@ import (
 )
 
 type DecoratedTokenScanner interface {
-	FindToken(position token.Position) decorated.DecoratedTypeOrToken
+	FindToken(position token.Position) decorated.TypeOrToken
 }
 
 type Compiler interface {
@@ -85,7 +85,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 
 	showString := decoratedToken.String()
 	if !isItAType {
-		normalToken, _ := decoratedToken.(decorated.DecoratedToken)
+		normalToken, _ := decoratedToken.(decorated.Token)
 		showString += fmt.Sprintf(" : %v", normalToken.Type().HumanReadable())
 	}
 

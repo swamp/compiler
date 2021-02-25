@@ -14,10 +14,12 @@ import (
 type ListLiteral struct {
 	expressions    []Expression
 	startListParen token.ParenToken
+	inclusive      token.SourceFileReference
 }
 
-func NewListLiteral(startListParen token.ParenToken, expressions []Expression) *ListLiteral {
-	return &ListLiteral{startListParen: startListParen, expressions: expressions}
+func NewListLiteral(startListParen token.ParenToken, endListParen token.SourceFileReference, expressions []Expression) *ListLiteral {
+	inclusive := token.MakeInclusiveSourceFileReference(startListParen.SourceFileReference, endListParen)
+	return &ListLiteral{startListParen: startListParen, expressions: expressions, inclusive: inclusive}
 }
 
 func (i *ListLiteral) String() string {
@@ -29,7 +31,7 @@ func (i *ListLiteral) Expressions() []Expression {
 }
 
 func (i *ListLiteral) FetchPositionLength() token.SourceFileReference {
-	return i.startListParen.SourceFileReference
+	return i.inclusive
 }
 
 func (i *ListLiteral) ParenToken() token.ParenToken {

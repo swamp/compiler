@@ -37,7 +37,7 @@ func tryConvertToArithmeticUnaryOperator(operatorType token.Type) (decorated.Ari
 	return 0, false
 }
 
-func decorateUnary(d DecorateStream, unary *ast.UnaryExpression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateUnary(d DecorateStream, unary *ast.UnaryExpression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	bitwiseUnaryOperatorType, isUnaryBitwise := tryConvertToBitwiseUnaryOperator(unary.OperatorType())
 	if isUnaryBitwise {
 		leftExpression, leftExpressionErr := DecorateExpression(d, unary.Left(), context)

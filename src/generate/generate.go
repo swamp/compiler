@@ -872,7 +872,7 @@ func generateArray(code *assembler.Code, target assembler.TargetVariable, array 
 	return nil
 }
 
-func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.DecoratedExpression, genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
+func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Expression, genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
 	switch t := expr.(type) {
 	case *decorated.StringLiteral:
 		constant := genContext.context.Constants().AllocateStringConstant(t.Value())
@@ -937,7 +937,7 @@ func isListLike(typeToCheck dtype.Type) bool {
 	return name == "List"
 }
 
-func generateExpression(code *assembler.Code, target assembler.TargetVariable, expr decorated.DecoratedExpression, genContext *generateContext) error {
+func generateExpression(code *assembler.Code, target assembler.TargetVariable, expr decorated.Expression, genContext *generateContext) error {
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)

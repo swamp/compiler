@@ -13,15 +13,15 @@ import (
 )
 
 type RecurCall struct {
-	assignments []DecoratedExpression
+	assignments []Expression
 	returnType  dtype.Type
 }
 
-func NewRecurCall(returnType dtype.Type, assignments []DecoratedExpression) *RecurCall {
+func NewRecurCall(returnType dtype.Type, assignments []Expression) *RecurCall {
 	return &RecurCall{assignments: assignments, returnType: returnType}
 }
 
-func (c *RecurCall) Arguments() []DecoratedExpression {
+func (c *RecurCall) Arguments() []Expression {
 	return c.assignments
 }
 

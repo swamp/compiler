@@ -15,15 +15,15 @@ type Node interface {
 	String() string
 }
 
-type DecoratedExpression interface {
+type Expression interface {
 	Node
 	Type() dtype.Type
 }
 
-type DecoratedExpressionNode struct {
+type ExpressionNode struct {
 	decoratedType dtype.Type
 }
 
-func (d DecoratedExpressionNode) Type() dtype.Type {
+func (d ExpressionNode) Type() dtype.Type {
 	return d.decoratedType
 }

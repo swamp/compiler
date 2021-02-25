@@ -44,12 +44,12 @@ func (g *Definer) createAliasTypeFromType(aliasName *ast.TypeIdentifier, subType
 }
 
 func (g *Definer) AnnotateConstant(identifier *ast.VariableIdentifier, realType dtype.Type) decshared.DecoratedError {
-	g.localAnnotation = decorated.NewLocalAnnotation(identifier, realType)
+	g.localAnnotation = decorated.NewAnnotation(identifier, realType)
 	return nil
 }
 
 func (g *Definer) AnnotateFunc(identifier *ast.VariableIdentifier, funcType dtype.Type) error {
-	g.localAnnotation = decorated.NewLocalAnnotation(identifier, funcType)
+	g.localAnnotation = decorated.NewAnnotation(identifier, funcType)
 	g.decorateStream.InternalAddNode(g.localAnnotation)
 
 	return nil

@@ -28,7 +28,7 @@ func (c *RecordConstructorRecord) Type() dtype.Type {
 	return c.recordType
 }
 
-func (c *RecordConstructorRecord) Expression() DecoratedExpression {
+func (c *RecordConstructorRecord) Expression() Expression {
 	return c.record
 }
 

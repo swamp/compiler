@@ -33,14 +33,14 @@ type ArithmeticOperator struct {
 	infix        *ast.BinaryOperator
 }
 
-func NewArithmeticOperator(infix *ast.BinaryOperator, left DecoratedExpression, right DecoratedExpression, operatorType ArithmeticOperatorType) (*ArithmeticOperator, decshared.DecoratedError) {
+func NewArithmeticOperator(infix *ast.BinaryOperator, left Expression, right Expression, operatorType ArithmeticOperatorType) (*ArithmeticOperator, decshared.DecoratedError) {
 	a := &ArithmeticOperator{operatorType: operatorType, infix: infix}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
 	if err := dectype.CompatibleTypes(left.Type(), right.Type()); err != nil {
 		return nil, NewUnMatchingArithmeticOperatorTypes(infix, left, right)
 	}
-	a.BinaryOperator.DecoratedExpressionNode.decoratedType = left.Type()
+	a.BinaryOperator.ExpressionNode.decoratedType = left.Type()
 	return a, nil
 }
 
@@ -48,11 +48,11 @@ func (a *ArithmeticOperator) OperatorType() ArithmeticOperatorType {
 	return a.operatorType
 }
 
-func (a *ArithmeticOperator) Left() DecoratedExpression {
+func (a *ArithmeticOperator) Left() Expression {
 	return a.left
 }
 
-func (a *ArithmeticOperator) Right() DecoratedExpression {
+func (a *ArithmeticOperator) Right() Expression {
 	return a.right
 }
 

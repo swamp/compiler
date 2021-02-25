@@ -48,7 +48,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 
 	var decoratedConsequences []*decorated.CaseConsequenceCustomType
 
-	var defaultCase decorated.DecoratedExpression
+	var defaultCase decorated.Expression
 
 	var previousConsequenceType dtype.Type
 

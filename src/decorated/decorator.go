@@ -53,7 +53,7 @@ func (d *Decorator) AddDeclaration(identifier *ast.VariableIdentifier, ofType dt
 	return d.module.Declarations().AddDeclaration(identifier, ofType)
 }
 
-func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decorated.DecoratedExpression) error {
+func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decorated.Expression) error {
 	return d.module.Definitions().AddDecoratedExpression(identifier, expr)
 }
 

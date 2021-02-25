@@ -13,7 +13,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func isConstant(expression decorated.DecoratedExpression) (decorated.DecoratedExpression, bool) {
+func isConstant(expression decorated.Expression) (decorated.Expression, bool) {
 	functionValue, isFunctionValue := expression.(*decorated.FunctionValue)
 	if isFunctionValue {
 		hasParameters := len(functionValue.Parameters()) != 0
@@ -26,7 +26,7 @@ func isConstant(expression decorated.DecoratedExpression) (decorated.DecoratedEx
 	return nil, false
 }
 
-func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	expression := context.ResolveVariable(ident)
 	if expression == nil {
 		return nil, decorated.NewUnknownVariable(ident)

@@ -25,10 +25,10 @@ type LogicalUnaryOperator struct {
 	unary        *ast.UnaryExpression
 }
 
-func NewLogicalUnaryOperator(unary *ast.UnaryExpression, left DecoratedExpression, operatorType LogicalUnaryOperatorType) (*LogicalUnaryOperator, decshared.DecoratedError) {
+func NewLogicalUnaryOperator(unary *ast.UnaryExpression, left Expression, operatorType LogicalUnaryOperatorType) (*LogicalUnaryOperator, decshared.DecoratedError) {
 	a := &LogicalUnaryOperator{operatorType: operatorType, unary: unary}
 	a.UnaryOperator.left = left
-	a.UnaryOperator.DecoratedExpressionNode.decoratedType = left.Type()
+	a.UnaryOperator.ExpressionNode.decoratedType = left.Type()
 	return a, nil
 }
 
@@ -36,7 +36,7 @@ func (a *LogicalUnaryOperator) OperatorType() LogicalUnaryOperatorType {
 	return a.operatorType
 }
 
-func (a *LogicalUnaryOperator) Left() DecoratedExpression {
+func (a *LogicalUnaryOperator) Left() Expression {
 	return a.left
 }
 

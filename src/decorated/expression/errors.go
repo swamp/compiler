@@ -34,12 +34,12 @@ func (e *UnMatchingBinaryOperatorTypes) FetchPositionLength() token.SourceFileRe
 }
 
 type UnMatchingArithmeticOperatorTypes struct {
-	typeA    DecoratedExpression
-	typeB    DecoratedExpression
+	typeA    Expression
+	typeB    Expression
 	operator *ast.BinaryOperator
 }
 
-func NewUnMatchingArithmeticOperatorTypes(operator *ast.BinaryOperator, typeA DecoratedExpression, typeB DecoratedExpression) *UnMatchingArithmeticOperatorTypes {
+func NewUnMatchingArithmeticOperatorTypes(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnMatchingArithmeticOperatorTypes {
 	return &UnMatchingArithmeticOperatorTypes{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -68,12 +68,12 @@ func (e *TypeNotFound) FetchPositionLength() token.SourceFileReference {
 }
 
 type UnmatchingBitwiseOperatorTypes struct {
-	typeA    DecoratedExpression
-	typeB    DecoratedExpression
+	typeA    Expression
+	typeB    Expression
 	operator *ast.BinaryOperator
 }
 
-func NewUnmatchingBitwiseOperatorTypes(operator *ast.BinaryOperator, typeA DecoratedExpression, typeB DecoratedExpression) *UnmatchingBitwiseOperatorTypes {
+func NewUnmatchingBitwiseOperatorTypes(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnmatchingBitwiseOperatorTypes {
 	return &UnmatchingBitwiseOperatorTypes{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -86,12 +86,12 @@ func (e *UnmatchingBitwiseOperatorTypes) FetchPositionLength() token.SourceFileR
 }
 
 type UnMatchingBooleanOperatorTypes struct {
-	typeA    DecoratedExpression
-	typeB    DecoratedExpression
+	typeA    Expression
+	typeB    Expression
 	operator *ast.BinaryOperator
 }
 
-func NewUnMatchingBooleanOperatorTypes(operator *ast.BinaryOperator, typeA DecoratedExpression, typeB DecoratedExpression) *UnMatchingBooleanOperatorTypes {
+func NewUnMatchingBooleanOperatorTypes(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnMatchingBooleanOperatorTypes {
 	return &UnMatchingBooleanOperatorTypes{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -104,12 +104,12 @@ func (e *UnMatchingBooleanOperatorTypes) FetchPositionLength() token.SourceFileR
 }
 
 type UnknownBinaryOperator struct {
-	typeA    DecoratedExpression
-	typeB    DecoratedExpression
+	typeA    Expression
+	typeB    Expression
 	operator *ast.BinaryOperator
 }
 
-func NewUnknownBinaryOperator(operator *ast.BinaryOperator, typeA DecoratedExpression, typeB DecoratedExpression) *UnknownBinaryOperator {
+func NewUnknownBinaryOperator(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnknownBinaryOperator {
 	return &UnknownBinaryOperator{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -122,12 +122,12 @@ func (e *UnknownBinaryOperator) FetchPositionLength() token.SourceFileReference 
 }
 
 type LogicalOperatorLeftMustBeBoolean struct {
-	typeA       DecoratedExpression
+	typeA       Expression
 	operator    *LogicalOperator
 	booleanType dtype.Type
 }
 
-func NewLogicalOperatorLeftMustBeBoolean(operator *LogicalOperator, typeA DecoratedExpression, booleanType dtype.Type) *LogicalOperatorLeftMustBeBoolean {
+func NewLogicalOperatorLeftMustBeBoolean(operator *LogicalOperator, typeA Expression, booleanType dtype.Type) *LogicalOperatorLeftMustBeBoolean {
 	return &LogicalOperatorLeftMustBeBoolean{operator: operator, typeA: typeA, booleanType: booleanType}
 }
 
@@ -140,12 +140,12 @@ func (e *LogicalOperatorLeftMustBeBoolean) FetchPositionLength() token.SourceFil
 }
 
 type LogicalOperatorsMustBeBoolean struct {
-	typeA    DecoratedExpression
-	typeB    DecoratedExpression
+	typeA    Expression
+	typeB    Expression
 	operator *ast.BinaryOperator
 }
 
-func NewLogicalOperatorsMustBeBoolean(operator *ast.BinaryOperator, typeA DecoratedExpression, typeB DecoratedExpression) *LogicalOperatorsMustBeBoolean {
+func NewLogicalOperatorsMustBeBoolean(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *LogicalOperatorsMustBeBoolean {
 	return &LogicalOperatorsMustBeBoolean{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -158,11 +158,11 @@ func (e *LogicalOperatorsMustBeBoolean) FetchPositionLength() token.SourceFileRe
 }
 
 type LogicalOperatorRightMustBeBoolean struct {
-	typeA    DecoratedExpression
+	typeA    Expression
 	operator *LogicalOperator
 }
 
-func NewLogicalOperatorRightMustBeBoolean(operator *LogicalOperator, typeA DecoratedExpression, booleanType dtype.Type) *LogicalOperatorRightMustBeBoolean {
+func NewLogicalOperatorRightMustBeBoolean(operator *LogicalOperator, typeA Expression, booleanType dtype.Type) *LogicalOperatorRightMustBeBoolean {
 	return &LogicalOperatorRightMustBeBoolean{operator: operator, typeA: typeA}
 }
 
@@ -175,10 +175,10 @@ func (e *LogicalOperatorRightMustBeBoolean) FetchPositionLength() token.SourceFi
 }
 
 type MustBeCustomType struct {
-	typeA DecoratedExpression
+	typeA Expression
 }
 
-func NewMustBeCustomType(typeA DecoratedExpression) *MustBeCustomType {
+func NewMustBeCustomType(typeA Expression) *MustBeCustomType {
 	return &MustBeCustomType{typeA: typeA}
 }
 
@@ -272,11 +272,11 @@ type FunctionArgumentTypeMismatch struct {
 	UnMatchingTypesError
 	expression        ast.Expression
 	err               error
-	decoratedArgument DecoratedExpression
+	decoratedArgument Expression
 	symbolToken       token.SourceFileReference
 }
 
-func NewFunctionArgumentTypeMismatch(symbolToken token.SourceFileReference, decoratedArgument DecoratedExpression, expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *FunctionArgumentTypeMismatch {
+func NewFunctionArgumentTypeMismatch(symbolToken token.SourceFileReference, decoratedArgument Expression, expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *FunctionArgumentTypeMismatch {
 	return &FunctionArgumentTypeMismatch{
 		symbolToken: symbolToken, decoratedArgument: decoratedArgument,
 		expression:           expression,
@@ -371,11 +371,11 @@ type WrongTypeForRecordConstructorField struct {
 	UnMatchingTypesError
 	call               *ast.ConstructorCall
 	recordField        *dectype.RecordField
-	expectedExpression DecoratedExpression
+	expectedExpression Expression
 	err                error
 }
 
-func NewWrongTypeForRecordConstructorField(recordField *dectype.RecordField, expectedExpression DecoratedExpression,
+func NewWrongTypeForRecordConstructorField(recordField *dectype.RecordField, expectedExpression Expression,
 	call *ast.ConstructorCall, err error) *WrongTypeForRecordConstructorField {
 	return &WrongTypeForRecordConstructorField{
 		UnMatchingTypesError: UnMatchingTypesError{ExpectedType: expectedExpression.Type(), HasType: recordField.Type()},
@@ -464,10 +464,10 @@ func (e *ExpectedFunctionType) FetchPositionLength() token.SourceFileReference {
 }
 
 type ExpectedFunctionTypeForCall struct {
-	encountered DecoratedExpression
+	encountered Expression
 }
 
-func NewExpectedFunctionTypeForCall(encountered DecoratedExpression) *ExpectedFunctionTypeForCall {
+func NewExpectedFunctionTypeForCall(encountered Expression) *ExpectedFunctionTypeForCall {
 	return &ExpectedFunctionTypeForCall{encountered: encountered}
 }
 
@@ -606,11 +606,11 @@ func (e *WrongNumberOfArgumentsInFunctionValue) FetchPositionLength() token.Sour
 }
 
 type IfTestMustHaveBooleanType struct {
-	ifTestExpression DecoratedExpression
+	ifTestExpression Expression
 	ifExpression     *ast.IfExpression
 }
 
-func NewIfTestMustHaveBooleanType(ifExpression *ast.IfExpression, ifTestExpression DecoratedExpression) *IfTestMustHaveBooleanType {
+func NewIfTestMustHaveBooleanType(ifExpression *ast.IfExpression, ifTestExpression Expression) *IfTestMustHaveBooleanType {
 	return &IfTestMustHaveBooleanType{ifExpression: ifExpression, ifTestExpression: ifTestExpression}
 }
 
@@ -624,12 +624,12 @@ func (e *IfTestMustHaveBooleanType) FetchPositionLength() token.SourceFileRefere
 
 type IfConsequenceAndAlternativeMustHaveSameType struct {
 	ifExpression  *ast.IfExpression
-	consequence   DecoratedExpression
-	alternative   DecoratedExpression
+	consequence   Expression
+	alternative   Expression
 	compatibleErr error
 }
 
-func NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression *ast.IfExpression, consequence DecoratedExpression, alternative DecoratedExpression, compatibleErr error) *IfConsequenceAndAlternativeMustHaveSameType {
+func NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression *ast.IfExpression, consequence Expression, alternative Expression, compatibleErr error) *IfConsequenceAndAlternativeMustHaveSameType {
 	return &IfConsequenceAndAlternativeMustHaveSameType{ifExpression: ifExpression, consequence: consequence, alternative: alternative, compatibleErr: compatibleErr}
 }
 

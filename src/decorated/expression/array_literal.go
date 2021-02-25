@@ -14,10 +14,10 @@ import (
 
 type ArrayLiteral struct {
 	t           dtype.Type
-	expressions []DecoratedExpression
+	expressions []Expression
 }
 
-func NewArrayLiteral(t dtype.Type, expressions []DecoratedExpression) *ArrayLiteral {
+func NewArrayLiteral(t dtype.Type, expressions []Expression) *ArrayLiteral {
 	return &ArrayLiteral{t: t, expressions: expressions}
 }
 
@@ -25,7 +25,7 @@ func (c *ArrayLiteral) Type() dtype.Type {
 	return c.t
 }
 
-func (c *ArrayLiteral) Expressions() []DecoratedExpression {
+func (c *ArrayLiteral) Expressions() []Expression {
 	return c.expressions
 }
 

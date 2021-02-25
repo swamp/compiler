@@ -52,19 +52,19 @@ func NewLookupVariable(name *ast.VariableIdentifier, lookupType dtype.Type) Look
 }
 
 type RecordLookups struct {
-	DecoratedExpressionNode
-	expressionToRecord DecoratedExpression
+	ExpressionNode
+	expressionToRecord Expression
 	lookupFields       []LookupField
 }
 
-func NewRecordLookups(expressionToRecord DecoratedExpression, lookupFields []LookupField) *RecordLookups {
+func NewRecordLookups(expressionToRecord Expression, lookupFields []LookupField) *RecordLookups {
 	l := &RecordLookups{expressionToRecord: expressionToRecord, lookupFields: lookupFields}
 	count := len(lookupFields)
 	l.decoratedType = lookupFields[count-1].structField.Type()
 	return l
 }
 
-func (l *RecordLookups) Expression() DecoratedExpression {
+func (l *RecordLookups) Expression() Expression {
 	return l.expressionToRecord
 }
 

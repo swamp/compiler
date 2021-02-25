@@ -6,6 +6,8 @@
 package parser
 
 import (
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -28,6 +30,7 @@ func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (*
 		moduleReference := ast.NewModuleReference(moduleNameParts)
 		x = ast.NewQualifiedTypeIdentifier(x.Symbol(), moduleReference)
 	}
+	log.Printf("parseTypeSymbol %T %v\n", x, x.FetchPositionLength())
 	return x, nil
 }
 

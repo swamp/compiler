@@ -28,14 +28,14 @@ type BitwiseOperator struct {
 	operatorType BitwiseOperatorType
 }
 
-func NewBitwiseOperator(infix *ast.BinaryOperator, left DecoratedExpression, right DecoratedExpression, operatorType BitwiseOperatorType) (*BitwiseOperator, decshared.DecoratedError) {
+func NewBitwiseOperator(infix *ast.BinaryOperator, left Expression, right Expression, operatorType BitwiseOperatorType) (*BitwiseOperator, decshared.DecoratedError) {
 	a := &BitwiseOperator{operatorType: operatorType}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
 	if err := dectype.CompatibleTypes(left.Type(), right.Type()); err != nil {
 		return nil, NewUnmatchingBitwiseOperatorTypes(infix, left, right)
 	}
-	a.BinaryOperator.DecoratedExpressionNode.decoratedType = left.Type()
+	a.BinaryOperator.ExpressionNode.decoratedType = left.Type()
 	return a, nil
 }
 
@@ -43,11 +43,11 @@ func (a *BitwiseOperator) OperatorType() BitwiseOperatorType {
 	return a.operatorType
 }
 
-func (a *BitwiseOperator) Left() DecoratedExpression {
+func (a *BitwiseOperator) Left() Expression {
 	return a.left
 }
 
-func (a *BitwiseOperator) Right() DecoratedExpression {
+func (a *BitwiseOperator) Right() Expression {
 	return a.right
 }
 

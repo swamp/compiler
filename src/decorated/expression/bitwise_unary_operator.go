@@ -25,11 +25,11 @@ type BitwiseUnaryOperator struct {
 	unary        *ast.UnaryExpression
 }
 
-func NewBitwiseUnaryOperator(unary *ast.UnaryExpression, left DecoratedExpression, operatorType BitwiseUnaryOperatorType) (*BitwiseUnaryOperator, decshared.DecoratedError) {
+func NewBitwiseUnaryOperator(unary *ast.UnaryExpression, left Expression, operatorType BitwiseUnaryOperatorType) (*BitwiseUnaryOperator, decshared.DecoratedError) {
 	a := &BitwiseUnaryOperator{operatorType: operatorType}
 	a.unary = unary
 	a.UnaryOperator.left = left
-	a.UnaryOperator.DecoratedExpressionNode.decoratedType = left.Type()
+	a.UnaryOperator.ExpressionNode.decoratedType = left.Type()
 	return a, nil
 }
 
@@ -37,7 +37,7 @@ func (a *BitwiseUnaryOperator) OperatorType() BitwiseUnaryOperatorType {
 	return a.operatorType
 }
 
-func (a *BitwiseUnaryOperator) Left() DecoratedExpression {
+func (a *BitwiseUnaryOperator) Left() Expression {
 	return a.left
 }
 

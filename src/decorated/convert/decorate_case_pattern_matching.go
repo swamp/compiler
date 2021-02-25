@@ -47,12 +47,12 @@ func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatte
 
 	var decoratedConsequences []*decorated.CaseConsequencePatternMatching
 
-	var defaultCase decorated.DecoratedExpression
+	var defaultCase decorated.Expression
 
 	var previousConsequenceType dtype.Type
 
 	for _, consequence := range caseExpression.Consequences() {
-		var decoratedLiteralExpression decorated.DecoratedExpression
+		var decoratedLiteralExpression decorated.Expression
 		if consequence.Literal() != nil {
 			consequenceVariableContext := context.MakeVariableContext()
 			var decoratedLiteralExpressionErr decshared.DecoratedError

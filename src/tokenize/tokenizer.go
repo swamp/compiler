@@ -7,6 +7,7 @@ package tokenize
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -193,8 +194,9 @@ func nextPosition(pos token.Position, ch rune) token.Position {
 
 func (t *Tokenizer) reversePositionHelper(pos token.Position, ch rune) token.Position {
 	if ch == '\n' {
-		column, detectedIndentationSpaces := t.r.DetectCurrentColumn()
+		column, detectedIndentationSpaces := t.r.DetectCurrentLineLength()
 		pos = token.MakePosition(pos.Line()-1, column)
+		log.Printf("reverse! found pos: %v", pos)
 		t.lastReport.IndentationSpaces = detectedIndentationSpaces
 		t.lastReport.CloseIndentation = detectedIndentationSpaces / SpacesForIndentation
 		if (detectedIndentationSpaces % SpacesForIndentation) == 0 {

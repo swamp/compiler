@@ -13,20 +13,20 @@ import (
 )
 
 type FunctionCall struct {
-	functionType DecoratedExpression
-	assignments  []DecoratedExpression
+	functionType Expression
+	assignments  []Expression
 	returnType   dtype.Type
 }
 
-func NewFunctionCall(functionType DecoratedExpression, returnType dtype.Type, assignments []DecoratedExpression) *FunctionCall {
+func NewFunctionCall(functionType Expression, returnType dtype.Type, assignments []Expression) *FunctionCall {
 	return &FunctionCall{functionType: functionType, assignments: assignments, returnType: returnType}
 }
 
-func (c *FunctionCall) FunctionValue() DecoratedExpression {
+func (c *FunctionCall) FunctionValue() Expression {
 	return c.functionType
 }
 
-func (c *FunctionCall) Arguments() []DecoratedExpression {
+func (c *FunctionCall) Arguments() []Expression {
 	return c.assignments
 }
 

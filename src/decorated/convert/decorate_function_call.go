@@ -43,8 +43,8 @@ func DecorateFunctionValueForCall(symbolToken token.SourceFileReference, resolve
 	return isCurrying, returnType, resolvedFunction, nil
 }
 
-func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
-	var decoratedExpressions []decorated.DecoratedExpression
+func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	var decoratedExpressions []decorated.Expression
 
 	for _, rawExpression := range call.Arguments() {
 		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, rawExpression, context)
@@ -59,7 +59,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		encounteredArgumentTypes = append(encounteredArgumentTypes, encounteredArgumentExpression.Type())
 	}
 
-	var decoratedFunctionExpression decorated.DecoratedExpression
+	var decoratedFunctionExpression decorated.Expression
 
 	beforeFakeIdentifier, wasIdentifier := call.FunctionExpression().(*ast.VariableIdentifier)
 

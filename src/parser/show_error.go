@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/fatih/color"
@@ -172,7 +173,7 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 		fmt.Printf("internal: I have no good description for error %T\n", e)
 	}
 
-	fmt.Println(colorer.String())
+	fmt.Fprintf(os.Stderr, colorer.String())
 
 	return nil
 }

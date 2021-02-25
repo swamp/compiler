@@ -13,7 +13,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	if e == nil {
 		panic(fmt.Sprintf("expression is nil %v", context))
 	}
@@ -68,7 +68,7 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 	}
 }
 
-func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	expr, exprErr := internalDecorateExpression(d, e, context)
 	if exprErr != nil {
 		return nil, exprErr

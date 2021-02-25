@@ -42,14 +42,14 @@ func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileRefe
 
 type FunctionValue struct {
 	forcedFunctionType  *dectype.FunctionAtom
-	decoratedExpression DecoratedExpression
+	decoratedExpression Expression
 	parameters          []*FunctionParameterDefinition
 	commentBlock        token.CommentBlock
 	astFunction         *ast.FunctionValue
 	sourceFileReference token.SourceFileReference
 }
 
-func NewFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression DecoratedExpression, commentBlock token.CommentBlock) *FunctionValue {
+func NewFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock token.CommentBlock) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
@@ -106,7 +106,7 @@ func (f *FunctionValue) Resolve() (dtype.Atom, error) {
 	return f.forcedFunctionType.Resolve()
 }
 
-func (f *FunctionValue) Expression() DecoratedExpression {
+func (f *FunctionValue) Expression() Expression {
 	return f.decoratedExpression
 }
 

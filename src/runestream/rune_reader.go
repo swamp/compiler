@@ -63,7 +63,7 @@ func (s *RuneReader) Tell() int {
 	return s.index
 }
 
-func (s *RuneReader) DetectCurrentColumn() (int, int) {
+func (s *RuneReader) DetectCurrentLineLength() (int, int) {
 	startPos := s.index - 1
 
 	var detectedNonWhitespace bool
@@ -86,7 +86,7 @@ func (s *RuneReader) DetectCurrentColumn() (int, int) {
 		}
 	}
 
-	return startPos, 0
+	return startPos + 1, 0
 }
 
 func (s *RuneReader) Unread() rune {

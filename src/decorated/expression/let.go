@@ -42,12 +42,12 @@ func (l *LetVariable) FetchPositionLength() token.SourceFileReference {
 }
 
 type LetAssignment struct {
-	expression  DecoratedExpression
+	expression  Expression
 	letVariable *LetVariable
 	inclusive   token.SourceFileReference
 }
 
-func NewLetAssignment(name *ast.VariableIdentifier, expression DecoratedExpression) *LetAssignment {
+func NewLetAssignment(name *ast.VariableIdentifier, expression Expression) *LetAssignment {
 	letVar := NewLetVariable(name, expression.Type())
 	inclusive := token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), expression.FetchPositionLength())
 	return &LetAssignment{letVariable: letVar, expression: expression, inclusive: inclusive}
@@ -61,7 +61,7 @@ func (l *LetAssignment) LetVariable() *LetVariable {
 	return l.letVariable
 }
 
-func (l *LetAssignment) Expression() DecoratedExpression {
+func (l *LetAssignment) Expression() Expression {
 	return l.expression
 }
 
@@ -71,11 +71,11 @@ func (l *LetAssignment) FetchPositionLength() token.SourceFileReference {
 
 type Let struct {
 	assignments []*LetAssignment
-	consequence DecoratedExpression
+	consequence Expression
 	inclusive   token.SourceFileReference
 }
 
-func NewLet(let *ast.Let, assignments []*LetAssignment, consequence DecoratedExpression) *Let {
+func NewLet(let *ast.Let, assignments []*LetAssignment, consequence Expression) *Let {
 	inclusive := token.MakeInclusiveSourceFileReference(let.FetchPositionLength(), consequence.FetchPositionLength())
 	return &Let{assignments: assignments, consequence: consequence, inclusive: inclusive}
 }
@@ -84,7 +84,7 @@ func (l *Let) Assignments() []*LetAssignment {
 	return l.assignments
 }
 
-func (l *Let) Consequence() DecoratedExpression {
+func (l *Let) Consequence() Expression {
 	return l.consequence
 }
 

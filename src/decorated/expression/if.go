@@ -13,16 +13,16 @@ import (
 )
 
 type If struct {
-	condition   DecoratedExpression
-	consequence DecoratedExpression
-	alternative DecoratedExpression
+	condition   Expression
+	consequence Expression
+	alternative Expression
 }
 
 func (l *If) Type() dtype.Type {
 	return l.consequence.Type()
 }
 
-func NewIf(condition DecoratedExpression, consequence DecoratedExpression, alternative DecoratedExpression) *If {
+func NewIf(condition Expression, consequence Expression, alternative Expression) *If {
 	return &If{condition: condition, consequence: consequence, alternative: alternative}
 }
 
@@ -30,15 +30,15 @@ func (l *If) String() string {
 	return fmt.Sprintf("[if %v then %v else %v]", l.condition, l.consequence, l.alternative)
 }
 
-func (l *If) Condition() DecoratedExpression {
+func (l *If) Condition() Expression {
 	return l.condition
 }
 
-func (l *If) Consequence() DecoratedExpression {
+func (l *If) Consequence() Expression {
 	return l.consequence
 }
 
-func (l *If) Alternative() DecoratedExpression {
+func (l *If) Alternative() Expression {
 	return l.alternative
 }
 

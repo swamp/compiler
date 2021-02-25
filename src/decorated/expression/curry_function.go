@@ -13,19 +13,19 @@ import (
 )
 
 type CurryFunction struct {
-	functionType    DecoratedExpression
-	argumentsToSave []DecoratedExpression
+	functionType    Expression
+	argumentsToSave []Expression
 }
 
-func NewCurryFunction(functionType DecoratedExpression, argumentsToSave []DecoratedExpression) *CurryFunction {
+func NewCurryFunction(functionType Expression, argumentsToSave []Expression) *CurryFunction {
 	return &CurryFunction{functionType: functionType, argumentsToSave: argumentsToSave}
 }
 
-func (c *CurryFunction) ArgumentsToSave() []DecoratedExpression {
+func (c *CurryFunction) ArgumentsToSave() []Expression {
 	return c.argumentsToSave
 }
 
-func (c *CurryFunction) FunctionValue() DecoratedExpression {
+func (c *CurryFunction) FunctionValue() Expression {
 	return c.functionType
 }
 

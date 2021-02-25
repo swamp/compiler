@@ -74,7 +74,7 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 	return 0, false
 }
 
-func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	leftExpression, leftExpressionErr := DecorateExpression(d, infix.Left(), context)
 	if leftExpressionErr != nil {
 		return nil, leftExpressionErr

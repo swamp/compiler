@@ -16,19 +16,19 @@ type ConsOperator struct {
 	BinaryOperator
 }
 
-func NewConsOperator(left DecoratedExpression, right DecoratedExpression) (*ConsOperator, decshared.DecoratedError) {
+func NewConsOperator(left Expression, right Expression) (*ConsOperator, decshared.DecoratedError) {
 	a := &ConsOperator{}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
-	a.BinaryOperator.DecoratedExpressionNode.decoratedType = right.Type()
+	a.BinaryOperator.ExpressionNode.decoratedType = right.Type()
 	return a, nil
 }
 
-func (a *ConsOperator) Left() DecoratedExpression {
+func (a *ConsOperator) Left() Expression {
 	return a.left
 }
 
-func (a *ConsOperator) Right() DecoratedExpression {
+func (a *ConsOperator) Right() Expression {
 	return a.right
 }
 

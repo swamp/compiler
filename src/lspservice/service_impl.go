@@ -35,7 +35,7 @@ func (l *LspImpl) Compile(filename string) error {
 	return nil
 }
 
-func (l *LspImpl) FindToken(position token.Position) decorated.DecoratedTypeOrToken {
+func (l *LspImpl) FindToken(position token.Position) decorated.TypeOrToken {
 	if l.module == nil {
 		return nil
 	}
@@ -45,7 +45,7 @@ func (l *LspImpl) FindToken(position token.Position) decorated.DecoratedTypeOrTo
 		token.MakePosition(0, 0),
 		token.MakePosition(9999999, 0))
 
-	var bestToken decorated.DecoratedTypeOrToken
+	var bestToken decorated.TypeOrToken
 
 	for _, decoratedToken := range tokens {
 		log.Printf("checking node:%v '%v'\n", decoratedToken.FetchPositionLength(), decoratedToken.String())

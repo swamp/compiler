@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
@@ -20,11 +21,12 @@ type Annotation struct {
 	inclusive token.SourceFileReference
 }
 
-func NewLocalAnnotation(identifier *ast.VariableIdentifier, t dtype.Type) *Annotation {
+func NewAnnotation(identifier *ast.VariableIdentifier, t dtype.Type) *Annotation {
 	if reflect.ValueOf(t).IsNil() {
 		panic("not great")
 	}
 	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), t.FetchPositionLength())
+	log.Printf("annotation: %T", t)
 	return &Annotation{name: identifier, t: t, inclusive: inclusive}
 }
 
@@ -33,7 +35,7 @@ func (d *Annotation) Identifier() *ast.VariableIdentifier {
 }
 
 func (d *Annotation) String() string {
-	return fmt.Sprintf("[def %v=%v]", d.name, d.t)
+	return fmt.Sprintf("[annotation %v=%v]", d.name, d.t)
 }
 
 func (d *Annotation) Type() dtype.Type {

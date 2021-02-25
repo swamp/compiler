@@ -40,5 +40,5 @@ func parseListLiteral(p ParseStream, startParen token.ParenToken, startIndentati
 		}
 	}
 
-	return ast.NewListLiteral(startParen, expressions), nil
+	return ast.NewListLiteral(startParen, p.positionLength(), expressions), nil
 }
