@@ -14,32 +14,32 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type LocalAnnotation struct {
+type Annotation struct {
 	name      *ast.VariableIdentifier
 	t         dtype.Type
 	inclusive token.SourceFileReference
 }
 
-func NewLocalAnnotation(identifier *ast.VariableIdentifier, t dtype.Type) *LocalAnnotation {
+func NewLocalAnnotation(identifier *ast.VariableIdentifier, t dtype.Type) *Annotation {
 	if reflect.ValueOf(t).IsNil() {
 		panic("not great")
 	}
 	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), t.FetchPositionLength())
-	return &LocalAnnotation{name: identifier, t: t, inclusive: inclusive}
+	return &Annotation{name: identifier, t: t, inclusive: inclusive}
 }
 
-func (d *LocalAnnotation) Identifier() *ast.VariableIdentifier {
+func (d *Annotation) Identifier() *ast.VariableIdentifier {
 	return d.name
 }
 
-func (d *LocalAnnotation) String() string {
+func (d *Annotation) String() string {
 	return fmt.Sprintf("[def %v=%v]", d.name, d.t)
 }
 
-func (d *LocalAnnotation) Type() dtype.Type {
+func (d *Annotation) Type() dtype.Type {
 	return d.t
 }
 
-func (d *LocalAnnotation) FetchPositionLength() token.SourceFileReference {
+func (d *Annotation) FetchPositionLength() token.SourceFileReference {
 	return d.inclusive
 }
