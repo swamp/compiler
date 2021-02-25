@@ -59,7 +59,8 @@ type Module struct {
 	isInternal               bool
 	sourceFile               *token.SourceFileURI
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
-	nodes                    []Node
+	rootNodes                []Node
+	nodes                    []DecoratedTypeOrToken
 }
 
 func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFile *token.SourceFileURI) *Module {
@@ -82,8 +83,10 @@ func (m *Module) SetProgram(program *ast.SourceFile) {
 	m.program = program
 }
 
-func (m *Module) SetNodes(nodes []Node) {
-	m.nodes = nodes
+func (m *Module) SetRootNodes(nodes []Node) {
+	m.rootNodes = nodes
+
+	m.nodes = ExpandAllChildNodes(nodes)
 
 	log.Printf("all nodes in: %v\n", m.FullyQualifiedModuleName())
 	for _, x := range m.nodes {
@@ -91,7 +94,11 @@ func (m *Module) SetNodes(nodes []Node) {
 	}
 }
 
-func (m *Module) Nodes() []Node {
+func (m *Module) RootNodes() []Node {
+	return m.rootNodes
+}
+
+func (m *Module) Nodes() []DecoratedTypeOrToken {
 	return m.nodes
 }
 

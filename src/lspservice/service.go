@@ -9,21 +9,12 @@ import (
 	"github.com/piot/lsp-server/lspserv"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/token"
 )
 
-type DecoratedTypeOrToken interface {
-	String() string
-	// SourceFile() *token.SourceFileURI
-	FetchPositionLength() token.SourceFileReference
-}
-
-type DecoratedToken interface {
-	Type() dtype.Type
-}
-
 type DecoratedTokenScanner interface {
-	FindToken(position token.Position) DecoratedTypeOrToken
+	FindToken(position token.Position) decorated.DecoratedTypeOrToken
 }
 
 type Compiler interface {
@@ -94,7 +85,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 
 	showString := decoratedToken.String()
 	if !isItAType {
-		normalToken, _ := decoratedToken.(DecoratedToken)
+		normalToken, _ := decoratedToken.(decorated.DecoratedToken)
 		showString += fmt.Sprintf(" : %v", normalToken.Type().HumanReadable())
 	}
 

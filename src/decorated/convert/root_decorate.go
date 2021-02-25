@@ -18,7 +18,7 @@ import (
 
 type Definer struct {
 	typeRepo          *dectype.TypeRepo
-	localAnnotation   *LocalAnnotation
+	localAnnotation   *decorated.Annotation
 	localComments     []ast.LocalComment
 	localCommentBlock token.CommentBlock
 	verboseFlag       bool
@@ -44,12 +44,12 @@ func (g *Definer) createAliasTypeFromType(aliasName *ast.TypeIdentifier, subType
 }
 
 func (g *Definer) AnnotateConstant(identifier *ast.VariableIdentifier, realType dtype.Type) decshared.DecoratedError {
-	g.localAnnotation = NewLocalAnnotation(identifier, realType)
+	g.localAnnotation = decorated.NewLocalAnnotation(identifier, realType)
 	return nil
 }
 
 func (g *Definer) AnnotateFunc(identifier *ast.VariableIdentifier, funcType dtype.Type) error {
-	g.localAnnotation = NewLocalAnnotation(identifier, funcType)
+	g.localAnnotation = decorated.NewLocalAnnotation(identifier, funcType)
 	g.decorateStream.InternalAddNode(g.localAnnotation)
 
 	return nil
