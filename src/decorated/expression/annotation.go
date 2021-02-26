@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
@@ -26,7 +25,6 @@ func NewAnnotation(identifier *ast.VariableIdentifier, t dtype.Type) *Annotation
 		panic("not great")
 	}
 	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), t.FetchPositionLength())
-	log.Printf("annotation: %T", t)
 	return &Annotation{name: identifier, t: t, inclusive: inclusive}
 }
 

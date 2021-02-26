@@ -11,7 +11,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func DetectLowercaseKeyword(t token.VariableSymbolToken) (token.Token, error) {
+func DetectLowercaseKeyword(t token.VariableSymbolToken) (token.Keyword, error) {
 	pos := t.SourceFileReference
 	raw := t.Name()
 	switch raw {

@@ -15,7 +15,11 @@ import (
 func parseArrayLiteral(p ParseStream, startParen token.ParenToken, startIndentation int) (ast.Expression, parerr.ParseError) {
 	var expressions []ast.Expression
 
-	if !p.maybeRightArrayBracket() {
+	var endArrayBracket token.ParenToken
+
+	var wasEndBracket bool
+
+	if endArrayBracket, wasEndBracket = p.maybeRightArrayBracket(); wasEndBracket {
 		if _, eatAfterErr := p.eatOneSpace("after left array bracket [|"); eatAfterErr != nil {
 			return nil, eatAfterErr
 		}
@@ -33,7 +37,9 @@ func parseArrayLiteral(p ParseStream, startParen token.ParenToken, startIndentat
 			}
 
 			if !wasComma {
-				if eatBracketErr := p.eatRightArrayBracket(); eatBracketErr != nil {
+				var eatBracketErr parerr.ParseError
+
+				if endArrayBracket, eatBracketErr = p.readRightArrayBracket(); eatBracketErr != nil {
 					return nil, eatBracketErr
 				}
 				break
@@ -41,5 +47,5 @@ func parseArrayLiteral(p ParseStream, startParen token.ParenToken, startIndentat
 		}
 	}
 
-	return ast.NewArrayLiteral(startParen, expressions), nil
+	return ast.NewArrayLiteral(startParen, endArrayBracket, expressions), nil
 }

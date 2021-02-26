@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -53,13 +52,14 @@ func NewFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType *dectyp
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
-	for _, parameter := range parameters {
-		log.Printf("param %v %v\n", parameter.FetchPositionLength(), parameter)
-	}
 
 	sourceFileReference := token.MakeInclusiveSourceFileReference(astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
 
 	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock, sourceFileReference: sourceFileReference}
+}
+
+func (f *FunctionValue) AstFunctionValue() *ast.FunctionValue {
+	return f.astFunction
 }
 
 func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {

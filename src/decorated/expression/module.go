@@ -85,12 +85,19 @@ func (m *Module) SetProgram(program *ast.SourceFile) {
 
 func (m *Module) SetRootNodes(nodes []Node) {
 	m.rootNodes = nodes
-
+	if false {
+		log.Printf("all root nodes in: %v\n", m.FullyQualifiedModuleName())
+		for _, x := range m.rootNodes {
+			log.Printf("root node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
+		}
+	}
 	m.nodes = ExpandAllChildNodes(nodes)
 
-	log.Printf("all nodes in: %v\n", m.FullyQualifiedModuleName())
-	for _, x := range m.nodes {
-		log.Printf("node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
+	if false {
+		log.Printf("all nodes in: %v\n", m.FullyQualifiedModuleName())
+		for _, x := range m.nodes {
+			log.Printf("node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
+		}
 	}
 }
 

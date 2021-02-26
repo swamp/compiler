@@ -6,8 +6,6 @@
 package decorator
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -52,8 +50,6 @@ func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context
 			return t, nil
 		}
 	}
-
-	log.Printf("found variable: %T '%v'\n", expression, expression)
 
 	return expression, nil
 }

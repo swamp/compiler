@@ -105,6 +105,21 @@ func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, par
 	return varIdent, nil
 }
 
+func (p *ParseStreamImpl) readKeyword() (token.Keyword, parerr.ParseError) {
+	pos := p.tokenizer.ParsingPosition()
+	ident, err := p.readVariableIdentifier()
+	if err != nil {
+		return token.Keyword{}, err
+	}
+
+	keyword, keywordErr := tokenize.DetectLowercaseKeyword(ident.Symbol())
+	if keywordErr != nil {
+		return token.Keyword{}, parerr.NewInternalError(p.tokenizer.MakeSourceFileReference(pos), keywordErr)
+	}
+
+	return keyword, nil
+}
+
 func (p *ParseStreamImpl) skipMaybeSpaceAndSameIndentationOrContinuation() (token.IndentationReport, parerr.ParseError) {
 	report, err := p.tokenizer.SkipWhitespaceToNextIndentation()
 	if err != nil {
@@ -182,8 +197,51 @@ func (p *ParseStreamImpl) maybePipeLeft() bool {
 	return p.tokenizer.MaybeString("<|")
 }
 
-func (p *ParseStreamImpl) maybeRightBracket() bool {
-	return p.tokenizer.MaybeRune(']')
+func (p *ParseStreamImpl) readParenToken() (token.ParenToken, parerr.ParseError) {
+	parsedToken, err := p.tokenizer.ReadEndOrSeparatorToken()
+	if err != nil {
+		return token.ParenToken{}, parerr.NewUnknownPrefixInExpression(parsedToken)
+	}
+
+	parenToken, wasParenToken := parsedToken.(token.ParenToken)
+	if !wasParenToken {
+		return token.ParenToken{}, parerr.NewUnknownPrefixInExpression(parsedToken)
+	}
+
+	return parenToken, nil
+}
+
+func (p *ParseStreamImpl) readSpecificParenToken(p2 token.Type) (token.ParenToken, parerr.ParseError) {
+	parsedToken, err := p.readParenToken()
+	if err != nil {
+		return token.ParenToken{}, err
+	}
+
+	if parsedToken.Type() != p2 {
+		return token.ParenToken{}, parerr.NewUnknownPrefixInExpression(parsedToken)
+	}
+
+	return parsedToken, nil
+}
+
+func (p *ParseStreamImpl) maybeSpecificParenToken(p2 token.Type) (token.ParenToken, bool) {
+	pos := p.tokenizer.Tell()
+
+	parenToken, err := p.readSpecificParenToken(p2)
+	if err != nil {
+		p.tokenizer.Seek(pos)
+		return token.ParenToken{}, false
+	}
+
+	return parenToken, true
+}
+
+func (p *ParseStreamImpl) maybeRightBracket() (token.ParenToken, bool) {
+	return p.maybeSpecificParenToken(token.RightBracket)
+}
+
+func (p *ParseStreamImpl) maybeRightArrayBracket() (token.ParenToken, bool) {
+	return p.maybeSpecificParenToken(token.RightArrayBracket)
 }
 
 func (p *ParseStreamImpl) maybeRightCurly() bool {
@@ -217,10 +275,6 @@ func (p *ParseStreamImpl) maybeLeftParen() bool {
 
 func (p *ParseStreamImpl) maybeLeftCurly() bool {
 	return p.tokenizer.MaybeString("{")
-}
-
-func (p *ParseStreamImpl) maybeRightArrayBracket() bool {
-	return p.tokenizer.MaybeString("|]")
 }
 
 func (p *ParseStreamImpl) maybeAccessor() bool {
@@ -909,8 +963,8 @@ func (p *ParseStreamImpl) eatRightArrow() parerr.ParseError {
 	return nil
 }
 
-func (p *ParseStreamImpl) eatRightParen() parerr.ParseError {
-	return p.eatRune(')')
+func (p *ParseStreamImpl) readRightParen() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightParen)
 }
 
 func (p *ParseStreamImpl) eatLeftParen() parerr.ParseError {
@@ -921,12 +975,12 @@ func (p *ParseStreamImpl) eatRightCurly() parerr.ParseError {
 	return p.eatRune('}')
 }
 
-func (p *ParseStreamImpl) eatRightBracket() parerr.ParseError {
-	return p.eatRune(']')
+func (p *ParseStreamImpl) readRightBracket() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightBracket)
 }
 
-func (p *ParseStreamImpl) eatRightArrayBracket() parerr.ParseError {
-	return p.eatString("|]")
+func (p *ParseStreamImpl) readRightArrayBracket() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightArrayBracket)
 }
 
 func (p *ParseStreamImpl) eatOf() parerr.ParseError {

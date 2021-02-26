@@ -30,10 +30,14 @@ func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module) *
 }
 
 func (d *Decorator) InternalAddNode(node decorated.Node) {
+	_, isRef := node.(*dectype.TypeReference)
+	if isRef {
+		isRef = false
+	}
 	d.nodes = append(d.nodes, node)
 }
 
-func (d *Decorator) Nodes() []decorated.Node {
+func (d *Decorator) RootNodes() []decorated.Node {
 	return d.nodes
 }
 
@@ -61,7 +65,7 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 	return decorator.NewVariableContext(d.module.LocalAndImportedDefinitions())
 }
 
-func (d *Decorator) AddImport(relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) decshared.DecoratedError {
+func (d *Decorator) AddImport(importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) decshared.DecoratedError {
 	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(relativeModuleName, verboseFlag)
 	if importErr != nil {
 		return importErr
@@ -72,6 +76,10 @@ func (d *Decorator) AddImport(relativeModuleName dectype.PackageRelativeModuleNa
 	if !alias.IsEmpty() {
 		relativeModuleName = dectype.MakePackageRelativeModuleName(alias.Path())
 	}
+
+	importStatement := decorated.NewImport(importAst, moduleToImport)
+	d.InternalAddNode(importStatement)
+
 	importModuleErr := d.Import(moduleToImport, relativeModuleName, exposeAll)
 	if importModuleErr != nil {
 		return decorated.NewInternalError(importModuleErr)

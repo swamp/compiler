@@ -84,6 +84,11 @@ func testHelperWithTesting(t *testing.T, s string) string {
 		t.Fatal(initializeErr)
 	}
 
+	didOpenNotification := `{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///home/peter/test.swamp","languageId":"swamp","version":1,"text":""}}}`
+	_, didOpenErr := runCommand(lspservService, didOpenNotification)
+	if didOpenErr != nil {
+		t.Fatal(didOpenErr)
+	}
 	result, err := runCommand(lspservService, s)
 	if err != nil {
 		t.Fatal(err)
@@ -105,10 +110,29 @@ func testHelperWithTestingStrings(t *testing.T, cmds []string, expectedResult st
 	return last
 }
 
-func TestSomething(t *testing.T) {
+func testHelperWithTestingString(t *testing.T, cmd string, expectedResult string) string {
+	last := testHelperWithTesting(t, cmd)
+
+	if last != expectedResult {
+		t.Errorf("mismatch. expected '%v' but received '%v'", expectedResult, last)
+	}
+
+	return last
+}
+
+func TestHover(t *testing.T) {
+	//nolint: lll
 	testHelperWithTestingStrings(t, []string{`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///home/peter/test.swamp","languageId":"swamp","version":1,"text":"test : Int -> Int\ntest a =\n    4\n"}}}`, `
 {"jsonrpc":"2.0","id":1,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":8,"character":8}}}
 `}, `Content-Length: 156
 
 {"id":1,"result":{"contents":{"kind":"markdown","value":"$test"},"range":{"start":{"line":0,"character":0},"end":{"line":0,"character":3}}},"jsonrpc":"2.0"}`)
+}
+
+func TestDocumentSymbolOutline(t *testing.T) {
+	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":4,"method":"textDocument/documentSymbol","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"}}}`, ``)
+}
+
+func TestDocumentSemanticSymbols(t *testing.T) {
+	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":2,"method":"textDocument/semanticTokens/full","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"}}}`, ``)
 }

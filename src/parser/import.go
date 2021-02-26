@@ -82,7 +82,7 @@ func parseImport(p ParseStream, keyword token.VariableSymbolToken,
 			}
 			for !p.maybeRightParen() {
 				if p.maybeEllipsis() {
-					p.eatRightParen()
+					p.readRightParen()
 					exposeAll = true
 					identifiersToExpose = nil
 					typesToExpose = nil

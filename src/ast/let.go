@@ -42,12 +42,21 @@ type Let struct {
 	assignments         []LetAssignment
 	consequence         Expression
 	keyword             token.Keyword
+	inKeyword           token.Keyword
 	sourceFileReference token.SourceFileReference
 }
 
-func NewLet(keyword token.Keyword, assignments []LetAssignment, consequence Expression) *Let {
+func NewLet(keyword token.Keyword, inKeyword token.Keyword, assignments []LetAssignment, consequence Expression) *Let {
 	sourceFileReference := token.MakeInclusiveSourceFileReference(keyword.FetchPositionLength(), consequence.FetchPositionLength())
-	return &Let{keyword: keyword, assignments: assignments, consequence: consequence, sourceFileReference: sourceFileReference}
+	return &Let{keyword: keyword, inKeyword: inKeyword, assignments: assignments, consequence: consequence, sourceFileReference: sourceFileReference}
+}
+
+func (i *Let) Keyword() token.Keyword {
+	return i.keyword
+}
+
+func (i *Let) InKeyword() token.Keyword {
+	return i.inKeyword
 }
 
 func (i *Let) Assignments() []LetAssignment {

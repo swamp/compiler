@@ -6,6 +6,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -22,6 +24,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 		return nil, expectNewLineErr
 	}
 
+	var inKeyword token.Keyword
 	for {
 		letVariableIdentifier, letVariableIdentifierErr := p.readVariableIdentifier()
 		if letVariableIdentifierErr != nil {
@@ -60,10 +63,14 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 		}
 
 		if !expectingNewLetAssignment {
-			expectedInErr := p.eatIn()
+			inKeywordIdentifier, expectedInErr := p.readKeyword()
 			if expectedInErr != nil {
 				return nil, expectedInErr
 			}
+			if inKeywordIdentifier.Type() != token.In {
+				return nil, parerr.NewInternalError(inKeywordIdentifier.FetchPositionLength(), fmt.Errorf("expected IN keyword here"))
+			}
+			inKeyword = inKeywordIdentifier
 			break
 		}
 	}
@@ -77,7 +84,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 	if consequenceErr != nil {
 		return nil, consequenceErr
 	}
-	a := ast.NewLet(t, assignments, consequence)
+	a := ast.NewLet(t, inKeyword, assignments, consequence)
 
 	return a, nil
 }

@@ -1,8 +1,6 @@
 package decorated
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -22,8 +20,16 @@ func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(fn.Expression())...)
 	for _, parameter := range fn.Parameters() {
-		log.Printf("checking param:%v '%v'\n", parameter.FetchPositionLength(), parameter.String())
 		tokens = append(tokens, expandChildNodes(parameter)...)
+	}
+	return tokens
+}
+
+func expandChildNodesFunctionCall(fn *FunctionCall) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(fn.FunctionValue())...)
+	for _, argument := range fn.Arguments() {
+		tokens = append(tokens, expandChildNodes(argument)...)
 	}
 	return tokens
 }
@@ -37,7 +43,6 @@ func expandChildNodesAnnotation(fn *Annotation) []TypeOrToken {
 func expandChildNodesFunctionType(fn *dectype.FunctionAtom) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, parameter := range fn.FunctionParameterTypes() {
-		log.Printf("TYPES:%v (%v)\n", parameter, parameter.FetchPositionLength())
 		tokens = append(tokens, expandChildNodes(parameter)...)
 	}
 	return tokens
@@ -80,7 +85,6 @@ func expandChildNodesListLiteral(listLiteral *ListLiteral) []TypeOrToken {
 func expandChildNodesLet(let *Let) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, assignment := range let.Assignments() {
-		log.Printf("checking assignment:%v '%v'\n", assignment.Expression().FetchPositionLength(), assignment.String())
 		tokens = append(tokens, expandChildNodes(assignment)...)
 	}
 
@@ -96,6 +100,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesAnnotation(t)...)
 	case *FunctionValue:
 		return append(tokens, expandChildNodesFunctionValue(t)...)
+	case *FunctionCall:
+		return append(tokens, expandChildNodesFunctionCall(t)...)
 	case *dectype.FunctionAtom:
 		return append(tokens, expandChildNodesFunctionType(t)...)
 	case *Let:
@@ -111,7 +117,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *dectype.InvokerType:
 		return append(tokens, expandChildNodesInvokerType(t)...)
 	default:
-		log.Printf("do not know how to fix this: %T %v\n", t, t)
+		//		log.Printf("not handled nodes for expansion: %T %v\n", t, t)
 		return tokens
 	}
 }

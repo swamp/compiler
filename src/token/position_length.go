@@ -65,21 +65,33 @@ func MakeRange(start Position, end Position) Range {
 	return Range{start: start, end: end, indentation: -1}
 }
 
-func (r Range) SmallerThan(other Range) bool {
+func (p Range) SmallerThan(other Range) bool {
 	diffLineOther := other.end.line - other.start.line
-	diffLine := r.end.line - other.start.line
+	diffLine := p.end.line - other.start.line
 	if diffLine > diffLineOther {
 		return false
 	}
 
 	if diffLine == diffLineOther {
 		diffColOther := other.end.column - other.start.column
-		diffCol := r.end.column - r.start.column
+		diffCol := p.end.column - p.start.column
 
 		return diffCol < diffColOther
 	}
 
 	return true
+}
+
+func (p Range) SingleLineLength() int {
+	if p.start.line != p.end.line {
+		return -1
+	}
+
+	return p.end.column - p.start.column + 1
+}
+
+func (p Range) IsAfter(other Range) bool {
+	return (p.start.line > other.end.line) || ((p.start.line == other.end.line) && p.start.column > other.end.column)
 }
 
 func MakeInclusiveRange(start Range, end Range) Range {

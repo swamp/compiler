@@ -73,11 +73,12 @@ type Let struct {
 	assignments []*LetAssignment
 	consequence Expression
 	inclusive   token.SourceFileReference
+	astLet      *ast.Let
 }
 
 func NewLet(let *ast.Let, assignments []*LetAssignment, consequence Expression) *Let {
 	inclusive := token.MakeInclusiveSourceFileReference(let.FetchPositionLength(), consequence.FetchPositionLength())
-	return &Let{assignments: assignments, consequence: consequence, inclusive: inclusive}
+	return &Let{assignments: assignments, consequence: consequence, inclusive: inclusive, astLet: let}
 }
 
 func (l *Let) Assignments() []*LetAssignment {
@@ -86,6 +87,10 @@ func (l *Let) Assignments() []*LetAssignment {
 
 func (l *Let) Consequence() Expression {
 	return l.consequence
+}
+
+func (l *Let) AstLet() *ast.Let {
+	return l.astLet
 }
 
 func (l *Let) Type() dtype.Type {

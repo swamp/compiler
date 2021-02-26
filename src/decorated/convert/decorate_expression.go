@@ -77,6 +77,5 @@ func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableCon
 	if expr == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("expr is nil:%v", e))
 	}
-	d.InternalAddNode(expr)
 	return expr, nil
 }

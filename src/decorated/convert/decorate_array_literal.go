@@ -12,5 +12,5 @@ func decorateArrayLiteral(d DecorateStream, list *ast.ArrayLiteral, context *Var
 		return nil, err
 	}
 
-	return decorated.NewArrayLiteral(wrappedType, listExpressions), nil
+	return decorated.NewArrayLiteral(list, wrappedType, listExpressions), nil
 }

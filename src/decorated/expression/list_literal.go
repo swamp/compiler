@@ -27,6 +27,10 @@ func (c *ListLiteral) Type() dtype.Type {
 	return c.t
 }
 
+func (c *ListLiteral) AstListLiteral() *ast.ListLiteral {
+	return c.astLiteral
+}
+
 func (c *ListLiteral) Expressions() []Expression {
 	return c.expressions
 }

@@ -8,18 +8,24 @@ package decorated
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
 type FunctionCall struct {
-	functionType Expression
-	assignments  []Expression
-	returnType   dtype.Type
+	functionType    Expression
+	assignments     []Expression
+	returnType      dtype.Type
+	astFunctionCall *ast.FunctionCall
 }
 
-func NewFunctionCall(functionType Expression, returnType dtype.Type, assignments []Expression) *FunctionCall {
-	return &FunctionCall{functionType: functionType, assignments: assignments, returnType: returnType}
+func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionType Expression, returnType dtype.Type, assignments []Expression) *FunctionCall {
+	return &FunctionCall{astFunctionCall: astFunctionCall, functionType: functionType, assignments: assignments, returnType: returnType}
+}
+
+func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
+	return c.astFunctionCall
 }
 
 func (c *FunctionCall) FunctionValue() Expression {
@@ -39,5 +45,5 @@ func (c *FunctionCall) String() string {
 }
 
 func (c *FunctionCall) FetchPositionLength() token.SourceFileReference {
-	return c.assignments[0].FetchPositionLength()
+	return c.astFunctionCall.FetchPositionLength()
 }

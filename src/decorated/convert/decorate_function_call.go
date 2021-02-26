@@ -61,14 +61,13 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 
 	var decoratedFunctionExpression decorated.Expression
 
-	beforeFakeIdentifier, wasIdentifier := call.FunctionExpression().(*ast.VariableIdentifier)
+	functionExpressionIdentifier, wasIdentifier := call.FunctionExpression().(*ast.VariableIdentifier)
 
-	if wasIdentifier && beforeFakeIdentifier.Name() == "recur" {
+	if wasIdentifier && functionExpressionIdentifier.Name() == "recur" {
 		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", token.SourceFileReference{}, 0))
 		namedDef := context.ResolveVariable(fakeIdent)
 
-		fakeFunctionName := ast.NewVariableIdentifier(token.NewVariableSymbolToken(fakeIdent.Name(), token.SourceFileReference{}, 0))
-		getVar := decorated.NewFunctionReference(fakeFunctionName, namedDef.(*decorated.FunctionValue))
+		getVar := decorated.NewFunctionReference(functionExpressionIdentifier, namedDef.(*decorated.FunctionValue))
 		decoratedFunctionExpression = getVar
 	} else {
 		var functionErr decshared.DecoratedError
@@ -127,13 +126,13 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	functionValueDecoratedExpression := decorated.NewNamedDecoratedExpression("x", nil, functionValueExpression)
 	functionValueDecoratedExpression.SetReferenced()
 
-	fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(functionReference.Identifier().Name(), token.SourceFileReference{}, 8))
-	getVariableExpression := decorated.NewFunctionReference(fakeVariable, functionValueExpression.FunctionValue())
+	// fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(functionReference.Identifier().Name(), token.SourceFileReference{}, 8))
+	// getVariableExpression := decorated.NewFunctionReference(fakeVariable, functionValueExpression.FunctionValue())
 
 	if isCurrying {
-		return decorated.NewCurryFunction(getVariableExpression, decoratedExpressions), nil
+		return decorated.NewCurryFunction(functionValueExpression, decoratedExpressions), nil
 	}
 	returnType := functionType.ReturnType()
 
-	return decorated.NewFunctionCall(getVariableExpression, returnType, decoratedExpressions), nil
+	return decorated.NewFunctionCall(call, functionValueExpression, returnType, decoratedExpressions), nil
 }

@@ -16,3 +16,5 @@ require (
 	github.com/swamp/pack v0.0.0-20210122130807-560a9bc9af01
 	golang.org/x/sys v0.0.0-20210223095934-7937bea0104d // indirect
 )
+
+replace github.com/piot/lsp-server => ../../lsp-server

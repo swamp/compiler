@@ -2,7 +2,6 @@ package lspservice
 
 import (
 	"fmt"
-	"log"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -35,6 +34,15 @@ func (l *LspImpl) Compile(filename string) error {
 	return nil
 }
 
+func (l *LspImpl) RootTokens() []decorated.TypeOrToken {
+	var tokens []decorated.TypeOrToken
+	for _, node := range l.module.RootNodes() {
+		tokens = append(tokens, node.(decorated.TypeOrToken))
+	}
+
+	return tokens
+}
+
 func (l *LspImpl) FindToken(position token.Position) decorated.TypeOrToken {
 	if l.module == nil {
 		return nil
@@ -48,7 +56,7 @@ func (l *LspImpl) FindToken(position token.Position) decorated.TypeOrToken {
 	var bestToken decorated.TypeOrToken
 
 	for _, decoratedToken := range tokens {
-		log.Printf("checking node:%v '%v'\n", decoratedToken.FetchPositionLength(), decoratedToken.String())
+		// log.Printf("checking node:%v '%v'\n", decoratedToken.FetchPositionLength(), decoratedToken.String())
 		foundRange := decoratedToken.FetchPositionLength().Range
 		if foundRange.Contains(position) {
 			if foundRange.SmallerThan(smallestRange) {

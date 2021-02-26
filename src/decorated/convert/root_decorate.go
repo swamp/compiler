@@ -128,7 +128,7 @@ func (g *Definer) handleImport(d DecorateStream, importAst *ast.Import) decshare
 		alias = dectype.MakeSingleModuleName(importAst.Alias())
 	}
 	packageRelative := dectype.MakePackageRelativeModuleName(importAst.ModuleName())
-	return d.AddImport(packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
+	return d.AddImport(importAst, packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
 }
 
 func (g *Definer) handleExternalFunction(d DecorateStream, externalFunction *ast.ExternalFunction) decshared.DecoratedError {
@@ -178,11 +178,11 @@ func (g *Definer) handleAnnotation(d DecorateStream, declaration *ast.Annotation
 	annotatedType := declaration.AnnotatedType()
 	g.localCommentBlock = declaration.CommentBlock()
 
-	annotation, declareErr := g.functionAnnotation(declaration.Identifier(), annotatedType)
+	_, declareErr := g.functionAnnotation(declaration.Identifier(), annotatedType)
 	if declareErr != nil {
 		return declareErr
 	}
-	d.InternalAddNode(annotation)
+	// d.InternalAddNode(annotation)
 
 	return nil
 }

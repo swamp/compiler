@@ -7,7 +7,6 @@ package tokenize
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -196,7 +195,6 @@ func (t *Tokenizer) reversePositionHelper(pos token.Position, ch rune) token.Pos
 	if ch == '\n' {
 		column, detectedIndentationSpaces := t.r.DetectCurrentLineLength()
 		pos = token.MakePosition(pos.Line()-1, column)
-		log.Printf("reverse! found pos: %v", pos)
 		t.lastReport.IndentationSpaces = detectedIndentationSpaces
 		t.lastReport.CloseIndentation = detectedIndentationSpaces / SpacesForIndentation
 		if (detectedIndentationSpaces % SpacesForIndentation) == 0 {
@@ -714,7 +712,7 @@ func (t *Tokenizer) ParseStartingKeyword() (token.Token, TokenError) {
 	return t.ParseVariableSymbol()
 }
 
-func (t *Tokenizer) readEndOrSeparatorToken() (token.Token, error) {
+func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, error) {
 	posToken := t.position
 	r := t.nextRune()
 	singleCharLength := t.MakeSourceFileReference(posToken)
@@ -746,7 +744,7 @@ func (t *Tokenizer) readEndOrSeparatorToken() (token.Token, error) {
 }
 
 func (t *Tokenizer) ReadTermTokenOrEndOrSeparator() (token.Token, error) {
-	tokenFound, err := t.readEndOrSeparatorToken()
+	tokenFound, err := t.ReadEndOrSeparatorToken()
 	if err == nil {
 		return tokenFound, nil
 	}
@@ -809,7 +807,6 @@ func (t *Tokenizer) readTermToken() (token.Token, error) {
 		} else {
 			t.unreadRune()
 		}
-
 		return token.NewParenToken(string(r), token.LeftBracket, singleCharLength, " [ "), nil
 	} else if r == '_' {
 		nextRune := t.nextRune()

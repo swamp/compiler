@@ -8,21 +8,27 @@ package decorated
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
 type ArrayLiteral struct {
-	t           dtype.Type
-	expressions []Expression
+	t               dtype.Type
+	expressions     []Expression
+	astArrayLiteral *ast.ArrayLiteral
 }
 
-func NewArrayLiteral(t dtype.Type, expressions []Expression) *ArrayLiteral {
-	return &ArrayLiteral{t: t, expressions: expressions}
+func NewArrayLiteral(astArrayLiteral *ast.ArrayLiteral, t dtype.Type, expressions []Expression) *ArrayLiteral {
+	return &ArrayLiteral{t: t, expressions: expressions, astArrayLiteral: astArrayLiteral}
 }
 
 func (c *ArrayLiteral) Type() dtype.Type {
 	return c.t
+}
+
+func (c *ArrayLiteral) AstArrayLiteral() *ast.ArrayLiteral {
+	return c.astArrayLiteral
 }
 
 func (c *ArrayLiteral) Expressions() []Expression {
@@ -34,5 +40,5 @@ func (c *ArrayLiteral) String() string {
 }
 
 func (c *ArrayLiteral) FetchPositionLength() token.SourceFileReference {
-	return token.SourceFileReference{}
+	return c.astArrayLiteral.FetchPositionLength()
 }

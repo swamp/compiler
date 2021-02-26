@@ -22,10 +22,16 @@ type FunctionCaller interface {
 type FunctionCall struct {
 	arguments          []Expression
 	functionExpression Expression
+	inclusive          token.SourceFileReference
 }
 
 func NewFunctionCall(functionExpression Expression, arguments []Expression) *FunctionCall {
-	return &FunctionCall{functionExpression: functionExpression, arguments: arguments}
+	lastSourceFileRef := functionExpression.FetchPositionLength()
+	if len(arguments) > 0 {
+		lastSourceFileRef = arguments[len(arguments)-1].FetchPositionLength()
+	}
+	inclusive := token.MakeInclusiveSourceFileReference(functionExpression.FetchPositionLength(), lastSourceFileRef)
+	return &FunctionCall{functionExpression: functionExpression, arguments: arguments, inclusive: inclusive}
 }
 
 func (i *FunctionCall) Arguments() []Expression {
@@ -37,7 +43,7 @@ func (i *FunctionCall) OverwriteArguments(args []Expression) {
 }
 
 func (i *FunctionCall) FetchPositionLength() token.SourceFileReference {
-	return i.functionExpression.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *FunctionCall) FunctionExpression() Expression {

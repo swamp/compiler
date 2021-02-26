@@ -14,10 +14,13 @@ import (
 type ArrayLiteral struct {
 	expressions    []Expression
 	startListParen token.ParenToken
+	endListParen   token.ParenToken
+	inclusive      token.SourceFileReference
 }
 
-func NewArrayLiteral(startListParen token.ParenToken, expressions []Expression) *ArrayLiteral {
-	return &ArrayLiteral{startListParen: startListParen, expressions: expressions}
+func NewArrayLiteral(startListParen token.ParenToken, endListParen token.ParenToken, expressions []Expression) *ArrayLiteral {
+	inclusive := token.MakeInclusiveSourceFileReference(startListParen.SourceFileReference, endListParen.SourceFileReference)
+	return &ArrayLiteral{startListParen: startListParen, expressions: expressions, endListParen: endListParen, inclusive: inclusive}
 }
 
 func (i *ArrayLiteral) String() string {
@@ -29,11 +32,15 @@ func (i *ArrayLiteral) Expressions() []Expression {
 }
 
 func (i *ArrayLiteral) FetchPositionLength() token.SourceFileReference {
-	return i.startListParen.SourceFileReference
+	return i.inclusive
 }
 
-func (i *ArrayLiteral) ParenToken() token.ParenToken {
+func (i *ArrayLiteral) StartParenToken() token.ParenToken {
 	return i.startListParen
+}
+
+func (i *ArrayLiteral) EndParenToken() token.ParenToken {
+	return i.endListParen
 }
 
 func (i *ArrayLiteral) DebugString() string {
