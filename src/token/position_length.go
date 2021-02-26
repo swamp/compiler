@@ -7,9 +7,17 @@ package token
 
 import (
 	"fmt"
+	"strings"
 )
 
 type DocumentURI string
+
+func MakeDocumentURI(s string) DocumentURI {
+	if !strings.HasPrefix(s, "file://") {
+		panic("illegal uri")
+	}
+	return DocumentURI(s)
+}
 
 type SourceFileDocument struct {
 	Uri DocumentURI
@@ -20,8 +28,32 @@ type SourceFileReference struct {
 	Document *SourceFileDocument
 }
 
+func MakeSourceFileDocument(uri string) *SourceFileDocument {
+	return MakeSourceFileDocumentFromURI(MakeDocumentURI(uri))
+}
+
+func MakeSourceFileDocumentFromURI(uri DocumentURI) *SourceFileDocument {
+	return &SourceFileDocument{
+		uri,
+	}
+}
+
 func (s SourceFileReference) ToReferenceString() string {
 	return fmt.Sprintf("%v:%d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1)
+}
+
+func MakeSourceFileReferenceFromString(uri string, tokenRange Range) SourceFileReference {
+	return SourceFileReference{
+		Range:    tokenRange,
+		Document: MakeSourceFileDocument(uri),
+	}
+}
+
+func MakeSourceFileReference(uri *SourceFileDocument, tokenRange Range) SourceFileReference {
+	return SourceFileReference{
+		Range:    tokenRange,
+		Document: uri,
+	}
 }
 
 func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileReference) SourceFileReference {
@@ -37,7 +69,7 @@ func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileR
 	tokenRange := MakeInclusiveRange(start.Range, end.Range)
 	return SourceFileReference{
 		Range:    tokenRange,
-		Document: nil,
+		Document: start.Document,
 	}
 }
 

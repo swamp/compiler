@@ -725,7 +725,7 @@ func generateLocalFunctionParameterReference(code *assembler.Code, target assemb
 }
 
 func generateLetVariableReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.LetVariableReference, context *assembler.Context) error {
-	varName := assembler.NewVariableName(getVar.Identifier().Name())
+	varName := assembler.NewVariableName(getVar.LetVariable().Name().Name())
 	variable := context.FindVariable(varName)
 	code.CopyVariable(target, variable)
 	return nil
@@ -887,7 +887,7 @@ func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Expres
 		constant := genContext.context.Constants().AllocateBooleanConstant(t.Value())
 		return constant, nil
 	case *decorated.LetVariableReference:
-		parameterReferenceName := assembler.NewVariableName(t.Identifier().Name())
+		parameterReferenceName := assembler.NewVariableName(t.LetVariable().Name().Name())
 		return genContext.context.FindVariable(parameterReferenceName), nil
 	case *decorated.FunctionParameterReference:
 		parameterReferenceName := assembler.NewVariableName(t.Identifier().Name())

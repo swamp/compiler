@@ -501,7 +501,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	var importModules []*decorated.Module
 	var copyModules []*decorated.Module
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("root-module", token.SourceFileReference{}, 0))
-	m := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{nameTypeIdentifier}), nil)
+	m := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{nameTypeIdentifier}), "")
 	m.MarkAsInternal()
 	r := m.TypeRepo()
 	integerType := dectype.NewPrimitiveType(createTypeIdentifier("Int"), nil)

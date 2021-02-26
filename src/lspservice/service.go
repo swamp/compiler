@@ -182,6 +182,13 @@ func lspToTokenPosition(position lsp.Position) token.Position {
 	return token.MakePosition(position.Line, position.Character)
 }
 
+func sourceFileReferenceToLocation(reference token.SourceFileReference) *lsp.Location {
+	return &lsp.Location{
+		URI:   lsp.DocumentURI(reference.Document.Uri),
+		Range: *tokenToLspRange(reference.Range),
+	}
+}
+
 func tokenToLspPosition(position token.Position) lsp.Position {
 	return lsp.Position{
 		Line:      position.Line(),
@@ -233,7 +240,35 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 }
 
 func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {
-	return nil, nil
+	tokenPosition := lspToTokenPosition(params.Position)
+
+	decoratedToken := s.scanner.FindToken(tokenPosition)
+	if decoratedToken == nil {
+		log.Printf("couldn't find a token at %v\n", tokenPosition)
+		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
+	}
+
+	log.Printf("found: %T %v\n", decoratedToken, decoratedToken)
+	var sourceFileReference token.SourceFileReference
+
+	switch t := decoratedToken.(type) {
+	case *decorated.Import:
+		sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
+	case *decorated.FunctionParameterReference:
+		sourceFileReference = t.ParameterRef().FetchPositionLength()
+	case *decorated.LetVariableReference:
+		sourceFileReference = t.LetVariable().FetchPositionLength()
+	case *decorated.FunctionReference:
+		sourceFileReference = t.FunctionValue().FetchPositionLength()
+	}
+
+	if sourceFileReference.Document == nil {
+		return nil, fmt.Errorf("couldn't get a reference for %T\n", decoratedToken)
+	}
+
+	location := sourceFileReferenceToLocation(sourceFileReference)
+
+	return location, nil
 }
 
 func (s *Service) HandleGotoDeclaration(params lsp.DeclarationOptions, conn lspserv.Connection) (*lsp.Location, error) {

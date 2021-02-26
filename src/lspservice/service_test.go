@@ -136,3 +136,15 @@ func TestDocumentSymbolOutline(t *testing.T) {
 func TestDocumentSemanticSymbols(t *testing.T) {
 	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":2,"method":"textDocument/semanticTokens/full","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"}}}`, ``)
 }
+
+func TestDocumentGotoDefinition(t *testing.T) {
+	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":6,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":0,"character":9}}}`, ``)
+}
+
+func TestDocumentGotoDefinition2(t *testing.T) {
+	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":6,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":13,"character":18}}}`, ``)
+}
+
+func TestDocumentGotoDefinition3(t *testing.T) {
+	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":6,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":13,"character":30}}}`, ``)
+}

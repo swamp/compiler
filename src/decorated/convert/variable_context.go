@@ -33,9 +33,10 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) decorate
 		return decorated.NewFunctionReference(name, t)
 	case *decorated.FunctionParameterDefinition:
 		return decorated.NewFunctionParameterReference(name, t)
-	default:
+	case *decorated.LetAssignment:
 		return decorated.NewLetVariableReference(name, t)
-		//		panic(fmt.Errorf("what to do with '%v' => %T", name, t))
+	default:
+		panic(fmt.Errorf("what to do with '%v' => %T", name, t))
 	}
 }
 

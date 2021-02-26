@@ -14,33 +14,32 @@ import (
 )
 
 type LetVariableReference struct {
-	ident               *ast.VariableIdentifier
-	decoratedExpression Expression
+	ident      *ast.VariableIdentifier
+	assignment *LetAssignment
 }
 
 func (g *LetVariableReference) Type() dtype.Type {
-	return g.decoratedExpression.Type()
+	return g.assignment.Type()
 }
 
 func (g *LetVariableReference) String() string {
-	return fmt.Sprintf("[letvarref %v %v]", g.ident, g.decoratedExpression)
+	return fmt.Sprintf("[letvarref %v %v]", g.ident, g.assignment)
 }
 
-func (g *LetVariableReference) Identifier() *ast.VariableIdentifier {
-	return g.ident
+func (g *LetVariableReference) LetVariable() *LetVariable {
+	return g.assignment.LetVariable()
 }
 
 func (g *LetVariableReference) Expression() Expression {
-	return g.decoratedExpression
+	return g.assignment.Expression()
 }
 
-func NewLetVariableReference(ident *ast.VariableIdentifier,
-	decoratedExpression Expression) *LetVariableReference {
-	if decoratedExpression == nil {
+func NewLetVariableReference(ident *ast.VariableIdentifier, assignment *LetAssignment) *LetVariableReference {
+	if assignment == nil {
 		panic("cant be nil")
 	}
 
-	return &LetVariableReference{ident: ident, decoratedExpression: decoratedExpression}
+	return &LetVariableReference{ident: ident, assignment: assignment}
 }
 
 func (g *LetVariableReference) FetchPositionLength() token.SourceFileReference {

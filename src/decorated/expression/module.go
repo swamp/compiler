@@ -57,18 +57,18 @@ type Module struct {
 	externalFunctions []*ExternalFunction
 
 	isInternal               bool
-	sourceFile               *token.SourceFileURI
+	sourceFileUri            token.DocumentURI
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	rootNodes                []Node
 	nodes                    []TypeOrToken
 }
 
-func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFile *token.SourceFileURI) *Module {
+func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri token.DocumentURI) *Module {
 	importedTypes := dectype.NewExposedTypes()
 	m := &Module{
 		fullyQualifiedModuleName: fullyQualifiedModuleName, exposedTypes: dectype.NewExposedTypes(),
 		importedTypes: importedTypes,
-		sourceFile:    sourceFile,
+		sourceFileUri: sourceFileUri,
 	}
 	m.typeRepo = dectype.NewTypeRepo(fullyQualifiedModuleName, importedTypes)
 	m.definitions = NewModuleDefinitions(m)
@@ -81,6 +81,10 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 
 func (m *Module) SetProgram(program *ast.SourceFile) {
 	m.program = program
+}
+
+func (m *Module) DocumentURI() token.DocumentURI {
+	return m.sourceFileUri
 }
 
 func (m *Module) SetRootNodes(nodes []Node) {

@@ -32,7 +32,7 @@ type Tokenizer struct {
 	r                     *runestream.RuneReader
 	oldPosition           token.PositionToken
 	position              token.PositionToken
-	document              token.SourceFileDocument
+	document              *token.SourceFileDocument
 	lastTokenWasDelimiter bool
 	lastReport            token.IndentationReport
 	enforceStyleGuide     bool
@@ -71,10 +71,8 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 // NewTokenizerInternal :
 func NewTokenizerInternal(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
 	t := &Tokenizer{
-		r: r,
-		document: token.SourceFileDocument{
-			Uri: token.DocumentURI(r.RelativeFilename()),
-		},
+		r:                     r,
+		document:              token.MakeSourceFileDocument("file://" + r.RelativeFilename()),
 		position:              token.NewPositionToken(token.NewPositionTopLeft(), 0),
 		lastTokenWasDelimiter: true,
 		enforceStyleGuide:     exactWhitespace,
@@ -105,7 +103,7 @@ func (t *Tokenizer) MakeSourceFileReference(pos token.PositionToken) token.Sourc
 	tokenRange := t.MakeRange(pos)
 	return token.SourceFileReference{
 		Range:    tokenRange,
-		Document: &t.document,
+		Document: t.document,
 	}
 }
 
@@ -369,7 +367,7 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 				if t.enforceStyleGuide {
 					trailingPosLength := token.SourceFileReference{
 						Range:    token.NewPositionLength(startPos.Position(), 1, startPos.Indentation()),
-						Document: &t.document,
+						Document: t.document,
 					}
 					return token.IndentationReport{}, NewTrailingSpaceError(trailingPosLength)
 				}
@@ -411,7 +409,7 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 						if newLineCount == 0 {
 							trailingPosLength := token.SourceFileReference{
 								Range:    token.NewPositionLength(startPos.Position(), 1, startPos.Indentation()),
-								Document: &t.document,
+								Document: t.document,
 							}
 							return token.IndentationReport{}, NewCommentNotAllowedHereError(trailingPosLength, fmt.Errorf("not allowed to have comment on same line"))
 						}

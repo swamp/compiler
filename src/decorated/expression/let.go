@@ -65,6 +65,10 @@ func (l *LetAssignment) Expression() Expression {
 	return l.expression
 }
 
+func (l *LetAssignment) Type() dtype.Type {
+	return l.expression.Type()
+}
+
 func (l *LetAssignment) FetchPositionLength() token.SourceFileReference {
 	return l.inclusive
 }

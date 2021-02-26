@@ -75,7 +75,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 		parser.ShowError(tokenizer, absoluteFilename, programErr, verbose, errorAsWarning)
 		return nil, programErr
 	}
-	sourceFile := token.MakeSourceFileURI(absoluteFilename)
+	sourceFile := token.DocumentURI(absoluteFilename)
 
 	module := decorated.NewModule(moduleName, sourceFile)
 
