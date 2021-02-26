@@ -16,6 +16,7 @@ import (
 type LetVariable struct {
 	name         *ast.VariableIdentifier
 	variableType dtype.Type
+	references   []*LetVariableReference
 }
 
 func (l *LetVariable) String() string {
@@ -28,6 +29,14 @@ func (l *LetVariable) Type() dtype.Type {
 
 func (l *LetVariable) Name() *ast.VariableIdentifier {
 	return l.name
+}
+
+func (l *LetVariable) AddReferee(ref *LetVariableReference) {
+	l.references = append(l.references, ref)
+}
+
+func (l *LetVariable) References() []*LetVariableReference {
+	return l.references
 }
 
 func NewLetVariable(name *ast.VariableIdentifier, variableType dtype.Type) *LetVariable {
@@ -45,6 +54,7 @@ type LetAssignment struct {
 	expression  Expression
 	letVariable *LetVariable
 	inclusive   token.SourceFileReference
+	references  []*LetVariableReference
 }
 
 func NewLetAssignment(name *ast.VariableIdentifier, expression Expression) *LetAssignment {
@@ -71,6 +81,15 @@ func (l *LetAssignment) Type() dtype.Type {
 
 func (l *LetAssignment) FetchPositionLength() token.SourceFileReference {
 	return l.inclusive
+}
+
+func (l *LetAssignment) AddReferee(ref *LetVariableReference) {
+	l.letVariable.AddReferee(ref)
+	l.references = append(l.references, ref)
+}
+
+func (l *LetAssignment) References() []*LetVariableReference {
+	return l.references
 }
 
 type Let struct {

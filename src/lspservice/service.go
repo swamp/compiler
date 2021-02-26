@@ -334,9 +334,59 @@ func (s *Service) HandleFormatting(params lsp.DocumentFormattingParams, conn lsp
 	return nil, nil
 }
 
-// HandleRangeFormatting
-func (s *Service) HandleHighlights(params lsp.DocumentHighlightParams, conn lspserv.Connection) ([]*lsp.DocumentHighlight, error) {
-	return nil, nil
+// HandleHighlights :
+func (s *Service) HandleHighlights(params lsp.DocumentHighlightParams,
+	conn lspserv.Connection) ([]*lsp.DocumentHighlight, error) {
+	tokenPosition := lspToTokenPosition(params.Position)
+
+	decoratedToken := s.scanner.FindToken(tokenPosition)
+	if decoratedToken == nil {
+		log.Printf("couldn't find a token at %v\n", tokenPosition)
+		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
+	}
+
+	log.Printf("found: %T %v\n", decoratedToken, decoratedToken)
+	var sourceFileReferences []token.SourceFileReference
+
+	switch t := decoratedToken.(type) {
+	case *decorated.Import:
+		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
+	case *decorated.FunctionParameterDefinition:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *decorated.FunctionParameterReference:
+		sourceFileReferences = append(sourceFileReferences, t.ParameterRef().FetchPositionLength())
+	case *decorated.LetVariable:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *decorated.LetVariableReference:
+		sourceFileReferences = append(sourceFileReferences, t.LetVariable().FetchPositionLength())
+	case *decorated.LetAssignment:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *decorated.FunctionValue:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *decorated.FunctionReference:
+		sourceFileReferences = append(sourceFileReferences, t.FunctionValue().FetchPositionLength())
+	}
+
+	var hilights []*lsp.DocumentHighlight
+
+	for _, reference := range sourceFileReferences {
+		highlight := &lsp.DocumentHighlight{
+			Range: *tokenToLspRange(reference.Range),
+			Kind:  1, // Read only
+		}
+
+		hilights = append(hilights, highlight)
+	}
+
+	return hilights, nil
 }
 
 func (s *Service) HandleCodeAction(params lsp.CodeActionParams, conn lspserv.Connection) (*lsp.CodeAction, error) {

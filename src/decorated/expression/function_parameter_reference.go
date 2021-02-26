@@ -40,7 +40,11 @@ func NewFunctionParameterReference(ident *ast.VariableIdentifier,
 		panic("cant be nil")
 	}
 
-	return &FunctionParameterReference{ident: ident, referencedParameter: referencedParameter}
+	ref := &FunctionParameterReference{ident: ident, referencedParameter: referencedParameter}
+
+	referencedParameter.AddReferee(ref)
+
+	return ref
 }
 
 func (g *FunctionParameterReference) FetchPositionLength() token.SourceFileReference {

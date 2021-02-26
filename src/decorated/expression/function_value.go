@@ -17,6 +17,7 @@ import (
 type FunctionParameterDefinition struct {
 	identifier    *ast.VariableIdentifier
 	generatedType dtype.Type
+	references    []*FunctionParameterReference
 }
 
 func NewFunctionParameterDefinition(identifier *ast.VariableIdentifier, convertedType dtype.Type) *FunctionParameterDefinition {
@@ -39,6 +40,14 @@ func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileRefe
 	return a.identifier.Symbol().SourceFileReference
 }
 
+func (a *FunctionParameterDefinition) AddReferee(ref *FunctionParameterReference) {
+	a.references = append(a.references, ref)
+}
+
+func (a *FunctionParameterDefinition) References() []*FunctionParameterReference {
+	return a.references
+}
+
 type FunctionValue struct {
 	forcedFunctionType  *dectype.FunctionAtom
 	decoratedExpression Expression
@@ -46,6 +55,7 @@ type FunctionValue struct {
 	commentBlock        token.CommentBlock
 	astFunction         *ast.FunctionValue
 	sourceFileReference token.SourceFileReference
+	references          []*FunctionReference
 }
 
 func NewFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock token.CommentBlock) *FunctionValue {
@@ -116,4 +126,12 @@ func (f *FunctionValue) FetchPositionLength() token.SourceFileReference {
 
 func (f *FunctionValue) CommentBlock() token.CommentBlock {
 	return f.commentBlock
+}
+
+func (f *FunctionValue) AddReferee(ref *FunctionReference) {
+	f.references = append(f.references, ref)
+}
+
+func (f *FunctionValue) References() []*FunctionReference {
+	return f.references
 }

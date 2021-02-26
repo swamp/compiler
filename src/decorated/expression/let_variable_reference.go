@@ -39,7 +39,11 @@ func NewLetVariableReference(ident *ast.VariableIdentifier, assignment *LetAssig
 		panic("cant be nil")
 	}
 
-	return &LetVariableReference{ident: ident, assignment: assignment}
+	ref := &LetVariableReference{ident: ident, assignment: assignment}
+
+	assignment.AddReferee(ref)
+
+	return ref
 }
 
 func (g *LetVariableReference) FetchPositionLength() token.SourceFileReference {
