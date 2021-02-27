@@ -218,15 +218,19 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
 	}
 
-	_, isItAType := decoratedToken.(dtype.Type)
+	tokenType, isItAType := decoratedToken.(dtype.Type)
 
 	log.Printf("the token is %T and type:%v\n", decoratedToken, isItAType)
 
-	showString := decoratedToken.String()
-	if !isItAType {
+	var codeSignature string
+	if isItAType {
+		codeSignature = tokenType.HumanReadable()
+	} else {
 		normalToken, _ := decoratedToken.(decorated.Token)
-		showString += fmt.Sprintf(" : %v", normalToken.Type().HumanReadable())
+		codeSignature = normalToken.Type().HumanReadable()
 	}
+
+	showString := fmt.Sprintf("```swamp\n%v\n```", codeSignature)
 
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{
@@ -260,6 +264,10 @@ func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, co
 		sourceFileReference = t.LetVariable().FetchPositionLength()
 	case *decorated.FunctionReference:
 		sourceFileReference = t.FunctionValue().FetchPositionLength()
+	case *decorated.FunctionValue:
+		sourceFileReference = t.FetchPositionLength()
+	case *decorated.FunctionParameterDefinition:
+		sourceFileReference = t.FetchPositionLength()
 	}
 
 	if sourceFileReference.Document == nil {
@@ -271,8 +279,35 @@ func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, co
 	return location, nil
 }
 
+func (s *Service) HandleLinkedEditingRange(params lsp.LinkedEditingRangeParams, conn lspserv.Connection) (*lsp.LinkedEditingRanges, error) {
+	tokenPosition := lspToTokenPosition(params.Position)
+
+	decoratedToken := s.scanner.FindToken(tokenPosition)
+	if decoratedToken == nil {
+		log.Printf("couldn't find a token at %v\n", tokenPosition)
+		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
+	}
+
+	log.Printf("found: %T %v\n", decoratedToken, decoratedToken)
+
+	documentURI := token.MakeDocumentURI(string(params.TextDocument.URI))
+	log.Printf("found: %T %v\n", decoratedToken, decoratedToken)
+	sourceFileReferences := findAllLinkedSymbolsInDocument(decoratedToken, documentURI)
+
+	var renameRanges []lsp.Range
+
+	for _, ref := range sourceFileReferences {
+		renameRanges = append(renameRanges, *tokenToLspRange(ref.Range))
+	}
+
+	return &lsp.LinkedEditingRanges{
+		Ranges:      renameRanges,
+		WordPattern: nil,
+	}, nil
+}
+
 func (s *Service) HandleGotoDeclaration(params lsp.DeclarationOptions, conn lspserv.Connection) (*lsp.Location, error) {
-	return nil, nil
+	return nil, fmt.Errorf("concept of go to declaration not in the Swamp language")
 }
 
 func (s *Service) HandleGotoTypeDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {
@@ -280,11 +315,78 @@ func (s *Service) HandleGotoTypeDefinition(params lsp.TextDocumentPositionParams
 }
 
 func (s *Service) HandleGotoImplementation(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {
-	return nil, nil
+	return nil, fmt.Errorf("concept of go to implementation not in the Swamp language")
+}
+
+func findReferences(position lsp.Position, scanner DecoratedTokenScanner) ([]token.SourceFileReference, error) {
+	tokenPosition := lspToTokenPosition(position)
+
+	decoratedToken := scanner.FindToken(tokenPosition)
+	if decoratedToken == nil {
+		log.Printf("couldn't find a token at %v\n", tokenPosition)
+		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
+	}
+
+	log.Printf("found: %T %v\n", decoratedToken, decoratedToken)
+	var sourceFileReferences []token.SourceFileReference
+
+	switch t := decoratedToken.(type) {
+	case *decorated.Import:
+		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
+	case *decorated.FunctionParameterDefinition:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *decorated.LetVariable:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *decorated.LetAssignment:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *decorated.FunctionValue:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	}
+
+	return sourceFileReferences, nil
 }
 
 func (s *Service) HandleFindReferences(params lsp.ReferenceParams, conn lspserv.Connection) ([]*lsp.Location, error) {
-	return nil, nil
+	sourceFileReferences, err := findReferences(params.Position, s.scanner)
+	if err != nil {
+		return nil, err
+	}
+
+	var locations []*lsp.Location
+
+	for _, reference := range sourceFileReferences {
+		location := sourceFileReferenceToLocation(reference)
+		locations = append(locations, location)
+	}
+
+	return locations, nil
+}
+
+func functionParametersToDocumentSymbols(parameters []*decorated.FunctionParameterDefinition) []lsp.DocumentSymbol {
+	var symbols []lsp.DocumentSymbol
+
+	for _, param := range parameters {
+		symbol := lsp.DocumentSymbol{
+			Name:           param.Identifier().Name(),
+			Detail:         param.Type().HumanReadable(),
+			Kind:           lsp.SKVariable,
+			Tags:           nil,
+			Range:          *tokenToLspRange(param.FetchPositionLength().Range),
+			SelectionRange: *tokenToLspRange(param.FetchPositionLength().Range),
+			Children:       nil,
+		}
+		symbols = append(symbols, symbol)
+	}
+
+	return symbols
 }
 
 func convertRootTokenToOutlineSymbol(rootToken decorated.TypeOrToken) *lsp.DocumentSymbol {
@@ -297,7 +399,7 @@ func convertRootTokenToOutlineSymbol(rootToken decorated.TypeOrToken) *lsp.Docum
 			Tags:           nil,
 			Range:          *tokenToLspRange(t.FetchPositionLength().Range),
 			SelectionRange: *tokenToLspRange(t.FetchPositionLength().Range),
-			Children:       nil,
+			Children:       functionParametersToDocumentSymbols(t.Parameters()),
 		}
 	}
 	return nil
@@ -334,6 +436,109 @@ func (s *Service) HandleFormatting(params lsp.DocumentFormattingParams, conn lsp
 	return nil, nil
 }
 
+func findAllLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDocument token.DocumentURI) []token.SourceFileReference {
+	var sourceFileReferences []token.SourceFileReference
+
+	switch t := decoratedToken.(type) {
+	case *decorated.Import:
+		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
+	case *decorated.FunctionParameterDefinition:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.FetchPositionLength())
+		}
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+	case *decorated.FunctionParameterReference:
+		return findAllLinkedSymbolsInDocument(t.ParameterRef(), filterDocument)
+
+	case *decorated.LetVariable:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.FetchPositionLength())
+		}
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+	case *decorated.LetVariableReference:
+		return findAllLinkedSymbolsInDocument(t.LetVariable(), filterDocument)
+
+		/*
+			case *decorated.LetAssignment:
+				for _, ref := range t.References() {
+					if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+						sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+					}
+				}
+
+		*/
+
+	case *decorated.FunctionValue:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.AstFunctionValue().DebugFunctionIdentifier().FetchPositionLength())
+		}
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+	case *decorated.FunctionReference:
+		return findAllLinkedSymbolsInDocument(t.FunctionValue(), filterDocument)
+	}
+
+	return sourceFileReferences
+}
+
+func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDocument token.DocumentURI) []token.SourceFileReference {
+	var sourceFileReferences []token.SourceFileReference
+
+	switch t := decoratedToken.(type) {
+	case *decorated.Import:
+		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
+	case *decorated.FunctionParameterDefinition:
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+	case *decorated.FunctionParameterReference:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.ParameterRef().FetchPositionLength())
+		}
+	case *decorated.LetVariable:
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+	case *decorated.LetVariableReference:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.LetVariable().FetchPositionLength())
+		}
+	case *decorated.LetAssignment:
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+	case *decorated.FunctionValue:
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+	case *decorated.FunctionReference:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.FunctionValue().FetchPositionLength())
+		}
+	}
+
+	return sourceFileReferences
+}
+
 // HandleHighlights :
 func (s *Service) HandleHighlights(params lsp.DocumentHighlightParams,
 	conn lspserv.Connection) ([]*lsp.DocumentHighlight, error) {
@@ -345,37 +550,11 @@ func (s *Service) HandleHighlights(params lsp.DocumentHighlightParams,
 		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
 	}
 
+	documentURI := token.MakeDocumentURI(string(params.TextDocument.URI))
 	log.Printf("found: %T %v\n", decoratedToken, decoratedToken)
-	var sourceFileReferences []token.SourceFileReference
+	sourceFileReferences := findLinkedSymbolsInDocument(decoratedToken, documentURI)
 
-	switch t := decoratedToken.(type) {
-	case *decorated.Import:
-		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
-	case *decorated.FunctionParameterDefinition:
-		for _, ref := range t.References() {
-			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
-		}
-	case *decorated.FunctionParameterReference:
-		sourceFileReferences = append(sourceFileReferences, t.ParameterRef().FetchPositionLength())
-	case *decorated.LetVariable:
-		for _, ref := range t.References() {
-			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
-		}
-	case *decorated.LetVariableReference:
-		sourceFileReferences = append(sourceFileReferences, t.LetVariable().FetchPositionLength())
-	case *decorated.LetAssignment:
-		for _, ref := range t.References() {
-			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
-		}
-	case *decorated.FunctionValue:
-		for _, ref := range t.References() {
-			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
-		}
-	case *decorated.FunctionReference:
-		sourceFileReferences = append(sourceFileReferences, t.FunctionValue().FetchPositionLength())
-	}
-
-	var hilights []*lsp.DocumentHighlight
+	var highlights []*lsp.DocumentHighlight
 
 	for _, reference := range sourceFileReferences {
 		highlight := &lsp.DocumentHighlight{
@@ -383,10 +562,10 @@ func (s *Service) HandleHighlights(params lsp.DocumentHighlightParams,
 			Kind:  1, // Read only
 		}
 
-		hilights = append(hilights, highlight)
+		highlights = append(highlights, highlight)
 	}
 
-	return hilights, nil
+	return highlights, nil
 }
 
 func (s *Service) HandleCodeAction(params lsp.CodeActionParams, conn lspserv.Connection) (*lsp.CodeAction, error) {
@@ -469,6 +648,20 @@ func addSemanticTokenAnnotation(f *decorated.Annotation, builder *SemanticBuilde
 func addSemanticTokenFunctionType(f *dectype.FunctionAtom, builder *SemanticBuilder) error {
 	for _, paramType := range f.FunctionParameterTypes() {
 		if err := addSemanticToken(paramType, builder); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func addSemanticTokenRecordType(f *dectype.RecordAtom, builder *SemanticBuilder) error {
+	for _, paramType := range f.ParseOrderedFields() {
+		if err := builder.EncodeSymbol(f.String(), paramType.VariableIdentifier().FetchPositionLength().Range, "field", []string{"declaration"}); err != nil {
+			return err
+		}
+
+		if err := addSemanticToken(paramType.Type(), builder); err != nil {
 			return err
 		}
 	}
@@ -690,10 +883,6 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenFunctionValue(t, builder)
 	case *decorated.Annotation:
 		return addSemanticTokenAnnotation(t, builder)
-	case *dectype.TypeReference:
-		return addSemanticTokenTypeReference(t, builder)
-	case *dectype.FunctionAtom:
-		return addSemanticTokenFunctionType(t, builder)
 	case *dectype.InvokerType:
 		return addTypeReferenceInvoker(t.FetchPositionLength().Range, t, builder)
 	case *decorated.Import:
@@ -718,6 +907,13 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenFunctionReference(t, builder)
 	case *decorated.FunctionParameterReference:
 		return addSemanticTokenFunctionParameterReference(t, builder)
+		// TYPES
+	case *dectype.TypeReference:
+		return addSemanticTokenTypeReference(t, builder)
+	case *dectype.FunctionAtom:
+		return addSemanticTokenFunctionType(t, builder)
+	case *dectype.RecordAtom:
+		return addSemanticTokenRecordType(t, builder)
 	default:
 		log.Printf("unknown %T %v\n", t, t)
 	}
@@ -740,26 +936,29 @@ func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn
 }
 
 func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connection) ([]*lsp.CodeLens, error) {
-	return []*lsp.CodeLens{
-		/*{
-			Range: lsp.Range{
-				Start: lsp.Position{
-					Line:      4,
-					Character: 0,
+	var codeLenses []*lsp.CodeLens
+
+	for _, rootToken := range s.scanner.RootTokens() {
+		switch t := rootToken.(type) {
+		case *decorated.FunctionValue:
+			textToDisplay := fmt.Sprintf("%d references", len(t.References()))
+			if len(t.References()) == 0 {
+				textToDisplay = "no references"
+			}
+			codeLens := &lsp.CodeLens{
+				Range: *tokenToLspRange(t.Annotation().FetchPositionLength().Range),
+				Command: lsp.Command{
+					Title:     textToDisplay,
+					Command:   "",
+					Arguments: nil,
 				},
-				End: lsp.Position{
-					Line:      4,
-					Character: 4,
-				},
-			},
-			Command: lsp.Command{
-				Title:     "Some Command here",
-				Command:   "swamp.somecommand",
-				Arguments: nil,
-			},
-			Data: nil,
-		},*/
-	}, nil
+				Data: nil,
+			}
+			codeLenses = append(codeLenses, codeLens)
+		}
+	}
+
+	return codeLenses, nil
 }
 
 func (s *Service) HandleCodeLensResolve(params lsp.CodeLens, conn lspserv.Connection) (*lsp.CodeLens, error) {

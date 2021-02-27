@@ -18,3 +18,5 @@ require (
 )
 
 replace github.com/piot/lsp-server => ../../lsp-server
+replace github.com/piot/go-lsp => ../../../other/go-lsp
+

@@ -159,13 +159,13 @@ func (g *Definer) handleDefinitionAssignment(d DecorateStream, assignment *ast.D
 	if annotatedType == nil {
 		return decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 	}
-	g.localAnnotation = nil
 	variableContext := d.NewVariableContext()
-	_, decoratedExpressionErr := decorateDefinition(d, variableContext, name, expr, annotatedType, g.localCommentBlock)
+	_, decoratedExpressionErr := decorateDefinition(d, variableContext, name, expr, annotatedType, g.localAnnotation, g.localCommentBlock)
 	if decoratedExpressionErr != nil {
 		return decoratedExpressionErr
 	}
 	g.localComments = nil
+	g.localAnnotation = nil
 
 	g.localAnnotation = nil
 	return nil

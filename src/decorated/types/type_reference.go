@@ -25,7 +25,7 @@ func (t *TypeReference) FetchPositionLength() token.SourceFileReference {
 }
 
 func (t *TypeReference) HumanReadable() string {
-	return fmt.Sprintf("typeref %v %v", t.typeIdentfier, t.referencedType)
+	return t.referencedType.HumanReadable()
 }
 
 func (t *TypeReference) ShortString() string {

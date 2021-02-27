@@ -16,7 +16,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, expr ast.Expression, expectedType dtype.Type, localCommentBlock token.CommentBlock) (decorated.Expression, decshared.DecoratedError) {
+func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, expr ast.Expression, expectedType dtype.Type, annotation *decorated.Annotation, localCommentBlock token.CommentBlock) (decorated.Expression, decshared.DecoratedError) {
 	name := nameIdent.Name()
 	localName := name
 	verboseFlag := false
@@ -36,7 +36,7 @@ func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *a
 		if !wasType {
 			return nil, decorated.NewExpectedFunctionType(expectedType, expr)
 		}
-		decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, e, functionAtom, nameIdent, context, localCommentBlock)
+		decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, e, functionAtom, nameIdent, context, localCommentBlock)
 		if decoratedFunctionErr != nil {
 			return nil, decoratedFunctionErr
 		}

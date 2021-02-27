@@ -44,7 +44,7 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	return newVariableContext
 }
 
-func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom,
+func DecorateFunctionValue(d DecorateStream, annotation *decorated.Annotation, potentialFunc *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom,
 	functionName *ast.VariableIdentifier, context *VariableContext, comments token.CommentBlock) (decorated.Expression, decshared.DecoratedError) {
 	if forcedFunctionType == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", potentialFunc))
@@ -98,5 +98,5 @@ func DecorateFunctionValue(d DecorateStream, potentialFunc *ast.FunctionValue, f
 		fmt.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
 	}
 
-	return decorated.NewFunctionValue(potentialFunc, forcedFunctionType, parameters, decoratedExpression, comments), nil
+	return decorated.NewFunctionValue(annotation, potentialFunc, forcedFunctionType, parameters, decoratedExpression, comments), nil
 }

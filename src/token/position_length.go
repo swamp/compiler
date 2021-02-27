@@ -23,6 +23,10 @@ type SourceFileDocument struct {
 	Uri DocumentURI
 }
 
+func (d *SourceFileDocument) EqualTo(uri DocumentURI) bool {
+	return d.Uri == uri
+}
+
 type SourceFileReference struct {
 	Range    Range
 	Document *SourceFileDocument

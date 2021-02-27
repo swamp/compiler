@@ -18,7 +18,7 @@ type InvokerType struct {
 }
 
 func (u *InvokerType) HumanReadable() string {
-	return fmt.Sprintf("%v<%v>", u.typeToInvoke.DecoratedName(), TypesToDecoratedNames(u.params))
+	return fmt.Sprintf("%v %v", u.typeToInvoke.HumanReadable(), TypesToHumanReadable(u.params))
 }
 
 func (u *InvokerType) ShortString() string {

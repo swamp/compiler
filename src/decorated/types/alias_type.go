@@ -24,7 +24,7 @@ func (u *Alias) String() string {
 }
 
 func (u *Alias) HumanReadable() string {
-	return fmt.Sprintf("type alias %v %v", u.name.Name(), u.referencedType.HumanReadable())
+	return fmt.Sprintf("%v", u.name.Name())
 }
 
 func (u *Alias) TypeIdentifier() *ast.TypeIdentifier {

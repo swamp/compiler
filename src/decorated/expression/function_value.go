@@ -56,20 +56,25 @@ type FunctionValue struct {
 	astFunction         *ast.FunctionValue
 	sourceFileReference token.SourceFileReference
 	references          []*FunctionReference
+	annotation          *Annotation
 }
 
-func NewFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock token.CommentBlock) *FunctionValue {
+func NewFunctionValue(annotation *Annotation, astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock token.CommentBlock) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
 
 	sourceFileReference := token.MakeInclusiveSourceFileReference(astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
 
-	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock, sourceFileReference: sourceFileReference}
+	return &FunctionValue{annotation: annotation, astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock, sourceFileReference: sourceFileReference}
 }
 
 func (f *FunctionValue) AstFunctionValue() *ast.FunctionValue {
 	return f.astFunction
+}
+
+func (f *FunctionValue) Annotation() *Annotation {
+	return f.annotation
 }
 
 func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
