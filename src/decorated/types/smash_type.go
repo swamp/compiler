@@ -36,6 +36,12 @@ func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 	if wasTypeRef {
 		return Unalias(typeRef.Next())
 	}
+
+	fnTypeRef, wasFnTypeRef := t.(*FunctionTypeReference)
+	if wasFnTypeRef {
+		return Unalias(fnTypeRef.Next())
+	}
+
 	call, wasCall := t.(*InvokerType)
 	if wasCall {
 		resolved, resolveErr := CallType(call.typeToInvoke, call.params)

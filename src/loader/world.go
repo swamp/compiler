@@ -13,12 +13,13 @@ import (
 )
 
 type World struct {
-	moduleLookup map[string]*decorated.Module
-	modules      []*decorated.Module
+	moduleLookup       map[string]*decorated.Module
+	absolutePathLookup map[LocalFileSystemPath]*decorated.Module
+	modules            []*decorated.Module
 }
 
 func NewWorld() *World {
-	return &World{moduleLookup: make(map[string]*decorated.Module)}
+	return &World{moduleLookup: make(map[string]*decorated.Module), absolutePathLookup: make(map[LocalFileSystemPath]*decorated.Module)}
 }
 
 func (w *World) AllModules() []*decorated.Module {
@@ -29,11 +30,21 @@ func (w *World) FindModule(moduleName dectype.ArtifactFullyQualifiedModuleName) 
 	return w.moduleLookup[moduleName.String()]
 }
 
+func (w *World) FindModuleFromAbsoluteFilePath(absolutePath LocalFileSystemPath) *decorated.Module {
+	return w.absolutePathLookup[absolutePath]
+}
+
 func (w *World) AddModule(moduleName dectype.ArtifactFullyQualifiedModuleName, module *decorated.Module) {
 	if module == nil {
 		panic("not a good module")
 	}
 	w.moduleLookup[moduleName.String()] = module
+
+	localFilePath, convertErr := module.DocumentURI().ToLocalFilePath()
+	if convertErr != nil {
+		panic(convertErr)
+	}
+	w.absolutePathLookup[LocalFileSystemPath(localFilePath)] = module
 	w.modules = append(w.modules, module)
 }
 

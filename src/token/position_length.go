@@ -7,6 +7,7 @@ package token
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -17,6 +18,15 @@ func MakeDocumentURI(s string) DocumentURI {
 		panic("illegal uri")
 	}
 	return DocumentURI(s)
+}
+
+func (s DocumentURI) ToLocalFilePath() (string, error) {
+	fullUrl, urlErr := url.Parse(string(s))
+	if urlErr != nil {
+		return "", urlErr
+	}
+
+	return fullUrl.Path, nil
 }
 
 type SourceFileDocument struct {

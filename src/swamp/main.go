@@ -17,6 +17,7 @@ import (
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	"github.com/swamp/compiler/src/file"
+	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/lspservice"
 )
 
@@ -35,7 +36,7 @@ func compileAndLink(fileOrDirectory string, outputFilename string, enforceStyle 
 		filenameToCompile = swampDirectory
 	}
 
-	world, _, compileErr := swampcompiler.CompileMain(filenameToCompile, enforceStyle, verboseFlag)
+	world, _, compileErr := swampcompiler.CompileMain(filenameToCompile, loader.NewFileSystemDocumentProvider(), enforceStyle, verboseFlag)
 	if compileErr != nil {
 		return compileErr
 	}

@@ -14,6 +14,12 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type FunctionTypeLike interface {
+	dtype.Type
+	ReturnType() dtype.Type
+	ParameterAndReturn() ([]dtype.Type, dtype.Type)
+}
+
 type FunctionAtom struct {
 	parameterTypes  []dtype.Type
 	astFunctionType *ast.FunctionType

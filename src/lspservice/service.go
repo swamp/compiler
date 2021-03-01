@@ -151,8 +151,8 @@ func (s *SemanticBuilder) EncodeSymbol(debugString string, tokenRange token.Rang
 }
 
 type DecoratedTokenScanner interface {
-	FindToken(position token.Position) decorated.TypeOrToken
-	RootTokens() []decorated.TypeOrToken
+	FindToken(documentURI token.DocumentURI, position token.Position) decorated.TypeOrToken
+	RootTokens(documentURI token.DocumentURI) []decorated.TypeOrToken
 }
 
 type Compiler interface {
@@ -176,6 +176,10 @@ func (s *Service) ResetCaches(lock bool) {
 }
 
 func (s *Service) ShutDown() {
+}
+
+func toDocumentURI(URI lsp.DocumentURI) token.DocumentURI {
+	return token.DocumentURI(URI)
 }
 
 func lspToTokenPosition(position lsp.Position) token.Position {
@@ -210,8 +214,8 @@ func tokenToLspRange(rangeToken token.Range) *lsp.Range {
 
 func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Hover, error) {
 	tokenPosition := lspToTokenPosition(params.Position)
-
-	decoratedToken := s.scanner.FindToken(tokenPosition)
+	sourceFileURI := toDocumentURI(params.TextDocument.URI)
+	decoratedToken := s.scanner.FindToken(sourceFileURI, tokenPosition)
 
 	if decoratedToken == nil {
 		log.Printf("couldn't find a token at %v\n", tokenPosition)
@@ -245,8 +249,8 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 
 func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {
 	tokenPosition := lspToTokenPosition(params.Position)
-
-	decoratedToken := s.scanner.FindToken(tokenPosition)
+	sourceFileURI := toDocumentURI(params.TextDocument.URI)
+	decoratedToken := s.scanner.FindToken(sourceFileURI, tokenPosition)
 	if decoratedToken == nil {
 		log.Printf("couldn't find a token at %v\n", tokenPosition)
 		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
@@ -281,11 +285,14 @@ func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, co
 
 func (s *Service) HandleLinkedEditingRange(params lsp.LinkedEditingRangeParams, conn lspserv.Connection) (*lsp.LinkedEditingRanges, error) {
 	tokenPosition := lspToTokenPosition(params.Position)
-
-	decoratedToken := s.scanner.FindToken(tokenPosition)
+	sourceFileURI := toDocumentURI(params.TextDocument.URI)
+	decoratedToken := s.scanner.FindToken(sourceFileURI, tokenPosition)
 	if decoratedToken == nil {
 		log.Printf("couldn't find a token at %v\n", tokenPosition)
-		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
+		return &lsp.LinkedEditingRanges{
+			Ranges:      []lsp.Range{},
+			WordPattern: nil,
+		}, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
 	}
 
 	log.Printf("found: %T %v\n", decoratedToken, decoratedToken)
@@ -318,10 +325,10 @@ func (s *Service) HandleGotoImplementation(params lsp.TextDocumentPositionParams
 	return nil, fmt.Errorf("concept of go to implementation not in the Swamp language")
 }
 
-func findReferences(position lsp.Position, scanner DecoratedTokenScanner) ([]token.SourceFileReference, error) {
+func findReferences(uri lsp.DocumentURI, position lsp.Position, scanner DecoratedTokenScanner) ([]token.SourceFileReference, error) {
 	tokenPosition := lspToTokenPosition(position)
-
-	decoratedToken := scanner.FindToken(tokenPosition)
+	sourceFileURI := toDocumentURI(uri)
+	decoratedToken := scanner.FindToken(sourceFileURI, tokenPosition)
 	if decoratedToken == nil {
 		log.Printf("couldn't find a token at %v\n", tokenPosition)
 		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
@@ -355,7 +362,7 @@ func findReferences(position lsp.Position, scanner DecoratedTokenScanner) ([]tok
 }
 
 func (s *Service) HandleFindReferences(params lsp.ReferenceParams, conn lspserv.Connection) ([]*lsp.Location, error) {
-	sourceFileReferences, err := findReferences(params.Position, s.scanner)
+	sourceFileReferences, err := findReferences(params.TextDocument.URI, params.Position, s.scanner)
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +413,8 @@ func convertRootTokenToOutlineSymbol(rootToken decorated.TypeOrToken) *lsp.Docum
 }
 
 func (s *Service) HandleSymbol(params lsp.DocumentSymbolParams, conn lspserv.Connection) ([]*lsp.DocumentSymbol, error) {
-	rootTokens := s.scanner.RootTokens()
+	sourceFileURI := toDocumentURI(params.TextDocument.URI)
+	rootTokens := s.scanner.RootTokens(sourceFileURI)
 
 	var symbols []*lsp.DocumentSymbol
 
@@ -543,8 +551,8 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 func (s *Service) HandleHighlights(params lsp.DocumentHighlightParams,
 	conn lspserv.Connection) ([]*lsp.DocumentHighlight, error) {
 	tokenPosition := lspToTokenPosition(params.Position)
-
-	decoratedToken := s.scanner.FindToken(tokenPosition)
+	sourceFileURI := toDocumentURI(params.TextDocument.URI)
+	decoratedToken := s.scanner.FindToken(sourceFileURI, tokenPosition)
 	if decoratedToken == nil {
 		log.Printf("couldn't find a token at %v\n", tokenPosition)
 		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
@@ -915,14 +923,15 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 	case *dectype.RecordAtom:
 		return addSemanticTokenRecordType(t, builder)
 	default:
-		log.Printf("unknown %T %v\n", t, t)
+		// log.Printf("semantic unknown %T %v\n", t, t)
 	}
 
 	return nil
 }
 
 func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (*lsp.SemanticTokens, error) {
-	allTokens := s.scanner.RootTokens()
+	sourceFileURI := toDocumentURI(params.TextDocument.URI)
+	allTokens := s.scanner.RootTokens(sourceFileURI)
 	builder := NewSemanticBuilder()
 	for _, foundToken := range allTokens {
 		if err := addSemanticToken(foundToken, builder); err != nil {
@@ -938,7 +947,7 @@ func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn
 func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connection) ([]*lsp.CodeLens, error) {
 	var codeLenses []*lsp.CodeLens
 
-	for _, rootToken := range s.scanner.RootTokens() {
+	for _, rootToken := range s.scanner.RootTokens(toDocumentURI(params.TextDocument.URI)) {
 		switch t := rootToken.(type) {
 		case *decorated.FunctionValue:
 			textToDisplay := fmt.Sprintf("%d references", len(t.References()))
@@ -974,6 +983,9 @@ func (s *Service) HandleDidOpen(params lsp.DidOpenTextDocumentParams, conn lspse
 	if urlErr != nil {
 		return urlErr
 	}
-	s.compiler.Compile(fullUrl.Path)
+	compileErr := s.compiler.Compile(fullUrl.Path)
+	if compileErr != nil {
+		log.Printf("couldn't compile it:%v\n", compileErr)
+	}
 	return nil
 }

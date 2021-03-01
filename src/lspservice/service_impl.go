@@ -10,8 +10,15 @@ import (
 )
 
 type LspImpl struct {
-	world  *loader.World
-	module *decorated.Module
+	world         *loader.World
+	documentCache *DocumentCache
+}
+
+func (l *LspImpl) NewLspImp(fallbackProvider loader.DocumentProvider) *LspImpl {
+	return &LspImpl{
+		world:         nil,
+		documentCache: NewDocumentCache(fallbackProvider),
+	}
 }
 
 func (l *LspImpl) Compile(filename string) error {
@@ -19,7 +26,7 @@ func (l *LspImpl) Compile(filename string) error {
 
 	const verboseFlag = false
 
-	world, module, err := swampcompiler.CompileFile(filename, enforceStyle, verboseFlag)
+	world, module, err := swampcompiler.CompileMainFindLibraryRoot(filename, l.documentCache, enforceStyle, verboseFlag)
 	if err != nil {
 		return err
 	}
@@ -29,25 +36,43 @@ func (l *LspImpl) Compile(filename string) error {
 	}
 
 	l.world = world
-	l.module = module
 
 	return nil
 }
 
-func (l *LspImpl) RootTokens() []decorated.TypeOrToken {
+func findModuleFromSourceFile(world *loader.World, sourceFileURI token.DocumentURI) (*decorated.Module, error) {
+	localFilePath, convertErr := sourceFileURI.ToLocalFilePath()
+	if convertErr != nil {
+		return nil, convertErr
+	}
+
+	foundModule := world.FindModuleFromAbsoluteFilePath(loader.LocalFileSystemPath(localFilePath))
+	if foundModule == nil {
+		return nil, fmt.Errorf("couldn't find module for path %v", localFilePath)
+	}
+
+	return foundModule, nil
+}
+
+func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []decorated.TypeOrToken {
+	module, moduleErr := findModuleFromSourceFile(l.world, sourceFile)
+	if moduleErr != nil {
+		return nil
+	}
 	var tokens []decorated.TypeOrToken
-	for _, node := range l.module.RootNodes() {
+	for _, node := range module.RootNodes() {
 		tokens = append(tokens, node.(decorated.TypeOrToken))
 	}
 
 	return tokens
 }
 
-func (l *LspImpl) FindToken(position token.Position) decorated.TypeOrToken {
-	if l.module == nil {
+func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Position) decorated.TypeOrToken {
+	module, moduleErr := findModuleFromSourceFile(l.world, sourceFile)
+	if moduleErr != nil {
 		return nil
 	}
-	tokens := l.module.Nodes()
+	tokens := module.Nodes()
 
 	smallestRange := token.MakeRange(
 		token.MakePosition(0, 0),

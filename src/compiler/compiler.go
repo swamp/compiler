@@ -39,36 +39,7 @@ func CheckUnused(world *loader.World) {
 	}
 }
 
-func CompileFile(sourceFile string, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
-	sourceFileRootDirectory := sourceFile
-	if file.IsDir(sourceFile) {
-	} else {
-		sourceFileRootDirectory = filepath.Dir(sourceFile)
-	}
-	world := loader.NewWorld()
-
-	worldDecorator, worldDecoratorErr := loader.NewWorldDecorator(enforceStyle, verboseFlag)
-	if worldDecoratorErr != nil {
-		return nil, nil, worldDecoratorErr
-	}
-	for _, rootModule := range worldDecorator.ImportModules() {
-		world.AddModule(rootModule.FullyQualifiedModuleName(), rootModule)
-	}
-
-	mainNamespace := dectype.MakePackageRootModuleName(nil)
-	rootPackage := NewPackageLoader(sourceFileRootDirectory, mainNamespace, world, worldDecorator)
-	repository := rootPackage.repository
-	packageRelative := dectype.MakePackageRelativeModuleNameFromString("test")
-	rootPrefix := dectype.MakePackageRootModuleNameFromString("")
-	module, readModuleErr := repository.InternalReader().ReadModule(repository, packageRelative, rootPrefix)
-	if readModuleErr != nil {
-		return nil, nil, decorated.NewModuleError(".swamp", readModuleErr)
-	}
-
-	return world, module, nil
-}
-
-func CompileMain(mainSourceFile string, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
+func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
 	} else {
@@ -86,7 +57,7 @@ func CompileMain(mainSourceFile string, enforceStyle bool, verboseFlag bool) (*l
 
 	mainNamespace := dectype.MakePackageRootModuleName(nil)
 
-	rootPackage := NewPackageLoader(mainPrefix, mainNamespace, world, worldDecorator)
+	rootPackage := NewPackageLoader(mainPrefix, documentProvider, mainNamespace, world, worldDecorator)
 
 	libraryReader := loader.NewLibraryReaderAndDecorator()
 	libraryModule, libErr := libraryReader.ReadLibraryModule(world, rootPackage.repository, mainSourceFile, mainNamespace)
@@ -98,6 +69,18 @@ func CompileMain(mainSourceFile string, enforceStyle bool, verboseFlag bool) (*l
 	CheckUnused(world)
 
 	return world, libraryModule, nil
+}
+
+func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
+	if !file.IsDir(mainSource) {
+		mainSource = filepath.Dir(mainSource)
+	}
+	libraryDirectory, libraryErr := loader.FindSettingsDirectory(mainSource)
+	if libraryErr != nil {
+		return nil, nil, libraryErr
+	}
+
+	return CompileMain(libraryDirectory, documentProvider, enforceStyle, verboseFlag)
 }
 
 type CoreFunctionInfo struct {
@@ -168,7 +151,8 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 }
 
 func CompileAndLink(filename string, outputFilename string, enforceStyle bool, verboseFlag bool) error {
-	world, _, moduleErr := CompileMain(filename, enforceStyle, verboseFlag)
+	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
+	world, _, moduleErr := CompileMain(filename, defaultDocumentProvider, enforceStyle, verboseFlag)
 	if moduleErr != nil {
 		return moduleErr
 	}

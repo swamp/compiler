@@ -26,7 +26,24 @@ func NewLibraryReaderAndDecorator() *LibraryReaderAndDecorator {
 	return &LibraryReaderAndDecorator{}
 }
 
-func (r *LibraryReaderAndDecorator) checkSettings(world *World, repository deccy.ModuleRepository, swampDirectory string, verboseFlag bool) decshared.DecoratedError {
+func FindSettingsDirectory(swampDirectory string) (string, error) {
+	tryCount := 0
+	testDirectory := swampDirectory
+	if !file.IsDir(testDirectory) {
+		return "", fmt.Errorf("wasn't a directory %q", swampDirectory)
+	}
+	for file.IsDir(testDirectory) && tryCount < 3 {
+		if file.HasFile(filepath.Join(testDirectory, ".swamp.toml")) {
+			return testDirectory, nil
+		}
+		testDirectory = filepath.Dir(testDirectory)
+		tryCount++
+	}
+
+	return "", fmt.Errorf("sorry, couldn't find settings file from %v and up. Not a library", swampDirectory)
+}
+
+func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *World, repository deccy.ModuleRepository, swampDirectory string, verboseFlag bool) decshared.DecoratedError {
 	settingsFilename := filepath.Join(swampDirectory, ".swamp.toml")
 
 	mapping := make(map[string]string)
@@ -78,11 +95,13 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *World, repository d
 	}
 	const enforceStyle = true
 
-	if err := r.checkSettings(world, repository, absoluteDirectory, verboseFlag); err != nil {
+	if err := r.loadAndApplySettings(world, repository, absoluteDirectory, verboseFlag); err != nil {
 		return nil, err
 	}
 
-	fileLoader := NewLoader(absoluteDirectory)
+	fileSystemProvider := NewFileSystemDocumentProvider()
+
+	fileLoader := NewLoader(absoluteDirectory, fileSystemProvider)
 
 	worldDecorator, worldDecoratorErr := NewWorldDecorator(enforceStyle, verboseFlag)
 	if worldDecoratorErr != nil {
@@ -96,4 +115,48 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *World, repository d
 	// green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
 
 	return newRepository.FetchMainModuleInPackage(verboseFlag)
+}
+
+func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *World, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName) (*World, decshared.DecoratedError) {
+	const verboseFlag = false
+	if strings.HasSuffix(absoluteDirectory, ".swamp") {
+		panic("problem")
+	}
+	if verboseFlag {
+		fmt.Printf("* read library %v -> %v  \n", namespacePrefix, absoluteDirectory)
+	}
+	const enforceStyle = true
+
+	if err := r.loadAndApplySettings(world, repository, absoluteDirectory, verboseFlag); err != nil {
+		return nil, err
+	}
+
+	fileLoader := NewLoader(absoluteDirectory, documentProvider)
+
+	worldDecorator, worldDecoratorErr := NewWorldDecorator(enforceStyle, verboseFlag)
+	if worldDecoratorErr != nil {
+		return nil, nil
+	}
+
+	moduleReader := NewModuleReaderAndDecorator(fileLoader, worldDecorator)
+	newRepository := NewModuleRepository(world, namespacePrefix, moduleReader)
+
+	// green := color.New(color.FgHiGreen)
+	// green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
+
+	_, err := newRepository.FetchMainModuleInPackage(verboseFlag)
+	if err != nil {
+		return nil, err
+	}
+
+	return world, nil
+}
+
+func (r *LibraryReaderAndDecorator) CompileAllInLibraryFindSettings(world *World, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName) (*World, decshared.DecoratedError) {
+	foundSettingsDirectory, err := FindSettingsDirectory(absoluteDirectory)
+	if err != nil {
+		return nil, decorated.NewInternalError(err)
+	}
+
+	return r.CompileAllInLibrary(world, repository, foundSettingsDirectory, documentProvider, namespacePrefix)
 }

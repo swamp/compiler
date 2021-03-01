@@ -49,7 +49,7 @@ func (a *FunctionParameterDefinition) References() []*FunctionParameterReference
 }
 
 type FunctionValue struct {
-	forcedFunctionType  *dectype.FunctionAtom
+	forcedFunctionType  dectype.FunctionTypeLike
 	decoratedExpression Expression
 	parameters          []*FunctionParameterDefinition
 	commentBlock        token.CommentBlock
@@ -59,7 +59,7 @@ type FunctionValue struct {
 	annotation          *Annotation
 }
 
-func NewFunctionValue(annotation *Annotation, astFunction *ast.FunctionValue, forcedFunctionType *dectype.FunctionAtom, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock token.CommentBlock) *FunctionValue {
+func NewFunctionValue(annotation *Annotation, astFunction *ast.FunctionValue, forcedFunctionType dectype.FunctionTypeLike, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock token.CommentBlock) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
@@ -81,7 +81,7 @@ func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
 	return f.parameters
 }
 
-func (f *FunctionValue) ForcedFunctionType() *dectype.FunctionAtom {
+func (f *FunctionValue) ForcedFunctionType() dectype.FunctionTypeLike {
 	return f.forcedFunctionType
 }
 

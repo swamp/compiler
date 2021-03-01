@@ -7,8 +7,6 @@ package loader
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -18,7 +16,8 @@ import (
 )
 
 type Loader struct {
-	rootPath string
+	rootPath         string
+	documentProvider DocumentProvider
 }
 
 func moduleNameToRelativeFilePath(moduleName dectype.PackageRelativeModuleName) string {
@@ -33,8 +32,8 @@ func moduleNameToRelativeFilePath(moduleName dectype.PackageRelativeModuleName) 
 	return fixed
 }
 
-func NewLoader(rootPath string) *Loader {
-	return &Loader{rootPath: rootPath}
+func NewLoader(rootPath string, documentProvider DocumentProvider) *Loader {
+	return &Loader{rootPath: rootPath, documentProvider: documentProvider}
 }
 
 func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verboseFlag bool) (string, string, decshared.DecoratedError) {
@@ -51,23 +50,12 @@ func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verb
 		fmt.Printf("* loading file %v\n", completeFilename)
 	}
 
-	octets, readFileErr := ioutil.ReadFile(completeFilename)
-	if readFileErr != nil {
-		switch readFileErr {
-		case os.ErrInvalid:
-		case os.ErrPermission:
-		case os.ErrNotExist:
-			return "", "", decorated.NewInternalError(fmt.Errorf("file '%s' didn't exist (%v)", completeFilename, readFileErr))
-		default:
-			switch v := readFileErr.(type) {
-			case *os.PathError:
-				return "", "", decorated.NewInternalError(fmt.Errorf("couldn't find relative module '%v', root '%v', file '%s' (%v)", relativeModuleName, l.rootPath, completeFilename, v))
-			default:
-				return "", "", decorated.NewInternalError(fmt.Errorf("couldn't open file '%s'", completeFilename))
-			}
-		}
+	completeDocumentFilename := LocalFileSystemPath(completeFilename)
+
+	str, err := l.documentProvider.ReadDocument(completeDocumentFilename)
+	if err != nil {
+		return "", "", decorated.NewInternalError(err)
 	}
-	str := string(octets)
 
 	return fullPath, str, nil
 }

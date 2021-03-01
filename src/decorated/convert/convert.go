@@ -35,7 +35,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			convertedParameters = append(convertedParameters, convertedParameter)
 		}
 		functionType := t.AddFunctionAtom(info, convertedParameters)
-		return functionType, nil
+		return dectype.NewFunctionTypeReference(info, functionType), nil
 
 	case *ast.Alias:
 		subType, subTypeErr := ConvertFromAstToDecorated(info.ReferencedType(), t)

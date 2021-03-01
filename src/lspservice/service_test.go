@@ -71,7 +71,7 @@ func runCommand(service lspserv.Service, linuxEndings string) (string, error) {
 	return r, nil
 }
 
-func testHelperWithTesting(t *testing.T, s string) string {
+func testHelperWithTesting(t *testing.T, document string, s string) string {
 	lspService := &lspservice.LspImpl{}
 	service := lspservice.NewService(lspService, lspService)
 
@@ -84,7 +84,7 @@ func testHelperWithTesting(t *testing.T, s string) string {
 		t.Fatal(initializeErr)
 	}
 
-	didOpenNotification := `{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///home/peter/test.swamp","languageId":"swamp","version":1,"text":""}}}`
+	didOpenNotification := fmt.Sprintf(`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"%v","languageId":"swamp","version":1,"text":""}}}`, document)
 	_, didOpenErr := runCommand(lspservService, didOpenNotification)
 	if didOpenErr != nil {
 		t.Fatal(didOpenErr)
@@ -97,10 +97,10 @@ func testHelperWithTesting(t *testing.T, s string) string {
 	return result
 }
 
-func testHelperWithTestingStrings(t *testing.T, cmds []string, expectedResult string) string {
+func testHelperWithTestingStrings(t *testing.T, document string, cmds []string, expectedResult string) string {
 	last := ""
 	for _, cmd := range cmds {
-		last = testHelperWithTesting(t, cmd)
+		last = testHelperWithTesting(t, document, cmd)
 	}
 
 	if last != expectedResult {
@@ -111,7 +111,17 @@ func testHelperWithTestingStrings(t *testing.T, cmds []string, expectedResult st
 }
 
 func testHelperWithTestingString(t *testing.T, cmd string, expectedResult string) string {
-	last := testHelperWithTesting(t, cmd)
+	last := testHelperWithTesting(t, "file:///home/peter/test.swamp", cmd)
+
+	if last != expectedResult {
+		t.Errorf("mismatch. expected '%v' but received '%v'", expectedResult, last)
+	}
+
+	return last
+}
+
+func testHelperWithTestingStringDoc(t *testing.T, document string, cmd string, expectedResult string) string {
+	last := testHelperWithTesting(t, document, cmd)
 
 	if last != expectedResult {
 		t.Errorf("mismatch. expected '%v' but received '%v'", expectedResult, last)
@@ -122,7 +132,7 @@ func testHelperWithTestingString(t *testing.T, cmd string, expectedResult string
 
 func TestHover(t *testing.T) {
 	//nolint: lll
-	testHelperWithTestingStrings(t, []string{`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///home/peter/test.swamp","languageId":"swamp","version":1,"text":"test : Int -> Int\ntest a =\n    4\n"}}}`, `
+	testHelperWithTestingStrings(t, "file:///home/peter/test.swamp", []string{`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///home/peter/test.swamp","languageId":"swamp","version":1,"text":"test : Int -> Int\ntest a =\n    4\n"}}}`, `
 {"jsonrpc":"2.0","id":1,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":8,"character":8}}}
 `}, `Content-Length: 156
 
@@ -134,7 +144,7 @@ func TestDocumentSymbolOutline(t *testing.T) {
 }
 
 func TestDocumentSemanticSymbols(t *testing.T) {
-	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":2,"method":"textDocument/semanticTokens/full","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"}}}`, ``)
+	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":2,"method":"textDocument/semanticTokens/full","params":{"textDocument":{"uri":"file:///home/peter/own/hackman/swamp/gameplay/Main.swamp"}}}`, ``)
 }
 
 func TestDocumentGotoDefinition(t *testing.T) {
@@ -150,10 +160,10 @@ func TestDocumentGotoDefinition3(t *testing.T) {
 }
 
 func TestDocumentEditingRange(t *testing.T) {
-	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":6,"method":"textDocument/linkedEditingRange","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":13,"character":19}}}`, ``)
+	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":2,"method":"textDocument/linkedEditingRange","params":{"textDocument":{"uri":"file:///home/peter/own/hackman/swamp/gameplay/Main.swamp"},"position":{"line":0,"character":0}}}`, ``)
 }
 
 func TestDocumentCodeLens(t *testing.T) {
-	testHelperWithTestingString(t,
-		`{"jsonrpc":"2.0","id":2,"method":"textDocument/codeLens","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"}}}`, ``)
+	testHelperWithTestingStringDoc(t, "file:///home/peter/own/hackman/swamp/gameplay/Main.swamp",
+		`{"jsonrpc":"2.0","id":1,"method":"textDocument/codeLens","params":{"textDocument":{"uri":"file:///home/peter/own/hackman/swamp/gameplay/Main.swamp"}}}`, ``)
 }

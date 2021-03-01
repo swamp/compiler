@@ -14,8 +14,8 @@ type PackageLoader struct {
 	repository *loader.ModuleRepository
 }
 
-func NewPackageLoader(filePathPrefix string, moduleNamespace dectype.PackageRootModuleName, world *loader.World, worldDecorator *loader.WorldDecorator) *PackageLoader {
-	fileLoader := loader.NewLoader(filePathPrefix)
+func NewPackageLoader(filePathPrefix string, documentProvider loader.DocumentProvider, moduleNamespace dectype.PackageRootModuleName, world *loader.World, worldDecorator *loader.WorldDecorator) *PackageLoader {
+	fileLoader := loader.NewLoader(filePathPrefix, documentProvider)
 	loaderAndDecorator := loader.NewModuleReaderAndDecorator(fileLoader, worldDecorator)
 	moduleRepo := loader.NewModuleRepository(world, moduleNamespace, loaderAndDecorator)
 

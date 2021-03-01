@@ -16,6 +16,27 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+func DerefFunctionType(expectedFunctionType dtype.Type) *dectype.FunctionAtom {
+	switch info := expectedFunctionType.(type) {
+	case *dectype.FunctionAtom:
+		return info
+	case *dectype.FunctionTypeReference:
+		return info.FunctionAtom()
+	}
+
+	return nil
+}
+
+func DerefFunctionTypeLike(functionTypeLike dectype.FunctionTypeLike) *dectype.FunctionAtom {
+	switch info := functionTypeLike.(type) {
+	case *dectype.FunctionAtom:
+		return info
+	case *dectype.FunctionTypeReference:
+		return info.FunctionAtom()
+	}
+	return nil
+}
+
 func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, expr ast.Expression, expectedType dtype.Type, annotation *decorated.Annotation, localCommentBlock token.CommentBlock) (decorated.Expression, decshared.DecoratedError) {
 	name := nameIdent.Name()
 	localName := name
@@ -32,11 +53,11 @@ func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *a
 
 	switch e := expr.(type) {
 	case *ast.FunctionValue:
-		functionAtom, wasType := expectedType.(*dectype.FunctionAtom)
-		if !wasType {
+		foundFunctionType := DerefFunctionType(expectedType)
+		if foundFunctionType == nil {
 			return nil, decorated.NewExpectedFunctionType(expectedType, expr)
 		}
-		decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, e, functionAtom, nameIdent, context, localCommentBlock)
+		decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, e, foundFunctionType, nameIdent, context, localCommentBlock)
 		if decoratedFunctionErr != nil {
 			return nil, decoratedFunctionErr
 		}
