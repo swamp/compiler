@@ -15,7 +15,7 @@ import (
 func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast.Expression, parerr.ParseError) {
 	var recordFieldAssignments []*ast.RecordLiteralFieldAssignment
 
-	var templateRecordIdentifier *ast.VariableIdentifier
+	var templateRecordIdentifier ast.Expression
 
 	if _, spaceAfterCurlyErr := p.eatOneSpace("space after left curly"); spaceAfterCurlyErr != nil {
 		return nil, spaceAfterCurlyErr

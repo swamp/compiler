@@ -84,13 +84,18 @@ func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceCustomType, ch
 }
 
 type CaseCustomType struct {
-	test        Expression
-	cases       []*CaseConsequenceCustomType
-	defaultCase Expression
+	test           Expression
+	cases          []*CaseConsequenceCustomType
+	defaultCase    Expression
+	caseExpression *ast.CaseCustomType
 }
 
-func NewCaseCustomType(test Expression, cases []*CaseConsequenceCustomType, defaultCase Expression) (*CaseCustomType, decshared.DecoratedError) {
-	return &CaseCustomType{test: test, cases: cases, defaultCase: defaultCase}, nil
+func NewCaseCustomType(caseExpression *ast.CaseCustomType, test Expression, cases []*CaseConsequenceCustomType, defaultCase Expression) (*CaseCustomType, decshared.DecoratedError) {
+	return &CaseCustomType{caseExpression: caseExpression, test: test, cases: cases, defaultCase: defaultCase}, nil
+}
+
+func (i *CaseCustomType) AstCaseCustomType() *ast.CaseCustomType {
+	return i.caseExpression
 }
 
 func (i *CaseCustomType) Type() dtype.Type {

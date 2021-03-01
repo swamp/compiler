@@ -51,13 +51,16 @@ func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceCustomType, ch
 }
 
 type CaseCustomType struct {
-	test    Expression
-	cases   []*CaseConsequenceCustomType
-	keyword token.Keyword
+	test        Expression
+	cases       []*CaseConsequenceCustomType
+	keywordCase token.Keyword
+	keywordOf   token.Keyword
+	inclusive   token.SourceFileReference
 }
 
-func NewCaseForCustomType(keyword token.Keyword, test Expression, cases []*CaseConsequenceCustomType) *CaseCustomType {
-	return &CaseCustomType{keyword: keyword, test: test, cases: cases}
+func NewCaseForCustomType(keywordCase token.Keyword, keywordOf token.Keyword, test Expression, cases []*CaseConsequenceCustomType) *CaseCustomType {
+	inclusive := token.MakeInclusiveSourceFileReference(keywordCase.FetchPositionLength(), cases[len(cases)-1].Expression().FetchPositionLength())
+	return &CaseCustomType{keywordCase: keywordCase, keywordOf: keywordOf, test: test, cases: cases, inclusive: inclusive}
 }
 
 func (i *CaseCustomType) String() string {
@@ -68,12 +71,16 @@ func (i *CaseCustomType) Test() Expression {
 	return i.test
 }
 
-func (i *CaseCustomType) Keyword() token.Keyword {
-	return i.keyword
+func (i *CaseCustomType) KeywordCase() token.Keyword {
+	return i.keywordCase
+}
+
+func (i *CaseCustomType) KeywordOf() token.Keyword {
+	return i.keywordOf
 }
 
 func (i *CaseCustomType) FetchPositionLength() token.SourceFileReference {
-	return i.keyword.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *CaseCustomType) Consequences() []*CaseConsequenceCustomType {

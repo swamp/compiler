@@ -15,17 +15,26 @@ import (
 )
 
 type RecordConstructor struct {
-	arguments      []*RecordLiteralAssignment
-	recordType     *dectype.RecordAtom
-	typeIdentifier *ast.TypeIdentifier
+	arguments           []*RecordLiteralAssignment
+	parseOrderArguments []Expression
+	recordType          *dectype.RecordAtom
+	typeIdentifier      *ast.TypeIdentifier
 }
 
-func NewRecordConstructor(typeIdentifier *ast.TypeIdentifier, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment) *RecordConstructor {
-	return &RecordConstructor{typeIdentifier: typeIdentifier, arguments: arguments, recordType: recordType}
+func NewRecordConstructor(typeIdentifier *ast.TypeIdentifier, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
+	return &RecordConstructor{typeIdentifier: typeIdentifier, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
 }
 
 func (c *RecordConstructor) SortedAssignments() []*RecordLiteralAssignment {
 	return c.arguments
+}
+
+func (c *RecordConstructor) AstTypeIdentifier() *ast.TypeIdentifier {
+	return c.typeIdentifier
+}
+
+func (c *RecordConstructor) ParseOrderArguments() []Expression {
+	return c.parseOrderArguments
 }
 
 func (c *RecordConstructor) Type() dtype.Type {

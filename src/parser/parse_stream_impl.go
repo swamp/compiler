@@ -210,6 +210,19 @@ func (p *ParseStreamImpl) readSpecificParenToken(p2 token.Type) (token.ParenToke
 	return parsedToken.(token.ParenToken), nil
 }
 
+func (p *ParseStreamImpl) readSpecificKeywordToken(p2 token.Type) (token.Keyword, parerr.ParseError) {
+	parsedToken, err := p.readKeyword()
+	if err != nil {
+		return token.Keyword{}, err
+	}
+
+	if parsedToken.Type() != p2 {
+		return token.Keyword{}, parerr.NewUnknownPrefixInExpression(parsedToken)
+	}
+
+	return parsedToken, nil
+}
+
 func (p *ParseStreamImpl) maybeSpecificParenToken(p2 token.Type) (token.ParenToken, bool) {
 	pos := p.tokenizer.Tell()
 
@@ -969,8 +982,8 @@ func (p *ParseStreamImpl) readRightArrayBracket() (token.ParenToken, parerr.Pars
 	return p.readSpecificParenToken(token.RightArrayBracket)
 }
 
-func (p *ParseStreamImpl) eatOf() parerr.ParseError {
-	return p.eatString("of")
+func (p *ParseStreamImpl) readOf() (token.Keyword, parerr.ParseError) {
+	return p.readSpecificKeywordToken(token.Of)
 }
 
 func (p *ParseStreamImpl) eatThen() parerr.ParseError {

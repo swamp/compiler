@@ -24,7 +24,7 @@ func parseCase(p ParseStream, keyword token.Keyword, startIndentation int) (ast.
 	if afterTestSpaceErr != nil {
 		return nil, afterTestSpaceErr
 	}
-	ofErr := p.eatOf()
+	ofToken, ofErr := p.readOf()
 	if ofErr != nil {
 		return nil, ofErr
 	}
@@ -35,7 +35,7 @@ func parseCase(p ParseStream, keyword token.Keyword, startIndentation int) (ast.
 	}
 
 	if p.detectTypeIdentifier() {
-		return parseCaseCustomType(p, test, keyword, startIndentation, consequenceIndentation)
+		return parseCaseCustomType(p, test, keyword, ofToken, startIndentation, consequenceIndentation)
 	}
 
 	return parseCasePatternMatching(p, test, keyword, startIndentation, consequenceIndentation)

@@ -48,6 +48,18 @@ func expandChildNodesFunctionType(fn *dectype.FunctionAtom) []TypeOrToken {
 	return tokens
 }
 
+func expandChildNodesFunctionTypeReference(fn *dectype.FunctionTypeReference) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(fn.FunctionAtom())...)
+	return tokens
+}
+
+func expandChildNodesTypeReference(fn *dectype.TypeReference) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(fn.Next())...)
+	return tokens
+}
+
 func expandChildNodesPrimitive(fn *dectype.PrimitiveAtom) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, parameter := range fn.GenericTypes() {
@@ -102,8 +114,6 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesFunctionValue(t)...)
 	case *FunctionCall:
 		return append(tokens, expandChildNodesFunctionCall(t)...)
-	case *dectype.FunctionAtom:
-		return append(tokens, expandChildNodesFunctionType(t)...)
 	case *Let:
 		return append(tokens, expandChildNodesLet(t)...)
 	case *LetAssignment:
@@ -116,6 +126,12 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesPrimitive(t)...)
 	case *dectype.InvokerType:
 		return append(tokens, expandChildNodesInvokerType(t)...)
+	case *dectype.FunctionAtom:
+		return append(tokens, expandChildNodesFunctionType(t)...)
+	case *dectype.FunctionTypeReference:
+		return append(tokens, expandChildNodesFunctionTypeReference(t)...)
+	case *dectype.TypeReference:
+		return append(tokens, expandChildNodesTypeReference(t)...)
 	default:
 		//		log.Printf("not handled nodes for expansion: %T %v\n", t, t)
 		return tokens

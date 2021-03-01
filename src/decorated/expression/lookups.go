@@ -9,13 +9,13 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
-	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
 type LookupField struct {
-	structField *dectype.RecordField
+	structField      *dectype.RecordField
+	lookupIdentifier *ast.VariableIdentifier
 }
 
 func (l LookupField) String() string {
@@ -26,10 +26,19 @@ func (l LookupField) Index() int {
 	return l.structField.Index()
 }
 
-func NewLookupField(structField *dectype.RecordField) LookupField {
-	return LookupField{structField: structField}
+func (l LookupField) Identifier() *ast.VariableIdentifier {
+	return l.lookupIdentifier
 }
 
+func NewLookupField(lookupIdentifier *ast.VariableIdentifier, structField *dectype.RecordField) LookupField {
+	return LookupField{structField: structField, lookupIdentifier: lookupIdentifier}
+}
+
+func (l LookupField) FetchPositionLength() token.SourceFileReference {
+	return l.lookupIdentifier.FetchPositionLength()
+}
+
+/*
 type LookupVariable struct {
 	name       *ast.VariableIdentifier
 	lookupType dtype.Type
@@ -47,9 +56,7 @@ func (l LookupVariable) DecoratedExpression() dtype.Type {
 	return l.lookupType
 }
 
-func NewLookupVariable(name *ast.VariableIdentifier, lookupType dtype.Type) LookupVariable {
-	return LookupVariable{name: name, lookupType: lookupType}
-}
+*/
 
 type RecordLookups struct {
 	ExpressionNode

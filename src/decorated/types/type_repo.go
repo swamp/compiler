@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
@@ -73,11 +72,8 @@ func (t *TypeRepo) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) dtype
 	if foundType == nil {
 		return nil
 	}
-	log.Printf("found type:%T %v\n", foundType, foundType)
-
 	ref := NewTypeReference(typeIdentifier, foundType)
 
-	log.Printf("created ref:%T %v\n", ref, ref)
 	return ref
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/piot/go-lsp"
 	"github.com/piot/lsp-server/lspserv"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -272,10 +273,14 @@ func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, co
 		sourceFileReference = t.FetchPositionLength()
 	case *decorated.FunctionParameterDefinition:
 		sourceFileReference = t.FetchPositionLength()
+	case *dectype.FunctionTypeReference:
+		sourceFileReference = t.FunctionAtom().FetchPositionLength()
+	case *dectype.TypeReference:
+		sourceFileReference = t.Next().FetchPositionLength()
 	}
 
 	if sourceFileReference.Document == nil {
-		return nil, fmt.Errorf("couldn't get a reference for %T\n", decoratedToken)
+		return nil, fmt.Errorf("couldn't go to definition for %T\n", decoratedToken)
 	}
 
 	location := sourceFileReferenceToLocation(sourceFileReference)
@@ -665,7 +670,7 @@ func addSemanticTokenFunctionType(f *dectype.FunctionAtom, builder *SemanticBuil
 
 func addSemanticTokenRecordType(f *dectype.RecordAtom, builder *SemanticBuilder) error {
 	for _, paramType := range f.ParseOrderedFields() {
-		if err := builder.EncodeSymbol(f.String(), paramType.VariableIdentifier().FetchPositionLength().Range, "field", []string{"declaration"}); err != nil {
+		if err := builder.EncodeSymbol(f.String(), paramType.VariableIdentifier().FetchPositionLength().Range, "property", []string{"declaration"}); err != nil {
 			return err
 		}
 
@@ -680,6 +685,119 @@ func addSemanticTokenRecordType(f *dectype.RecordAtom, builder *SemanticBuilder)
 func addTypeReferencePrimitive(referenceRange token.Range, primitive *dectype.PrimitiveAtom, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(primitive.PrimitiveName().Name(), referenceRange, "type", []string{"declaration", "defaultLibrary"}); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func addSemanticTokenCustomTypeVariantConstructor(constructor *decorated.CustomTypeVariantConstructor, builder *SemanticBuilder) error {
+	if err := builder.EncodeSymbol(constructor.CustomTypeVariant().Name().Name(), constructor.TypeIdentifier().FetchPositionLength().Range, "class", []string{}); err != nil { // TODO: there should be a "constructor" in the LSP specification.
+		return err
+	}
+
+	for _, arguments := range constructor.Arguments() {
+		if err := addSemanticToken(arguments, builder); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func addSemanticTokenRecordConstructor(constructor *decorated.RecordConstructor, builder *SemanticBuilder) error {
+	if err := encodeStructReferenceWithModuleReference(builder, constructor.AstTypeIdentifier()); err != nil {
+		return err
+	}
+
+	for _, argument := range constructor.ParseOrderArguments() {
+		if err := addSemanticToken(argument, builder); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func encodeProperty(builder *SemanticBuilder, identifier *ast.VariableIdentifier) error {
+	return builder.EncodeSymbol(identifier.Name(), identifier.FetchPositionLength().Range, "property", nil)
+}
+
+func addSemanticTokenRecordsLookup(lookups *decorated.RecordLookups, builder *SemanticBuilder) error {
+	if err := addSemanticToken(lookups.Expression(), builder); err != nil {
+		return err
+	}
+
+	for _, lookup := range lookups.LookupFields() {
+		if err := encodeProperty(builder, lookup.Identifier()); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func encodeKeyword(builder *SemanticBuilder, keyword token.Keyword) error {
+	return builder.EncodeSymbol(keyword.Raw(), keyword.FetchPositionLength().Range, "keyword", nil)
+}
+
+func encodeEnumValue(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
+	return builder.EncodeSymbol(identifier.Name(), identifier.FetchPositionLength().Range, "enum", nil)
+}
+
+func encodeVariable(builder *SemanticBuilder, identifier *ast.VariableIdentifier) error {
+	return builder.EncodeSymbol(identifier.Name(), identifier.FetchPositionLength().Range, "variable", nil)
+}
+
+func encodeModuleReference(builder *SemanticBuilder, astModuleReference *ast.ModuleReference) error {
+	for _, namespacePart := range astModuleReference.Parts() {
+		if err := builder.EncodeSymbol(namespacePart.TypeIdentifier().Name(), namespacePart.TypeIdentifier().FetchPositionLength().Range, "namespace", nil); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func encodeStructReferenceWithModuleReference(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
+	if identifier.ModuleReference() != nil {
+		encodeModuleReference(builder, identifier.ModuleReference())
+	}
+	return builder.EncodeSymbol(identifier.Name(), identifier.FetchPositionLength().Range, "class", nil)
+}
+
+func addSemanticTokenCaseForCustomType(caseNode *decorated.CaseCustomType, builder *SemanticBuilder) error {
+	keywordCase := caseNode.AstCaseCustomType().KeywordCase()
+	keywordOf := caseNode.AstCaseCustomType().KeywordOf()
+	if err := encodeKeyword(builder, keywordCase); err != nil {
+		return err
+	}
+
+	if err := addSemanticToken(caseNode.Test(), builder); err != nil {
+		return err
+	}
+
+	if err := encodeKeyword(builder, keywordOf); err != nil {
+		return err
+	}
+
+	for _, consequence := range caseNode.Consequences() {
+		if err := encodeEnumValue(builder, consequence.Identifier()); err != nil {
+			return err
+		}
+
+		for _, param := range consequence.Parameters() {
+			if err := encodeVariable(builder, param.Identifier()); err != nil {
+				return err
+			}
+		}
+
+		if err := addSemanticToken(consequence.Expression(), builder); err != nil {
+			return err
+		}
+	}
+
+	if caseNode.DefaultCase() != nil {
+		if err := addSemanticToken(caseNode.DefaultCase(), builder); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -767,6 +885,50 @@ func addSemanticTokenLet(decoratedLet *decorated.Let, builder *SemanticBuilder) 
 	return addSemanticToken(decoratedLet.Consequence(), builder)
 }
 
+func addSemanticTokenIf(decoratedIf *decorated.If, builder *SemanticBuilder) error {
+	if err := addSemanticToken(decoratedIf.Condition(), builder); err != nil {
+		return err
+	}
+
+	if err := addSemanticToken(decoratedIf.Consequence(), builder); err != nil {
+		return err
+	}
+	if err := addSemanticToken(decoratedIf.Alternative(), builder); err != nil {
+		return err
+	}
+	return nil
+}
+
+func addSemanticTokenBinaryOperator(operator *decorated.BinaryOperator, builder *SemanticBuilder) error {
+	if err := addSemanticToken(operator.Left(), builder); err != nil {
+		return err
+	}
+
+	if err := addSemanticToken(operator.Right(), builder); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func addSemanticTokenRecordLiteral(recordLiteral *decorated.RecordLiteral, builder *SemanticBuilder) error {
+	if recordLiteral.RecordTemplate() != nil {
+		if err := addSemanticToken(recordLiteral.RecordTemplate(), builder); err != nil {
+			return err
+		}
+	}
+
+	for _, assignment := range recordLiteral.ParseOrderedAssignments() {
+		if err := builder.EncodeSymbol(assignment.FieldName().Name(), assignment.FieldName().FetchPositionLength().Range, "property", nil); err != nil {
+			return err
+		}
+
+		addSemanticToken(assignment.Expression(), builder)
+	}
+
+	return nil
+}
+
 func addSemanticTokenLetVariableReference(letVarReference *decorated.LetVariableReference, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(letVarReference.String(), letVarReference.FetchPositionLength().Range, "variable", nil); err != nil {
 		return err
@@ -848,11 +1010,7 @@ func addSemanticTokenFunctionCall(funcCall *decorated.FunctionCall, builder *Sem
 func addSemanticTokenFunctionReference(functionReference *decorated.FunctionReference, builder *SemanticBuilder) error {
 	isScoped := functionReference.Identifier().ModuleReference() != nil
 	if isScoped {
-		for _, namespaceParts := range functionReference.Identifier().ModuleReference().Parts() {
-			if err := builder.EncodeSymbol(namespaceParts.TypeIdentifier().Name(), namespaceParts.TypeIdentifier().FetchPositionLength().Range, "namespace", nil); err != nil {
-				return err
-			}
-		}
+		encodeModuleReference(builder, functionReference.Identifier().ModuleReference())
 	}
 
 	if err := builder.EncodeSymbol(functionReference.String(), functionReference.Identifier().FetchPositionLength().Range, "function", nil); err != nil {
@@ -885,6 +1043,21 @@ func addSemanticTokenTypeReference(typeReference *dectype.TypeReference, builder
 	return addSemanticToken(next, builder)
 }
 
+func addSemanticTokenFunctionTypeReference(typeReference *dectype.FunctionTypeReference, builder *SemanticBuilder) error {
+	next := typeReference.Next()
+
+	log.Printf("typeReference %T %v\n", next, next)
+	referenceRange := typeReference.FetchPositionLength().Range
+	switch t := next.(type) {
+	case *dectype.PrimitiveAtom:
+		return addTypeReferencePrimitive(referenceRange, t, builder)
+	case *dectype.InvokerType:
+		return addTypeReferenceInvoker(referenceRange, t, builder)
+	}
+
+	return addSemanticToken(next, builder)
+}
+
 func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilder) error {
 	switch t := typeOrToken.(type) {
 	case *decorated.FunctionValue:
@@ -897,6 +1070,12 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenImport(t, builder)
 	case *decorated.Let:
 		return addSemanticTokenLet(t, builder)
+	case *decorated.If:
+		return addSemanticTokenIf(t, builder)
+	case *decorated.BinaryOperator:
+		return addSemanticTokenBinaryOperator(t, builder)
+	case *decorated.RecordLiteral:
+		return addSemanticTokenRecordLiteral(t, builder)
 	case *decorated.LetVariableReference:
 		return addSemanticTokenLetVariableReference(t, builder)
 	case *decorated.StringLiteral:
@@ -915,15 +1094,38 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenFunctionReference(t, builder)
 	case *decorated.FunctionParameterReference:
 		return addSemanticTokenFunctionParameterReference(t, builder)
+	case *decorated.CustomTypeVariantConstructor:
+		return addSemanticTokenCustomTypeVariantConstructor(t, builder)
+	case *decorated.RecordConstructor:
+		return addSemanticTokenRecordConstructor(t, builder)
+	case *decorated.RecordLookups:
+		return addSemanticTokenRecordsLookup(t, builder)
+	case *decorated.CaseCustomType:
+		return addSemanticTokenCaseForCustomType(t, builder)
+	case *decorated.ArithmeticOperator:
+		return addSemanticToken(&t.BinaryOperator, builder)
+	case *decorated.BitwiseOperator:
+		return addSemanticToken(&t.BinaryOperator, builder)
+	case *decorated.BooleanOperator:
+		return addSemanticToken(&t.BinaryOperator, builder)
+	case *decorated.LogicalOperator:
+		return addSemanticToken(&t.BinaryOperator, builder)
+	case *decorated.ConsOperator:
+		return addSemanticToken(&t.BinaryOperator, builder)
+
 		// TYPES
+		//
+
 	case *dectype.TypeReference:
 		return addSemanticTokenTypeReference(t, builder)
+	case *dectype.FunctionTypeReference:
+		return addSemanticTokenFunctionTypeReference(t, builder)
 	case *dectype.FunctionAtom:
 		return addSemanticTokenFunctionType(t, builder)
 	case *dectype.RecordAtom:
 		return addSemanticTokenRecordType(t, builder)
 	default:
-		// log.Printf("semantic unknown %T %v\n", t, t)
+		log.Printf("semantic unhandled %T %v\n", t, t)
 	}
 
 	return nil

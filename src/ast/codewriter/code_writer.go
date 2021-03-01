@@ -218,8 +218,8 @@ func writeRecordLiteral(recordLiteral *ast.RecordLiteral, colorer coloring.Color
 	colorer.KeywordString("{")
 	colorer.OneSpace()
 
-	if recordLiteral.TemplateRecord() != nil {
-		colorer.VariableSymbol(recordLiteral.TemplateRecord().Symbol())
+	if recordLiteral.TemplateExpression() != nil {
+		writeExpression(recordLiteral.TemplateExpression(), colorer, indentation)
 		colorer.OneSpace()
 		colorer.OperatorString("|")
 		colorer.OneSpace()

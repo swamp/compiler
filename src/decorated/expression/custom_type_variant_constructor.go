@@ -40,6 +40,10 @@ func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customT
 	}
 }
 
+func (c *CustomTypeVariantConstructor) TypeIdentifier() *ast.TypeIdentifier {
+	return c.typeIdentifier
+}
+
 func (c *CustomTypeVariantConstructor) CustomTypeVariantIndex() int {
 	return c.customTypeVariant.Index()
 }

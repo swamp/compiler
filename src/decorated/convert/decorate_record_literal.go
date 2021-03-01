@@ -31,10 +31,10 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 
 	var foundTemplateRecord *dectype.RecordAtom
 
-	if record.TemplateRecord() != nil {
+	if record.TemplateExpression() != nil {
 		allowToAddFields = false
 
-		decoratedRecordLiteralExpression, decoratedRecordLiteralExpressionErr = DecorateExpression(d, record.TemplateRecord(), context)
+		decoratedRecordLiteralExpression, decoratedRecordLiteralExpressionErr = DecorateExpression(d, record.TemplateExpression(), context)
 		if decoratedRecordLiteralExpressionErr != nil {
 			return nil, decoratedRecordLiteralExpressionErr
 		}
@@ -82,7 +82,7 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 		}
 		name := assignment.Identifier().Name()
 		field := recordType.FindField(name)
-		recordAssignment := decorated.NewRecordLiteralAssignment(field.Index(), name, decoratedExpression)
+		recordAssignment := decorated.NewRecordLiteralAssignment(field.Index(), assignment.Identifier(), decoratedExpression)
 		sortedRecordAssignment = append(sortedRecordAssignment, recordAssignment)
 	}
 

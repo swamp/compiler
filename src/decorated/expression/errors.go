@@ -425,7 +425,7 @@ func (e *UnhandledCustomTypeVariants) Error() string {
 }
 
 func (e *UnhandledCustomTypeVariants) FetchPositionLength() token.SourceFileReference {
-	return e.caseExpression.Keyword().FetchPositionLength()
+	return e.caseExpression.KeywordCase().FetchPositionLength()
 }
 
 type AlreadyHandledCustomTypeVariant struct {

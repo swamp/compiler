@@ -27,7 +27,7 @@ type ParseStream interface {
 	readRightParen() (token.ParenToken, parerr.ParseError)
 	readRightArrayBracket() (token.ParenToken, parerr.ParseError)
 	readRightCurly() (token.ParenToken, parerr.ParseError)
-
+	readOf() (token.Keyword, parerr.ParseError)
 	// -----------------------------------------------------------------------------------------------------------------
 	// eat. Similar to read, but discards the result
 	// -----------------------------------------------------------------------------------------------------------------
@@ -55,7 +55,6 @@ type ParseStream interface {
 	eatAccessor() parerr.ParseError
 	eatAssign() parerr.ParseError
 
-	eatOf() parerr.ParseError
 	eatThen() parerr.ParseError
 	eatElse() parerr.ParseError
 	eatIn() parerr.ParseError

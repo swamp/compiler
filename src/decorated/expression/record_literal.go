@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -18,15 +19,15 @@ type ByAssignmentName []*RecordLiteralAssignment
 
 func (a ByAssignmentName) Len() int           { return len(a) }
 func (a ByAssignmentName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByAssignmentName) Less(i, j int) bool { return a[i].fieldName < a[j].fieldName }
+func (a ByAssignmentName) Less(i, j int) bool { return a[i].fieldName.Name() < a[j].fieldName.Name() }
 
 type RecordLiteralAssignment struct {
 	expression Expression
 	index      int
-	fieldName  string
+	fieldName  *ast.VariableIdentifier
 }
 
-func NewRecordLiteralAssignment(index int, fieldName string, expression Expression) *RecordLiteralAssignment {
+func NewRecordLiteralAssignment(index int, fieldName *ast.VariableIdentifier, expression Expression) *RecordLiteralAssignment {
 	return &RecordLiteralAssignment{index: index, fieldName: fieldName, expression: expression}
 }
 
@@ -38,7 +39,7 @@ func (a *RecordLiteralAssignment) Index() int {
 	return a.index
 }
 
-func (a *RecordLiteralAssignment) FieldName() string {
+func (a *RecordLiteralAssignment) FieldName() *ast.VariableIdentifier {
 	return a.fieldName
 }
 

@@ -137,6 +137,6 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 		}
 	}
 
-	c, err := decorated.NewCaseCustomType(decoratedTest, decoratedConsequences, defaultCase)
+	c, err := decorated.NewCaseCustomType(caseExpression, decoratedTest, decoratedConsequences, defaultCase)
 	return c, err
 }
