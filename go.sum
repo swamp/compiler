@@ -10,14 +10,12 @@ github.com/mattn/go-isatty v0.0.12 h1:wuysRhFDzyxgEmMf5xjvJ2M9dZoWAXNNr5LSBS7uHX
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/pelletier/go-toml v1.8.1 h1:1Nf83orprkJyknT6h7zbuEGUEjcyVlCxSUGTENmNCRM=
 github.com/pelletier/go-toml v1.8.1/go.mod h1:T2/BmBdy8dvIRq1a/8aqjN41wvWlN4lrapLU/GW4pbc=
-github.com/piot/go-lsp v0.0.0-20210222123255-e503526020b2 h1:xi1k8BNQ1h0dBaIy+T/ioB4BrT8/S8Rp04peuvjoQDY=
-github.com/piot/go-lsp v0.0.0-20210222123255-e503526020b2/go.mod h1:o4Pvk+69/ymRoFZnzgXIIqegHGnAguo9UZR9nJpOf+o=
 github.com/piot/go-lsp v0.0.0-20210227113735-875e66a30d6a h1:dCWD/JGH+Og4y8OFNm9L+dqI4DL1NYulQ+B+i9Iy9vQ=
 github.com/piot/go-lsp v0.0.0-20210227113735-875e66a30d6a/go.mod h1:o4Pvk+69/ymRoFZnzgXIIqegHGnAguo9UZR9nJpOf+o=
 github.com/piot/jsonrpc2 v0.0.0-20210220142131-b277991378fa h1:FtrijhH82PF6+ji/AMn7M1bgQjqwE9ByyODiemaDKq4=
 github.com/piot/jsonrpc2 v0.0.0-20210220142131-b277991378fa/go.mod h1:s+tl/s19xr+adNH5UV+e6ULdl+HygO2nhYnFGqRZqXc=
-github.com/piot/lsp-server v0.0.0-20210301084023-fb18c82f593e h1:LOIRBY7AcgHNsv8LaAuma5CBH2yd/ajEYk5eHbfUNrU=
-github.com/piot/lsp-server v0.0.0-20210301084023-fb18c82f593e/go.mod h1:ql0UQsJAOsYCoZGK9NgLZdjG8C1mz9vRjitydr8S8aE=
+github.com/piot/lsp-server v0.0.0-20210301091727-d680b4e21a1a h1:RtRWE6mTq7aq6Ld5F0biy3TuF59AZ7QAArd8qsbgcTg=
+github.com/piot/lsp-server v0.0.0-20210301091727-d680b4e21a1a/go.mod h1:G+cHSAaHkGwTsHpTmJaiw6hVRg3LMliM7qjJ5B3Ns5c=
 github.com/piot/raff-go v0.0.0-20210104204224-135e45dcf14d h1:aqr7rZds/fPHuSZaF/lIz9SXZYy9xWKhnxzHpAIIv/Q=
 github.com/piot/raff-go v0.0.0-20210104204224-135e45dcf14d/go.mod h1:OGCWlHa0Htk9Th+hXwKCRmY5pH+I/HVANV/0dVMYLHI=
 github.com/piot/raff-go v0.0.0-20210107105329-efd4e0e14756 h1:uEObVi2jn/7Ki+vzbqb20JF1C06W4v2x2jYb88IHec0=

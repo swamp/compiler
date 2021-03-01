@@ -7,7 +7,7 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/pelletier/go-toml v1.8.1
 	github.com/piot/go-lsp v0.0.0-20210227113735-875e66a30d6a
-	github.com/piot/lsp-server v0.0.0-20210301084023-fb18c82f593e
+	github.com/piot/lsp-server v0.0.0-20210301091727-d680b4e21a1a
 	github.com/piot/raff-go v0.0.0-20210107105329-efd4e0e14756 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/swamp/assembler v0.0.0-20210214100045-11d8f7400487
