@@ -14,14 +14,14 @@ import (
 )
 
 type FunctionCall struct {
-	functionType    Expression
-	assignments     []Expression
-	returnType      dtype.Type
-	astFunctionCall *ast.FunctionCall
+	functionValueExpression Expression
+	assignments             []Expression
+	returnType              dtype.Type
+	astFunctionCall         *ast.FunctionCall
 }
 
 func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionType Expression, returnType dtype.Type, assignments []Expression) *FunctionCall {
-	return &FunctionCall{astFunctionCall: astFunctionCall, functionType: functionType, assignments: assignments, returnType: returnType}
+	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionType, assignments: assignments, returnType: returnType}
 }
 
 func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
@@ -29,7 +29,7 @@ func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
 }
 
 func (c *FunctionCall) FunctionValue() Expression {
-	return c.functionType
+	return c.functionValueExpression
 }
 
 func (c *FunctionCall) Arguments() []Expression {
@@ -41,7 +41,7 @@ func (c *FunctionCall) Type() dtype.Type {
 }
 
 func (c *FunctionCall) String() string {
-	return fmt.Sprintf("[fcall %v %v]", c.functionType, c.assignments)
+	return fmt.Sprintf("[fcall %v %v]", c.functionValueExpression, c.assignments)
 }
 
 func (c *FunctionCall) FetchPositionLength() token.SourceFileReference {

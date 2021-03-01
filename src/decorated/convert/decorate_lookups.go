@@ -15,7 +15,10 @@ import (
 )
 
 func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *VariableContext) (*decorated.RecordLookups, decshared.DecoratedError) {
-	expressionToLookup := context.ResolveVariable(lookups.ContextIdentifier())
+	expressionToLookup, expressionLookUpErr := context.ResolveVariable(lookups.ContextIdentifier())
+	if expressionLookUpErr != nil {
+		return nil, expressionLookUpErr
+	}
 	if expressionToLookup == nil {
 		return nil, decorated.NewCouldNotFindIdentifierInLookups(lookups)
 	}

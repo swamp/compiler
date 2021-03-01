@@ -185,3 +185,22 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 	}
 	return token.NewOperatorToken(operatorType, t.MakeSourceFileReference(startPosition), raw, debugString), nil
 }
+
+func (t *Tokenizer) ReadAnyOperator() (token.Token, TokenError) {
+	pos := t.MakeSourceFileReference(t.position)
+	parsedToken, err := t.ReadEndOrSeparatorToken()
+	if err != nil {
+		r := t.nextRune()
+		parsedToken, err = t.ReadOpenOperatorToken(r, pos)
+		if err != nil {
+			return token.ParenToken{}, NewInternalError(err)
+		}
+	}
+
+	parenToken, wasParenToken := parsedToken.(token.ParenToken)
+	if !wasParenToken {
+		return token.ParenToken{}, NewInternalError(err)
+	}
+
+	return parenToken, nil
+}

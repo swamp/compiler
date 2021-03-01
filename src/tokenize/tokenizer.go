@@ -724,7 +724,9 @@ func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, error) {
 		return token.NewParenToken(string(r), token.Comma, singleCharLength, ","), nil
 	} else if r == '|' {
 		r := t.nextRune()
-		if r == '>' {
+		if r == ']' {
+			return token.NewParenToken(string(r), token.RightArrayBracket, singleCharLength, "|]"), nil
+		} else if r == '>' {
 			return token.NewOperatorToken(token.OperatorPipeRight, singleCharLength, "", "|>"), nil
 		} else {
 			t.unreadRune()
@@ -747,6 +749,30 @@ func (t *Tokenizer) ReadTermTokenOrEndOrSeparator() (token.Token, error) {
 		return tokenFound, nil
 	}
 	return t.readTermToken()
+}
+
+func (t *Tokenizer) ReadOpenOperatorToken(r rune, singleCharLength token.SourceFileReference) (token.Token, error) {
+	posToken := t.position
+	if r == '(' {
+		return token.NewParenToken(string(r), token.LeftParen, singleCharLength, " L( "), nil
+	} else if r == '{' {
+		nch := t.nextRune()
+		if nch == '-' {
+			return t.ReadMultilineComment(posToken)
+		}
+		t.unreadRune()
+		return token.NewParenToken(string(r), token.LeftCurlyBrace, singleCharLength, " { "), nil
+	} else if r == '[' {
+		nch := t.nextRune()
+		if nch == '|' {
+			return token.NewParenToken(string(r), token.LeftArrayBracket, singleCharLength, " [| "), nil
+		} else {
+			t.unreadRune()
+		}
+		return token.NewParenToken(string(r), token.LeftBracket, singleCharLength, " [ "), nil
+	}
+
+	return nil, fmt.Errorf("not an operator")
 }
 
 func (t *Tokenizer) readTermToken() (token.Token, error) {
@@ -787,25 +813,8 @@ func (t *Tokenizer) readTermToken() (token.Token, error) {
 			return token.NewGuardToken(singleCharLength, string(r), " guard "), nil
 		}
 		return nil, fmt.Errorf("started as guard | but is something else")
-	} else if r == '(' {
-		return token.NewParenToken(string(r), token.LeftParen, singleCharLength, " L( "), nil
 	} else if r == '-' {
 		return token.NewOperatorToken(token.OperatorUnaryMinus, singleCharLength, string(r), "unary-"), nil
-	} else if r == '{' {
-		nch := t.nextRune()
-		if nch == '-' {
-			return t.ReadMultilineComment(posToken)
-		}
-		t.unreadRune()
-		return token.NewParenToken(string(r), token.LeftCurlyBrace, singleCharLength, " { "), nil
-	} else if r == '[' {
-		nch := t.nextRune()
-		if nch == '|' {
-			return token.NewParenToken(string(r), token.LeftArrayBracket, singleCharLength, " [| "), nil
-		} else {
-			t.unreadRune()
-		}
-		return token.NewParenToken(string(r), token.LeftBracket, singleCharLength, " [ "), nil
 	} else if r == '_' {
 		nextRune := t.nextRune()
 		if nextRune == '_' {
@@ -817,6 +826,10 @@ func (t *Tokenizer) readTermToken() (token.Token, error) {
 		return nil, nil
 	} else if r == ' ' {
 		return token.NewSpaceToken(t.MakeSourceFileReference(t.position), r), nil
+	} else {
+		if foundOperator, operatorErr := t.ReadOpenOperatorToken(r, singleCharLength); operatorErr == nil {
+			return foundOperator, nil
+		}
 	}
 	return nil, fmt.Errorf("unknown rune '%c' %v", r, r)
 }

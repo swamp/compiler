@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
@@ -22,21 +23,43 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 	return &VariableContext{parent: nil, parentDefinitions: parentDefinitions, lookup: make(map[string]*decorated.NamedDecoratedExpression)}
 }
 
-func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) decorated.Expression {
+func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression, decshared.DecoratedError) {
 	def := c.FindNamedDecoratedExpression(name)
-	if def != nil {
-		def.SetReferenced()
+	if def == nil {
+		return nil, decorated.NewInternalError(fmt.Errorf("couldn't find %v", name))
 	}
 
+	def.SetReferenced()
+
+	if constantExpression, wasConstant := isConstant(def.Expression()); wasConstant {
+		switch t := constantExpression.(type) {
+		case *decorated.IntegerLiteral:
+			return t, nil
+		case *decorated.StringLiteral:
+			return t, nil
+		case *decorated.CharacterLiteral:
+			return t, nil
+		case *decorated.TypeIdLiteral:
+			return t, nil
+		case *decorated.ResourceNameLiteral:
+			return t, nil
+		case *decorated.RecordLiteral:
+			return t, nil
+		case *decorated.ListLiteral:
+			return t, nil
+		case *decorated.FixedLiteral:
+			return t, nil
+		}
+	}
 	switch t := def.Expression().(type) {
 	case *decorated.FunctionValue:
-		return decorated.NewFunctionReference(name, t)
+		return decorated.NewFunctionReference(name, t), nil
 	case *decorated.FunctionParameterDefinition:
-		return decorated.NewFunctionParameterReference(name, t)
+		return decorated.NewFunctionParameterReference(name, t), nil
 	case *decorated.LetAssignment:
-		return decorated.NewLetVariableReference(name, t)
+		return decorated.NewLetVariableReference(name, t), nil
 	default:
-		panic(fmt.Errorf("what to do with '%v' => %T", name, t))
+		return nil, decorated.NewInternalError(fmt.Errorf("what to do with '%v' => %T", name, t))
 	}
 }
 

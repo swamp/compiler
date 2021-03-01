@@ -177,15 +177,19 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 }
 
 func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUnchanged dtype.Type) (dtype.Type, error) {
-	if original == nil {
+	if reflect.ValueOf(original).IsNil() {
 		panic("original was nil")
 	}
-	if otherUnchanged == nil {
-		panic("other was nil")
+	if reflect.ValueOf(otherUnchanged).IsNil() {
+		panic("otherUnchanged was nil")
 	}
 
 	original = UnaliasWithResolveInvoker(original)
 	other := UnaliasWithResolveInvoker(otherUnchanged)
+
+	if reflect.ValueOf(other).IsNil() {
+		panic("other was nil")
+	}
 
 	localType, wasLocalType := original.(*LocalType)
 	if wasLocalType {
@@ -202,7 +206,7 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 		sameType := reflect.TypeOf(original) == reflect.TypeOf(other)
 		if !sameType {
 			fmt.Printf("\n\nNOTE SAME TYPE:%T %T\n\n", original, otherUnchanged)
-			return nil, fmt.Errorf("not even same reflect type %T vs %T", original, other)
+			return nil, fmt.Errorf("not even same reflect type %T vs %T\n%v\n vs\n%v", original, other, original, other)
 		}
 	}
 

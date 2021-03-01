@@ -152,3 +152,8 @@ func TestDocumentGotoDefinition3(t *testing.T) {
 func TestDocumentEditingRange(t *testing.T) {
 	testHelperWithTestingString(t, `{"jsonrpc":"2.0","id":6,"method":"textDocument/linkedEditingRange","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"},"position":{"line":13,"character":19}}}`, ``)
 }
+
+func TestDocumentCodeLens(t *testing.T) {
+	testHelperWithTestingString(t,
+		`{"jsonrpc":"2.0","id":2,"method":"textDocument/codeLens","params":{"textDocument":{"uri":"file:///home/peter/test.swamp"}}}`, ``)
+}

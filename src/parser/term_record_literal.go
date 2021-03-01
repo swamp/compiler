@@ -43,7 +43,7 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 			}
 
 			if !wasComma {
-				if eatRightErr := p.eatRightCurly(); eatRightErr != nil {
+				if _, eatRightErr := p.readRightCurly(); eatRightErr != nil {
 					return nil, eatRightErr
 				}
 				break

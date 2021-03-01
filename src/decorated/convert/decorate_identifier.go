@@ -25,30 +25,9 @@ func isConstant(expression decorated.Expression) (decorated.Expression, bool) {
 }
 
 func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
-	expression := context.ResolveVariable(ident)
-	if expression == nil {
+	expression, expressionErr := context.ResolveVariable(ident)
+	if expressionErr != nil {
 		return nil, decorated.NewUnknownVariable(ident)
-	}
-
-	if constantExpression, wasConstant := isConstant(expression); wasConstant {
-		switch t := constantExpression.(type) {
-		case *decorated.IntegerLiteral:
-			return t, nil
-		case *decorated.StringLiteral:
-			return t, nil
-		case *decorated.CharacterLiteral:
-			return t, nil
-		case *decorated.TypeIdLiteral:
-			return t, nil
-		case *decorated.ResourceNameLiteral:
-			return t, nil
-		case *decorated.RecordLiteral:
-			return t, nil
-		case *decorated.ListLiteral:
-			return t, nil
-		case *decorated.FixedLiteral:
-			return t, nil
-		}
 	}
 
 	return expression, nil

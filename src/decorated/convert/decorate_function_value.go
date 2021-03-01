@@ -95,7 +95,7 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.Annotation, p
 			}
 		}
 	} else {
-		fmt.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
+		// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
 	}
 
 	return decorated.NewFunctionValue(annotation, potentialFunc, forcedFunctionType, parameters, decoratedExpression, comments), nil

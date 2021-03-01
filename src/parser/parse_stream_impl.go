@@ -197,22 +197,8 @@ func (p *ParseStreamImpl) maybePipeLeft() bool {
 	return p.tokenizer.MaybeString("<|")
 }
 
-func (p *ParseStreamImpl) readParenToken() (token.ParenToken, parerr.ParseError) {
-	parsedToken, err := p.tokenizer.ReadEndOrSeparatorToken()
-	if err != nil {
-		return token.ParenToken{}, parerr.NewUnknownPrefixInExpression(parsedToken)
-	}
-
-	parenToken, wasParenToken := parsedToken.(token.ParenToken)
-	if !wasParenToken {
-		return token.ParenToken{}, parerr.NewUnknownPrefixInExpression(parsedToken)
-	}
-
-	return parenToken, nil
-}
-
 func (p *ParseStreamImpl) readSpecificParenToken(p2 token.Type) (token.ParenToken, parerr.ParseError) {
-	parsedToken, err := p.readParenToken()
+	parsedToken, err := p.tokenizer.ReadAnyOperator()
 	if err != nil {
 		return token.ParenToken{}, err
 	}
@@ -221,7 +207,7 @@ func (p *ParseStreamImpl) readSpecificParenToken(p2 token.Type) (token.ParenToke
 		return token.ParenToken{}, parerr.NewUnknownPrefixInExpression(parsedToken)
 	}
 
-	return parsedToken, nil
+	return parsedToken.(token.ParenToken), nil
 }
 
 func (p *ParseStreamImpl) maybeSpecificParenToken(p2 token.Type) (token.ParenToken, bool) {
@@ -242,6 +228,10 @@ func (p *ParseStreamImpl) maybeRightBracket() (token.ParenToken, bool) {
 
 func (p *ParseStreamImpl) maybeRightArrayBracket() (token.ParenToken, bool) {
 	return p.maybeSpecificParenToken(token.RightArrayBracket)
+}
+
+func (p *ParseStreamImpl) maybeLeftCurly() (token.ParenToken, bool) {
+	return p.maybeSpecificParenToken(token.LeftCurlyBrace)
 }
 
 func (p *ParseStreamImpl) maybeRightCurly() bool {
@@ -271,10 +261,6 @@ func (p *ParseStreamImpl) maybeOneSpaceAndRightArrow() bool {
 
 func (p *ParseStreamImpl) maybeLeftParen() bool {
 	return p.tokenizer.MaybeRune('(')
-}
-
-func (p *ParseStreamImpl) maybeLeftCurly() bool {
-	return p.tokenizer.MaybeString("{")
 }
 
 func (p *ParseStreamImpl) maybeAccessor() bool {
@@ -971,12 +957,12 @@ func (p *ParseStreamImpl) eatLeftParen() parerr.ParseError {
 	return p.eatRune('(')
 }
 
-func (p *ParseStreamImpl) eatRightCurly() parerr.ParseError {
-	return p.eatRune('}')
-}
-
 func (p *ParseStreamImpl) readRightBracket() (token.ParenToken, parerr.ParseError) {
 	return p.readSpecificParenToken(token.RightBracket)
+}
+
+func (p *ParseStreamImpl) readRightCurly() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightCurlyBrace)
 }
 
 func (p *ParseStreamImpl) readRightArrayBracket() (token.ParenToken, parerr.ParseError) {

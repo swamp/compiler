@@ -77,5 +77,9 @@ func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableCon
 	if expr == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("expr is nil:%v", e))
 	}
+
+	// log.Printf("decorate expression before %T %v", e, e)
+	// log.Printf("decorate expression AFTER %T %v", expr, expr)
+
 	return expr, nil
 }

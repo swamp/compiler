@@ -19,7 +19,7 @@ func parseArrayLiteral(p ParseStream, startParen token.ParenToken, startIndentat
 
 	var wasEndBracket bool
 
-	if endArrayBracket, wasEndBracket = p.maybeRightArrayBracket(); wasEndBracket {
+	if endArrayBracket, wasEndBracket = p.maybeRightArrayBracket(); !wasEndBracket {
 		if _, eatAfterErr := p.eatOneSpace("after left array bracket [|"); eatAfterErr != nil {
 			return nil, eatAfterErr
 		}

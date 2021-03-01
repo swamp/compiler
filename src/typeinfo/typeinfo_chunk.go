@@ -890,6 +890,8 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 			return nil, fmt.Errorf("wrong atom invoke")
 		}
 		return c.ConsumeAtom(invokerAtom)
+	case *dectype.TypeReference:
+		return c.Consume(t.Next())
 	}
 
 	return nil, fmt.Errorf("unknown thing %T", p)

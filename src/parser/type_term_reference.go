@@ -52,8 +52,8 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 			return nil, rightParenErr
 		}
 		return t, nil
-	} else if p.maybeLeftCurly() {
-		return parseRecordType(p, typeParameterContext.AllTypeParameters(), keywordIndentation, precedingComments)
+	} else if leftCurly, wasLeftCurly := p.maybeLeftCurly(); wasLeftCurly {
+		return parseRecordType(p, leftCurly, typeParameterContext.AllTypeParameters(), keywordIndentation, precedingComments)
 	} else if foundTypeIdentifier, wasTypeSymbol := p.wasTypeIdentifier(); wasTypeSymbol {
 		x, xErr := parseTypeSymbolWithOptionalModules(p, foundTypeIdentifier)
 		if xErr != nil {
@@ -67,7 +67,6 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 				return nil, typeParameterIdentifiersErr
 			}
 		}
-
 		return ast.NewTypeReference(x, typeParameters), nil
 	} else if ident, wasVariableIdentifier := p.wasVariableIdentifier(); wasVariableIdentifier {
 		typeParameter := ast.NewTypeParameter(ident)
@@ -76,5 +75,6 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 
 	parsePosition := p.positionLength()
 
+	p.debugInfo("no term reference")
 	return nil, parerr.NewExpectedTypeReferenceError(parsePosition)
 }
