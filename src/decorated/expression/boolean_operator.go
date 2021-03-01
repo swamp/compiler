@@ -31,14 +31,14 @@ type BooleanOperator struct {
 	operatorType BooleanOperatorType
 }
 
-func NewBooleanOperator(infix *ast.BinaryOperator, left DecoratedExpression, right DecoratedExpression, operatorType BooleanOperatorType, booleanType dtype.Type) (*BooleanOperator, decshared.DecoratedError) {
+func NewBooleanOperator(infix *ast.BinaryOperator, left Expression, right Expression, operatorType BooleanOperatorType, booleanType dtype.Type) (*BooleanOperator, decshared.DecoratedError) {
 	a := &BooleanOperator{operatorType: operatorType}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
 	if err := dectype.CompatibleTypes(left.Type(), right.Type()); err != nil {
 		return nil, NewUnMatchingBooleanOperatorTypes(infix, left, right)
 	}
-	a.BinaryOperator.DecoratedExpressionNode.decoratedType = booleanType
+	a.BinaryOperator.ExpressionNode.decoratedType = booleanType
 	return a, nil
 }
 
@@ -66,11 +66,11 @@ func (l *BooleanOperator) String() string {
 		booleanOperatorToString(l.operatorType), l.BinaryOperator.right)
 }
 
-func (l *BooleanOperator) Left() DecoratedExpression {
+func (l *BooleanOperator) Left() Expression {
 	return l.BinaryOperator.left
 }
 
-func (l *BooleanOperator) Right() DecoratedExpression {
+func (l *BooleanOperator) Right() Expression {
 	return l.BinaryOperator.right
 }
 
@@ -78,6 +78,6 @@ func (l *BooleanOperator) OperatorType() BooleanOperatorType {
 	return l.operatorType
 }
 
-func (l *BooleanOperator) FetchPositionAndLength() token.PositionLength {
-	return l.BinaryOperator.left.FetchPositionAndLength()
+func (l *BooleanOperator) FetchPositionLength() token.SourceFileReference {
+	return l.BinaryOperator.left.FetchPositionLength()
 }

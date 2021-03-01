@@ -28,8 +28,8 @@ func NewResourceNameLiteral(t token.ResourceName, v string) *ResourceNameLiteral
 	return &ResourceNameLiteral{value: v, Token: t}
 }
 
-func (i *ResourceNameLiteral) PositionLength() token.PositionLength {
-	return i.Token.FetchPositionLength()
+func (i *ResourceNameLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.Token.SourceFileReference
 }
 
 func (i *ResourceNameLiteral) StringToken() token.ResourceName {

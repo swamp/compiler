@@ -13,7 +13,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression, decshared.DecoratedError) {
 	typeRefType := d.TypeRepo().FindTypeFromName("TypeRef")
 	if typeRefType == nil {
 		panic("internal error. TypeRef is an unknown type")

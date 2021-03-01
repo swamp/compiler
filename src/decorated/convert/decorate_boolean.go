@@ -12,7 +12,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func decorateBoolean(d DecorateStream, boolean *ast.BooleanLiteral) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateBoolean(d DecorateStream, boolean *ast.BooleanLiteral) (decorated.Expression, decshared.DecoratedError) {
 	boolType := d.TypeRepo().FindTypeFromName("Bool")
 	if boolType == nil {
 		return nil, decorated.NewTypeNotFound("Bool")

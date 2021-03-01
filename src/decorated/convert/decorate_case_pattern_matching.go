@@ -28,8 +28,12 @@ func (f *FakeExpression) Type() dtype.Type {
 	return f.storedType
 }
 
-func (f *FakeExpression) FetchPositionAndLength() token.PositionLength {
-	return token.PositionLength{}
+func (f *FakeExpression) String() string {
+	return "totally fake"
+}
+
+func (f *FakeExpression) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
 }
 
 func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatternMatching, context *VariableContext) (*decorated.CasePatternMatching, decshared.DecoratedError) {
@@ -43,12 +47,12 @@ func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatte
 
 	var decoratedConsequences []*decorated.CaseConsequencePatternMatching
 
-	var defaultCase decorated.DecoratedExpression
+	var defaultCase decorated.Expression
 
 	var previousConsequenceType dtype.Type
 
 	for _, consequence := range caseExpression.Consequences() {
-		var decoratedLiteralExpression decorated.DecoratedExpression
+		var decoratedLiteralExpression decorated.Expression
 		if consequence.Literal() != nil {
 			consequenceVariableContext := context.MakeVariableContext()
 			var decoratedLiteralExpressionErr decshared.DecoratedError

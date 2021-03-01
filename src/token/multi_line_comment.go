@@ -16,7 +16,7 @@ func MakeCommentBlock(comments []CommentToken) CommentBlock {
 }
 
 type CommentToken struct {
-	PositionLength
+	SourceFileReference
 	RawString        string
 	CommentString    string
 	ForDocumentation bool
@@ -34,13 +34,17 @@ func (s CommentToken) Text() string {
 	return s.CommentString
 }
 
+func (s CommentToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
+}
+
 // CommentToken :
 type MultiLineCommentToken struct {
 	CommentToken
 }
 
-func NewMultiLineCommentToken(raw string, text string, forDocumentation bool, position PositionLength) MultiLineCommentToken {
-	return MultiLineCommentToken{CommentToken: CommentToken{RawString: raw, CommentString: text, PositionLength: position, ForDocumentation: forDocumentation}}
+func NewMultiLineCommentToken(raw string, text string, forDocumentation bool, sourceFileReference SourceFileReference) MultiLineCommentToken {
+	return MultiLineCommentToken{CommentToken: CommentToken{RawString: raw, CommentString: text, SourceFileReference: sourceFileReference, ForDocumentation: forDocumentation}}
 }
 
 func (s MultiLineCommentToken) String() string {

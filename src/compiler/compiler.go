@@ -8,6 +8,7 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"strings"
 
@@ -31,11 +32,40 @@ func CheckUnused(world *loader.World) {
 		}
 		for _, def := range module.Definitions().Definitions() {
 			if !def.WasReferenced() {
-				sourceFileReference := def.Identifier().Symbol().SourceFile().ReferenceWithPositionString(def.Identifier().PositionLength().Position())
-				fmt.Printf("%s Warning: '%v:%v' is never referenced\n", sourceFileReference, module.FullyQualifiedModuleName(), def.Identifier().Name())
+				sourceFileReference := def.Identifier().Symbol().FetchPositionLength().ToReferenceString()
+				log.Printf("%s Warning: '%v:%v' is never referenced\n", sourceFileReference, module.FullyQualifiedModuleName(), def.Identifier().Name())
 			}
 		}
 	}
+}
+
+func CompileFile(sourceFile string, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
+	sourceFileRootDirectory := sourceFile
+	if file.IsDir(sourceFile) {
+	} else {
+		sourceFileRootDirectory = filepath.Dir(sourceFile)
+	}
+	world := loader.NewWorld()
+
+	worldDecorator, worldDecoratorErr := loader.NewWorldDecorator(enforceStyle, verboseFlag)
+	if worldDecoratorErr != nil {
+		return nil, nil, worldDecoratorErr
+	}
+	for _, rootModule := range worldDecorator.ImportModules() {
+		world.AddModule(rootModule.FullyQualifiedModuleName(), rootModule)
+	}
+
+	mainNamespace := dectype.MakePackageRootModuleName(nil)
+	rootPackage := NewPackageLoader(sourceFileRootDirectory, mainNamespace, world, worldDecorator)
+	repository := rootPackage.repository
+	packageRelative := dectype.MakePackageRelativeModuleNameFromString("test")
+	rootPrefix := dectype.MakePackageRootModuleNameFromString("")
+	module, readModuleErr := repository.InternalReader().ReadModule(repository, packageRelative, rootPrefix)
+	if readModuleErr != nil {
+		return nil, nil, decorated.NewModuleError(".swamp", readModuleErr)
+	}
+
+	return world, module, nil
 }
 
 func CompileMain(mainSourceFile string, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
@@ -79,7 +109,7 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 	gen := generate.NewGenerator()
 	var allFunctions []*generate.Function
 	var allExternalFunctions []*generate.ExternalFunction
-	fakeMod := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), nil)
+	fakeMod := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), "")
 
 	typeInformationChunk, err := typeinfo.Generate(world)
 	if err != nil {
@@ -104,7 +134,7 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 		allFunctions = append(allFunctions, functions...)
 		externalFunctions := module.ExternalFunctions()
 		for _, externalFunction := range externalFunctions {
-			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.FunctionName, nil, token.PositionLength{}, 0)))
+			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.FunctionName, token.SourceFileReference{}, 0)))
 			fakeFunc := generate.NewExternalFunction(fakeName, 0, externalFunction.ParameterCount)
 			allExternalFunctions = append(allExternalFunctions, fakeFunc)
 		}

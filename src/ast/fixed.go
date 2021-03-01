@@ -24,8 +24,8 @@ func (i *FixedLiteral) Value() int32 {
 	return i.value
 }
 
-func (i *FixedLiteral) PositionLength() token.PositionLength {
-	return i.Token.FetchPositionLength()
+func (i *FixedLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.Token.SourceFileReference
 }
 
 func NewFixedLiteral(token token.NumberToken, v int32) *FixedLiteral {

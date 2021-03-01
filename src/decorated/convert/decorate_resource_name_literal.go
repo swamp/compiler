@@ -12,7 +12,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateResourceName(d DecorateStream, resourceName *ast.ResourceNameLiteral) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateResourceName(d DecorateStream, resourceName *ast.ResourceNameLiteral) (decorated.Expression, decshared.DecoratedError) {
 	resourceNameType := d.TypeRepo().FindTypeFromName("ResourceName")
 	if resourceNameType == nil {
 		panic("internal error. ResourceName is an unknown type")

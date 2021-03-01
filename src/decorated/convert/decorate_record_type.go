@@ -35,7 +35,7 @@ func DecorateRecordType(info *ast.Record, t *dectype.TypeRepo) (*dectype.RecordA
 		convertedParameters = append(convertedParameters, convertedParameter)
 	}
 
-	record := dectype.NewRecordType(convertedFields, convertedParameters)
+	record := dectype.NewRecordType(info, convertedFields, convertedParameters)
 
 	return t.DeclareRecordType(record), nil
 }

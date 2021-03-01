@@ -12,7 +12,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateInteger(d DecorateStream, integer *ast.IntegerLiteral) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateInteger(d DecorateStream, integer *ast.IntegerLiteral) (decorated.Expression, decshared.DecoratedError) {
 	integerType := d.TypeRepo().FindTypeFromName("Int")
 	if integerType == nil {
 		panic("internal error. Int is an unknown type")

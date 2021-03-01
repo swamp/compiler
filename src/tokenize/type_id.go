@@ -10,5 +10,5 @@ import (
 )
 
 func (t *Tokenizer) parseTypeId(startPos token.PositionToken) (token.Token, error) {
-	return token.NewTypeId("$", t.MakePositionLength(startPos), startPos.Indentation()), nil
+	return token.NewTypeId("$", t.MakeSourceFileReference(startPos), startPos.Indentation()), nil
 }

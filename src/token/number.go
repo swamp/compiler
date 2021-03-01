@@ -11,14 +11,14 @@ import (
 
 // NumberToken :
 type NumberToken struct {
-	PositionLength
+	SourceFileReference
 	number  int32
 	raw     string
 	isFixed bool
 }
 
-func NewNumberToken(raw string, v int32, isFixed bool, startPosition PositionLength) NumberToken {
-	return NumberToken{raw: raw, number: v, isFixed: isFixed, PositionLength: startPosition}
+func NewNumberToken(raw string, v int32, isFixed bool, startPosition SourceFileReference) NumberToken {
+	return NumberToken{raw: raw, number: v, isFixed: isFixed, SourceFileReference: startPosition}
 }
 
 func (s NumberToken) Type() Type {
@@ -39,4 +39,8 @@ func (s NumberToken) Raw() string {
 
 func (s NumberToken) String() string {
 	return fmt.Sprintf("Number:%v", s.number)
+}
+
+func (s NumberToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
 }

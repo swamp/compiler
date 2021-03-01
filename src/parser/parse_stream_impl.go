@@ -27,6 +27,7 @@ type ParseStreamImpl struct {
 	descent             int
 	parser              ParserInterface
 	disableEnforceStyle bool
+	nodes               []ast.Node
 }
 
 func NewParseStreamImpl(parser ParserInterface, tokenizer *tokenize.Tokenizer, enforceStyle bool) *ParseStreamImpl {
@@ -50,9 +51,14 @@ func (p *ParseStreamImpl) debugInfoRows(s string, rowCount int) {
 	fmt.Printf("%v\n---\n", extract)
 }
 
-func (p *ParseStreamImpl) positionLength() token.PositionLength {
-	pos := p.tokenizer.ParsingPosition().Position()
-	return token.NewPositionLength(pos, 1, pos.Column()/2)
+func (p *ParseStreamImpl) positionLength() token.SourceFileReference {
+	return p.sourceFileReference()
+}
+
+func (p *ParseStreamImpl) sourceFileReference() token.SourceFileReference {
+	pos := p.tokenizer.ParsingPosition()
+	reference := p.tokenizer.MakeSourceFileReference(pos)
+	return reference
 }
 
 func (p *ParseStreamImpl) getPrecedenceFromType(tType token.Type) Precedence {
@@ -82,9 +88,9 @@ func (p *ParseStreamImpl) readTypeIdentifier() (*ast.TypeIdentifier, parerr.Pars
 	return typeIdent, nil
 }
 
-func (p *ParseStreamImpl) addWarning(description string, length token.PositionLength) {
-	color.Yellow("%v:%d:%d: %v: %v", p.tokenizer.RelativeFilename(), length.Position().Line()+1,
-		length.Position().Column()+1, "Warning", description)
+func (p *ParseStreamImpl) addWarning(description string, length token.SourceFileReference) {
+	color.Yellow("%v:%d:%d: %v: %v", p.tokenizer.RelativeFilename(), length.Range.Position().Line()+1,
+		length.Range.Position().Column()+1, "Warning", description)
 }
 
 func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, parerr.ParseError) {
@@ -95,7 +101,23 @@ func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, par
 		return nil, parerr.NewExpectedVariableIdentifierError(variableSymbolErr)
 	}
 	varIdent := ast.NewVariableIdentifier(variableSymbol)
+	p.addNode(varIdent)
 	return varIdent, nil
+}
+
+func (p *ParseStreamImpl) readKeyword() (token.Keyword, parerr.ParseError) {
+	pos := p.tokenizer.ParsingPosition()
+	ident, err := p.readVariableIdentifier()
+	if err != nil {
+		return token.Keyword{}, err
+	}
+
+	keyword, keywordErr := tokenize.DetectLowercaseKeyword(ident.Symbol())
+	if keywordErr != nil {
+		return token.Keyword{}, parerr.NewInternalError(p.tokenizer.MakeSourceFileReference(pos), keywordErr)
+	}
+
+	return keyword, nil
 }
 
 func (p *ParseStreamImpl) skipMaybeSpaceAndSameIndentationOrContinuation() (token.IndentationReport, parerr.ParseError) {
@@ -175,8 +197,41 @@ func (p *ParseStreamImpl) maybePipeLeft() bool {
 	return p.tokenizer.MaybeString("<|")
 }
 
-func (p *ParseStreamImpl) maybeRightBracket() bool {
-	return p.tokenizer.MaybeRune(']')
+func (p *ParseStreamImpl) readSpecificParenToken(p2 token.Type) (token.ParenToken, parerr.ParseError) {
+	parsedToken, err := p.tokenizer.ReadAnyOperator()
+	if err != nil {
+		return token.ParenToken{}, err
+	}
+
+	if parsedToken.Type() != p2 {
+		return token.ParenToken{}, parerr.NewUnknownPrefixInExpression(parsedToken)
+	}
+
+	return parsedToken.(token.ParenToken), nil
+}
+
+func (p *ParseStreamImpl) maybeSpecificParenToken(p2 token.Type) (token.ParenToken, bool) {
+	pos := p.tokenizer.Tell()
+
+	parenToken, err := p.readSpecificParenToken(p2)
+	if err != nil {
+		p.tokenizer.Seek(pos)
+		return token.ParenToken{}, false
+	}
+
+	return parenToken, true
+}
+
+func (p *ParseStreamImpl) maybeRightBracket() (token.ParenToken, bool) {
+	return p.maybeSpecificParenToken(token.RightBracket)
+}
+
+func (p *ParseStreamImpl) maybeRightArrayBracket() (token.ParenToken, bool) {
+	return p.maybeSpecificParenToken(token.RightArrayBracket)
+}
+
+func (p *ParseStreamImpl) maybeLeftCurly() (token.ParenToken, bool) {
+	return p.maybeSpecificParenToken(token.LeftCurlyBrace)
 }
 
 func (p *ParseStreamImpl) maybeRightCurly() bool {
@@ -206,14 +261,6 @@ func (p *ParseStreamImpl) maybeOneSpaceAndRightArrow() bool {
 
 func (p *ParseStreamImpl) maybeLeftParen() bool {
 	return p.tokenizer.MaybeRune('(')
-}
-
-func (p *ParseStreamImpl) maybeLeftCurly() bool {
-	return p.tokenizer.MaybeString("{")
-}
-
-func (p *ParseStreamImpl) maybeRightArrayBracket() bool {
-	return p.tokenizer.MaybeString("|]")
 }
 
 func (p *ParseStreamImpl) maybeAccessor() bool {
@@ -255,7 +302,7 @@ func (p *ParseStreamImpl) readVariableIdentifierAssignOrUpdate() (*ast.VariableI
 	if spaceAfterUpdateErr != nil {
 		return nil, false, 0, spaceAfterUpdateErr
 	}
-	return ident, false, ident.PositionLength().FetchIndentation(), nil
+	return ident, false, ident.FetchPositionLength().Range.FetchIndentation(), nil
 }
 
 func (p *ParseStreamImpl) readTermToken() (token.Token, parerr.ParseError) {
@@ -267,7 +314,7 @@ func (p *ParseStreamImpl) readTermToken() (token.Token, parerr.ParseError) {
 
 	switch t.(type) {
 	case token.SpaceToken:
-		posLength := p.tokenizer.MakePositionLength(pos)
+		posLength := p.tokenizer.MakeSourceFileReference(pos)
 
 		return nil, parerr.NewExtraSpacing(posLength)
 	}
@@ -513,6 +560,14 @@ func (p *ParseStreamImpl) wasTypeIdentifier() (*ast.TypeIdentifier, bool) {
 	return typeIdent, true
 }
 
+func (p *ParseStreamImpl) addNode(node ast.Node) {
+	posLength := node.FetchPositionLength()
+	if posLength.Range.Position().Line() == 0 && posLength.Range.Position().Column() == 0 {
+		panic("suspicion")
+	}
+	p.nodes = append(p.nodes, node)
+}
+
 // ---------------------------------------------------------------------------------
 // MAYBE
 // ---------------------------------------------------------------------------------
@@ -527,6 +582,8 @@ func (p *ParseStreamImpl) maybeKeywordAlias() bool {
 	if !wasFound {
 		p.tokenizer.Seek(pos)
 	}
+	p.addNode(variableIdentifier)
+
 	return wasFound
 }
 
@@ -541,6 +598,7 @@ func (p *ParseStreamImpl) maybeKeywordExposing() bool {
 	if !wasFound {
 		p.tokenizer.Seek(pos)
 	}
+	p.addNode(variableIdentifier)
 	return wasFound
 }
 
@@ -687,7 +745,7 @@ func (p *ParseStreamImpl) eatCommaSeparatorOrTermination(expectedIndentation int
 			return true, report, nil
 		}
 
-		return false, report, parerr.NewExtraSpacing(p.positionLength())
+		return false, report, parerr.NewExtraSpacing(p.sourceFileReference())
 	}
 
 	// It was a termination, that should be handled, but we can still check that the space is correct
@@ -891,24 +949,24 @@ func (p *ParseStreamImpl) eatRightArrow() parerr.ParseError {
 	return nil
 }
 
-func (p *ParseStreamImpl) eatRightParen() parerr.ParseError {
-	return p.eatRune(')')
+func (p *ParseStreamImpl) readRightParen() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightParen)
 }
 
 func (p *ParseStreamImpl) eatLeftParen() parerr.ParseError {
 	return p.eatRune('(')
 }
 
-func (p *ParseStreamImpl) eatRightCurly() parerr.ParseError {
-	return p.eatRune('}')
+func (p *ParseStreamImpl) readRightBracket() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightBracket)
 }
 
-func (p *ParseStreamImpl) eatRightBracket() parerr.ParseError {
-	return p.eatRune(']')
+func (p *ParseStreamImpl) readRightCurly() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightCurlyBrace)
 }
 
-func (p *ParseStreamImpl) eatRightArrayBracket() parerr.ParseError {
-	return p.eatString("|]")
+func (p *ParseStreamImpl) readRightArrayBracket() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightArrayBracket)
 }
 
 func (p *ParseStreamImpl) eatOf() parerr.ParseError {

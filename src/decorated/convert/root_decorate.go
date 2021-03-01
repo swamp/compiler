@@ -18,15 +18,15 @@ import (
 
 type Definer struct {
 	typeRepo          *dectype.TypeRepo
-	localAnnotation   *LocalAnnotation
+	localAnnotation   *decorated.Annotation
 	localComments     []ast.LocalComment
 	localCommentBlock token.CommentBlock
 	verboseFlag       bool
-	dectorateStream   DecorateStream
+	decorateStream    DecorateStream
 }
 
 func NewDefiner(dectorateStream DecorateStream, typeRepo *dectype.TypeRepo, debugName string) *Definer {
-	g := &Definer{verboseFlag: false, localAnnotation: nil, dectorateStream: dectorateStream, typeRepo: typeRepo}
+	g := &Definer{verboseFlag: false, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo}
 	return g
 }
 
@@ -44,12 +44,14 @@ func (g *Definer) createAliasTypeFromType(aliasName *ast.TypeIdentifier, subType
 }
 
 func (g *Definer) AnnotateConstant(identifier *ast.VariableIdentifier, realType dtype.Type) decshared.DecoratedError {
-	g.localAnnotation = NewLocalAnnotation(identifier, realType)
+	g.localAnnotation = decorated.NewAnnotation(identifier, realType)
 	return nil
 }
 
 func (g *Definer) AnnotateFunc(identifier *ast.VariableIdentifier, funcType dtype.Type) error {
-	g.localAnnotation = NewLocalAnnotation(identifier, funcType)
+	g.localAnnotation = decorated.NewAnnotation(identifier, funcType)
+	g.decorateStream.InternalAddNode(g.localAnnotation)
+
 	return nil
 }
 
@@ -72,7 +74,7 @@ func (g *Definer) functionAnnotation(identifier *ast.VariableIdentifier, constan
 	}
 	checkedType, _ := convertedType.(dtype.Type)
 	if checkedType != nil {
-		g.dectorateStream.AddDeclaration(identifier, checkedType)
+		g.decorateStream.AddDeclaration(identifier, checkedType)
 	}
 	g.AnnotateFunc(identifier, convertedType)
 
@@ -126,7 +128,7 @@ func (g *Definer) handleImport(d DecorateStream, importAst *ast.Import) decshare
 		alias = dectype.MakeSingleModuleName(importAst.Alias())
 	}
 	packageRelative := dectype.MakePackageRelativeModuleName(importAst.ModuleName())
-	return d.AddImport(packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
+	return d.AddImport(importAst, packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
 }
 
 func (g *Definer) handleExternalFunction(d DecorateStream, externalFunction *ast.ExternalFunction) decshared.DecoratedError {
@@ -157,19 +159,19 @@ func (g *Definer) handleDefinitionAssignment(d DecorateStream, assignment *ast.D
 	if annotatedType == nil {
 		return decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 	}
-	g.localAnnotation = nil
 	variableContext := d.NewVariableContext()
-	_, decoratedExpressionErr := decorateDefinition(d, variableContext, name, expr, annotatedType, g.localCommentBlock)
+	_, decoratedExpressionErr := decorateDefinition(d, variableContext, name, expr, annotatedType, g.localAnnotation, g.localCommentBlock)
 	if decoratedExpressionErr != nil {
 		return decoratedExpressionErr
 	}
 	g.localComments = nil
+	g.localAnnotation = nil
 
 	g.localAnnotation = nil
 	return nil
 }
 
-func (g *Definer) handleAnnotation(declaration *ast.Annotation) decshared.DecoratedError {
+func (g *Definer) handleAnnotation(d DecorateStream, declaration *ast.Annotation) decshared.DecoratedError {
 	if g.localAnnotation != nil {
 		return decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
 	}
@@ -180,6 +182,7 @@ func (g *Definer) handleAnnotation(declaration *ast.Annotation) decshared.Decora
 	if declareErr != nil {
 		return declareErr
 	}
+	// d.InternalAddNode(annotation)
 
 	return nil
 }
@@ -191,23 +194,23 @@ func (g *Definer) handleStatement(statement ast.Expression) decshared.DecoratedE
 	case *ast.CustomTypeStatement:
 		return g.handleCustomTypeStatement(v)
 	case *ast.Annotation:
-		return g.handleAnnotation(v)
+		return g.handleAnnotation(g.decorateStream, v)
 	case *ast.DefinitionAssignment:
-		return g.handleDefinitionAssignment(g.dectorateStream, v)
+		return g.handleDefinitionAssignment(g.decorateStream, v)
 	case *ast.Import:
-		return g.handleImport(g.dectorateStream, v)
+		return g.handleImport(g.decorateStream, v)
 	case *ast.ExternalFunction:
-		return g.handleExternalFunction(g.dectorateStream, v)
+		return g.handleExternalFunction(g.decorateStream, v)
 	case *ast.MultilineComment:
-		return g.handleMultilineComment(g.dectorateStream, v)
+		return g.handleMultilineComment(g.decorateStream, v)
 	case *ast.SingleLineComment:
-		return g.handleSinglelineComment(g.dectorateStream, v)
+		return g.handleSinglelineComment(g.decorateStream, v)
 	default:
-		return decorated.NewUnknownStatement(token.PositionLength{}, statement)
+		return decorated.NewUnknownStatement(token.SourceFileReference{}, statement)
 	}
 }
 
-func (g *Definer) firstPass(program *ast.Program) decshared.DecoratedError {
+func (g *Definer) firstPass(program *ast.SourceFile) decshared.DecoratedError {
 	for _, statement := range program.Statements() {
 		err := g.handleStatement(statement)
 		if err != nil {
@@ -218,7 +221,7 @@ func (g *Definer) firstPass(program *ast.Program) decshared.DecoratedError {
 	return nil
 }
 
-func (g *Definer) Define(program *ast.Program) decshared.DecoratedError {
+func (g *Definer) Define(program *ast.SourceFile) decshared.DecoratedError {
 	err := g.firstPass(program)
 	if err != nil {
 		return err

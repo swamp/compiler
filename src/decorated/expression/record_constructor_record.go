@@ -28,7 +28,7 @@ func (c *RecordConstructorRecord) Type() dtype.Type {
 	return c.recordType
 }
 
-func (c *RecordConstructorRecord) Expression() DecoratedExpression {
+func (c *RecordConstructorRecord) Expression() Expression {
 	return c.record
 }
 
@@ -36,6 +36,6 @@ func (c *RecordConstructorRecord) String() string {
 	return fmt.Sprintf("[record-constructor-record %v %v]", c.typeIdentifier, c.record)
 }
 
-func (c *RecordConstructorRecord) FetchPositionAndLength() token.PositionLength {
-	return c.typeIdentifier.Symbol().FetchPositionLength()
+func (c *RecordConstructorRecord) FetchPositionLength() token.SourceFileReference {
+	return c.typeIdentifier.Symbol().SourceFileReference
 }

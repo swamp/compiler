@@ -28,8 +28,8 @@ func NewCharacterConstant(t token.CharacterToken, v rune) *CharacterLiteral {
 	return &CharacterLiteral{value: v, Token: t}
 }
 
-func (i *CharacterLiteral) PositionLength() token.PositionLength {
-	return i.Token.FetchPositionLength()
+func (i *CharacterLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.Token.SourceFileReference
 }
 
 func (i *CharacterLiteral) CharacterToken() token.CharacterToken {

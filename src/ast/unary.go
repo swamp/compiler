@@ -37,7 +37,7 @@ func (i *UnaryExpression) OperatorToken() token.OperatorToken {
 	return i.operator
 }
 
-func (i *UnaryExpression) PositionLength() token.PositionLength {
+func (i *UnaryExpression) FetchPositionLength() token.SourceFileReference {
 	return i.token.FetchPositionLength()
 }
 

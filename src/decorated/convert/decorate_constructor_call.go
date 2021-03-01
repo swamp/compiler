@@ -14,8 +14,8 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, context *VariableContext) (decorated.DecoratedExpression, decshared.DecoratedError) {
-	var decoratedExpressions []decorated.DecoratedExpression
+func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	var decoratedExpressions []decorated.Expression
 
 	for _, rawExpression := range call.Arguments() {
 		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, rawExpression, context)

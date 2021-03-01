@@ -13,7 +13,7 @@ func (t *Tokenizer) EatRune(requiredRune rune) TokenError {
 	startPos := t.position
 	readRune := t.nextRune()
 	if readRune != requiredRune {
-		return NewUnexpectedEatTokenError(t.MakePositionLength(startPos), requiredRune, readRune)
+		return NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPos), requiredRune, readRune)
 	}
 	return nil
 }

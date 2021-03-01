@@ -32,14 +32,14 @@ func (i *MultilineComment) String() string {
 	return fmt.Sprintf("[multilinecomment '%v']", i.commentToken.Text())
 }
 
-func (i *MultilineComment) PositionLength() token.PositionLength {
-	return i.commentToken.PositionLength
+func (i *MultilineComment) PositionLength() token.Range {
+	return i.commentToken.Range
 }
 
 func (i *MultilineComment) DebugString() string {
 	return i.String()
 }
 
-func (i *MultilineComment) FetchPositionLength() token.PositionLength {
-	return i.commentToken.FetchPositionLength()
+func (i *MultilineComment) FetchPositionLength() token.SourceFileReference {
+	return i.commentToken.SourceFileReference
 }

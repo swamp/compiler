@@ -12,7 +12,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateFixed(d DecorateStream, fixed *ast.FixedLiteral) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateFixed(d DecorateStream, fixed *ast.FixedLiteral) (decorated.Expression, decshared.DecoratedError) {
 	fixedType := d.TypeRepo().FindTypeFromName("Fixed")
 	if fixedType == nil {
 		panic("internal error. Int is an unknown type")

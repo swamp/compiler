@@ -21,11 +21,24 @@ type ModuleRepository interface {
 type Decorator struct {
 	module           *decorated.Module
 	moduleRepository ModuleRepository
+	nodes            []decorated.Node
 }
 
 func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module) *Decorator {
 	d := &Decorator{module: module, moduleRepository: moduleRepository}
 	return d
+}
+
+func (d *Decorator) InternalAddNode(node decorated.Node) {
+	_, isRef := node.(*dectype.TypeReference)
+	if isRef {
+		isRef = false
+	}
+	d.nodes = append(d.nodes, node)
+}
+
+func (d *Decorator) RootNodes() []decorated.Node {
+	return d.nodes
 }
 
 func (d *Decorator) Import(source *decorated.Module, relativeName dectype.PackageRelativeModuleName, exposeAll bool) error {
@@ -44,7 +57,7 @@ func (d *Decorator) AddDeclaration(identifier *ast.VariableIdentifier, ofType dt
 	return d.module.Declarations().AddDeclaration(identifier, ofType)
 }
 
-func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decorated.DecoratedExpression) error {
+func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decorated.Expression) error {
 	return d.module.Definitions().AddDecoratedExpression(identifier, expr)
 }
 
@@ -52,7 +65,7 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 	return decorator.NewVariableContext(d.module.LocalAndImportedDefinitions())
 }
 
-func (d *Decorator) AddImport(relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) decshared.DecoratedError {
+func (d *Decorator) AddImport(importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) decshared.DecoratedError {
 	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(relativeModuleName, verboseFlag)
 	if importErr != nil {
 		return importErr
@@ -63,6 +76,10 @@ func (d *Decorator) AddImport(relativeModuleName dectype.PackageRelativeModuleNa
 	if !alias.IsEmpty() {
 		relativeModuleName = dectype.MakePackageRelativeModuleName(alias.Path())
 	}
+
+	importStatement := decorated.NewImport(importAst, moduleToImport)
+	d.InternalAddNode(importStatement)
+
 	importModuleErr := d.Import(moduleToImport, relativeModuleName, exposeAll)
 	if importModuleErr != nil {
 		return decorated.NewInternalError(importModuleErr)

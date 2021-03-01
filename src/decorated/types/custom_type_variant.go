@@ -10,6 +10,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type CustomTypeVariant struct {
@@ -36,6 +37,10 @@ func (s *CustomTypeVariant) AttachToCustomType(c *CustomTypeAtom) {
 
 	s.parent = c
 	s.inCustomType = c
+}
+
+func (s *CustomTypeVariant) FetchPositionLength() token.SourceFileReference {
+	return s.name.FetchPositionLength()
 }
 
 func (s *CustomTypeVariant) InCustomType() *CustomTypeAtom {

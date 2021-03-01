@@ -6,8 +6,13 @@ require (
 	github.com/alecthomas/kong v0.2.15
 	github.com/fatih/color v1.10.0
 	github.com/pelletier/go-toml v1.8.1
-	github.com/swamp/assembler v0.0.0-20210212095816-a3667cf5e493
+	github.com/piot/go-lsp v0.0.0-20210227113735-875e66a30d6a
+	github.com/piot/lsp-server v0.0.0-20210301091727-d680b4e21a1a
+	github.com/piot/raff-go v0.0.0-20210107105329-efd4e0e14756 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/swamp/assembler v0.0.0-20210214100045-11d8f7400487
 	github.com/swamp/disassembler v0.0.0-20210214100502-713c999c3245
 	github.com/swamp/opcodes v0.0.0-20210214095833-e3801acbc388
 	github.com/swamp/pack v0.0.0-20210122130807-560a9bc9af01
+	golang.org/x/sys v0.0.0-20210228012217-479acdf4ea46 // indirect
 )

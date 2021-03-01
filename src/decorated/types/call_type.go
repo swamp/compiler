@@ -71,7 +71,7 @@ func replaceRecordFromContext(record *RecordAtom, lookup Lookup) (*RecordAtom, e
 		replacedFields = append(replacedFields, newField)
 	}
 
-	return NewRecordType(replacedFields, nil), nil
+	return NewRecordType(record.AstRecord(), replacedFields, nil), nil
 }
 
 func replaceInvokerTypeFromContext(invoker *InvokerType, lookup Lookup) (*InvokerType, error) {
@@ -145,7 +145,7 @@ func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, err
 		return nil, fmt.Errorf("no local types, why did you call it? %v", record)
 	}
 
-	return NewRecordType(record.SortedFields(), convertedTypes), nil
+	return NewRecordType(record.AstRecord(), record.SortedFields(), convertedTypes), nil
 }
 
 func callCustomType(customType *CustomTypeAtom, arguments []dtype.Type) (dtype.Type, error) {

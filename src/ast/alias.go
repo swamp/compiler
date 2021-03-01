@@ -5,7 +5,11 @@
 
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/token"
+)
 
 type Alias struct {
 	aliasName      *TypeIdentifier
@@ -26,4 +30,8 @@ func (i *Alias) Identifier() *TypeIdentifier {
 
 func (i *Alias) ReferencedType() Type {
 	return i.referencedType
+}
+
+func (i *Alias) FetchPositionLength() token.SourceFileReference {
+	return i.aliasName.FetchPositionLength()
 }

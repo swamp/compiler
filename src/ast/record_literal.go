@@ -43,8 +43,8 @@ func (i *RecordLiteral) DebugString() string {
 	return fmt.Sprintf("[record-literal]")
 }
 
-func (i *RecordLiteral) PositionLength() token.PositionLength {
-	return i.parenToken.FetchPositionLength()
+func (i *RecordLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.parenToken.SourceFileReference
 }
 
 func (i *RecordLiteral) SortedAssignments() []*RecordLiteralFieldAssignment {

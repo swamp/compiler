@@ -36,6 +36,6 @@ func (c *RecordConstructor) String() string {
 	return fmt.Sprintf("[record-constructor %v %v]", c.typeIdentifier, c.arguments)
 }
 
-func (c *RecordConstructor) FetchPositionAndLength() token.PositionLength {
-	return c.typeIdentifier.Symbol().FetchPositionLength()
+func (c *RecordConstructor) FetchPositionLength() token.SourceFileReference {
+	return c.typeIdentifier.Symbol().SourceFileReference
 }

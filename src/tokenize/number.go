@@ -71,8 +71,8 @@ func (t *Tokenizer) ParseNumber(a string) (token.NumberToken, TokenError) {
 
 	integerValue, integerValueErr := strconv.ParseInt(total, 0, 32)
 	if integerValueErr != nil {
-		return token.NumberToken{}, NewUnexpectedEatTokenError(t.MakePositionLength(startPosition), ' ', ' ')
+		return token.NumberToken{}, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), ' ', ' ')
 	}
-	posLen := t.MakePositionLength(startPosition)
+	posLen := t.MakeSourceFileReference(startPosition)
 	return token.NewNumberToken(a, int32(integerValue), isFixed, posLen), nil
 }

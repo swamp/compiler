@@ -45,7 +45,7 @@ func (d *ModuleDefinitions) FindDefinitionExpression(identifier *ast.VariableIde
 	return expressionDef
 }
 
-func (d *ModuleDefinitions) AddDecoratedExpression(identifier *ast.VariableIdentifier, expr DecoratedExpression) error {
+func (d *ModuleDefinitions) AddDecoratedExpression(identifier *ast.VariableIdentifier, expr Expression) error {
 	existingDeclare := d.FindDefinitionExpression(identifier)
 	if existingDeclare != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingDeclare)

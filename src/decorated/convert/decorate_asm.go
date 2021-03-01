@@ -11,7 +11,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func decorateAsm(d DecorateStream, asm *ast.Asm) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateAsm(d DecorateStream, asm *ast.Asm) (decorated.Expression, decshared.DecoratedError) {
 	decoratedAsm := decorated.NewAsmConstant(asm)
 	return decoratedAsm, nil
 }

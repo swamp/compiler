@@ -32,7 +32,7 @@ func (t *Tokenizer) parseAnySymbol(startPosition token.PositionToken) (token.Tok
 		t.MaybeOneNewLine()
 		t.MaybeOneNewLine()
 
-		return token.NewMultiLineCommentToken("ignore", "ignore", false, t.MakePositionLength(startPosition)), nil
+		return token.NewMultiLineCommentToken("ignore", "ignore", false, t.MakeSourceFileReference(startPosition)), nil
 	}
 	if variableSymbol.Name() == "not" {
 		t.EatOneSpace()

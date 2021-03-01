@@ -38,8 +38,8 @@ func (i *FunctionValue) Expression() Expression {
 	return i.expression
 }
 
-func (i *FunctionValue) PositionLength() token.PositionLength {
-	return i.debugAssignedValue.FetchPositionLength()
+func (i *FunctionValue) FetchPositionLength() token.SourceFileReference {
+	return i.debugAssignedValue.SourceFileReference
 }
 
 func (i *FunctionValue) DebugFunctionIdentifier() token.VariableSymbolToken {

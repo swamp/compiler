@@ -104,7 +104,7 @@ func TypeParametersHumanReadableSuffix(types []dtype.Type) string {
 		return ""
 	}
 
-	return fmt.Sprintf("<%s>", TypesToHumanReadable(types))
+	return fmt.Sprintf(" %s", TypesToHumanReadable(types))
 }
 
 func TypeArgumentNamesSuffix(types []*dtype.TypeArgumentName) string {

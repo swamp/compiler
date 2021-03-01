@@ -34,6 +34,6 @@ func (i *StringLiteral) String() string {
 	return fmt.Sprintf("[str %v]", i.str.Value())
 }
 
-func (i *StringLiteral) FetchPositionAndLength() token.PositionLength {
-	return i.str.Token.FetchPositionLength()
+func (i *StringLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.str.Token.SourceFileReference
 }

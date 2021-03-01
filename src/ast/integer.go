@@ -24,8 +24,8 @@ func (i *IntegerLiteral) Value() int32 {
 	return i.value
 }
 
-func (i *IntegerLiteral) PositionLength() token.PositionLength {
-	return i.Token.FetchPositionLength()
+func (i *IntegerLiteral) FetchPositionLength() token.SourceFileReference {
+	return i.Token.SourceFileReference
 }
 
 func NewIntegerLiteral(token token.NumberToken, v int32) *IntegerLiteral {

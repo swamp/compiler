@@ -10,6 +10,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type Alias struct {
@@ -23,11 +24,15 @@ func (u *Alias) String() string {
 }
 
 func (u *Alias) HumanReadable() string {
-	return fmt.Sprintf("type alias %v %v", u.name.Name(), u.referencedType.HumanReadable())
+	return fmt.Sprintf("%v", u.name.Name())
 }
 
 func (u *Alias) TypeIdentifier() *ast.TypeIdentifier {
 	return u.name
+}
+
+func (u *Alias) FetchPositionLength() token.SourceFileReference {
+	return u.name.FetchPositionLength()
 }
 
 func (u *Alias) ArtifactTypeName() ArtifactFullyQualifiedTypeName {

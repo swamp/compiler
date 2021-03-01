@@ -10,6 +10,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type PrimitiveAtom struct {
@@ -52,6 +53,10 @@ func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
 	}
 
 	return nil
+}
+
+func (u *PrimitiveAtom) FetchPositionLength() token.SourceFileReference {
+	return u.name.FetchPositionLength()
 }
 
 func (u *PrimitiveAtom) PrimitiveName() *ast.TypeIdentifier {

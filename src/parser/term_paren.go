@@ -20,7 +20,7 @@ func parseParenExpression(p ParseStream, startIndentation int, parenToken token.
 	}
 	p.maybeOneSpace()
 
-	if rightErr := p.eatRightParen(); rightErr != nil {
+	if _, rightErr := p.readRightParen(); rightErr != nil {
 		return nil, rightErr
 	}
 

@@ -6,6 +6,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -48,7 +50,24 @@ func NewParser(tokenizer *tokenize.Tokenizer, enforceStyle bool) *Parser {
 	return p
 }
 
-func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
+func (p *Parser) Nodes() []ast.Node {
+	return p.stream.nodes
+}
+
+func writeAllNodes(nodes []ast.Node) {
+	lastLine := -1
+
+	for _, node := range nodes {
+		rangeFound := node.FetchPositionLength().Range
+		if rangeFound.Start().Line() != lastLine {
+			fmt.Printf("\n")
+			lastLine = rangeFound.End().Line()
+		}
+		fmt.Printf("node pos %v ", node.FetchPositionLength())
+	}
+}
+
+func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 	var expressions []ast.Expression
 
 	for !p.stream.tokenizer.MaybeEOF() {
@@ -58,7 +77,7 @@ func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
 		}
 
 		if report.SpacesUntilMaybeNewline > 0 && report.IndentationSpaces > 0 {
-			return nil, parerr.NewExtraSpacing(p.stream.positionLength())
+			return nil, parerr.NewExtraSpacing(p.stream.sourceFileReference())
 		}
 
 		expression, expressionErr := p.parseExpressionStatement(report.Comments)
@@ -76,12 +95,14 @@ func (p *Parser) Parse() (*ast.Program, parerr.ParseError) {
 		}
 	}
 
-	program := ast.NewProgram(expressions)
+	program := ast.NewSourceFile(expressions)
+
+	program.SetNodes(p.stream.nodes)
 
 	return program, nil
 }
 
-func (p *Parser) ParseExpression() (*ast.Program, parerr.ParseError) {
+func (p *Parser) ParseExpression() (*ast.SourceFile, parerr.ParseError) {
 	expressions := []ast.Expression{}
 
 	expression, expressionErr := p.parseExpressionNormal(0)
@@ -92,7 +113,7 @@ func (p *Parser) ParseExpression() (*ast.Program, parerr.ParseError) {
 		panic("should not be nil")
 	}
 	expressions = append(expressions, expression)
-	program := ast.NewProgram(expressions)
+	program := ast.NewSourceFile(expressions)
 	return program, nil
 }
 
@@ -161,17 +182,6 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 		return nil, tErr
 	}
 
-	switch tok := t.(type) {
-	case token.MultiLineCommentToken:
-		{
-			return parseMultiLineComment(p.stream, tok)
-		}
-	case token.SingleLineCommentToken:
-		{
-			return parseSingleLineComment(p.stream, tok)
-		}
-	}
-
 	term, termErr := p.parseTermUsingToken(t, startIndentation)
 	if termErr != nil {
 		switch termErr.(type) {
@@ -195,6 +205,7 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 		}
 	}
 
+	p.stream.nodes = append(p.stream.nodes, leftExp)
 	_, isTypeIdentifier := term.(*ast.TypeIdentifier)
 	_, isVariableIdentifier := term.(*ast.VariableIdentifier)
 

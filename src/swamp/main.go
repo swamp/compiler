@@ -13,9 +13,11 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/fatih/color"
+	"github.com/piot/lsp-server/lspserv"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	"github.com/swamp/compiler/src/file"
+	"github.com/swamp/compiler/src/lspservice"
 )
 
 var Version string
@@ -71,6 +73,19 @@ func (c *FmtCmd) Run() error {
 	return nil
 }
 
+type LspCmd struct{}
+
+func (c *LspCmd) Run() error {
+	lspService := &lspservice.LspImpl{}
+	service := lspservice.NewService(lspService, lspService)
+	fmt.Fprintf(os.Stderr, "LSP Server initiated. Will receive commands from stdin and send reply on stdout")
+	lspServ := lspserv.NewService(service)
+	const logOutput = false
+	lspServ.RunUntilClose(lspserv.StdInOutReadWriteCloser{}, logOutput)
+
+	return nil
+}
+
 type BuildCmd struct {
 	Path         string `help:"path to file or directory" arg:"" default:"." type:"path"`
 	DisableStyle bool   `help:"disable enforcing of style" default:"false"`
@@ -104,6 +119,7 @@ func (c *VersionCmd) Run() error {
 }
 
 type Options struct {
+	Lsp     LspCmd     `help:"lsp" cmd:""`
 	Fmt     FmtCmd     `help:"fmt" cmd:""`
 	Build   BuildCmd   `cmd:"" default:"1" help:"builds a swamp application"`
 	Version VersionCmd `cmd:"" help:"shows the version information"`

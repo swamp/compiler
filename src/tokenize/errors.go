@@ -12,7 +12,7 @@ import (
 )
 
 type TokenError interface {
-	FetchPositionLength() token.PositionLength
+	FetchPositionLength() token.SourceFileReference
 	Error() string
 }
 
@@ -27,15 +27,15 @@ func NewSubError(err TokenError) SubError {
 	return SubError{SubErr: err}
 }
 
-func (e SubError) FetchPositionLength() token.PositionLength {
+func (e SubError) FetchPositionLength() token.SourceFileReference {
 	return e.SubErr.FetchPositionLength()
 }
 
 type StandardTokenError struct {
-	posLength token.PositionLength
+	posLength token.SourceFileReference
 }
 
-func (e StandardTokenError) FetchPositionLength() token.PositionLength {
+func (e StandardTokenError) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
@@ -45,7 +45,7 @@ type UnexpectedEatTokenError struct {
 	encounteredRune rune
 }
 
-func NewUnexpectedEatTokenError(posLength token.PositionLength, requiredRune rune, encounteredRune rune) UnexpectedEatTokenError {
+func NewUnexpectedEatTokenError(posLength token.SourceFileReference, requiredRune rune, encounteredRune rune) UnexpectedEatTokenError {
 	return UnexpectedEatTokenError{StandardTokenError: StandardTokenError{posLength}, requiredRune: requiredRune, encounteredRune: encounteredRune}
 }
 
@@ -65,8 +65,12 @@ func (e InternalError) Error() string {
 	return fmt.Sprintf("tokenize internal error %v", e.err)
 }
 
-func (e InternalError) FetchPositionLength() token.PositionLength {
-	return token.NewPositionLength(token.NewPositionTopLeft(), 0, -1)
+func (e InternalError) FetchPositionLength() token.SourceFileReference {
+	illegalStart := token.MakePosition(-1, -1)
+	return token.SourceFileReference{
+		Range:    token.NewPositionLength(illegalStart, 0, -1),
+		Document: nil,
+	}
 }
 
 type ExpectedVariableSymbolError struct {
@@ -74,7 +78,7 @@ type ExpectedVariableSymbolError struct {
 	encountered string
 }
 
-func NewExpectedVariableSymbolError(posLength token.PositionLength, encountered string) ExpectedVariableSymbolError {
+func NewExpectedVariableSymbolError(posLength token.SourceFileReference, encountered string) ExpectedVariableSymbolError {
 	return ExpectedVariableSymbolError{StandardTokenError: StandardTokenError{posLength}, encountered: encountered}
 }
 
@@ -87,7 +91,7 @@ type ExpectedTypeSymbolError struct {
 	encountered string
 }
 
-func NewExpectedTypeSymbolError(posLength token.PositionLength, encountered string) ExpectedTypeSymbolError {
+func NewExpectedTypeSymbolError(posLength token.SourceFileReference, encountered string) ExpectedTypeSymbolError {
 	return ExpectedTypeSymbolError{StandardTokenError: StandardTokenError{posLength}, encountered: encountered}
 }
 
@@ -119,7 +123,7 @@ func (e ExpectedNewLineError) Error() string {
 	return fmt.Sprintf("expected newline ")
 }
 
-func (e ExpectedNewLineError) FetchPositionLength() token.PositionLength {
+func (e ExpectedNewLineError) FetchPositionLength() token.SourceFileReference {
 	return e.eatError.FetchPositionLength()
 }
 
@@ -152,12 +156,12 @@ func (e ExpectedIndentationAfterNewLineError) Error() string {
 }
 
 type IllegalIndentationError struct {
-	posLength         token.PositionLength
+	posLength         token.SourceFileReference
 	encounteredSpaces int
 	multiples         int
 }
 
-func NewIllegalIndentationError(posLength token.PositionLength, encounteredSpaces int, multiples int) IllegalIndentationError {
+func NewIllegalIndentationError(posLength token.SourceFileReference, encounteredSpaces int, multiples int) IllegalIndentationError {
 	return IllegalIndentationError{posLength: posLength, encounteredSpaces: encounteredSpaces, multiples: multiples}
 }
 
@@ -165,17 +169,17 @@ func (e IllegalIndentationError) Error() string {
 	return fmt.Sprintf("illegal indentation, found %d spaces. Must be multiple of %d", e.encounteredSpaces, e.multiples)
 }
 
-func (e IllegalIndentationError) FetchPositionLength() token.PositionLength {
+func (e IllegalIndentationError) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
 type UnexpectedIndentationError struct {
-	posLength              token.PositionLength
+	posLength              token.SourceFileReference
 	requiredIndentation    int
 	encounteredIndentation int
 }
 
-func NewUnexpectedIndentationError(posLength token.PositionLength, requiredIndentation int, encounteredIndentation int) UnexpectedIndentationError {
+func NewUnexpectedIndentationError(posLength token.SourceFileReference, requiredIndentation int, encounteredIndentation int) UnexpectedIndentationError {
 	return UnexpectedIndentationError{posLength: posLength, requiredIndentation: requiredIndentation, encounteredIndentation: encounteredIndentation}
 }
 
@@ -183,7 +187,7 @@ func (e UnexpectedIndentationError) Error() string {
 	return fmt.Sprintf("unexpected indentation, wanted %d but encountered %d", e.requiredIndentation, e.encounteredIndentation)
 }
 
-func (e UnexpectedIndentationError) FetchPositionLength() token.PositionLength {
+func (e UnexpectedIndentationError) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
@@ -216,7 +220,7 @@ type IllegalCharacterError struct {
 	encountered rune
 }
 
-func NewIllegalCharacterError(posLength token.PositionLength, encountered rune) IllegalCharacterError {
+func NewIllegalCharacterError(posLength token.SourceFileReference, encountered rune) IllegalCharacterError {
 	return IllegalCharacterError{StandardTokenError: StandardTokenError{posLength}, encountered: encountered}
 }
 
@@ -228,7 +232,7 @@ type TrailingSpaceError struct {
 	StandardTokenError
 }
 
-func NewTrailingSpaceError(posLength token.PositionLength) TrailingSpaceError {
+func NewTrailingSpaceError(posLength token.SourceFileReference) TrailingSpaceError {
 	return TrailingSpaceError{StandardTokenError: StandardTokenError{posLength}}
 }
 
@@ -241,7 +245,7 @@ type CommentNotAllowedHereError struct {
 	subError error
 }
 
-func NewCommentNotAllowedHereError(posLength token.PositionLength, subError error) CommentNotAllowedHereError {
+func NewCommentNotAllowedHereError(posLength token.SourceFileReference, subError error) CommentNotAllowedHereError {
 	return CommentNotAllowedHereError{StandardTokenError: StandardTokenError{posLength}, subError: subError}
 }
 

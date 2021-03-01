@@ -16,7 +16,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, expr ast.Expression, expectedType dtype.Type, localCommentBlock token.CommentBlock) (decorated.DecoratedExpression, decshared.DecoratedError) {
+func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, expr ast.Expression, expectedType dtype.Type, annotation *decorated.Annotation, localCommentBlock token.CommentBlock) (decorated.Expression, decshared.DecoratedError) {
 	name := nameIdent.Name()
 	localName := name
 	verboseFlag := false
@@ -28,7 +28,7 @@ func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *a
 		return nil, decorated.NewInternalError(err)
 	}
 
-	var decoratedExpression decorated.DecoratedExpression
+	var decoratedExpression decorated.Expression
 
 	switch e := expr.(type) {
 	case *ast.FunctionValue:
@@ -36,10 +36,11 @@ func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *a
 		if !wasType {
 			return nil, decorated.NewExpectedFunctionType(expectedType, expr)
 		}
-		decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, e, functionAtom, nameIdent, context, localCommentBlock)
+		decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, e, functionAtom, nameIdent, context, localCommentBlock)
 		if decoratedFunctionErr != nil {
 			return nil, decoratedFunctionErr
 		}
+		d.InternalAddNode(decoratedFunction)
 		decoratedExpression = decoratedFunction
 	default:
 		return nil, decorated.NewInternalError(fmt.Errorf("unknown root definition:%v %T", e, e))

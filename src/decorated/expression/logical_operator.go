@@ -26,7 +26,7 @@ type LogicalOperator struct {
 	operatorType LogicalOperatorType
 }
 
-func NewLogicalOperator(left DecoratedExpression, right DecoratedExpression, operatorType LogicalOperatorType, booleanType dtype.Type) (*LogicalOperator, decshared.DecoratedError) {
+func NewLogicalOperator(left Expression, right Expression, operatorType LogicalOperatorType, booleanType dtype.Type) (*LogicalOperator, decshared.DecoratedError) {
 	a := &LogicalOperator{operatorType: operatorType}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
@@ -38,15 +38,15 @@ func NewLogicalOperator(left DecoratedExpression, right DecoratedExpression, ope
 		return nil, NewLogicalOperatorRightMustBeBoolean(a, right, booleanType)
 	}
 
-	a.BinaryOperator.DecoratedExpressionNode.decoratedType = left.Type()
+	a.BinaryOperator.ExpressionNode.decoratedType = left.Type()
 	return a, nil
 }
 
-func (l *LogicalOperator) Left() DecoratedExpression {
+func (l *LogicalOperator) Left() Expression {
 	return l.BinaryOperator.left
 }
 
-func (l *LogicalOperator) Right() DecoratedExpression {
+func (l *LogicalOperator) Right() Expression {
 	return l.BinaryOperator.right
 }
 
@@ -58,6 +58,6 @@ func (l *LogicalOperator) String() string {
 	return fmt.Sprintf("[logical %v %v %v]", l.BinaryOperator.left, l.BinaryOperator.right, l.operatorType)
 }
 
-func (l *LogicalOperator) FetchPositionAndLength() token.PositionLength {
-	return l.BinaryOperator.left.FetchPositionAndLength()
+func (l *LogicalOperator) FetchPositionLength() token.SourceFileReference {
+	return l.BinaryOperator.left.FetchPositionLength()
 }

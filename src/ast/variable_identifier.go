@@ -32,8 +32,8 @@ func (i *VariableIdentifier) ModuleReference() *ModuleReference {
 	return i.moduleReference
 }
 
-func (i *VariableIdentifier) PositionLength() token.PositionLength {
-	return i.symbol.PositionLength
+func (i *VariableIdentifier) FetchPositionLength() token.SourceFileReference {
+	return i.symbol.SourceFileReference
 }
 
 func (i *VariableIdentifier) Name() string {

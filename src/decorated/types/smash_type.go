@@ -18,6 +18,11 @@ func Unalias(t dtype.Type) dtype.Type {
 		return Unalias(alias.referencedType)
 	}
 
+	typeRef, wasTypeRef := t.(*TypeReference)
+	if wasTypeRef {
+		return Unalias(typeRef.Next())
+	}
+
 	return t
 }
 
@@ -25,6 +30,11 @@ func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 	alias, wasAlias := t.(*Alias)
 	if wasAlias {
 		return Unalias(alias.referencedType)
+	}
+
+	typeRef, wasTypeRef := t.(*TypeReference)
+	if wasTypeRef {
+		return Unalias(typeRef.Next())
 	}
 	call, wasCall := t.(*InvokerType)
 	if wasCall {
@@ -89,7 +99,7 @@ func fillContextFromRecordType(context *TypeParameterContextOther, original *Rec
 		return original, nil
 	}
 
-	return NewRecordType(other.SortedFields(), converted), nil
+	return NewRecordType(original.AstRecord(), other.SortedFields(), converted), nil
 }
 
 func fillContextFromCustomType(context *TypeParameterContextOther, original *CustomTypeAtom, other *CustomTypeAtom) (*CustomTypeAtom, error) {
@@ -163,19 +173,23 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 		converted = append(converted, convertedType)
 	}
 
-	return NewFunctionAtom(converted), nil
+	return NewFunctionAtom(original.astFunctionType, converted), nil
 }
 
 func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUnchanged dtype.Type) (dtype.Type, error) {
-	if original == nil {
+	if reflect.ValueOf(original).IsNil() {
 		panic("original was nil")
 	}
-	if otherUnchanged == nil {
-		panic("other was nil")
+	if reflect.ValueOf(otherUnchanged).IsNil() {
+		panic("otherUnchanged was nil")
 	}
 
 	original = UnaliasWithResolveInvoker(original)
 	other := UnaliasWithResolveInvoker(otherUnchanged)
+
+	if reflect.ValueOf(other).IsNil() {
+		panic("other was nil")
+	}
 
 	localType, wasLocalType := original.(*LocalType)
 	if wasLocalType {
@@ -192,7 +206,7 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 		sameType := reflect.TypeOf(original) == reflect.TypeOf(other)
 		if !sameType {
 			fmt.Printf("\n\nNOTE SAME TYPE:%T %T\n\n", original, otherUnchanged)
-			return nil, fmt.Errorf("not even same reflect type %T vs %T", original, other)
+			return nil, fmt.Errorf("not even same reflect type %T vs %T\n%v\n vs\n%v", original, other, original, other)
 		}
 	}
 

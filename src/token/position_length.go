@@ -5,34 +5,188 @@
 
 package token
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-type PositionLength struct {
-	position    Position
-	runeWidth   int
+type DocumentURI string
+
+func MakeDocumentURI(s string) DocumentURI {
+	if !strings.HasPrefix(s, "file://") {
+		panic("illegal uri")
+	}
+	return DocumentURI(s)
+}
+
+type SourceFileDocument struct {
+	Uri DocumentURI
+}
+
+func (d *SourceFileDocument) EqualTo(uri DocumentURI) bool {
+	return d.Uri == uri
+}
+
+type SourceFileReference struct {
+	Range    Range
+	Document *SourceFileDocument
+}
+
+func MakeSourceFileDocument(uri string) *SourceFileDocument {
+	return MakeSourceFileDocumentFromURI(MakeDocumentURI(uri))
+}
+
+func MakeSourceFileDocumentFromURI(uri DocumentURI) *SourceFileDocument {
+	return &SourceFileDocument{
+		uri,
+	}
+}
+
+func (s SourceFileReference) ToReferenceString() string {
+	return fmt.Sprintf("%v:%d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1)
+}
+
+func MakeSourceFileReferenceFromString(uri string, tokenRange Range) SourceFileReference {
+	return SourceFileReference{
+		Range:    tokenRange,
+		Document: MakeSourceFileDocument(uri),
+	}
+}
+
+func MakeSourceFileReference(uri *SourceFileDocument, tokenRange Range) SourceFileReference {
+	return SourceFileReference{
+		Range:    tokenRange,
+		Document: uri,
+	}
+}
+
+func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileReference) SourceFileReference {
+	/*
+		if start.Document == nil {
+			panic("document can not be nil")
+		}
+		if start.Document != end.Document {
+			panic("source file reference can not span files")
+		}
+
+	*/
+	tokenRange := MakeInclusiveRange(start.Range, end.Range)
+	return SourceFileReference{
+		Range:    tokenRange,
+		Document: start.Document,
+	}
+}
+
+type SourceFileReferenceProvider interface {
+	FetchPositionLength() SourceFileReference
+}
+
+func MakeInclusiveSourceFileReferenceSlice(references []SourceFileReferenceProvider) SourceFileReference {
+	if len(references) < 1 {
+		panic("MakeInclusiveSourceFileReferenceSlice can not be empty")
+	}
+
+	first := references[0]
+	last := references[len(references)-1]
+	return MakeInclusiveSourceFileReference(first.FetchPositionLength(), last.FetchPositionLength())
+}
+
+type Range struct {
+	start       Position
+	end         Position
 	indentation int
 }
 
-func NewPositionLength(position Position, runeCount int, indentation int) PositionLength {
-	return PositionLength{position: position, runeWidth: runeCount, indentation: indentation}
+func MakeRange(start Position, end Position) Range {
+	return Range{start: start, end: end, indentation: -1}
 }
 
-func (p PositionLength) RuneWidth() int {
-	return p.runeWidth
+func (p Range) SmallerThan(other Range) bool {
+	diffLineOther := other.end.line - other.start.line
+	diffLine := p.end.line - other.start.line
+	if diffLine > diffLineOther {
+		return false
+	}
+
+	if diffLine == diffLineOther {
+		diffColOther := other.end.column - other.start.column
+		diffCol := p.end.column - p.start.column
+
+		return diffCol < diffColOther
+	}
+
+	return true
 }
 
-func (p PositionLength) Position() Position {
-	return p.position
+func (p Range) SingleLineLength() int {
+	if p.start.line != p.end.line {
+		return -1
+	}
+
+	return p.end.column - p.start.column + 1
 }
 
-func (p PositionLength) FetchPositionLength() PositionLength {
-	return p
+func (p Range) IsAfter(other Range) bool {
+	return (p.start.line > other.end.line) || ((p.start.line == other.end.line) && p.start.column > other.end.column)
 }
 
-func (p PositionLength) FetchIndentation() int {
+func MakeInclusiveRange(start Range, end Range) Range {
+	return Range{
+		start:       start.Start(),
+		end:         end.End(),
+		indentation: start.FetchIndentation(),
+	}
+}
+
+func NewPositionLength(start Position, runeCount int, indentation int) Range {
+	return Range{start: start, end: Position{
+		line:   start.line,
+		column: start.column + runeCount - 1,
+	}, indentation: indentation}
+}
+
+func (p Range) RuneWidth() int {
+	return p.end.column - p.start.column + 1
+}
+
+func (p Range) Contains(pos Position) bool {
+	if pos.line < p.start.line || pos.line > p.end.line {
+		return false
+	}
+
+	if pos.line > p.start.line && pos.line < p.end.line {
+		return true
+	}
+
+	if p.start.line == p.end.line {
+		return pos.column >= p.start.column && pos.column <= p.end.column
+	}
+
+	if pos.line == p.start.line {
+		return pos.column >= p.start.column
+	}
+	if pos.line == p.end.line {
+		return pos.column <= p.end.column
+	}
+	panic("what happened")
+}
+
+func (p Range) Position() Position {
+	return p.start
+}
+
+func (p Range) Start() Position {
+	return p.start
+}
+
+func (p Range) End() Position {
+	return p.end
+}
+
+func (p Range) FetchIndentation() int {
 	return p.indentation
 }
 
-func (p PositionLength) String() string {
-	return fmt.Sprintf("[%v (%v)] ", p.position, p.indentation)
+func (p Range) String() string {
+	return fmt.Sprintf("[%v to %v (%v)] ", p.start, p.end, p.indentation)
 }

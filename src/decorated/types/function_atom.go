@@ -7,21 +7,25 @@ package dectype
 
 import (
 	"fmt"
+	"reflect"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type FunctionAtom struct {
-	parameterTypes []dtype.Type
+	parameterTypes  []dtype.Type
+	astFunctionType *ast.FunctionType
 }
 
-func NewFunctionAtom(parameterTypes []dtype.Type) *FunctionAtom {
+func NewFunctionAtom(astFunctionType *ast.FunctionType, parameterTypes []dtype.Type) *FunctionAtom {
 	for _, param := range parameterTypes {
-		if param == nil {
+		if reflect.TypeOf(param) == nil {
 			panic("function atom: nil parameter type")
 		}
 	}
-	return &FunctionAtom{parameterTypes: parameterTypes}
+	return &FunctionAtom{parameterTypes: parameterTypes, astFunctionType: astFunctionType}
 }
 
 func (u *FunctionAtom) FunctionParameterTypes() []dtype.Type {
@@ -120,6 +124,10 @@ func (u *FunctionAtom) ShortName() string {
 	}
 	s += ")"
 	return s
+}
+
+func (u *FunctionAtom) FetchPositionLength() token.SourceFileReference {
+	return u.astFunctionType.FetchPositionLength()
 }
 
 type FunctionAtomMismatch struct {

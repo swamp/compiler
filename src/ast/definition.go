@@ -28,8 +28,8 @@ func (i *DefinitionAssignment) Expression() Expression {
 	return i.expression
 }
 
-func (i *DefinitionAssignment) PositionLength() token.PositionLength {
-	return i.identifier.PositionLength()
+func (i *DefinitionAssignment) FetchPositionLength() token.SourceFileReference {
+	return i.identifier.FetchPositionLength()
 }
 
 func (i *DefinitionAssignment) String() string {
