@@ -386,19 +386,17 @@ func writeFunctionValueParameters(parameters []*ast.VariableIdentifier, colorer 
 	}
 }
 
-func writeDefinitionAssignment(definition *ast.DefinitionAssignment, colorer coloring.Colorer, indentation int) {
+func writeDefinitionAssignment(definition *ast.FunctionValueNamedDefinition, colorer coloring.Colorer, indentation int) {
 	colorer.Definition(definition.Identifier().Symbol())
 	colorer.OneSpace()
 
-	functionValue, isFunctionValue := definition.Expression().(*ast.FunctionValue)
-	if isFunctionValue {
-		writeFunctionValueParameters(functionValue.Parameters(), colorer)
-		colorer.OneSpace()
-	}
+	functionValue := definition.FunctionValue()
+	writeFunctionValueParameters(functionValue.Parameters(), colorer)
+	colorer.OneSpace()
 
 	colorer.OperatorString("=")
 	colorer.NewLine(indentation + 1)
-	writeExpression(definition.Expression(), colorer, indentation+1)
+	writeExpression(definition.FunctionValue(), colorer, indentation+1)
 }
 
 func writeExternalFunction(externalFunction *ast.ExternalFunction, colorer coloring.Colorer, indentation int) {
@@ -583,7 +581,7 @@ func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 		switch t := expression.(type) {
 		case *ast.AliasStatement:
 			writeAliasStatement(t, colorer, 0)
-		case *ast.DefinitionAssignment:
+		case *ast.FunctionValueNamedDefinition:
 			writeDefinitionAssignment(t, colorer, 0)
 		case *ast.ExternalFunction:
 			writeExternalFunction(t, colorer, 0)

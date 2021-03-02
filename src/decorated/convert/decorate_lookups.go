@@ -39,7 +39,8 @@ func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *Vari
 			return nil, decorated.NewCouldNotFindFieldInLookup(lookups, lookupIdentifier, typeToLookup)
 		}
 
-		fakeLookupField := decorated.NewLookupField(lookupIdentifier, foundRecordTypeField)
+		recordFieldReference := decorated.NewRecordFieldReference(lookupIdentifier, recordTypeToCheck, foundRecordTypeField)
+		fakeLookupField := decorated.NewLookupField(recordFieldReference)
 		lookupFields = append(lookupFields, fakeLookupField)
 		typeToLookup = dectype.Unalias(foundRecordTypeField.Type())
 	}

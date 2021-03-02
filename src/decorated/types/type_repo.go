@@ -122,7 +122,7 @@ func (t *TypeRepo) DeclareTypeAlias(alias *ast.TypeIdentifier, concreteType dtyp
 	return newType, nil
 }
 
-func (t *TypeRepo) DeclareAlias(alias *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) (dtype.Type, DecoratedTypeError) {
+func (t *TypeRepo) DeclareAlias(alias *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) (*Alias, DecoratedTypeError) {
 	if referencedType == nil {
 		panic("alias nil")
 	}
@@ -131,7 +131,9 @@ func (t *TypeRepo) DeclareAlias(alias *ast.TypeIdentifier, referencedType dtype.
 		//if foundType.AliasReferencedType() != referencedType {
 		//return nil, NewDifferentAliasTypes(foundType, referencedType)
 		//}
-		return foundType, nil
+		panic("declare alias")
+		return nil, nil
+		// return foundType, nil
 	}
 
 	return t.DeclareTypeAlias(alias, referencedType)

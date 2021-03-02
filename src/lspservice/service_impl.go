@@ -3,6 +3,7 @@ package lspservice
 import (
 	"fmt"
 	"log"
+	"reflect"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -56,6 +57,10 @@ func findModuleFromSourceFile(world *loader.World, sourceFileURI token.DocumentU
 }
 
 func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []decorated.TypeOrToken {
+	if reflect.ValueOf(l.world).IsNil() {
+		log.Printf("world is nil, probably compilation didn't work")
+		return nil
+	}
 	module, moduleErr := findModuleFromSourceFile(l.world, sourceFile)
 	if moduleErr != nil {
 		return nil
@@ -69,6 +74,10 @@ func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []decorated.TypeOrTok
 }
 
 func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Position) decorated.TypeOrToken {
+	if reflect.ValueOf(l.world).IsNil() {
+		log.Printf("world is nil, probably compilation didn't work")
+		return nil
+	}
 	module, moduleErr := findModuleFromSourceFile(l.world, sourceFile)
 	if moduleErr != nil {
 		return nil

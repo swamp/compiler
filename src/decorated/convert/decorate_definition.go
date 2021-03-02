@@ -37,40 +37,35 @@ func DerefFunctionTypeLike(functionTypeLike dectype.FunctionTypeLike) *dectype.F
 	return nil
 }
 
-func decorateDefinition(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, expr ast.Expression, expectedType dtype.Type, annotation *decorated.Annotation, localCommentBlock token.CommentBlock) (decorated.Expression, decshared.DecoratedError) {
+func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, functionValue *ast.FunctionValue, expectedType dtype.Type, annotation *decorated.Annotation, localCommentBlock token.CommentBlock) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 	name := nameIdent.Name()
 	localName := name
 	verboseFlag := false
 	if verboseFlag {
-		fmt.Printf("######### RootDefinition: %v = %v\n", localName, expr)
+		fmt.Printf("######### RootDefinition: %v = %v\n", localName, functionValue)
 	}
 	if expectedType == nil {
-		err := fmt.Errorf("expected type can not be nil:%v %v", localName, expr)
+		err := fmt.Errorf("expected type can not be nil:%v %v", localName, functionValue)
 		return nil, decorated.NewInternalError(err)
 	}
 
 	var decoratedExpression decorated.Expression
 
-	switch e := expr.(type) {
-	case *ast.FunctionValue:
-		foundFunctionType := DerefFunctionType(expectedType)
-		if foundFunctionType == nil {
-			return nil, decorated.NewExpectedFunctionType(expectedType, expr)
-		}
-		decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, e, foundFunctionType, nameIdent, context, localCommentBlock)
-		if decoratedFunctionErr != nil {
-			return nil, decoratedFunctionErr
-		}
-		d.InternalAddNode(decoratedFunction)
-		decoratedExpression = decoratedFunction
-	default:
-		return nil, decorated.NewInternalError(fmt.Errorf("unknown root definition:%v %T", e, e))
+	foundFunctionType := DerefFunctionType(expectedType)
+	if foundFunctionType == nil {
+		return nil, decorated.NewExpectedFunctionType(expectedType, functionValue)
 	}
+	decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, functionValue, foundFunctionType, nameIdent, context, localCommentBlock)
+	if decoratedFunctionErr != nil {
+		return nil, decoratedFunctionErr
+	}
+	d.InternalAddNode(decoratedFunction)
 
 	verboseFlag = false
 	if verboseFlag {
 		fmt.Printf(">>>>>>>>>>>>>> %v = %v\n", localName, decoratedExpression)
 	}
-	d.AddDefinition(nameIdent, decoratedExpression)
-	return decoratedExpression, nil
+	d.AddDefinition(nameIdent, decoratedFunction)
+
+	return decorated.NewNamedFunctionValue(nameIdent, decoratedFunction), nil
 }

@@ -11,13 +11,6 @@ import (
 )
 
 func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *SemanticBuilder) error {
-	functionNameIdentifier := f.AstFunctionValue().DebugFunctionIdentifier()
-	functionNameRange := functionNameIdentifier.FetchPositionLength().Range
-
-	if err := builder.EncodeSymbol(functionNameIdentifier.Name(), functionNameRange, "function", []string{"definition"}); err != nil {
-		return err
-	}
-
 	for _, parameter := range f.Parameters() {
 		if err := builder.EncodeSymbol(parameter.String(), parameter.FetchPositionLength().Range, "parameter", []string{}); err != nil {
 			return err
@@ -25,6 +18,14 @@ func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *Semantic
 	}
 
 	return addSemanticToken(f.Expression(), builder)
+}
+
+func addSemanticTokenNamedFunctionValue(f *decorated.NamedFunctionValue, builder *SemanticBuilder) error {
+	if err := builder.EncodeSymbol(f.Identifier().Name(), f.Identifier().FetchPositionLength().Range, "function", []string{"definition"}); err != nil {
+		return err
+	}
+
+	return addSemanticToken(f.Value(), builder)
 }
 
 func addSemanticTokenAnnotation(f *decorated.Annotation, builder *SemanticBuilder) error {
@@ -86,7 +87,7 @@ func addTypeReferencePrimitive(referenceRange token.Range, primitive *dectype.Pr
 }
 
 func addSemanticTokenCustomTypeVariantConstructor(constructor *decorated.CustomTypeVariantConstructor, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(constructor.CustomTypeVariant().Name().Name(), constructor.TypeIdentifier().FetchPositionLength().Range, "class", []string{}); err != nil { // TODO: there should be a "constructor" in the LSP specification.
+	if err := addSemanticToken(constructor.Reference(), builder); err != nil {
 		return err
 	}
 
@@ -95,6 +96,12 @@ func addSemanticTokenCustomTypeVariantConstructor(constructor *decorated.CustomT
 			return err
 		}
 	}
+
+	return nil
+}
+
+func addSemanticTokenCustomTypeVariantReference(ref *decorated.CustomTypeVariantReference, builder *SemanticBuilder) error {
+	encodeEnumValue(builder, ref.AstIdentifier())
 
 	return nil
 }
@@ -574,6 +581,8 @@ func addSemanticTokenFunctionTypeReference(typeReference *dectype.FunctionTypeRe
 
 func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilder) error {
 	switch t := typeOrToken.(type) {
+	case *decorated.NamedFunctionValue:
+		return addSemanticTokenNamedFunctionValue(t, builder)
 	case *decorated.FunctionValue:
 		return addSemanticTokenFunctionValue(t, builder)
 	case *decorated.Annotation:
@@ -620,6 +629,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenFunctionParameterReference(t, builder)
 	case *decorated.CustomTypeVariantConstructor:
 		return addSemanticTokenCustomTypeVariantConstructor(t, builder)
+	case *decorated.CustomTypeVariantReference:
+		return addSemanticTokenCustomTypeVariantReference(t, builder)
 	case *decorated.RecordConstructor:
 		return addSemanticTokenRecordConstructor(t, builder)
 	case *decorated.RecordLookups:

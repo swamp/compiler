@@ -173,6 +173,11 @@ func TestDocumentSemanticSymbols2(t *testing.T) {
 		`{"jsonrpc":"2.0","id":2,"method":"textDocument/semanticTokens/full","params":{"textDocument":{"uri":"file:///home/peter/own/hackman/swamp/gameplay/Main.swamp"}}}`, ``)
 }
 
+func TestDocumentSemanticSymbols4(t *testing.T) {
+	testHelperWithTestingStringDoc(t, "file:///home/peter/own/hackman/swamp/gameplayshared/Main.swamp",
+		`{"jsonrpc":"2.0","id":2,"method":"textDocument/semanticTokens/full","params":{"textDocument":{"uri":"file:///home/peter/own/hackman/swamp/gameplayshared/Main.swamp"}}}`, ``)
+}
+
 func TestDocumentSemanticSymbols3(t *testing.T) {
 	testHelperWithTestingStringDoc(t, "file:///home/peter/own/hackman/swamp/gameplay/MazeLoad.swamp",
 		`{"jsonrpc":"2.0","id":2,"method":"textDocument/semanticTokens/full","params":{"textDocument":{"uri":"file:///home/peter/own/hackman/swamp/gameplay/MazeLoad.swamp"}}}`, ``)

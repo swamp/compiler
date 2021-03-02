@@ -11,31 +11,31 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type DefinitionAssignment struct {
-	identifier *VariableIdentifier
-	expression Expression
+type FunctionValueNamedDefinition struct {
+	identifier    *VariableIdentifier
+	functionValue *FunctionValue
 }
 
-func NewDefinitionAssignment(identifier *VariableIdentifier, expression Expression) *DefinitionAssignment {
-	return &DefinitionAssignment{identifier: identifier, expression: expression}
+func NewFunctionValueNamedDefinition(identifier *VariableIdentifier, functionValue *FunctionValue) *FunctionValueNamedDefinition {
+	return &FunctionValueNamedDefinition{identifier: identifier, functionValue: functionValue}
 }
 
-func (i *DefinitionAssignment) Identifier() *VariableIdentifier {
+func (i *FunctionValueNamedDefinition) Identifier() *VariableIdentifier {
 	return i.identifier
 }
 
-func (i *DefinitionAssignment) Expression() Expression {
-	return i.expression
+func (i *FunctionValueNamedDefinition) FunctionValue() *FunctionValue {
+	return i.functionValue
 }
 
-func (i *DefinitionAssignment) FetchPositionLength() token.SourceFileReference {
+func (i *FunctionValueNamedDefinition) FetchPositionLength() token.SourceFileReference {
 	return i.identifier.FetchPositionLength()
 }
 
-func (i *DefinitionAssignment) String() string {
-	return fmt.Sprintf("[definition: %v = %v]", i.identifier, i.expression)
+func (i *FunctionValueNamedDefinition) String() string {
+	return fmt.Sprintf("[fndefinition: %v = %v]", i.identifier, i.functionValue)
 }
 
-func (i *DefinitionAssignment) DebugString() string {
-	return "[assignmentdef]"
+func (i *FunctionValueNamedDefinition) DebugString() string {
+	return "[fndefinition]"
 }

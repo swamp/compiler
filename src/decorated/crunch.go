@@ -97,7 +97,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	}
 
 	definerScan := decorator.NewDefiner(converter, module.TypeRepo(), "compiletomodule")
-	generateErr := definerScan.Define(program)
+	rootNodes, generateErr := definerScan.Define(program)
 	if generateErr != nil {
 		parser.ShowError(tokenizer, absoluteFilename, generateErr, verbose, errorAsWarning)
 		return nil, generateErr
@@ -106,7 +106,12 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	module.ExposedTypes().AddTypes(module.TypeRepo().AllLocalTypes())
 	module.ExposedDefinitions().AddDefinitions(module.Definitions().Definitions())
 	module.SetProgram(program)
-	module.SetRootNodes(converter.RootNodes())
+
+	var rootNodesConverted []decorated.Node
+	for _, rootNode := range rootNodes {
+		rootNodesConverted = append(rootNodesConverted, rootNode)
+	}
+	module.SetRootNodes(rootNodesConverted)
 
 	return module, nil
 }

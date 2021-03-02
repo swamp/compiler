@@ -9,33 +9,31 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
-	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
 type LookupField struct {
-	structField      *dectype.RecordField
-	lookupIdentifier *ast.VariableIdentifier
+	reference *RecordFieldReference
 }
 
 func (l LookupField) String() string {
-	return fmt.Sprintf("[lookup %v]", l.structField)
+	return fmt.Sprintf("[lookup %v]", l.reference.RecordTypeField())
 }
 
 func (l LookupField) Index() int {
-	return l.structField.Index()
+	return l.reference.recordTypeField.Index()
 }
 
 func (l LookupField) Identifier() *ast.VariableIdentifier {
-	return l.lookupIdentifier
+	return l.reference.ident
 }
 
-func NewLookupField(lookupIdentifier *ast.VariableIdentifier, structField *dectype.RecordField) LookupField {
-	return LookupField{structField: structField, lookupIdentifier: lookupIdentifier}
+func NewLookupField(reference *RecordFieldReference) LookupField {
+	return LookupField{reference: reference}
 }
 
 func (l LookupField) FetchPositionLength() token.SourceFileReference {
-	return l.lookupIdentifier.FetchPositionLength()
+	return l.reference.FetchPositionLength()
 }
 
 /*
@@ -67,7 +65,7 @@ type RecordLookups struct {
 func NewRecordLookups(expressionToRecord Expression, lookupFields []LookupField) *RecordLookups {
 	l := &RecordLookups{expressionToRecord: expressionToRecord, lookupFields: lookupFields}
 	count := len(lookupFields)
-	l.decoratedType = lookupFields[count-1].structField.Type()
+	l.decoratedType = lookupFields[count-1].reference.recordTypeField.Type()
 	return l
 }
 

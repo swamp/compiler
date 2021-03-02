@@ -91,14 +91,21 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 	log.Printf("the token is %T and type:%v\n", decoratedToken, isItAType)
 
 	var codeSignature string
+	var name string
 	if isItAType {
 		codeSignature = tokenType.HumanReadable()
+		name = "type"
 	} else {
 		normalToken, _ := decoratedToken.(decorated.Token)
+		if normalToken == nil {
+			log.Printf("not sure what this token is: %T\n", decoratedToken)
+			return nil, nil
+		}
 		codeSignature = normalToken.Type().HumanReadable()
+		name = normalToken.HumanReadable()
 	}
 
-	showString := fmt.Sprintf("```swamp\n%v\n```", codeSignature)
+	showString := fmt.Sprintf("%v : ```swamp\n%v\n```", name, codeSignature)
 
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{
@@ -111,6 +118,44 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 	return hover, nil
 }
 
+func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileReference, error) {
+	switch t := decoratedToken.(type) {
+	case *decorated.Import:
+		return token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0))), nil
+	case *decorated.FunctionParameterReference:
+		return t.ParameterRef().FetchPositionLength(), nil
+	case *decorated.LetVariableReference:
+		return t.LetVariable().FetchPositionLength(), nil
+	case *decorated.FunctionReference:
+		return t.FunctionValue().FetchPositionLength(), nil
+	case *decorated.RecordFieldReference:
+		return t.RecordTypeField().VariableIdentifier().FetchPositionLength(), nil
+	case *decorated.CustomTypeVariantReference:
+		return t.CustomTypeVariant().FetchPositionLength(), nil
+	case *decorated.CustomTypeVariantConstructor:
+		return tokenToDefinition(t.Reference())
+	case *decorated.FunctionValue:
+		return t.FetchPositionLength(), nil
+	case *decorated.FunctionParameterDefinition:
+		return t.FetchPositionLength(), nil
+	case *decorated.Let:
+		return t.FetchPositionLength(), nil
+	case *decorated.LetVariable:
+		return t.FetchPositionLength(), nil
+	case *decorated.FunctionCall:
+		return tokenToDefinition(t.FunctionValue())
+	case *decorated.CurryFunction:
+		return tokenToDefinition(t.FunctionValue())
+	// TYPES
+	case *dectype.FunctionTypeReference:
+		return t.FunctionAtom().FetchPositionLength(), nil
+	case *dectype.TypeReference:
+		return t.Next().FetchPositionLength(), nil
+	}
+
+	return token.SourceFileReference{}, fmt.Errorf("couldn't find anything for %T", decoratedToken)
+}
+
 func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {
 	tokenPosition := lspToTokenPosition(params.Position)
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
@@ -120,32 +165,9 @@ func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, co
 		return nil, nil // fmt.Errorf("couldn't find a token at %v", tokenPosition)
 	}
 
-	var sourceFileReference token.SourceFileReference
-
-	switch t := decoratedToken.(type) {
-	case *decorated.Import:
-		sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
-	case *decorated.FunctionParameterReference:
-		sourceFileReference = t.ParameterRef().FetchPositionLength()
-	case *decorated.LetVariableReference:
-		sourceFileReference = t.LetVariable().FetchPositionLength()
-	case *decorated.FunctionReference:
-		sourceFileReference = t.FunctionValue().FetchPositionLength()
-	case *decorated.FunctionValue:
-		sourceFileReference = t.FetchPositionLength()
-	case *decorated.FunctionParameterDefinition:
-		sourceFileReference = t.FetchPositionLength()
-	case *decorated.Let:
-		sourceFileReference = t.FetchPositionLength()
-	case *decorated.LetVariable:
-		sourceFileReference = t.FetchPositionLength()
-	case *decorated.FunctionCall:
-		sourceFileReference = t.FetchPositionLength()
-	// TYPES
-	case *dectype.FunctionTypeReference:
-		sourceFileReference = t.FunctionAtom().FetchPositionLength()
-	case *dectype.TypeReference:
-		sourceFileReference = t.Next().FetchPositionLength()
+	sourceFileReference, lookupErr := tokenToDefinition(decoratedToken)
+	if lookupErr != nil {
+		return nil, nil
 	}
 
 	if sourceFileReference.Document == nil {
@@ -553,6 +575,26 @@ func (s *Service) HandleDidOpen(params lsp.DidOpenTextDocumentParams, conn lspse
 	compileErr := s.compiler.Compile(fullUrl.Path)
 	if compileErr != nil {
 		log.Printf("couldn't compile it:%v\n", compileErr)
+		c := lsp.PublishDiagnosticsParams{
+			URI:     params.TextDocument.URI,
+			Version: uint(params.TextDocument.Version),
+			Diagnostics: []lsp.Diagnostic{{
+				Range: lsp.Range{
+					Start: lsp.Position{},
+					End:   lsp.Position{},
+				},
+				Severity:           lsp.Error,
+				Code:               "2899",
+				CodeDescription:    nil, // *CodeDescription `json:"codeDescription,omitempty"`
+				Source:             "swamp",
+				Message:            compileErr.Error(),
+				Tags:               nil,
+				RelatedInformation: nil,
+				Data:               nil,
+			}},
+		}
+		conn.PublishDiagnostics(c)
 	}
+
 	return nil
 }

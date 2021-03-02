@@ -77,7 +77,7 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 }
 
 /*
-func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.Expression) (ast.Expression, parerr.ParseError) {
+func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.FunctionValue) (ast.FunctionValue, parerr.ParseError) {
 	_, spaceErr := p.eatOneSpace("space after pipe left")
 	if spaceErr != nil {
 		return nil, spaceErr

@@ -8,24 +8,23 @@ package decorated
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
 type CustomTypeVariantConstructor struct {
-	arguments         []Expression
-	customTypeVariant *dectype.CustomTypeVariant
-	typeIdentifier    *ast.TypeIdentifier
+	arguments                  []Expression
+	customTypeVariantReference *CustomTypeVariantReference
 }
 
-func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customTypeVariant *dectype.CustomTypeVariant,
+func NewCustomTypeVariantConstructor(customTypeVariantReference *CustomTypeVariantReference,
 	arguments []Expression) *CustomTypeVariantConstructor {
-	if customTypeVariant == nil {
+	if customTypeVariantReference == nil {
 		panic("custom customTypeVariant is nil")
 	}
 
+	customTypeVariant := customTypeVariantReference.CustomTypeVariant()
 	if customTypeVariant.InCustomType() == nil {
 		panic("custom type is nil")
 	}
@@ -35,21 +34,21 @@ func NewCustomTypeVariantConstructor(typeIdentifier *ast.TypeIdentifier, customT
 	}
 
 	return &CustomTypeVariantConstructor{
-		typeIdentifier: typeIdentifier, customTypeVariant: customTypeVariant,
-		arguments: arguments,
+		customTypeVariantReference: customTypeVariantReference,
+		arguments:                  arguments,
 	}
 }
 
-func (c *CustomTypeVariantConstructor) TypeIdentifier() *ast.TypeIdentifier {
-	return c.typeIdentifier
+func (c *CustomTypeVariantConstructor) Reference() *CustomTypeVariantReference {
+	return c.customTypeVariantReference
 }
 
 func (c *CustomTypeVariantConstructor) CustomTypeVariantIndex() int {
-	return c.customTypeVariant.Index()
+	return c.customTypeVariantReference.customTypeVariant.Index()
 }
 
 func (c *CustomTypeVariantConstructor) CustomTypeVariant() *dectype.CustomTypeVariant {
-	return c.customTypeVariant
+	return c.customTypeVariantReference.customTypeVariant
 }
 
 func (c *CustomTypeVariantConstructor) Arguments() []Expression {
@@ -62,7 +61,7 @@ func (c *CustomTypeVariantConstructor) Type() dtype.Type {
 		resolvedTypes = append(resolvedTypes, resolved.Type())
 	}
 
-	resolvedType, callErr := dectype.CallType(c.customTypeVariant, resolvedTypes)
+	resolvedType, callErr := dectype.CallType(c.customTypeVariantReference.customTypeVariant, resolvedTypes)
 	if callErr != nil {
 		panic(callErr)
 	}
@@ -70,9 +69,13 @@ func (c *CustomTypeVariantConstructor) Type() dtype.Type {
 }
 
 func (c *CustomTypeVariantConstructor) String() string {
-	return fmt.Sprintf("[variant-constructor %v %v]", c.customTypeVariant, c.arguments)
+	return fmt.Sprintf("[variant-constructor %v %v]", c.customTypeVariantReference.customTypeVariant, c.arguments)
+}
+
+func (c *CustomTypeVariantConstructor) HumanReadable() string {
+	return fmt.Sprintf("Custom Type Variant Constructor %v", c.customTypeVariantReference.customTypeVariant)
 }
 
 func (c *CustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {
-	return c.typeIdentifier.Symbol().SourceFileReference
+	return c.customTypeVariantReference.FetchPositionLength()
 }

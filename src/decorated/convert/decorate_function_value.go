@@ -45,7 +45,7 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 }
 
 func DecorateFunctionValue(d DecorateStream, annotation *decorated.Annotation, potentialFunc *ast.FunctionValue, forcedFunctionTypeLike dectype.FunctionTypeLike,
-	functionName *ast.VariableIdentifier, context *VariableContext, comments token.CommentBlock) (decorated.Expression, decshared.DecoratedError) {
+	functionName *ast.VariableIdentifier, context *VariableContext, comments token.CommentBlock) (*decorated.FunctionValue, decshared.DecoratedError) {
 	forcedFunctionType := DerefFunctionTypeLike(forcedFunctionTypeLike)
 	if forcedFunctionType == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", potentialFunc))

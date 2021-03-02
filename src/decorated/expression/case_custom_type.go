@@ -32,6 +32,10 @@ func (c *CaseConsequenceParameter) Type() dtype.Type {
 	return c.parameterType
 }
 
+func (c *CaseConsequenceParameter) FetchPositionLength() token.SourceFileReference {
+	return c.name.FetchPositionLength()
+}
+
 func NewCaseConsequenceParameter(name *ast.VariableIdentifier, parameterType dtype.Type) *CaseConsequenceParameter {
 	return &CaseConsequenceParameter{name: name, parameterType: parameterType}
 }

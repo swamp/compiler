@@ -31,7 +31,8 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 
 	switch e := unaliasedConstructor.(type) {
 	case *dectype.CustomTypeVariantConstructorType:
-		return decorated.NewCustomTypeVariantConstructor(call.TypeIdentifier(), e.Variant(), decoratedExpressions), nil
+		ref := decorated.NewCustomTypeVariantReference(call.TypeIdentifier(), e.Variant())
+		return decorated.NewCustomTypeVariantConstructor(ref, decoratedExpressions), nil
 	case *dectype.RecordAtom:
 		{
 			argumentCount := len(decoratedExpressions)

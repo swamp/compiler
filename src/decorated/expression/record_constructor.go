@@ -45,6 +45,10 @@ func (c *RecordConstructor) String() string {
 	return fmt.Sprintf("[record-constructor %v %v]", c.typeIdentifier, c.arguments)
 }
 
+func (c *RecordConstructor) HumanReadable() string {
+	return fmt.Sprintf("Record Constructor", c.typeIdentifier, c.arguments)
+}
+
 func (c *RecordConstructor) FetchPositionLength() token.SourceFileReference {
 	return c.typeIdentifier.Symbol().SourceFileReference
 }

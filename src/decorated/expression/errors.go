@@ -730,10 +730,10 @@ func (e *CouldNotFindFieldInLookup) FetchPositionLength() token.SourceFileRefere
 }
 
 type MustHaveAnnotationJustBeforeThisDefinition struct {
-	assignment *ast.DefinitionAssignment
+	assignment *ast.FunctionValueNamedDefinition
 }
 
-func NewMustHaveAnnotationJustBeforeThisDefinition(assignment *ast.DefinitionAssignment) *MustHaveAnnotationJustBeforeThisDefinition {
+func NewMustHaveAnnotationJustBeforeThisDefinition(assignment *ast.FunctionValueNamedDefinition) *MustHaveAnnotationJustBeforeThisDefinition {
 	return &MustHaveAnnotationJustBeforeThisDefinition{assignment: assignment}
 }
 
@@ -796,11 +796,11 @@ func (e *UnknownVariable) FetchPositionLength() token.SourceFileReference {
 }
 
 type AnnotationMismatch struct {
-	assignment           *ast.DefinitionAssignment
+	assignment           *ast.FunctionValueNamedDefinition
 	annotationIdentifier *ast.VariableIdentifier
 }
 
-func NewAnnotationMismatch(annotationIdentifier *ast.VariableIdentifier, assignment *ast.DefinitionAssignment) *AnnotationMismatch {
+func NewAnnotationMismatch(annotationIdentifier *ast.VariableIdentifier, assignment *ast.FunctionValueNamedDefinition) *AnnotationMismatch {
 	return &AnnotationMismatch{assignment: assignment, annotationIdentifier: annotationIdentifier}
 }
 

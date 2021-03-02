@@ -44,5 +44,5 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 
 	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, expr, commentBlock)
 
-	return ast.NewDefinitionAssignment(ident, newFunction), nil
+	return ast.NewFunctionValueNamedDefinition(ident, newFunction), nil
 }
