@@ -552,7 +552,7 @@ moveSprite = [functionvalue ([[arg $sprite = [alias Sprite record-type [[record-
 `)
 }
 
-func TestOperatorPipe(t *testing.T) {
+func TestOperatorPipeRight(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 first : Int -> Int
@@ -568,6 +568,34 @@ second a =
 tester : String -> Bool
 tester a =
     first (2 + 2) |> second
+`, `
+func(Int -> Int) : [func  [primitive Int] [primitive Int]]
+func(Int -> Bool) : [func  [primitive Int] [primitive Bool]]
+func(String -> Bool) : [func  [primitive String] [primitive Bool]]
+
+first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]
+second = [functionvalue ([[arg $a = [primitive Int]]]) -> (boolop [getvar $a [primitive Int]] GR [integer 25])]
+tester = [functionvalue ([[arg $a = [primitive String]]]) -> [fcall [getvar $second [primitive Bool]] [[fcall [getvar $first [primitive Int]] [(arithmetic [integer 2] PLUS [integer 2])]]]]]
+
+`)
+}
+
+func TestOperatorPipeLeft(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+first : Int -> Int
+first a =
+    a * a
+
+
+second : Int -> Bool
+second a =
+    a > 25
+
+
+tester : String -> Bool
+tester a =
+    second <| first (2 + 2)
 `, `
 func(Int -> Int) : [func  [primitive Int] [primitive Int]]
 func(Int -> Bool) : [func  [primitive Int] [primitive Bool]]

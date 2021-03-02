@@ -15,10 +15,15 @@ type IfExpression struct {
 	condition   Expression
 	consequence Expression
 	alternative Expression
+	inclusive   token.SourceFileReference
+	keywordIf   token.Keyword
+	keywordThen token.Keyword
+	keywordElse token.Keyword
 }
 
-func NewIfExpression(condition Expression, consequence Expression, alternative Expression) *IfExpression {
-	return &IfExpression{condition: condition, consequence: consequence, alternative: alternative}
+func NewIfExpression(keywordIf token.Keyword, keywordThen token.Keyword, keywordElse token.Keyword, condition Expression, consequence Expression, alternative Expression) *IfExpression {
+	inclusive := token.MakeInclusiveSourceFileReference(condition.FetchPositionLength(), alternative.FetchPositionLength())
+	return &IfExpression{inclusive: inclusive, keywordElse: keywordElse, keywordIf: keywordIf, keywordThen: keywordThen, condition: condition, consequence: consequence, alternative: alternative}
 }
 
 func (i *IfExpression) Condition() Expression {
@@ -29,12 +34,24 @@ func (i *IfExpression) Consequence() Expression {
 	return i.consequence
 }
 
+func (i *IfExpression) KeywordIf() token.Keyword {
+	return i.keywordIf
+}
+
+func (i *IfExpression) KeywordThen() token.Keyword {
+	return i.keywordThen
+}
+
+func (i *IfExpression) KeywordElse() token.Keyword {
+	return i.keywordElse
+}
+
 func (i *IfExpression) Alternative() Expression {
 	return i.alternative
 }
 
 func (i *IfExpression) FetchPositionLength() token.SourceFileReference {
-	return i.consequence.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *IfExpression) String() string {

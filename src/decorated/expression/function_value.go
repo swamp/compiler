@@ -36,6 +36,10 @@ func (a *FunctionParameterDefinition) String() string {
 	return fmt.Sprintf("[arg %v = %v]", a.identifier, a.generatedType)
 }
 
+func (a *FunctionParameterDefinition) HumanReadable() string {
+	return fmt.Sprintf("%v : %v", a.identifier, a.generatedType.HumanReadable())
+}
+
 func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileReference {
 	return a.identifier.Symbol().SourceFileReference
 }

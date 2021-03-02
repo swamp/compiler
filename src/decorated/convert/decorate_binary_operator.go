@@ -6,6 +6,8 @@
 package decorator
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -74,7 +76,142 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 	return 0, false
 }
 
+/*
+func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.Expression) (ast.Expression, parerr.ParseError) {
+	_, spaceErr := p.eatOneSpace("space after pipe left")
+	if spaceErr != nil {
+		return nil, spaceErr
+	}
+	right, rightErr := p.parseExpressionNormal(startIndentation)
+	if rightErr != nil {
+		return nil, rightErr
+	}
+
+	leftCall, _ := left.(ast.FunctionCaller)
+	if leftCall == nil {
+		leftVar, _ := left.(*ast.VariableIdentifier)
+		if leftVar == nil {
+			return nil, parerr.NewLeftPartOfPipeMustBeFunctionCallError(operatorToken)
+		}
+		leftCall = ast.NewFunctionCall(leftVar, nil)
+	}
+
+	rightCall, _ := right.(ast.FunctionCaller)
+	if rightCall == nil {
+		return nil, parerr.NewRightPartOfPipeMustBeFunctionCallError(operatorToken)
+	}
+
+	args := leftCall.Arguments()
+	args = append(args, rightCall)
+	leftCall.OverwriteArguments(args)
+
+	return leftCall, nil
+}
+
+*/
+
+func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context *VariableContext) (*ast.FunctionCall, decorated.Expression, []decorated.Expression, decshared.DecoratedError) {
+	var arguments []decorated.Expression
+	var functionExpression decorated.Expression
+	var leftAstCall *ast.FunctionCall
+	switch t := left.(type) {
+	case *ast.FunctionCall:
+		funcExpr, funcExprErr := DecorateExpression(d, t.FunctionExpression(), context)
+		if funcExprErr != nil {
+			return nil, nil, nil, funcExprErr
+		}
+		functionExpression = funcExpr
+		for _, astArgument := range t.Arguments() {
+			expr, exprErr := DecorateExpression(d, astArgument, context)
+			if exprErr != nil {
+				return nil, nil, nil, exprErr
+			}
+			arguments = append(arguments, expr)
+		}
+		leftAstCall = t
+	case *ast.VariableIdentifier:
+		def := context.FindNamedDecoratedExpression(t)
+		if def == nil {
+			return nil, nil, nil, decorated.NewInternalError(fmt.Errorf("couldn't find %v", t))
+		}
+		lookupExpression := def.Expression()
+		functionValue, _ := lookupExpression.(*decorated.FunctionValue)
+		functionReference := decorated.NewFunctionReference(t, functionValue)
+		functionExpression = functionReference
+		leftAstCall = ast.NewFunctionCall(functionReference, nil)
+	}
+	return leftAstCall, functionExpression, arguments, nil
+}
+
+func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	left := infix.Left()
+	right := infix.Right()
+
+	rightDecorated, rightErr := DecorateExpression(d, right, context)
+	if rightErr != nil {
+		return nil, rightErr
+	}
+
+	leftAstCall, functionExpression, arguments, halfErr := decorateHalfOfAFunctionCall(d, left, context)
+	if halfErr != nil {
+		return nil, halfErr
+	}
+
+	var allArguments []decorated.Expression
+	allArguments = append(arguments, rightDecorated)
+
+	fullLeftFunctionCall, functionCallErr := decorateFunctionCallInternal(d, leftAstCall, functionExpression, allArguments, context)
+	if functionCallErr != nil {
+		return nil, functionCallErr
+	}
+
+	calculatedFunctionCallType := fullLeftFunctionCall.Type()
+
+	halfLeftSideFunctionCall := decorated.NewFunctionCall(leftAstCall, functionExpression, calculatedFunctionCallType, arguments)
+
+	return decorated.NewPipeLeftOperator(halfLeftSideFunctionCall, rightDecorated, fullLeftFunctionCall), nil
+}
+
+func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	left := infix.Left()
+	right := infix.Right()
+
+	leftDecorated, leftErr := DecorateExpression(d, left, context)
+	if leftErr != nil {
+		return nil, leftErr
+	}
+
+	rightAstCall, functionExpression, arguments, halfErr := decorateHalfOfAFunctionCall(d, right, context)
+	if halfErr != nil {
+		return nil, halfErr
+	}
+
+	var allArguments []decorated.Expression
+	allArguments = append(arguments, leftDecorated)
+
+	fullRightFunctionCall, functionCallErr := decorateFunctionCallInternal(d, rightAstCall, functionExpression, allArguments, context)
+	if functionCallErr != nil {
+		return nil, functionCallErr
+	}
+
+	calculatedFunctionCallType := fullRightFunctionCall.Type()
+
+	halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionExpression, calculatedFunctionCallType, arguments)
+
+	return decorated.NewPipeRightOperator(leftDecorated, halfRightFunctionCall, fullRightFunctionCall), nil
+}
+
 func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	if infix.OperatorType() == token.OperatorPipeLeft {
+		return decoratePipeLeft(d, infix, context)
+	} else if infix.OperatorType() == token.OperatorPipeRight {
+		return decoratePipeRight(d, infix, context)
+	} else {
+		return decorateBinaryOperatorSameType(d, infix, context)
+	}
+}
+
+func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	leftExpression, leftExpressionErr := DecorateExpression(d, infix.Left(), context)
 	if leftExpressionErr != nil {
 		return nil, leftExpressionErr

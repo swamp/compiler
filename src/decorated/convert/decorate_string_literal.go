@@ -20,3 +20,12 @@ func decorateString(d DecorateStream, str *ast.StringLiteral) (decorated.Express
 	decoratedString := decorated.NewStringLiteral(str, stringType.(*dectype.PrimitiveAtom))
 	return decoratedString, nil
 }
+
+func decorateStringInterpolation(d DecorateStream, str *ast.StringInterpolation, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	decoratedExpression, err := DecorateExpression(d, str.Expression(), context)
+	if err != nil {
+		return nil, err
+	}
+
+	return decorated.NewStringInterpolation(str, decoratedExpression), nil
+}

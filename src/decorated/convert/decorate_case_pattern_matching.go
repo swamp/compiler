@@ -93,7 +93,7 @@ func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatte
 			defaultCase = decoratedExpression
 			break
 		} else {
-			decoratedConsequence := decorated.NewCaseConsequencePatternMatching(consequence.Index(), decoratedLiteralExpression,
+			decoratedConsequence := decorated.NewCaseConsequencePatternMatching(consequence, consequence.Index(), decoratedLiteralExpression,
 				decoratedExpression)
 			decoratedConsequences = append(decoratedConsequences, decoratedConsequence)
 		}
@@ -103,6 +103,6 @@ func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatte
 		return nil, decorated.NewInternalError(fmt.Errorf("must have a default case"))
 	}
 
-	c, err := decorated.NewCasePatternMatching(decoratedTest, decoratedConsequences, defaultCase)
+	c, err := decorated.NewCasePatternMatching(caseExpression, decoratedTest, decoratedConsequences, defaultCase)
 	return c, err
 }

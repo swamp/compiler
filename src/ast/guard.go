@@ -11,17 +11,26 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type GuardItem struct {
-	Condition   Expression
+type GuardItemBasic struct {
 	Consequence Expression
+	GuardToken  token.GuardToken
+}
+
+type GuardItem struct {
+	GuardItemBasic
+	Condition Expression
+}
+
+type GuardDefault struct {
+	GuardItemBasic
 }
 
 type GuardExpression struct {
 	items       []GuardItem
-	defaultItem Expression
+	defaultItem *GuardDefault
 }
 
-func NewGuardExpression(items []GuardItem, defaultItem Expression) *GuardExpression {
+func NewGuardExpression(items []GuardItem, defaultItem *GuardDefault) *GuardExpression {
 	return &GuardExpression{items: items, defaultItem: defaultItem}
 }
 
@@ -29,7 +38,7 @@ func (i *GuardExpression) Items() []GuardItem {
 	return i.items
 }
 
-func (i *GuardExpression) DefaultExpression() Expression {
+func (i *GuardExpression) Default() *GuardDefault {
 	return i.defaultItem
 }
 

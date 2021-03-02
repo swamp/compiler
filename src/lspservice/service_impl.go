@@ -2,6 +2,7 @@ package lspservice
 
 import (
 	"fmt"
+	"log"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -89,6 +90,12 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 				bestToken = decoratedToken
 			}
 		}
+	}
+
+	if bestToken == nil {
+		log.Printf("FindToken: couldn't find anything at %v %v\n", sourceFile, position)
+	} else {
+		log.Printf("FindToken: best is: %T\n", bestToken)
 	}
 
 	return bestToken

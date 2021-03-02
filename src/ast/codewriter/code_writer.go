@@ -186,7 +186,7 @@ func writeGuard(guardExpression *ast.GuardExpression, colorer coloring.Colorer, 
 	colorer.OneSpace()
 	colorer.RightArrow()
 	colorer.OneSpace()
-	writeExpression(guardExpression.DefaultExpression(), colorer, 0)
+	writeExpression(guardExpression.Default().Consequence, colorer, 0)
 }
 
 func writeGetVariable(identifier *ast.VariableIdentifier, colorer coloring.Colorer, indentation int) {

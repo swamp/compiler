@@ -8,12 +8,14 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
+	"github.com/swamp/compiler/src/token"
 )
 
-func parseGuard(p ParseStream, startIndentation int) (ast.Expression, parerr.ParseError) {
+func parseGuard(p ParseStream, guardToken token.GuardToken, startIndentation int) (ast.Expression, parerr.ParseError) {
 	var items []ast.GuardItem
-	var defaultConsequence ast.Expression
+	var defaultConsequence *ast.GuardDefault
 
+	latestGuardToken := guardToken
 	for {
 		if _, err := p.eatOneSpace("space after guard"); err != nil {
 			return nil, err
@@ -45,11 +47,14 @@ func parseGuard(p ParseStream, startIndentation int) (ast.Expression, parerr.Par
 		}
 
 		if condition == nil {
-			defaultConsequence = consequence
+			defaultConsequence = &ast.GuardDefault{GuardItemBasic: ast.GuardItemBasic{
+				Consequence: consequence,
+				GuardToken:  latestGuardToken,
+			}}
 		}
 
 		if condition != nil {
-			item := ast.GuardItem{Condition: condition, Consequence: consequence}
+			item := ast.GuardItem{Condition: condition, GuardItemBasic: ast.GuardItemBasic{GuardToken: latestGuardToken, Consequence: consequence}}
 			items = append(items, item)
 		}
 
@@ -61,8 +66,9 @@ func parseGuard(p ParseStream, startIndentation int) (ast.Expression, parerr.Par
 			if defaultConsequence != nil {
 				return nil, parerr.NewExpectedDefaultLastError(consequence)
 			}
-			if err := p.eatOperatorUpdate(); err != nil {
-				return nil, err
+			var guardErr parerr.ParseError
+			if latestGuardToken, guardErr = p.readGuardPipe(); guardErr != nil {
+				return nil, guardErr
 			}
 		} else {
 			if defaultConsequence == nil {

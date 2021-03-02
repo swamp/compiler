@@ -11,7 +11,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func parseIf(p ParseStream, keyword token.Keyword, keywordIndentation int) (ast.Expression, parerr.ParseError) {
+func parseIf(p ParseStream, keywordIf token.Keyword, keywordIndentation int) (ast.Expression, parerr.ParseError) {
 	_, spaceAfterIfErr := p.eatOneSpace("space after IF")
 	if spaceAfterIfErr != nil {
 		return nil, spaceAfterIfErr
@@ -26,7 +26,9 @@ func parseIf(p ParseStream, keyword token.Keyword, keywordIndentation int) (ast.
 	if spaceAfterExpression != nil {
 		return nil, spaceAfterExpression
 	}
-	if thenErr := p.eatThen(); thenErr != nil {
+
+	keywordThen, thenErr := p.readThen()
+	if thenErr != nil {
 		return nil, thenErr
 	}
 
@@ -46,7 +48,8 @@ func parseIf(p ParseStream, keyword token.Keyword, keywordIndentation int) (ast.
 		return nil, spaceAfterConsequenceErr
 	}
 
-	if elseErr := p.eatElse(); elseErr != nil {
+	keywordElse, elseErr := p.readElse()
+	if elseErr != nil {
 		return nil, parerr.NewExpectedElseKeyword(elseErr)
 	}
 
@@ -60,7 +63,7 @@ func parseIf(p ParseStream, keyword token.Keyword, keywordIndentation int) (ast.
 		return nil, parerr.NewMissingElseExpression(alternativeErr)
 	}
 
-	expression := ast.NewIfExpression(condition, consequence, alternative)
+	expression := ast.NewIfExpression(keywordIf, keywordThen, keywordElse, condition, consequence, alternative)
 
 	return expression, nil
 }

@@ -40,7 +40,7 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 			return nil, consequenceErr
 		}
 
-		item := decorated.NewGuardItem(index, condition, consequence)
+		item := decorated.NewGuardItem(item, index, condition, consequence)
 		items = append(items, item)
 		if index == 0 {
 			detectedType = consequence.Type()
@@ -52,7 +52,7 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 		}
 	}
 
-	defaultDecoratedExpression, defaultExpressionErr := DecorateExpression(d, guardExpression.DefaultExpression(), context)
+	defaultDecoratedExpression, defaultExpressionErr := DecorateExpression(d, guardExpression.Default().Consequence, context)
 	if defaultExpressionErr != nil {
 		return nil, defaultExpressionErr
 	}
@@ -63,5 +63,7 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 			nil, compatibleErr)
 	}
 
-	return decorated.NewGuard(items, defaultDecoratedExpression)
+	defaultGuard := decorated.NewGuardItemDefault(guardExpression.Default(), len(items), defaultDecoratedExpression)
+
+	return decorated.NewGuard(guardExpression, items, defaultGuard)
 }

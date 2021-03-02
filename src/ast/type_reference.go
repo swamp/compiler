@@ -23,6 +23,10 @@ func (i *TypeReference) String() string {
 	return fmt.Sprintf("[type-reference %v %v]", i.ident, i.arguments)
 }
 
+func (i *TypeReference) DebugString() string {
+	return ""
+}
+
 func (i *TypeReference) TypeResolver() *TypeIdentifier {
 	return i.ident
 }

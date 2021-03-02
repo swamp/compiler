@@ -261,6 +261,22 @@ func generateArithmetic(code *assembler.Code, target assembler.TargetVariable, o
 	return nil
 }
 
+func generatePipeLeft(code *assembler.Code, target assembler.TargetVariable, operator *decorated.PipeLeftOperator, genContext *generateContext) error {
+	leftErr := generateExpression(code, target, operator.GenerateLeft(), genContext)
+	if leftErr != nil {
+		return leftErr
+	}
+	return nil
+}
+
+func generatePipeRight(code *assembler.Code, target assembler.TargetVariable, operator *decorated.PipeRightOperator, genContext *generateContext) error {
+	leftErr := generateExpression(code, target, operator.GenerateRight(), genContext)
+	if leftErr != nil {
+		return leftErr
+	}
+	return nil
+}
+
 func generateUnaryBitwise(code *assembler.Code, target assembler.TargetVariable, operator *decorated.BitwiseUnaryOperator, genContext *generateContext) error {
 	leftVar, leftErr := generateExpressionWithSourceVar(code, operator.Left(), genContext, "bitwise-left")
 	if leftErr != nil {
@@ -474,7 +490,7 @@ func generateGuard(code *assembler.Code, target assembler.TargetVariable, guardE
 	defaultContext := *genContext
 	defaultContext.context = genContext.context.MakeScopeContext()
 
-	altErr := generateExpression(defaultCode, target, guardExpr.DefaultGuard(), &defaultContext)
+	altErr := generateExpression(defaultCode, target, guardExpr.DefaultGuard().Expression(), &defaultContext)
 	if altErr != nil {
 		return altErr
 	}
@@ -938,6 +954,7 @@ func isListLike(typeToCheck dtype.Type) bool {
 }
 
 func generateExpression(code *assembler.Code, target assembler.TargetVariable, expr decorated.Expression, genContext *generateContext) error {
+	//	log.Printf("gen expr:%T (%v)\n", expr, expr)
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)
@@ -972,6 +989,12 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.BooleanOperator:
 		return generateBoolean(code, target, e, genContext)
+
+	case *decorated.PipeLeftOperator:
+		return generatePipeLeft(code, target, e, genContext)
+
+	case *decorated.PipeRightOperator:
+		return generatePipeRight(code, target, e, genContext)
 
 	case *decorated.RecordLookups:
 		return generateLookups(code, target, e, genContext)
@@ -1026,6 +1049,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.CurryFunction:
 		return generateCurry(code, target, e, genContext)
+
+	case *decorated.StringInterpolation:
+		return generateExpression(code, target, e.Expression(), genContext)
 
 	case *decorated.CustomTypeVariantConstructor:
 		return generateCustomTypeVariantConstructor(code, target, e, genContext)

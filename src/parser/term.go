@@ -66,7 +66,7 @@ func (p *Parser) parseTermUsingToken(someToken token.Token, startIndentation int
 		}
 	case token.GuardToken:
 		{
-			return parseGuard(p.stream, startIndentation)
+			return parseGuard(p.stream, t, startIndentation)
 		}
 	case token.TypeId:
 		{

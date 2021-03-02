@@ -45,5 +45,5 @@ func decorateIf(d DecorateStream, ifExpression *ast.IfExpression,
 			alternative, compatibleErr)
 	}
 
-	return decorated.NewIf(condition, consequence, alternative), nil
+	return decorated.NewIf(ifExpression, condition, consequence, alternative), nil
 }

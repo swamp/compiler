@@ -70,25 +70,13 @@ func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.Fu
 	return completeCalledFunctionType, nil
 }
 
-func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
-	functionValueExpression, functionReferenceErr := getFunctionValueExpression(d, call, context)
-	if functionReferenceErr != nil {
-		return nil, functionReferenceErr
-	}
+func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, functionValueExpression decorated.Expression, decoratedEncounteredArgumentExpressions []decorated.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	functionValueExpressionType := functionValueExpression.Type()
 	functionValueExpressionFunctionType, wasFunction := functionValueExpressionType.(*dectype.FunctionAtom)
 	if !wasFunction {
 		return nil, decorated.NewExpectedFunctionTypeForCall(functionValueExpression)
 	}
 
-	var decoratedEncounteredArgumentExpressions []decorated.Expression
-	for _, rawExpression := range call.Arguments() {
-		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, rawExpression, context)
-		if decoratedExpressionErr != nil {
-			return nil, decoratedExpressionErr
-		}
-		decoratedEncounteredArgumentExpressions = append(decoratedEncounteredArgumentExpressions, decoratedExpression)
-	}
 	var encounteredArgumentTypes []dtype.Type
 	for _, encounteredArgumentExpression := range decoratedEncounteredArgumentExpressions {
 		encounteredArgumentTypes = append(encounteredArgumentTypes, encounteredArgumentExpression.Type())
@@ -123,4 +111,22 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 	returnType := completeCalledFunctionType.ReturnType()
 
 	return decorated.NewFunctionCall(call, functionValueExpression, returnType, decoratedEncounteredArgumentExpressions), nil
+}
+
+func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	functionValueExpression, functionReferenceErr := getFunctionValueExpression(d, call, context)
+	if functionReferenceErr != nil {
+		return nil, functionReferenceErr
+	}
+
+	var decoratedEncounteredArgumentExpressions []decorated.Expression
+	for _, rawExpression := range call.Arguments() {
+		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, rawExpression, context)
+		if decoratedExpressionErr != nil {
+			return nil, decoratedExpressionErr
+		}
+		decoratedEncounteredArgumentExpressions = append(decoratedEncounteredArgumentExpressions, decoratedExpression)
+	}
+
+	return decorateFunctionCallInternal(d, call, functionValueExpression, decoratedEncounteredArgumentExpressions, context)
 }

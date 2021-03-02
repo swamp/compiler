@@ -14,10 +14,12 @@ import (
 type TypeId struct {
 	typeRef     Type
 	typeIdToken token.TypeId
+	inclusive   token.SourceFileReference
 }
 
 func NewTypeId(typeIdToken token.TypeId, typeRef Type) *TypeId {
-	return &TypeId{typeRef: typeRef, typeIdToken: typeIdToken}
+	inclusive := token.MakeInclusiveSourceFileReference(typeIdToken.SourceFileReference, typeRef.FetchPositionLength())
+	return &TypeId{typeRef: typeRef, typeIdToken: typeIdToken, inclusive: inclusive}
 }
 
 func (i *TypeId) TypeRef() Type {
@@ -37,5 +39,5 @@ func (i *TypeId) DebugString() string {
 }
 
 func (i *TypeId) FetchPositionLength() token.SourceFileReference {
-	return i.typeIdToken.SourceFileReference
+	return i.inclusive
 }

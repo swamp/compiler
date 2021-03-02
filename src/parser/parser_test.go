@@ -678,7 +678,7 @@ func TestBoolean(t *testing.T) {
 	testParseExpression(t, "True", "€true")
 }
 
-func TestOneLineIfWithCallAndPipe(t *testing.T) {
+func TestOneLineIfWithCallAndPipeRight(t *testing.T) {
 	testParseExpression(t,
 		`
 if x == 3 then

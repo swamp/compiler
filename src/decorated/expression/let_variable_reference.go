@@ -26,6 +26,10 @@ func (g *LetVariableReference) String() string {
 	return fmt.Sprintf("[letvarref %v %v]", g.ident, g.assignment)
 }
 
+func (g *LetVariableReference) HumanReadable() string {
+	return fmt.Sprintf("%v", g.ident)
+}
+
 func (g *LetVariableReference) LetVariable() *LetVariable {
 	return g.assignment.LetVariable()
 }

@@ -51,13 +51,17 @@ func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequenc
 }
 
 type CasePatternMatching struct {
-	test    Expression
-	cases   []*CaseConsequencePatternMatching
-	keyword token.Keyword
+	test        Expression
+	cases       []*CaseConsequencePatternMatching
+	keywordCase token.Keyword
+	keywordOf   token.Keyword
+	inclusive   token.SourceFileReference
 }
 
-func NewCaseForPatternMatching(keyword token.Keyword, test Expression, cases []*CaseConsequencePatternMatching) *CasePatternMatching {
-	return &CasePatternMatching{keyword: keyword, test: test, cases: cases}
+func NewCaseForPatternMatching(keywordCase token.Keyword, keywordOf token.Keyword, test Expression, cases []*CaseConsequencePatternMatching) *CasePatternMatching {
+	inclusive := token.MakeInclusiveSourceFileReference(keywordCase.FetchPositionLength(), cases[len(cases)-1].Expression().FetchPositionLength())
+
+	return &CasePatternMatching{keywordCase: keywordCase, keywordOf: keywordOf, test: test, cases: cases, inclusive: inclusive}
 }
 
 func (i *CasePatternMatching) String() string {
@@ -68,12 +72,16 @@ func (i *CasePatternMatching) Test() Expression {
 	return i.test
 }
 
-func (i *CasePatternMatching) Keyword() token.Keyword {
-	return i.keyword
+func (i *CasePatternMatching) KeywordCase() token.Keyword {
+	return i.keywordCase
+}
+
+func (i *CasePatternMatching) KeywordOf() token.Keyword {
+	return i.keywordOf
 }
 
 func (i *CasePatternMatching) FetchPositionLength() token.SourceFileReference {
-	return i.keyword.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *CasePatternMatching) Consequences() []*CaseConsequencePatternMatching {

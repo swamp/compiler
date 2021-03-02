@@ -9,19 +9,21 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
 type CaseConsequencePatternMatching struct {
-	literal       Expression
-	expression    Expression
-	internalIndex int
+	literal        Expression
+	expression     Expression
+	astConsequence *ast.CaseConsequencePatternMatching
+	internalIndex  int
 }
 
-func NewCaseConsequencePatternMatching(internalIndex int, literal Expression, expression Expression) *CaseConsequencePatternMatching {
-	return &CaseConsequencePatternMatching{internalIndex: internalIndex, literal: literal, expression: expression}
+func NewCaseConsequencePatternMatching(astConsequence *ast.CaseConsequencePatternMatching, internalIndex int, literal Expression, expression Expression) *CaseConsequencePatternMatching {
+	return &CaseConsequencePatternMatching{internalIndex: internalIndex, astConsequence: astConsequence, literal: literal, expression: expression}
 }
 
 func (c *CaseConsequencePatternMatching) Expression() Expression {
@@ -56,10 +58,11 @@ type CasePatternMatching struct {
 	test        Expression
 	cases       []*CaseConsequencePatternMatching
 	defaultCase Expression
+	astCase     *ast.CasePatternMatching
 }
 
-func NewCasePatternMatching(test Expression, cases []*CaseConsequencePatternMatching, defaultCase Expression) (*CasePatternMatching, decshared.DecoratedError) {
-	return &CasePatternMatching{test: test, cases: cases, defaultCase: defaultCase}, nil
+func NewCasePatternMatching(astCase *ast.CasePatternMatching, test Expression, cases []*CaseConsequencePatternMatching, defaultCase Expression) (*CasePatternMatching, decshared.DecoratedError) {
+	return &CasePatternMatching{astCase: astCase, test: test, cases: cases, defaultCase: defaultCase}, nil
 }
 
 func (i *CasePatternMatching) Type() dtype.Type {
@@ -68,6 +71,10 @@ func (i *CasePatternMatching) Type() dtype.Type {
 	}
 	firstCase := i.cases[0]
 	return firstCase.Expression().Type()
+}
+
+func (i *CasePatternMatching) AstCasePatternMatching() *ast.CasePatternMatching {
+	return i.astCase
 }
 
 func (i *CasePatternMatching) String() string {

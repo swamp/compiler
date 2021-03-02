@@ -986,12 +986,26 @@ func (p *ParseStreamImpl) readOf() (token.Keyword, parerr.ParseError) {
 	return p.readSpecificKeywordToken(token.Of)
 }
 
-func (p *ParseStreamImpl) eatThen() parerr.ParseError {
-	return p.eatString("then")
+func (p *ParseStreamImpl) readThen() (token.Keyword, parerr.ParseError) {
+	return p.readSpecificKeywordToken(token.Then)
 }
 
-func (p *ParseStreamImpl) eatElse() parerr.ParseError {
-	return p.eatString("else")
+func (p *ParseStreamImpl) readElse() (token.Keyword, parerr.ParseError) {
+	return p.readSpecificKeywordToken(token.Else)
+}
+
+func (p *ParseStreamImpl) readGuardPipe() (token.GuardToken, parerr.ParseError) {
+	someToken, termErr := p.tokenizer.ReadTermToken()
+	if termErr != nil {
+		return token.GuardToken{}, termErr
+	}
+
+	guardToken, wasGuard := someToken.(token.GuardToken)
+	if !wasGuard {
+		return token.GuardToken{}, parerr.NewInternalError(p.positionLength(), fmt.Errorf("must have guard | token here"))
+	}
+
+	return guardToken, nil
 }
 
 func (p *ParseStreamImpl) eatAccessor() parerr.ParseError {

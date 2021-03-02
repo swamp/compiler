@@ -42,6 +42,10 @@ func (i *FunctionCall) OverwriteArguments(args []Expression) {
 	i.arguments = args
 }
 
+func (i *FunctionCall) AppendArgument(arg Expression) {
+	i.arguments = append(i.arguments, arg)
+}
+
 func (i *FunctionCall) FetchPositionLength() token.SourceFileReference {
 	return i.inclusive
 }

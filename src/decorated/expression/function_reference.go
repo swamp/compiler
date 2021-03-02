@@ -26,6 +26,10 @@ func (g *FunctionReference) String() string {
 	return fmt.Sprintf("[functionref %v %v]", g.ident, g.referencedFunctionValue)
 }
 
+func (g *FunctionReference) DebugString() string {
+	return fmt.Sprintf("[functionref %v %v]", g.ident, g.referencedFunctionValue)
+}
+
 func (g *FunctionReference) Identifier() *ast.VariableIdentifier {
 	return g.ident
 }

@@ -38,5 +38,5 @@ func parseCase(p ParseStream, keyword token.Keyword, startIndentation int) (ast.
 		return parseCaseCustomType(p, test, keyword, ofToken, startIndentation, consequenceIndentation)
 	}
 
-	return parseCasePatternMatching(p, test, keyword, startIndentation, consequenceIndentation)
+	return parseCasePatternMatching(p, test, keyword, ofToken, startIndentation, consequenceIndentation)
 }

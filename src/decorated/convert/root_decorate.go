@@ -88,6 +88,7 @@ func (g *Definer) handleAliasStatement(alias *ast.AliasStatement) decshared.Deco
 		return decorated.NewUnknownTypeAliasType(alias, referencedTypeErr)
 	}
 	_, tErr := g.createAliasTypeFromType(alias.TypeIdentifier(), referencedType)
+
 	return tErr
 }
 

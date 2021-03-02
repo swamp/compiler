@@ -8,6 +8,7 @@ package decorated
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
@@ -16,18 +17,23 @@ type If struct {
 	condition   Expression
 	consequence Expression
 	alternative Expression
+	astIf       *ast.IfExpression
 }
 
 func (l *If) Type() dtype.Type {
 	return l.consequence.Type()
 }
 
-func NewIf(condition Expression, consequence Expression, alternative Expression) *If {
-	return &If{condition: condition, consequence: consequence, alternative: alternative}
+func NewIf(astIf *ast.IfExpression, condition Expression, consequence Expression, alternative Expression) *If {
+	return &If{astIf: astIf, condition: condition, consequence: consequence, alternative: alternative}
 }
 
 func (l *If) String() string {
 	return fmt.Sprintf("[if %v then %v else %v]", l.condition, l.consequence, l.alternative)
+}
+
+func (l *If) AstIf() *ast.IfExpression {
+	return l.astIf
 }
 
 func (l *If) Condition() Expression {
@@ -43,5 +49,5 @@ func (l *If) Alternative() Expression {
 }
 
 func (l *If) FetchPositionLength() token.SourceFileReference {
-	return l.condition.FetchPositionLength()
+	return l.astIf.FetchPositionLength()
 }

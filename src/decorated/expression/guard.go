@@ -9,19 +9,43 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
+type GuardItemDefault struct {
+	consequence   Expression
+	internalIndex int
+	guardDefault  *ast.GuardDefault
+}
+
+func NewGuardItemDefault(guardDefault *ast.GuardDefault, internalIndex int, consequence Expression) *GuardItemDefault {
+	return &GuardItemDefault{guardDefault: guardDefault, internalIndex: internalIndex, consequence: consequence}
+}
+
+func (c *GuardItemDefault) Expression() Expression {
+	return c.consequence
+}
+
+func (c *GuardItemDefault) InternalIndex() int {
+	return c.internalIndex
+}
+
+func (c *GuardItemDefault) AstGuardDefault() *ast.GuardDefault {
+	return c.guardDefault
+}
+
 type GuardItem struct {
 	condition     Expression
 	consequence   Expression
 	internalIndex int
+	astGuardItem  ast.GuardItem
 }
 
-func NewGuardItem(internalIndex int, condition Expression, consequence Expression) *GuardItem {
-	return &GuardItem{internalIndex: internalIndex, condition: condition, consequence: consequence}
+func NewGuardItem(astGuardItem ast.GuardItem, internalIndex int, condition Expression, consequence Expression) *GuardItem {
+	return &GuardItem{astGuardItem: astGuardItem, internalIndex: internalIndex, condition: condition, consequence: consequence}
 }
 
 func (c *GuardItem) Expression() Expression {
@@ -34,6 +58,10 @@ func (c *GuardItem) Condition() Expression {
 
 func (c *GuardItem) InternalIndex() int {
 	return c.internalIndex
+}
+
+func (c *GuardItem) AstGuardItem() ast.GuardItem {
+	return c.astGuardItem
 }
 
 func (c *GuardItem) String() string {
@@ -54,16 +82,17 @@ func guardConsequenceArrayToStringEx(expressions []*GuardItem, ch string) string
 
 type Guard struct {
 	items        []*GuardItem
-	defaultGuard Expression
+	defaultGuard *GuardItemDefault
+	astGuard     *ast.GuardExpression
 }
 
-func NewGuard(items []*GuardItem, defaultGuard Expression) (*Guard, decshared.DecoratedError) {
-	return &Guard{items: items, defaultGuard: defaultGuard}, nil
+func NewGuard(astGuard *ast.GuardExpression, items []*GuardItem, defaultGuard *GuardItemDefault) (*Guard, decshared.DecoratedError) {
+	return &Guard{astGuard: astGuard, items: items, defaultGuard: defaultGuard}, nil
 }
 
 func (i *Guard) Type() dtype.Type {
 	if len(i.items) == 0 {
-		return i.defaultGuard.Type()
+		return i.defaultGuard.consequence.Type()
 	}
 	firstGuard := i.items[0]
 	return firstGuard.Expression().Type()
@@ -76,16 +105,16 @@ func (i *Guard) String() string {
 	return fmt.Sprintf("[dguard: %v]", guardConsequenceArrayToStringEx(i.items, ";"))
 }
 
-func (i *Guard) Test() Expression {
-	return i.defaultGuard
-}
-
 func (i *Guard) Items() []*GuardItem {
 	return i.items
 }
 
-func (i *Guard) DefaultGuard() Expression {
+func (i *Guard) DefaultGuard() *GuardItemDefault {
 	return i.defaultGuard
+}
+
+func (i *Guard) AstGuard() *ast.GuardExpression {
+	return i.astGuard
 }
 
 func (i *Guard) DebugString() string {
@@ -93,5 +122,5 @@ func (i *Guard) DebugString() string {
 }
 
 func (i *Guard) FetchPositionLength() token.SourceFileReference {
-	return i.defaultGuard.FetchPositionLength()
+	return i.astGuard.FetchPositionLength()
 }

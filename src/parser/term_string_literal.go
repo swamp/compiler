@@ -74,8 +74,8 @@ func replaceInterpolationString(s string) string {
 	return result
 }
 
-func replaceInterpolationStringToExpression(s string) (ast.Expression, parerr.ParseError) {
-	replaced := replaceInterpolationString(s)
+func replaceInterpolationStringToExpression(stringToken token.StringToken) (*ast.StringInterpolation, parerr.ParseError) {
+	replaced := replaceInterpolationString(stringToken.Text())
 	reader := strings.NewReader(replaced)
 	runeReader, _ := runestream.NewRuneReader(reader, "internal interpolation string")
 
@@ -90,7 +90,7 @@ func replaceInterpolationStringToExpression(s string) (ast.Expression, parerr.Pa
 		return nil, exprErr
 	}
 
-	return expr, nil
+	return ast.NewStringInterpolation(stringToken, expr), nil
 }
 
 func parseStringLiteral(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
@@ -102,7 +102,7 @@ func parseStringLiteral(p ParseStream, stringToken token.StringToken) (ast.Expre
 	}
 
 	if wasInterpolation {
-		return replaceInterpolationStringToExpression(stringToken.Text())
+		return replaceInterpolationStringToExpression(stringToken)
 	}
 
 	return lit, nil

@@ -7,7 +7,7 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-func parseCasePatternMatching(p ParseStream, test ast.Expression, keyword token.Keyword, startIndentation int, consequenceIndentation int) (*ast.CasePatternMatching, parerr.ParseError) {
+func parseCasePatternMatching(p ParseStream, test ast.Expression, keywordCase token.Keyword, keywordOf token.Keyword, startIndentation int, consequenceIndentation int) (*ast.CasePatternMatching, parerr.ParseError) {
 	var consequences []*ast.CaseConsequencePatternMatching
 	for {
 		var prefix ast.Literal
@@ -63,6 +63,6 @@ func parseCasePatternMatching(p ParseStream, test ast.Expression, keyword token.
 		}
 	}
 
-	a := ast.NewCaseForPatternMatching(keyword, test, consequences)
+	a := ast.NewCaseForPatternMatching(keywordCase, keywordOf, test, consequences)
 	return a, nil
 }

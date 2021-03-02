@@ -39,6 +39,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateResourceName(d, v)
 	case *ast.StringLiteral:
 		return decorateString(d, v)
+	case *ast.StringInterpolation:
+		return decorateStringInterpolation(d, v, context)
 	case *ast.CharacterLiteral:
 		return decorateCharacter(d, v)
 	case *ast.TypeId:
@@ -77,9 +79,6 @@ func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableCon
 	if expr == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("expr is nil:%v", e))
 	}
-
-	// log.Printf("decorate expression before %T %v", e, e)
-	// log.Printf("decorate expression AFTER %T %v", expr, expr)
 
 	return expr, nil
 }

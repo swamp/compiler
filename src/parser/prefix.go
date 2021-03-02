@@ -35,7 +35,7 @@ func (p *Parser) parsePrefix(t token.Token, startIndentation int) (ast.Expressio
 	}
 
 	if t.Type() == token.Guard {
-		return parseGuard(p.stream, startIndentation)
+		return parseGuard(p.stream, t.(token.GuardToken), startIndentation)
 	}
 
 	return nil, parerr.NewUnknownPrefixInExpression(t)

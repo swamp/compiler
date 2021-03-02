@@ -29,12 +29,15 @@ func (p *Parser) parseInfix(left ast.Expression, startIndentation int) (ast.Expr
 	}
 
 	precedence := p.stream.getPrecedenceFromToken(operator)
-	opType := operator.Type()
-	if opType == token.OperatorPipeRight {
-		return parsePipeRightExpression(p.stream, operator, startIndentation, precedence, left)
-	} else if opType == token.OperatorPipeLeft {
-		return parsePipeLeftExpression(p.stream, operator, startIndentation, precedence, left)
-	}
+	/*
+		opType := operator.Type()
+		if opType == token.OperatorPipeRight {
+			return parsePipeRightExpression(p.stream, operator, startIndentation, precedence, left)
+		} else if opType == token.OperatorPipeLeft {
+			return parsePipeLeftExpression(p.stream, operator, startIndentation, precedence, left)
+		}
+
+	*/
 
 	return parseBinaryOperator(p.stream, startIndentation, operator, precedence, left)
 }
