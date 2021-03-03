@@ -44,6 +44,10 @@ func (c *FunctionCall) String() string {
 	return fmt.Sprintf("[fcall %v %v]", c.functionValueExpression, c.assignments)
 }
 
+func (c *FunctionCall) HumanReadable() string {
+	return "Function Call"
+}
+
 func (c *FunctionCall) FetchPositionLength() token.SourceFileReference {
 	return c.astFunctionCall.FetchPositionLength()
 }

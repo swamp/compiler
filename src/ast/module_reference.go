@@ -5,33 +5,14 @@
 
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/token"
+)
 
 type ModuleNamePart struct {
 	part *TypeIdentifier
-}
-
-type ModuleReference struct {
-	parts []*ModuleNamePart
-}
-
-func (m *ModuleReference) String() string {
-	return fmt.Sprintf("[moduleref %v]", m.parts)
-}
-
-func (m *ModuleReference) ModuleName() string {
-	s := ""
-	for index, part := range m.parts {
-		if index > 0 {
-			s += "."
-		}
-		s += part.Name()
-	}
-	return s
-}
-
-func (m *ModuleReference) Parts() []*ModuleNamePart {
-	return m.parts
 }
 
 func NewModuleNamePart(part *TypeIdentifier) *ModuleNamePart {
@@ -50,6 +31,42 @@ func (m *ModuleNamePart) String() string {
 	return m.Name()
 }
 
+func (m *ModuleNamePart) FetchPositionLength() token.SourceFileReference {
+	return m.part.FetchPositionLength()
+}
+
+type ModuleReference struct {
+	parts     []*ModuleNamePart
+	inclusive token.SourceFileReference
+}
+
+func (m *ModuleReference) String() string {
+	return fmt.Sprintf("[moduleref %v]", m.parts)
+}
+
+func (m *ModuleReference) ModuleName() string {
+	s := ""
+	for index, part := range m.parts {
+		if index > 0 {
+			s += "."
+		}
+		s += part.Name()
+	}
+	return s
+}
+
+func (m *ModuleReference) FetchPositionLength() token.SourceFileReference {
+	return m.inclusive
+}
+
+func (m *ModuleReference) Parts() []*ModuleNamePart {
+	return m.parts
+}
+
 func NewModuleReference(parts []*ModuleNamePart) *ModuleReference {
-	return &ModuleReference{parts: parts}
+	if len(parts) == 0 {
+		panic("must have parts in module reference")
+	}
+	inclusive := token.MakeInclusiveSourceFileReference(parts[0].FetchPositionLength(), parts[len(parts)-1].FetchPositionLength())
+	return &ModuleReference{parts: parts, inclusive: inclusive}
 }

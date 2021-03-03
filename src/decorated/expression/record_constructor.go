@@ -46,7 +46,7 @@ func (c *RecordConstructor) String() string {
 }
 
 func (c *RecordConstructor) HumanReadable() string {
-	return fmt.Sprintf("Record Constructor", c.typeIdentifier, c.arguments)
+	return "Record Constructor"
 }
 
 func (c *RecordConstructor) FetchPositionLength() token.SourceFileReference {

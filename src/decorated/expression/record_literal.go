@@ -17,17 +17,43 @@ import (
 
 type ByAssignmentName []*RecordLiteralAssignment
 
-func (a ByAssignmentName) Len() int           { return len(a) }
-func (a ByAssignmentName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByAssignmentName) Less(i, j int) bool { return a[i].fieldName.Name() < a[j].fieldName.Name() }
+func (a ByAssignmentName) Len() int      { return len(a) }
+func (a ByAssignmentName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByAssignmentName) Less(i, j int) bool {
+	return a[i].fieldName.fieldName.Name() < a[j].fieldName.fieldName.Name()
+}
+
+type RecordLiteralField struct {
+	fieldName *ast.VariableIdentifier
+}
+
+func NewRecordLiteralField(fieldName *ast.VariableIdentifier) *RecordLiteralField {
+	return &RecordLiteralField{fieldName: fieldName}
+}
+
+func (n *RecordLiteralField) Ident() *ast.VariableIdentifier {
+	return n.fieldName
+}
+
+func (n *RecordLiteralField) FetchPositionLength() token.SourceFileReference {
+	return n.fieldName.FetchPositionLength()
+}
+
+func (n *RecordLiteralField) String() string {
+	return "record field name"
+}
+
+func (n *RecordLiteralField) HumanReadable() string {
+	return "Record field identifier"
+}
 
 type RecordLiteralAssignment struct {
 	expression Expression
 	index      int
-	fieldName  *ast.VariableIdentifier
+	fieldName  *RecordLiteralField
 }
 
-func NewRecordLiteralAssignment(index int, fieldName *ast.VariableIdentifier, expression Expression) *RecordLiteralAssignment {
+func NewRecordLiteralAssignment(index int, fieldName *RecordLiteralField, expression Expression) *RecordLiteralAssignment {
 	return &RecordLiteralAssignment{index: index, fieldName: fieldName, expression: expression}
 }
 
@@ -39,7 +65,7 @@ func (a *RecordLiteralAssignment) Index() int {
 	return a.index
 }
 
-func (a *RecordLiteralAssignment) FieldName() *ast.VariableIdentifier {
+func (a *RecordLiteralAssignment) FieldName() *RecordLiteralField {
 	return a.fieldName
 }
 

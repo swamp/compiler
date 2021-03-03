@@ -30,6 +30,10 @@ func (g *FunctionReference) DebugString() string {
 	return fmt.Sprintf("[functionref %v %v]", g.ident, g.referencedFunctionValue)
 }
 
+func (g *FunctionReference) HumanReadable() string {
+	return "function reference"
+}
+
 func (g *FunctionReference) Identifier() *ast.VariableIdentifier {
 	return g.ident
 }

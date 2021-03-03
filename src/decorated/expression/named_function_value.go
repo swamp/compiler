@@ -7,8 +7,28 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type NamedFunctionValue struct {
+type FunctionName struct {
 	identifier *ast.VariableIdentifier
+}
+
+func (f *FunctionName) Ident() *ast.VariableIdentifier {
+	return f.identifier
+}
+
+func (f *FunctionName) FetchPositionLength() token.SourceFileReference {
+	return f.identifier.FetchPositionLength()
+}
+
+func (f *FunctionName) String() string {
+	return fmt.Sprintf("function name %v", f.identifier)
+}
+
+func (f *FunctionName) HumanReadable() string {
+	return "This is the name of the function"
+}
+
+type NamedFunctionValue struct {
+	identifier *FunctionName
 	value      *FunctionValue
 	inclusive  token.SourceFileReference
 }
@@ -16,7 +36,7 @@ type NamedFunctionValue struct {
 func NewNamedFunctionValue(identifier *ast.VariableIdentifier, value *FunctionValue) *NamedFunctionValue {
 	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), value.sourceFileReference)
 	return &NamedFunctionValue{
-		identifier: identifier,
+		identifier: &FunctionName{identifier: identifier},
 		value:      value,
 		inclusive:  inclusive,
 	}
@@ -26,7 +46,7 @@ func (n *NamedFunctionValue) String() string {
 	return fmt.Sprintf("named function value %v = %v", n.identifier, n.value)
 }
 
-func (n *NamedFunctionValue) Identifier() *ast.VariableIdentifier {
+func (n *NamedFunctionValue) FunctionName() *FunctionName {
 	return n.identifier
 }
 

@@ -26,6 +26,10 @@ func (g *FunctionParameterReference) String() string {
 	return fmt.Sprintf("[functionparamref %v %v]", g.ident, g.referencedParameter)
 }
 
+func (g *FunctionParameterReference) HumanReadable() string {
+	return fmt.Sprintf("Parameter Reference")
+}
+
 func (g *FunctionParameterReference) Identifier() *ast.VariableIdentifier {
 	return g.ident
 }

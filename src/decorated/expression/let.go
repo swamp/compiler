@@ -23,6 +23,10 @@ func (l *LetVariable) String() string {
 	return fmt.Sprintf("[letvariable %v]", l.name)
 }
 
+func (l *LetVariable) HumanReadable() string {
+	return "Let variable"
+}
+
 func (l *LetVariable) Type() dtype.Type {
 	return l.variableType
 }

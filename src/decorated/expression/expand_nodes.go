@@ -14,10 +14,14 @@ type TypeOrToken interface {
 	FetchPositionLength() token.SourceFileReference
 }
 
+type HumanReadEnabler interface {
+	HumanReadable() string
+}
+
 type Token interface {
 	TypeOrToken
+	HumanReadEnabler
 	Type() dtype.Type
-	HumanReadable() string
 }
 
 func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
@@ -26,6 +30,12 @@ func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
 	for _, parameter := range fn.Parameters() {
 		tokens = append(tokens, expandChildNodes(parameter)...)
 	}
+	return tokens
+}
+
+func expandChildNodesFunctionReference(fn *FunctionReference) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(fn.ident)...)
 	return tokens
 }
 
@@ -128,9 +138,24 @@ func expandChildNodesListLiteral(listLiteral *ListLiteral) []TypeOrToken {
 	return tokens
 }
 
+func expandChildNodesRecordLiteral(recordLiteral *RecordLiteral) []TypeOrToken {
+	var tokens []TypeOrToken
+
+	if recordLiteral.RecordTemplate() != nil {
+		tokens = append(tokens, expandChildNodes(recordLiteral.RecordTemplate())...)
+	}
+
+	for _, assignment := range recordLiteral.ParseOrderedAssignments() {
+		tokens = append(tokens, expandChildNodes(assignment.FieldName())...)
+		tokens = append(tokens, expandChildNodes(assignment.Expression())...)
+	}
+
+	return tokens
+}
+
 func expandChildNodesNamedFunctionValue(namedFunctionValue *NamedFunctionValue) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(namedFunctionValue.Identifier())...)
+	tokens = append(tokens, expandChildNodes(namedFunctionValue.FunctionName())...)
 	tokens = append(tokens, expandChildNodes(namedFunctionValue.Value())...)
 
 	return tokens
@@ -147,15 +172,44 @@ func expandChildNodesCustomTypeVariantConstructor(constructor *CustomTypeVariant
 	return tokens
 }
 
+func expandChildNodesRecordConstructor(constructor *RecordConstructor) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...)
+
+	for _, arg := range constructor.arguments {
+		tokens = append(tokens, expandChildNodes(arg.FieldName())...)
+		tokens = append(tokens, expandChildNodes(arg.Expression())...)
+	}
+
+	return tokens
+}
+
+func expandChildNodesGuard(guard *Guard) []TypeOrToken {
+	var tokens []TypeOrToken
+	for _, item := range guard.Items() {
+		tokens = append(tokens, expandChildNodes(item.Condition())...)
+		tokens = append(tokens, expandChildNodes(item.Expression())...)
+	}
+
+	if guard.DefaultGuard() != nil {
+		tokens = append(tokens, expandChildNodes(guard.DefaultGuard().Expression())...)
+	}
+
+	return tokens
+}
+
 func expandChildNodesCustomTypeVariantReference(constructor *CustomTypeVariantReference) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...)
 	return tokens
 }
 
-func expandChildNodesCaseForCustomType(namedFunctionValue *CaseCustomType) []TypeOrToken {
+func expandChildNodesCaseForCustomType(caseForCustomType *CaseCustomType) []TypeOrToken {
 	var tokens []TypeOrToken
-	for _, consequence := range namedFunctionValue.Consequences() {
+
+	tokens = append(tokens, expandChildNodes(caseForCustomType.Test())...)
+
+	for _, consequence := range caseForCustomType.Consequences() {
 		tokens = append(tokens, expandChildNodes(consequence.Identifier())...)
 		for _, param := range consequence.Parameters() {
 			tokens = append(tokens, expandChildNodes(param)...)
@@ -163,8 +217,15 @@ func expandChildNodesCaseForCustomType(namedFunctionValue *CaseCustomType) []Typ
 		tokens = append(tokens, expandChildNodes(consequence.Expression())...)
 	}
 
-	tokens = append(tokens, expandChildNodes(namedFunctionValue.DefaultCase())...)
+	tokens = append(tokens, expandChildNodes(caseForCustomType.DefaultCase())...)
 
+	return tokens
+}
+
+func expandChildNodesBinaryOperator(namedFunctionValue *BinaryOperator) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(namedFunctionValue.Left())...)
+	tokens = append(tokens, expandChildNodes(namedFunctionValue.Right())...)
 	return tokens
 }
 
@@ -189,291 +250,95 @@ func expandChildNodesLet(let *Let) []TypeOrToken {
 	return tokens
 }
 
-/*
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.CaseCustomType
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LogicalOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.BooleanOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 file:///home/peter/own/hackman/swamp/gameplay/Projectile.swamp:24:1: warning: 'projectile' not used in function checkForCollide
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.If
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.BooleanOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.BooleanOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.BooleanOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LogicalOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LogicalOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.Guard
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.CasePatternMatching
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeLeftOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.ArithmeticOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.If
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.TypeIdLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.StringInterpolation
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.CaseCustomType
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.If
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.CaseCustomType
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.StringLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.CaseCustomType
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordConstructor
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.ArithmeticOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.IntegerLiteral
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.ArithmeticOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionParameterReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordFieldReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.FunctionReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariableReference
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.CaseCustomType
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.If
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.LetVariable
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.PipeRightOperator
-2021/03/02 18:50:02 expand_nodes: could not expand: *decorated.RecordLiteral
-*/
+func expandChildNodesIf(ifExpression *If) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(ifExpression.Condition())...)
+	tokens = append(tokens, expandChildNodes(ifExpression.Consequence())...)
+	tokens = append(tokens, expandChildNodes(ifExpression.Alternative())...)
+
+	return tokens
+}
 
 func expandChildNodes(node Node) []TypeOrToken {
 	tokens := []TypeOrToken{node}
 	switch t := node.(type) {
 	case *ast.TypeIdentifier:
+		if t.ModuleReference() != nil {
+			tokens = append(tokens, t.ModuleReference())
+		}
 		return tokens
 	case *ast.VariableIdentifier:
+		if t.ModuleReference() != nil {
+			tokens = append(tokens, t.ModuleReference())
+		}
+		return tokens
+	case *ast.ModuleReference:
+		for _, part := range t.Parts() {
+			tokens = append(tokens, part)
+		}
+		return tokens
+	case *ast.ModuleNamePart:
 		return tokens
 	case *Annotation:
 		return append(tokens, expandChildNodesAnnotation(t)...)
 	case *FunctionValue:
 		return append(tokens, expandChildNodesFunctionValue(t)...)
+	case *FunctionReference:
+		return append(tokens, expandChildNodesFunctionReference(t)...)
 	case *FunctionCall:
 		return append(tokens, expandChildNodesFunctionCall(t)...)
 	case *CurryFunction:
 		return append(tokens, expandChildNodesCurryFunction(t)...)
 	case *Let:
 		return append(tokens, expandChildNodesLet(t)...)
+	case *If:
+		return append(tokens, expandChildNodesIf(t)...)
 	case *LetAssignment:
 		return append(tokens, expandChildNodesLetAssignment(t)...)
 	case *ListLiteral:
 		return append(tokens, expandChildNodesListLiteral(t)...)
+	case *RecordLiteral:
+		return append(tokens, expandChildNodesRecordLiteral(t)...)
 	case *FunctionParameterDefinition:
 		return append(tokens, expandChildNodes(t.identifier)...)
 	case *NamedFunctionValue:
 		return append(tokens, expandChildNodesNamedFunctionValue(t)...)
 	case *CustomTypeVariantConstructor:
 		return append(tokens, expandChildNodesCustomTypeVariantConstructor(t)...)
+	case *RecordConstructor:
+		return append(tokens, expandChildNodesRecordConstructor(t)...)
+	case *Guard:
+		return append(tokens, expandChildNodesGuard(t)...)
 	case *CustomTypeVariantReference:
 		return append(tokens, expandChildNodesCustomTypeVariantReference(t)...)
 	case *CaseCustomType:
 		return append(tokens, expandChildNodesCaseForCustomType(t)...)
+	case *PipeRightOperator:
+		return expandChildNodes(&t.BinaryOperator)
+	case *PipeLeftOperator:
+		return expandChildNodes(&t.BinaryOperator)
+	case *ArithmeticOperator:
+		return expandChildNodes(&t.BinaryOperator)
+	case *LogicalOperator:
+		return expandChildNodes(&t.BinaryOperator)
+	case *ConsOperator:
+		return expandChildNodes(&t.BinaryOperator)
+	case *BooleanOperator:
+		return expandChildNodes(&t.BinaryOperator)
+	case *BitwiseOperator:
+		return expandChildNodes(&t.BinaryOperator)
+
+	case *ArithmeticUnaryOperator:
+		return expandChildNodes(&t.UnaryOperator)
+	case *BitwiseUnaryOperator:
+		return expandChildNodes(&t.UnaryOperator)
+	case *LogicalUnaryOperator:
+		return expandChildNodes(&t.UnaryOperator)
+
+	case *UnaryOperator:
+		return expandChildNodes(t.Left())
+	case *BinaryOperator:
+		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:
 		return append(tokens, expandChildNodesRecordLookups(t)...)
 	case *AsmConstant:

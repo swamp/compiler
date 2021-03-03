@@ -98,11 +98,17 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 	} else {
 		normalToken, _ := decoratedToken.(decorated.Token)
 		if normalToken == nil {
-			log.Printf("not sure what this token is: %T\n", decoratedToken)
-			return nil, nil
+			onlyHumanReadable, _ := decoratedToken.(decorated.HumanReadEnabler)
+			if onlyHumanReadable != nil {
+				name = onlyHumanReadable.HumanReadable()
+			} else {
+				log.Printf("not sure what this token is: %T\n", decoratedToken)
+				return nil, nil
+			}
+		} else {
+			codeSignature = normalToken.Type().HumanReadable()
+			name = normalToken.HumanReadable()
 		}
-		codeSignature = normalToken.Type().HumanReadable()
-		name = normalToken.HumanReadable()
 	}
 
 	showString := fmt.Sprintf("%v : ```swamp\n%v\n```", name, codeSignature)
@@ -132,6 +138,8 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.RecordTypeField().VariableIdentifier().FetchPositionLength(), nil
 	case *decorated.CustomTypeVariantReference:
 		return t.CustomTypeVariant().FetchPositionLength(), nil
+	case *decorated.RecordConstructor:
+		return t.Type().FetchPositionLength(), nil
 	case *decorated.CustomTypeVariantConstructor:
 		return tokenToDefinition(t.Reference())
 	case *decorated.FunctionValue:

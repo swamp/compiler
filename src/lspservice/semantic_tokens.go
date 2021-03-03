@@ -20,8 +20,16 @@ func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *Semantic
 	return addSemanticToken(f.Expression(), builder)
 }
 
+func addSemanticTokenFunctionName(f *decorated.FunctionName, builder *SemanticBuilder) error {
+	if err := builder.EncodeSymbol(f.Ident().Name(), f.FetchPositionLength().Range, "function", []string{"definition"}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func addSemanticTokenNamedFunctionValue(f *decorated.NamedFunctionValue, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(f.Identifier().Name(), f.Identifier().FetchPositionLength().Range, "function", []string{"definition"}); err != nil {
+	if err := addSemanticToken(f.FunctionName(), builder); err != nil {
 		return err
 	}
 
@@ -402,7 +410,7 @@ func addSemanticTokenRecordLiteral(recordLiteral *decorated.RecordLiteral, build
 	}
 
 	for _, assignment := range recordLiteral.ParseOrderedAssignments() {
-		if err := builder.EncodeSymbol(assignment.FieldName().Name(), assignment.FieldName().FetchPositionLength().Range, "property", nil); err != nil {
+		if err := builder.EncodeSymbol(assignment.FieldName().Ident().Name(), assignment.FieldName().FetchPositionLength().Range, "property", nil); err != nil {
 			return err
 		}
 
@@ -623,6 +631,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenFunctionCall(t, builder)
 	case *decorated.CurryFunction:
 		return addSemanticTokenCurryFunction(t, builder)
+	case *decorated.FunctionName:
+		return addSemanticTokenFunctionName(t, builder)
 	case *decorated.FunctionReference:
 		return addSemanticTokenFunctionReference(t, builder)
 	case *decorated.FunctionParameterReference:

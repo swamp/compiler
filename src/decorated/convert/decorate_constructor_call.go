@@ -60,7 +60,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 			for index, expr := range decoratedExpressions {
 				field := e.ParseOrderedFields()[index]
 				targetIndex := field.Index()
-				assignment := decorated.NewRecordLiteralAssignment(targetIndex, field.VariableIdentifier(), expr)
+				assignment := decorated.NewRecordLiteralAssignment(targetIndex, decorated.NewRecordLiteralField(field.VariableIdentifier()), expr)
 				alphaOrderedAssignments[targetIndex] = assignment
 				parsedOrderedAssignments[index] = assignment
 				unaliasedFieldType := dectype.Unalias(field.Type())
