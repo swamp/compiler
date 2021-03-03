@@ -8,7 +8,6 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
-	"github.com/swamp/compiler/src/token"
 )
 
 func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (*ast.TypeIdentifier, parerr.ParseError) {
@@ -32,17 +31,17 @@ func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (*
 }
 
 func parseTypeTermReference(p ParseStream, keywordIndentation int,
-	typeParameterContext *ast.TypeParameterIdentifierContext, precedingComments token.CommentBlock) (ast.Type, parerr.ParseError) {
+	typeParameterContext *ast.TypeParameterIdentifierContext, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, true, precedingComments)
 }
 
 func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParameterContext *ast.TypeParameterIdentifierContext) (ast.Type, parerr.ParseError) {
-	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, false, token.CommentBlock{})
+	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, false, nil)
 }
 
 func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 	typeParameterContext *ast.TypeParameterIdentifierContext,
-	checkTypeParam bool, precedingComments token.CommentBlock) (ast.Type, parerr.ParseError) {
+	checkTypeParam bool, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	if p.maybeLeftParen() {
 		t, tErr := parseTypeReference(p, keywordIndentation, typeParameterContext, precedingComments)
 		if tErr != nil {

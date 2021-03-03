@@ -20,7 +20,9 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 
 	expectedIndentation := keywordIndentation + 1
 
-	if _, expectNewLineErr := p.eatNewLineContinuationAllowComment(keywordIndentation); expectNewLineErr != nil {
+	lastReport, expectNewLineErr := p.eatNewLineContinuationAllowComment(keywordIndentation)
+
+	if expectNewLineErr != nil {
 		return nil, expectNewLineErr
 	}
 
@@ -54,13 +56,19 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 			return nil, assignmentErr
 		}
 
-		newLetAssignment := ast.NewLetAssignment(letVariableIdentifier, letExpr)
+		var astMultilineComment *ast.MultilineComment
+		if len(lastReport.Comments.Comments) > 0 {
+			comment := lastReport.Comments.Comments[len(lastReport.Comments.Comments)-1]
+			astMultilineComment = ast.NewMultilineComment(token.NewMultiLineCommentToken(comment.RawString, comment.CommentString, comment.ForDocumentation, comment.SourceFileReference))
+		}
+		newLetAssignment := ast.NewLetAssignment(letVariableIdentifier, letExpr, astMultilineComment)
 		assignments = append(assignments, newLetAssignment)
 
-		expectingNewLetAssignment, _, posLengthErr := p.eatOneOrTwoNewLineContinuationOrDedent(expectedIndentation)
+		expectingNewLetAssignment, nextReport, posLengthErr := p.eatOneOrTwoNewLineContinuationOrDedent(expectedIndentation)
 		if posLengthErr != nil {
 			return nil, posLengthErr
 		}
+		lastReport = nextReport
 
 		if !expectingNewLetAssignment {
 			inKeywordIdentifier, expectedInErr := p.readKeyword()

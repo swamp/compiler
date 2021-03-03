@@ -35,9 +35,20 @@ func (q *FullyQualifiedVariableName) String() string {
 	return fmt.Sprintf("%v", q.ResolveToString())
 }
 
-type ExternalFunction struct {
-	FunctionName   string
-	ParameterCount uint
+type ExternalFunctionDeclaration struct {
+	AstExternalFunction *ast.ExternalFunction
+}
+
+func (d *ExternalFunctionDeclaration) FetchPositionLength() token.SourceFileReference {
+	return d.AstExternalFunction.FetchPositionLength()
+}
+
+func (d *ExternalFunctionDeclaration) StatementString() string {
+	return "external func"
+}
+
+func (d *ExternalFunctionDeclaration) String() string {
+	return "external func"
 }
 
 type Module struct {
@@ -54,7 +65,7 @@ type Module struct {
 
 	program *ast.SourceFile
 
-	externalFunctions []*ExternalFunction
+	externalFunctions []*ExternalFunctionDeclaration
 
 	isInternal               bool
 	sourceFileUri            token.DocumentURI
@@ -125,12 +136,14 @@ func (m *Module) IsInternal() bool {
 	return m.isInternal
 }
 
-func (m *Module) AddExternalFunction(name string, parameterCount uint) {
-	m.externalFunctions = append(m.externalFunctions,
-		&ExternalFunction{FunctionName: name, ParameterCount: parameterCount})
+func (m *Module) AddExternalFunction(function *ast.ExternalFunction) *ExternalFunctionDeclaration {
+	externalFunc := &ExternalFunctionDeclaration{AstExternalFunction: function}
+	m.externalFunctions = append(m.externalFunctions, externalFunc)
+
+	return externalFunc
 }
 
-func (m *Module) ExternalFunctions() []*ExternalFunction {
+func (m *Module) ExternalFunctions() []*ExternalFunctionDeclaration {
 	return m.externalFunctions
 }
 

@@ -15,9 +15,10 @@ import (
 )
 
 type RecordFieldReference struct {
-	ident           *ast.VariableIdentifier
-	recordType      *dectype.RecordAtom
-	recordTypeField *dectype.RecordField
+	ident                *ast.VariableIdentifier
+	recordType           *dectype.RecordAtom
+	recordTypeField      *dectype.RecordField
+	unresolvedRecordType dtype.Type
 }
 
 func (g *RecordFieldReference) Type() dtype.Type {
@@ -29,19 +30,23 @@ func (g *RecordFieldReference) String() string {
 }
 
 func (g *RecordFieldReference) HumanReadable() string {
-	return fmt.Sprintf("%v", g.ident)
+	return fmt.Sprintf("Record Field in %v", g.unresolvedRecordType.HumanReadable())
 }
 
 func (g *RecordFieldReference) RecordTypeField() *dectype.RecordField {
 	return g.recordTypeField
 }
 
+func (g *RecordFieldReference) UnresolvedRecordType() dtype.Type {
+	return g.unresolvedRecordType
+}
+
 func (g *RecordFieldReference) AstIdentifier() *ast.VariableIdentifier {
 	return g.ident
 }
 
-func NewRecordFieldReference(ident *ast.VariableIdentifier, recordType *dectype.RecordAtom, recordTypeField *dectype.RecordField) *RecordFieldReference {
-	ref := &RecordFieldReference{ident: ident, recordType: recordType, recordTypeField: recordTypeField}
+func NewRecordFieldReference(ident *ast.VariableIdentifier, unresolvedRecordType dtype.Type, recordType *dectype.RecordAtom, recordTypeField *dectype.RecordField) *RecordFieldReference {
+	ref := &RecordFieldReference{ident: ident, recordType: recordType, recordTypeField: recordTypeField, unresolvedRecordType: unresolvedRecordType}
 
 	return ref
 }

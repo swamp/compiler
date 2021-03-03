@@ -14,11 +14,10 @@ import (
 )
 
 type DecorateStream interface {
-	InternalAddNode(node decorated.Node)
 	TypeRepo() *dectype.TypeRepo
 	AddDefinition(identifier *ast.VariableIdentifier, expr decorated.Expression) error
 	AddDeclaration(identifier *ast.VariableIdentifier, declaredType dtype.Type) error
 	NewVariableContext() *VariableContext
-	AddImport(importAst *ast.Import, moduleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) decshared.DecoratedError
-	AddExternalFunction(functionName string, parameterCount uint) decshared.DecoratedError
+	ImportModule(importAst *ast.Import, moduleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) (*decorated.ImportStatement, decshared.DecoratedError)
+	AddExternalFunction(function *ast.ExternalFunction) (*decorated.ExternalFunctionDeclaration, decshared.DecoratedError)
 }

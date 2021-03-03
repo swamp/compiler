@@ -27,6 +27,10 @@ func (u *Alias) HumanReadable() string {
 	return fmt.Sprintf("%v", u.name.Name())
 }
 
+func (u *Alias) StatementString() string {
+	return fmt.Sprintf("%v", u.name.Name())
+}
+
 func (u *Alias) TypeIdentifier() *ast.TypeIdentifier {
 	return u.name
 }

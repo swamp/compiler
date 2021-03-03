@@ -8,7 +8,6 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
-	"github.com/swamp/compiler/src/token"
 )
 
 func readOptionalTypeParameters(p ParseStream, keywordIndentation int, typeParameterContext *ast.TypeParameterIdentifierContext) ([]ast.Type, parerr.ParseError) {
@@ -24,7 +23,7 @@ func readOptionalTypeParameters(p ParseStream, keywordIndentation int, typeParam
 			return nil, eatErr
 		}
 
-		parameterType, parseTypeErr := internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, false, token.CommentBlock{})
+		parameterType, parseTypeErr := internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, false, nil)
 		if parseTypeErr != nil {
 			_, wasOk := parseTypeErr.(parerr.ExpectedTypeReferenceError)
 			if !wasOk {

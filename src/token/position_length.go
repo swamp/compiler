@@ -155,6 +155,10 @@ func NewPositionLength(start Position, runeCount int, indentation int) Range {
 	}, indentation: indentation}
 }
 
+func NewPositionLengthFromEndPosition(start Position, endPosition Position, indentation int) Range {
+	return Range{start: start, end: Position{line: endPosition.line, column: endPosition.column - 1}, indentation: indentation}
+}
+
 func (p Range) RuneWidth() int {
 	return p.end.column - p.start.column + 1
 }

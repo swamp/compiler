@@ -11,7 +11,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func (p *Parser) parseExpressionStatement(precedingComments token.CommentBlock) (ast.Expression, parerr.ParseError) {
+func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
 	keywordSymbol, keywordSymbolErr := p.stream.tokenizer.ParseStartingKeyword()
 	if keywordSymbolErr != nil {
 		return nil, keywordSymbolErr
@@ -37,7 +37,8 @@ func (p *Parser) parseExpressionStatement(precedingComments token.CommentBlock) 
 	case "type":
 		return parseCustomType(p.stream, variableSymbol, precedingComments)
 	case "import":
-		return parseImport(p.stream, variableSymbol, 0, precedingComments)
+		keywordImport := token.NewKeyword(variableSymbol.Raw(), token.Import, variableSymbol.SourceFileReference)
+		return parseImport(p.stream, keywordImport, 0, precedingComments)
 	default:
 		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, precedingComments)
 	}

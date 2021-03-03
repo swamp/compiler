@@ -9,6 +9,11 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type Statement interface {
+	TypeOrToken
+	StatementString() string
+}
+
 type TypeOrToken interface {
 	String() string
 	FetchPositionLength() token.SourceFileReference
@@ -57,7 +62,7 @@ func expandChildNodesCurryFunction(fn *CurryFunction) []TypeOrToken {
 	return tokens
 }
 
-func expandChildNodesAnnotation(fn *Annotation) []TypeOrToken {
+func expandChildNodesAnnotation(fn *AnnotationStatement) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(fn.Type())...)
 	return tokens
@@ -222,6 +227,21 @@ func expandChildNodesCaseForCustomType(caseForCustomType *CaseCustomType) []Type
 	return tokens
 }
 
+func expandChildNodesCaseForPatternMatching(caseForCustomType *CasePatternMatching) []TypeOrToken {
+	var tokens []TypeOrToken
+
+	tokens = append(tokens, expandChildNodes(caseForCustomType.Test())...)
+
+	for _, consequence := range caseForCustomType.Consequences() {
+		tokens = append(tokens, expandChildNodes(consequence.Literal())...)
+		tokens = append(tokens, expandChildNodes(consequence.Expression())...)
+	}
+
+	tokens = append(tokens, expandChildNodes(caseForCustomType.DefaultCase())...)
+
+	return tokens
+}
+
 func expandChildNodesBinaryOperator(namedFunctionValue *BinaryOperator) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(namedFunctionValue.Left())...)
@@ -279,8 +299,10 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *ast.ModuleNamePart:
 		return tokens
-	case *Annotation:
+	case *AnnotationStatement:
 		return append(tokens, expandChildNodesAnnotation(t)...)
+	case *ImportStatement: // TODO:
+		return tokens
 	case *FunctionValue:
 		return append(tokens, expandChildNodesFunctionValue(t)...)
 	case *FunctionReference:
@@ -313,6 +335,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesCustomTypeVariantReference(t)...)
 	case *CaseCustomType:
 		return append(tokens, expandChildNodesCaseForCustomType(t)...)
+	case *CasePatternMatching:
+		return append(tokens, expandChildNodesCaseForPatternMatching(t)...)
 	case *PipeRightOperator:
 		return expandChildNodes(&t.BinaryOperator)
 	case *PipeLeftOperator:
@@ -330,6 +354,32 @@ func expandChildNodes(node Node) []TypeOrToken {
 
 	case *ArithmeticUnaryOperator:
 		return expandChildNodes(&t.UnaryOperator)
+	case *FunctionName: // Should not be expanded
+		return tokens
+	case *ExternalFunctionDeclaration: // Should not be expanded
+		return tokens
+	case *LetVariableReference: // Should not be expanded
+		return tokens
+	case *LetVariable: // Should not be expanded
+		return tokens
+	case *RecordFieldReference: // Should not be expanded
+		return tokens
+	case *FunctionParameterReference: // Should not be expanded
+		return tokens
+	case *IntegerLiteral: // Should not be expanded
+		return tokens
+	case *CharacterLiteral: // Should not be expanded
+		return tokens
+	case *TypeIdLiteral: // Should not be expanded
+		return tokens
+	case *StringInterpolation: // Should not be expanded
+		return tokens
+	case *BooleanLiteral: // Should not be expanded
+		return tokens
+	case *StringLiteral: // Should not be expanded
+		return tokens
+	case *RecordLiteralField: // Should not be expanded
+		return tokens
 	case *BitwiseUnaryOperator:
 		return expandChildNodes(&t.UnaryOperator)
 	case *LogicalUnaryOperator:

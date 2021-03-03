@@ -402,7 +402,7 @@ func writeDefinitionAssignment(definition *ast.FunctionValueNamedDefinition, col
 func writeExternalFunction(externalFunction *ast.ExternalFunction, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("__externalfn")
 	colorer.OneSpace()
-	colorer.KeywordString(externalFunction.ExternalFunction())
+	colorer.KeywordString(externalFunction.FunctionName())
 	colorer.OneSpace()
 	colorer.KeywordString(fmt.Sprintf("%v", externalFunction.ParameterCount()))
 }

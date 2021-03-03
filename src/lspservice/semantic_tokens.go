@@ -36,7 +36,7 @@ func addSemanticTokenNamedFunctionValue(f *decorated.NamedFunctionValue, builder
 	return addSemanticToken(f.Value(), builder)
 }
 
-func addSemanticTokenAnnotation(f *decorated.Annotation, builder *SemanticBuilder) error {
+func addSemanticTokenAnnotation(f *decorated.AnnotationStatement, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(f.String(), f.Identifier().FetchPositionLength().Range, "function", []string{"declaration"}); err != nil {
 		return err
 	}
@@ -149,6 +149,14 @@ func encodeKeyword(builder *SemanticBuilder, keyword token.Keyword) error {
 	return builder.EncodeSymbol(keyword.Raw(), keyword.FetchPositionLength().Range, "keyword", nil)
 }
 
+func encodeComment(builder *SemanticBuilder, comment token.CommentToken) error {
+	return builder.EncodeSymbol(comment.Raw(), comment.FetchPositionLength().Range, "comment", nil)
+}
+
+func encodeMultilineComment(builder *SemanticBuilder, comment token.MultiLineCommentToken) error {
+	return builder.EncodeSymbol(comment.Raw(), comment.FetchPositionLength().Range, "comment", nil)
+}
+
 func encodeOperator(builder *SemanticBuilder, operator token.OperatorToken) error {
 	return builder.EncodeSymbol(operator.Raw(), operator.FetchPositionLength().Range, "operator", nil)
 }
@@ -166,6 +174,13 @@ func encodeModuleReference(builder *SemanticBuilder, astModuleReference *ast.Mod
 		if err := builder.EncodeSymbol(namespacePart.TypeIdentifier().Name(), namespacePart.TypeIdentifier().FetchPositionLength().Range, "namespace", nil); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func encodeModuleAlias(builder *SemanticBuilder, astModuleAlias *ast.TypeIdentifier) error {
+	if err := builder.EncodeSymbol(astModuleAlias.Name(), astModuleAlias.FetchPositionLength().Range, "namespace", nil); err != nil {
+		return err
 	}
 	return nil
 }
@@ -330,14 +345,30 @@ func addTypeReferenceFunctionType(referenceRange token.Range, functionType *dect
 	return nil
 }
 
-func addSemanticTokenImport(decoratedImport *decorated.Import, builder *SemanticBuilder) error {
-	keyword := decoratedImport.AstImport().Keyword()
-	if err := builder.EncodeSymbol(keyword.Name(), keyword.FetchPositionLength().Range, "keyword", nil); err != nil {
+func addSemanticTokenImport(decoratedImport *decorated.ImportStatement, builder *SemanticBuilder) error {
+	astImport := decoratedImport.AstImport()
+	if err := encodeKeyword(builder, astImport.KeywordImport()); err != nil {
 		return err
 	}
 
 	for _, segment := range decoratedImport.AstImport().Path() {
 		if err := builder.EncodeSymbol(segment.Name(), segment.FetchPositionLength().Range, "namespace", nil); err != nil {
+			return err
+		}
+	}
+
+	if astImport.KeywordAs() != nil {
+		if err := encodeKeyword(builder, *astImport.KeywordAs()); err != nil {
+			return err
+		}
+		if err := encodeModuleAlias(builder, astImport.Alias()); err != nil {
+			return err
+		}
+
+	}
+
+	if astImport.KeywordExposing() != nil {
+		if err := encodeKeyword(builder, *astImport.KeywordExposing()); err != nil {
 			return err
 		}
 	}
@@ -352,6 +383,9 @@ func addSemanticTokenLet(decoratedLet *decorated.Let, builder *SemanticBuilder) 
 	}
 
 	for _, assignment := range decoratedLet.Assignments() {
+		if assignment.LetVariable().Comment() != nil {
+			encodeComment(builder, assignment.LetVariable().Comment().Token().CommentToken)
+		}
 		if err := builder.EncodeSymbol(assignment.LetVariable().Name().Name(), assignment.LetVariable().FetchPositionLength().Range, "variable", nil); err != nil {
 			return err
 		}
@@ -380,6 +414,10 @@ func addSemanticTokenIf(decoratedIf *decorated.If, builder *SemanticBuilder) err
 		return err
 	}
 	return nil
+}
+
+func addSemanticTokenMultilineComment(decoratedMultilineComment *decorated.MultilineComment, builder *SemanticBuilder) error {
+	return encodeMultilineComment(builder, decoratedMultilineComment.AstComment().Token())
 }
 
 func addSemanticTokenBinaryOperator(operator *decorated.BinaryOperator, builder *SemanticBuilder) error {
@@ -593,16 +631,18 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenNamedFunctionValue(t, builder)
 	case *decorated.FunctionValue:
 		return addSemanticTokenFunctionValue(t, builder)
-	case *decorated.Annotation:
+	case *decorated.AnnotationStatement:
 		return addSemanticTokenAnnotation(t, builder)
 	case *dectype.InvokerType:
 		return addTypeReferenceInvoker(t.FetchPositionLength().Range, t, builder)
-	case *decorated.Import:
+	case *decorated.ImportStatement:
 		return addSemanticTokenImport(t, builder)
 	case *decorated.Let:
 		return addSemanticTokenLet(t, builder)
 	case *decorated.If:
 		return addSemanticTokenIf(t, builder)
+	case *decorated.MultilineComment:
+		return addSemanticTokenMultilineComment(t, builder)
 	case *decorated.BinaryOperator:
 		return addSemanticTokenBinaryOperator(t, builder)
 	case *decorated.UnaryOperator:

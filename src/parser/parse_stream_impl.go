@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/fatih/color"
 
@@ -41,14 +42,14 @@ func NewParseStreamImpl(parser ParserInterface, tokenizer *tokenize.Tokenizer, e
 
 func (p *ParseStreamImpl) debugInfo(s string) {
 	extract := p.tokenizer.DebugInfo()
-	fmt.Printf("*-- %s: (%d) %v\n", s, p.descent, p.tokenizer.ParsingPosition().Position())
-	fmt.Printf("%v\n---\n", extract)
+	fmt.Fprintf(os.Stderr, "*-- %s: (%d) %v\n", s, p.descent, p.tokenizer.ParsingPosition().Position())
+	fmt.Fprintf(os.Stderr, "%v\n---\n", extract)
 }
 
 func (p *ParseStreamImpl) debugInfoRows(s string, rowCount int) {
 	extract := p.tokenizer.DebugInfoLinesWithComment(s, rowCount)
-	fmt.Printf("*-- %s: (%d)\n", s, p.descent)
-	fmt.Printf("%v\n---\n", extract)
+	fmt.Fprintf(os.Stderr, "*-- %s: (%d)\n", s, p.descent)
+	fmt.Fprintf(os.Stderr, "%v\n---\n", extract)
 }
 
 func (p *ParseStreamImpl) positionLength() token.SourceFileReference {
@@ -208,6 +209,17 @@ func (p *ParseStreamImpl) readSpecificParenToken(p2 token.Type) (token.ParenToke
 	}
 
 	return parsedToken.(token.ParenToken), nil
+}
+
+func (p *ParseStreamImpl) maybeSpecificKeywordToken(p2 token.Type) (token.Keyword, bool) {
+	pos := p.tokenizer.Tell()
+	parsedToken, err := p.readSpecificKeywordToken(p2)
+	if err != nil {
+		p.tokenizer.Seek(pos)
+		return token.Keyword{}, false
+	}
+
+	return parsedToken, true
 }
 
 func (p *ParseStreamImpl) readSpecificKeywordToken(p2 token.Type) (token.Keyword, parerr.ParseError) {
@@ -584,49 +596,16 @@ func (p *ParseStreamImpl) addNode(node ast.Node) {
 // ---------------------------------------------------------------------------------
 // MAYBE
 // ---------------------------------------------------------------------------------
-func (p *ParseStreamImpl) maybeKeywordAlias() bool {
-	pos := p.tokenizer.Tell()
-	variableIdentifier, wasVariable := p.wasVariableIdentifier()
-	if !wasVariable {
-		p.tokenizer.Seek(pos)
-		return false
-	}
-	wasFound := variableIdentifier.Name() == "alias"
-	if !wasFound {
-		p.tokenizer.Seek(pos)
-	}
-	p.addNode(variableIdentifier)
-
-	return wasFound
+func (p *ParseStreamImpl) maybeKeywordAlias() (token.Keyword, bool) {
+	return p.maybeSpecificKeywordToken(token.Alias)
 }
 
-func (p *ParseStreamImpl) maybeKeywordExposing() bool {
-	pos := p.tokenizer.Tell()
-	variableIdentifier, wasVariable := p.wasVariableIdentifier()
-	if !wasVariable {
-		p.tokenizer.Seek(pos)
-		return false
-	}
-	wasFound := variableIdentifier.Name() == "exposing"
-	if !wasFound {
-		p.tokenizer.Seek(pos)
-	}
-	p.addNode(variableIdentifier)
-	return wasFound
+func (p *ParseStreamImpl) maybeKeywordExposing() (token.Keyword, bool) {
+	return p.maybeSpecificKeywordToken(token.Exposing)
 }
 
-func (p *ParseStreamImpl) maybeKeywordAs() bool {
-	pos := p.tokenizer.Tell()
-	variableIdentifier, wasVariable := p.wasVariableIdentifier()
-	if !wasVariable {
-		p.tokenizer.Seek(pos)
-		return false
-	}
-	wasFound := variableIdentifier.Name() == "as"
-	if !wasFound {
-		p.tokenizer.Seek(pos)
-	}
-	return wasFound
+func (p *ParseStreamImpl) maybeKeywordAs() (token.Keyword, bool) {
+	return p.maybeSpecificKeywordToken(token.As)
 }
 
 func (p *ParseStreamImpl) maybeAssign() bool {
@@ -705,7 +684,7 @@ func (p *ParseStreamImpl) eatOneSpaceOrIndent(reason string) (token.IndentationR
 }
 
 func (p *ParseStreamImpl) eatNewLinesAfterStatement(count int) (token.IndentationReport, parerr.ParseError) {
-	report, err := p.tokenizer.SkipWhitespaceToNextIndentation()
+	report, err := p.tokenizer.SkipWhitespaceAllowCommentsToNextIndentation()
 	if err != nil {
 		return report, err
 	}
@@ -721,6 +700,10 @@ func (p *ParseStreamImpl) eatNewLinesAfterStatement(count int) (token.Indentatio
 	} else {
 		if count == -1 {
 			if (report.NewLineCount >= 1) && report.IndentationSpaces == 0 {
+				return report, nil
+			}
+		} else if count == -2 {
+			if (report.NewLineCount >= 0) && report.IndentationSpaces == 0 {
 				return report, nil
 			}
 		} else {

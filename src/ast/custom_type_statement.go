@@ -14,15 +14,15 @@ import (
 type CustomTypeStatement struct {
 	customTypeOrWrapped Type
 	name                *TypeIdentifier
-	precedingComments   token.CommentBlock
+	precedingComments   *MultilineComment
 }
 
 func NewCustomTypeStatement(name *TypeIdentifier, customType Type,
-	precedingComments token.CommentBlock) *CustomTypeStatement {
+	precedingComments *MultilineComment) *CustomTypeStatement {
 	return &CustomTypeStatement{name: name, customTypeOrWrapped: customType, precedingComments: precedingComments}
 }
 
-func (i *CustomTypeStatement) CommentBlock() token.CommentBlock {
+func (i *CustomTypeStatement) CommentBlock() *MultilineComment {
 	return i.precedingComments
 }
 

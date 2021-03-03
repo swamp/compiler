@@ -46,6 +46,10 @@ func (n *NamedFunctionValue) String() string {
 	return fmt.Sprintf("named function value %v = %v", n.identifier, n.value)
 }
 
+func (n *NamedFunctionValue) StatementString() string {
+	return fmt.Sprintf("named function value %v = %v", n.identifier, n.value)
+}
+
 func (n *NamedFunctionValue) FunctionName() *FunctionName {
 	return n.identifier
 }

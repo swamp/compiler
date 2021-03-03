@@ -14,13 +14,14 @@ import (
 type AliasStatement struct {
 	name           *TypeIdentifier
 	referencedType Type
+	keywordAlias   token.Keyword
 }
 
-func NewAliasStatement(name *TypeIdentifier, referencedType Type) *AliasStatement {
+func NewAliasStatement(keywordAlias token.Keyword, name *TypeIdentifier, referencedType Type) *AliasStatement {
 	if referencedType == nil {
 		panic("alias statement can not be nil")
 	}
-	return &AliasStatement{referencedType: referencedType, name: name}
+	return &AliasStatement{keywordAlias: keywordAlias, referencedType: referencedType, name: name}
 }
 
 func (i *AliasStatement) String() string {

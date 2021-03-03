@@ -35,6 +35,10 @@ func DetectLowercaseKeyword(t token.VariableSymbolToken) (token.Keyword, error) 
 		return token.NewKeyword(raw, token.Alias, pos), nil
 	case "import":
 		return token.NewKeyword(raw, token.Import, pos), nil
+	case "as":
+		return token.NewKeyword(raw, token.As, pos), nil
+	case "exposing":
+		return token.NewKeyword(raw, token.Exposing, pos), nil
 	}
 
 	return token.Keyword{}, fmt.Errorf("unknown keyword")

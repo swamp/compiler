@@ -35,6 +35,10 @@ func (i *TypeIdLiteral) String() string {
 	return fmt.Sprintf("[typeid %v]", i.typeId)
 }
 
+func (i *TypeIdLiteral) HumanReadable() string {
+	return "Type ID Literal"
+}
+
 func (i *TypeIdLiteral) FetchPositionLength() token.SourceFileReference {
 	return i.typeId.FetchPositionLength()
 }

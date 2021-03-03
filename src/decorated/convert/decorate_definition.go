@@ -13,7 +13,6 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/token"
 )
 
 func DerefFunctionType(expectedFunctionType dtype.Type) *dectype.FunctionAtom {
@@ -37,7 +36,7 @@ func DerefFunctionTypeLike(functionTypeLike dectype.FunctionTypeLike) *dectype.F
 	return nil
 }
 
-func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, functionValue *ast.FunctionValue, expectedType dtype.Type, annotation *decorated.Annotation, localCommentBlock token.CommentBlock) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
+func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, functionValue *ast.FunctionValue, expectedType dtype.Type, annotation *decorated.AnnotationStatement, localCommentBlock *ast.MultilineComment) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 	name := nameIdent.Name()
 	localName := name
 	verboseFlag := false
@@ -59,7 +58,6 @@ func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, name
 	if decoratedFunctionErr != nil {
 		return nil, decoratedFunctionErr
 	}
-	d.InternalAddNode(decoratedFunction)
 
 	verboseFlag = false
 	if verboseFlag {

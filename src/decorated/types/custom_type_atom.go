@@ -65,6 +65,10 @@ func (s *CustomTypeAtom) ShortName() string {
 	return s.DecoratedName()
 }
 
+func (s *CustomTypeAtom) StatementString() string {
+	return s.DecoratedName()
+}
+
 func (s *CustomTypeAtom) Name() string {
 	return s.DecoratedName()
 }

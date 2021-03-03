@@ -96,7 +96,7 @@ func (t *Tokenizer) SourceFile() *token.SourceFileURI {
 }
 
 func (t *Tokenizer) MakeRange(pos token.PositionToken) token.Range {
-	return token.NewPositionLength(pos.Position(), t.position.Position().Column()-pos.Position().Column(), pos.Indentation())
+	return token.NewPositionLengthFromEndPosition(pos.Position(), t.position.Position(), pos.Indentation())
 }
 
 func (t *Tokenizer) MakeSourceFileReference(pos token.PositionToken) token.SourceFileReference {
@@ -176,7 +176,7 @@ func (t *Tokenizer) DebugInfoLinesWithComment(s string, rowCount int) string {
 }
 
 func (t *Tokenizer) DebugPrint(s string) {
-	fmt.Print(t.DebugInfoWithComment(s))
+	fmt.Fprintf(os.Stderr, t.DebugInfoWithComment(s))
 }
 
 func nextPosition(pos token.Position, ch rune) token.Position {
@@ -400,7 +400,9 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 			}
 
 			if allowComments != NotAllowedAtAll {
-				comment, found, err := t.checkComment(ch, t.position)
+				previous := token.NewPositionToken(t.position.Position().PreviousColumn(), t.position.Indentation())
+
+				comment, found, err := t.checkComment(ch, previous)
 				if err != nil {
 					return token.IndentationReport{}, err
 				}
@@ -416,13 +418,12 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 					}
 					comments = append(comments, comment)
 					detectedIndentationSpaces = 0 // t.lastReport.IndentationSpaces
-					// newLineCount = 0  // keep number of lines
 					startPos = t.position
 					spacesUntilMaybeNewline = 0
 					hasTrailingSpaces = false
 					closeIndentation = t.lastReport.CloseIndentation
 					exactIndentation = t.lastReport.ExactIndentation
-					newLineCount = 0
+					newLineCount-- // discard newline after comment
 
 					continue
 				}

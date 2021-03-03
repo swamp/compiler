@@ -14,7 +14,7 @@ import (
 func parseTypeId(p ParseStream, typeIdToken token.TypeId, startIndentation int) (ast.Expression, parerr.ParseError) {
 	typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
 
-	userType, userTypeErr := parseTypeTermReference(p, startIndentation, typeParameterContext, token.CommentBlock{})
+	userType, userTypeErr := parseTypeTermReference(p, startIndentation, typeParameterContext, nil)
 	if userTypeErr != nil {
 		return nil, userTypeErr
 	}

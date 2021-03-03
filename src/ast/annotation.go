@@ -12,21 +12,21 @@ import (
 )
 
 type Annotation struct {
-	symbol        *VariableIdentifier
-	annotatedType Type
-	commentBlock  token.CommentBlock
+	symbol            *VariableIdentifier
+	annotatedType     Type
+	precedingComments *MultilineComment
 }
 
-func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, commentBlock token.CommentBlock) *Annotation {
+func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, precedingComments *MultilineComment) *Annotation {
 	if annotatedType == nil {
 		panic("must set annotated type")
 	}
 
-	return &Annotation{symbol: variableIdentifier, annotatedType: annotatedType, commentBlock: commentBlock}
+	return &Annotation{symbol: variableIdentifier, annotatedType: annotatedType, precedingComments: precedingComments}
 }
 
-func (d *Annotation) CommentBlock() token.CommentBlock {
-	return d.commentBlock
+func (d *Annotation) CommentBlock() *MultilineComment {
+	return d.precedingComments
 }
 
 func (d *Annotation) AnnotatedType() Type {

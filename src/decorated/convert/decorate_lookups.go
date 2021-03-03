@@ -25,7 +25,8 @@ func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *Vari
 
 	var lookupFields []decorated.LookupField
 
-	typeToLookup := dectype.Unalias(expressionToLookup.Type())
+	aliasedTypeToLookup := expressionToLookup.Type()
+	typeToLookup := dectype.Unalias(aliasedTypeToLookup)
 	for _, lookupIdentifier := range lookups.FieldNames() {
 		recordTypeToCheck, lookupErr := dectype.ResolveToRecordType(typeToLookup)
 		if lookupErr != nil {
@@ -39,10 +40,11 @@ func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *Vari
 			return nil, decorated.NewCouldNotFindFieldInLookup(lookups, lookupIdentifier, typeToLookup)
 		}
 
-		recordFieldReference := decorated.NewRecordFieldReference(lookupIdentifier, recordTypeToCheck, foundRecordTypeField)
+		recordFieldReference := decorated.NewRecordFieldReference(lookupIdentifier, aliasedTypeToLookup, recordTypeToCheck, foundRecordTypeField)
 		fakeLookupField := decorated.NewLookupField(recordFieldReference)
 		lookupFields = append(lookupFields, fakeLookupField)
-		typeToLookup = dectype.Unalias(foundRecordTypeField.Type())
+		aliasedTypeToLookup = foundRecordTypeField.Type()
+		typeToLookup = dectype.Unalias(aliasedTypeToLookup)
 	}
 
 	if len(lookupFields) == 0 {

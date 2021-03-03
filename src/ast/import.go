@@ -17,15 +17,18 @@ type Import struct {
 	typesToExpose       []*TypeIdentifier
 	definitionsToExpose []*VariableIdentifier
 	exposeAll           bool
-	keyword             token.VariableSymbolToken
-	precedingComments   token.CommentBlock
+	keywordImport       token.Keyword
+	keywordExposing     *token.Keyword
+	keywordAs           *token.Keyword
+	precedingComments   *MultilineComment
 	inclusive           token.SourceFileReference
 }
 
-func NewImport(keyword token.VariableSymbolToken, path []*TypeIdentifier,
+func NewImport(keywordImport token.Keyword, keywordAs *token.Keyword, keywordExposing *token.Keyword,
+	path []*TypeIdentifier,
 	optionalAlias *TypeIdentifier, typesToExpose []*TypeIdentifier,
 	definitionsToExpose []*VariableIdentifier,
-	exposeAll bool, precedingComments token.CommentBlock) *Import {
+	exposeAll bool, precedingComments *MultilineComment) *Import {
 	lastSourceRef := path[len(path)-1].FetchPositionLength()
 	if optionalAlias != nil {
 		lastSourceRef = optionalAlias.FetchPositionLength()
@@ -33,9 +36,12 @@ func NewImport(keyword token.VariableSymbolToken, path []*TypeIdentifier,
 	if definitionsToExpose != nil {
 		lastSourceRef = definitionsToExpose[len(definitionsToExpose)-1].FetchPositionLength()
 	}
-	inclusive := token.MakeInclusiveSourceFileReference(keyword.FetchPositionLength(), lastSourceRef)
+	inclusive := token.MakeInclusiveSourceFileReference(keywordImport.FetchPositionLength(), lastSourceRef)
 	return &Import{
-		keyword: keyword, path: path, optionalAlias: optionalAlias,
+		keywordImport:   keywordImport,
+		keywordExposing: keywordExposing,
+		keywordAs:       keywordAs,
+		path:            path, optionalAlias: optionalAlias,
 		exposeAll:           exposeAll,
 		typesToExpose:       typesToExpose,
 		definitionsToExpose: definitionsToExpose,
@@ -44,8 +50,16 @@ func NewImport(keyword token.VariableSymbolToken, path []*TypeIdentifier,
 	}
 }
 
-func (i *Import) Keyword() token.VariableSymbolToken {
-	return i.keyword
+func (i *Import) KeywordImport() token.Keyword {
+	return i.keywordImport
+}
+
+func (i *Import) KeywordExposing() *token.Keyword {
+	return i.keywordExposing
+}
+
+func (i *Import) KeywordAs() *token.Keyword {
+	return i.keywordAs
 }
 
 func (i *Import) Path() []*TypeIdentifier {

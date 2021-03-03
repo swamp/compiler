@@ -12,27 +12,31 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type Import struct {
+type ImportStatement struct {
 	astImport       *ast.Import
 	moduleReference *Module
 }
 
-func NewImport(astImport *ast.Import, moduleReference *Module) *Import {
-	return &Import{astImport: astImport, moduleReference: moduleReference}
+func NewImport(astImport *ast.Import, moduleReference *Module) *ImportStatement {
+	return &ImportStatement{astImport: astImport, moduleReference: moduleReference}
 }
 
-func (l *Import) String() string {
+func (l *ImportStatement) String() string {
 	return fmt.Sprintf("[import %v %v]", l.astImport, l.moduleReference)
 }
 
-func (l *Import) Module() *Module {
+func (l *ImportStatement) StatementString() string {
+	return fmt.Sprintf("[import %v %v]", l.astImport, l.moduleReference)
+}
+
+func (l *ImportStatement) Module() *Module {
 	return l.moduleReference
 }
 
-func (l *Import) AstImport() *ast.Import {
+func (l *ImportStatement) AstImport() *ast.Import {
 	return l.astImport
 }
 
-func (l *Import) FetchPositionLength() token.SourceFileReference {
+func (l *ImportStatement) FetchPositionLength() token.SourceFileReference {
 	return l.astImport.FetchPositionLength()
 }

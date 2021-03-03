@@ -8,12 +8,11 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
-	"github.com/swamp/compiler/src/token"
 )
 
 func parseTypeReference(p ParseStream, keywordIndentation int,
 	typeParameterContext *ast.TypeParameterIdentifierContext,
-	precedingComments token.CommentBlock) (ast.Type, parerr.ParseError) {
+	precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	term, tErr := parseTypeTermReference(p, keywordIndentation, typeParameterContext, precedingComments)
 	if tErr != nil {
 		return nil, tErr
@@ -56,7 +55,7 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 
 func parseTypeReferenceFunc(p ParseStream, keywordIndentation int,
 	typeParameterContext *ast.TypeParameterIdentifierContext,
-	precedingComments token.CommentBlock) (ast.Type, parerr.ParseError) {
+	precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	t, tErr := parseTypeReference(p, keywordIndentation, typeParameterContext, precedingComments)
 	if tErr != nil {
 		return nil, tErr

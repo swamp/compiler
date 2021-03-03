@@ -11,9 +11,9 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func parseTypeAlias(p ParseStream, keywordIdentation int, nameOfAlias *ast.TypeIdentifier,
+func parseTypeAlias(p ParseStream, keywordAlias token.Keyword, keywordIdentation int, nameOfAlias *ast.TypeIdentifier,
 	typeParameterContext *ast.TypeParameterIdentifierContext,
-	precedingComments token.CommentBlock) (ast.Expression, parerr.ParseError) {
+	precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
 	newIndentation, _, spaceAfterAssignAndBeforeActualReferenceErr := p.eatContinuationReturnIndentation(keywordIdentation)
 	if spaceAfterAssignAndBeforeActualReferenceErr != nil {
 		return nil, spaceAfterAssignAndBeforeActualReferenceErr
@@ -24,5 +24,5 @@ func parseTypeAlias(p ParseStream, keywordIdentation int, nameOfAlias *ast.TypeI
 		return nil, referencedTypeErr
 	}
 
-	return ast.NewAliasStatement(nameOfAlias, referencedType), nil
+	return ast.NewAliasStatement(keywordAlias, nameOfAlias, referencedType), nil
 }

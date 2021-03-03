@@ -76,9 +76,9 @@ type ParseStream interface {
 	maybeNewLineContinuationAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 	maybeNewLineContinuationWithExtraEmptyLine(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 
-	maybeKeywordAlias() bool
-	maybeKeywordExposing() bool
-	maybeKeywordAs() bool
+	maybeKeywordAlias() (token.Keyword, bool)
+	maybeKeywordExposing() (token.Keyword, bool)
+	maybeKeywordAs() (token.Keyword, bool)
 
 	maybeAssign() bool
 	maybeEllipsis() bool

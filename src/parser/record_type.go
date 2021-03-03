@@ -14,7 +14,7 @@ import (
 
 func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 	parameterIdentifierContext *ast.TypeParameterIdentifierContext,
-	precedingComments token.CommentBlock) ([]*ast.RecordField, parerr.ParseError) {
+	precedingComments *ast.MultilineComment) ([]*ast.RecordField, parerr.ParseError) {
 	var fields []*ast.RecordField
 	index := 0
 	for {
@@ -60,7 +60,7 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 }
 
 func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters []*ast.TypeParameter, keywordIndentation int,
-	precedingComments token.CommentBlock) (ast.Type, parerr.ParseError) {
+	precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	if _, err := p.eatOneSpace("after record type left curly"); err != nil {
 		return nil, err
 	}

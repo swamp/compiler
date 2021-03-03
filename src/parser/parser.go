@@ -68,34 +68,46 @@ func writeAllNodes(nodes []ast.Node) {
 }
 
 func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
-	var expressions []ast.Expression
+	var statements []ast.Expression
+
+	linesToPad := -2
 
 	for !p.stream.tokenizer.MaybeEOF() {
-		report, skipLinesErr := p.stream.tokenizer.SkipWhitespaceAllowCommentsToNextIndentation()
-		if skipLinesErr != nil {
-			return nil, skipLinesErr
-		}
-
-		if report.SpacesUntilMaybeNewline > 0 && report.IndentationSpaces > 0 {
-			return nil, parerr.NewExtraSpacing(p.stream.sourceFileReference())
-		}
-
-		expression, expressionErr := p.parseExpressionStatement(report.Comments)
-		if expressionErr != nil {
-			return nil, expressionErr
-		}
-
-		expressions = append(expressions, expression)
-
-		linesToPad := ast.ExpectedLinePaddingAfter(expression)
-
 		report, mustHaveLineAfterStatementErr := p.stream.eatNewLinesAfterStatement(linesToPad)
 		if mustHaveLineAfterStatementErr != nil {
 			return nil, parerr.NewExpectedTwoLinesAfterStatement(mustHaveLineAfterStatementErr)
 		}
+
+		if p.stream.tokenizer.MaybeEOF() {
+			break
+		}
+		/*
+			report, skipLinesErr := p.stream.tokenizer.SkipWhitespaceAllowCommentsToNextIndentation()
+			if skipLinesErr != nil {
+				return nil, skipLinesErr
+			}
+		*/
+		if (report.SpacesUntilMaybeNewline > 0 || linesToPad == -1) && report.IndentationSpaces > 0 {
+			return nil, parerr.NewExtraSpacing(p.stream.sourceFileReference())
+		}
+		var previousComment *ast.MultilineComment
+		for _, comment := range report.Comments.Comments {
+			astMultilineComment := ast.NewMultilineComment(token.NewMultiLineCommentToken(comment.RawString, comment.CommentString, comment.ForDocumentation, comment.SourceFileReference))
+			statements = append(statements, astMultilineComment)
+			previousComment = astMultilineComment
+		}
+
+		expression, expressionErr := p.parseExpressionStatement(previousComment)
+		if expressionErr != nil {
+			return nil, expressionErr
+		}
+
+		statements = append(statements, expression)
+
+		linesToPad = ast.ExpectedLinePaddingAfter(expression)
 	}
 
-	program := ast.NewSourceFile(expressions)
+	program := ast.NewSourceFile(statements)
 
 	program.SetNodes(p.stream.nodes)
 

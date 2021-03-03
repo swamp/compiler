@@ -108,10 +108,16 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 		} else {
 			codeSignature = normalToken.Type().HumanReadable()
 			name = normalToken.HumanReadable()
+			switch t := normalToken.(type) {
+			case *decorated.FunctionReference:
+				if t.FunctionValue().CommentBlock() != nil {
+					name += fmt.Sprintf("\n%v\n", t.FunctionValue().CommentBlock().Value())
+				}
+			}
 		}
 	}
 
-	showString := fmt.Sprintf("%v : ```swamp\n%v\n```", name, codeSignature)
+	showString := fmt.Sprintf("`%v` \n```swamp\n%v\n```\n", name, codeSignature)
 
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{
@@ -126,7 +132,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 
 func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileReference, error) {
 	switch t := decoratedToken.(type) {
-	case *decorated.Import:
+	case *decorated.ImportStatement:
 		return token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0))), nil
 	case *decorated.FunctionParameterReference:
 		return t.ParameterRef().FetchPositionLength(), nil
@@ -239,7 +245,7 @@ func findReferences(uri lsp.DocumentURI, position lsp.Position, scanner Decorate
 	var sourceFileReferences []token.SourceFileReference
 
 	switch t := decoratedToken.(type) {
-	case *decorated.Import:
+	case *decorated.ImportStatement:
 		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
 	case *decorated.FunctionParameterDefinition:
 		for _, ref := range t.References() {
@@ -299,15 +305,15 @@ func functionParametersToDocumentSymbols(parameters []*decorated.FunctionParamet
 
 func convertRootTokenToOutlineSymbol(rootToken decorated.TypeOrToken) *lsp.DocumentSymbol {
 	switch t := rootToken.(type) {
-	case *decorated.FunctionValue:
+	case *decorated.NamedFunctionValue:
 		return &lsp.DocumentSymbol{
-			Name:           t.AstFunctionValue().DebugFunctionIdentifier().Name(),
-			Detail:         t.Type().HumanReadable(),
+			Name:           t.Value().AstFunctionValue().DebugFunctionIdentifier().Name(),
+			Detail:         t.Value().Type().HumanReadable(),
 			Kind:           lsp.SKFunction,
 			Tags:           nil,
-			Range:          *tokenToLspRange(t.FetchPositionLength().Range),
-			SelectionRange: *tokenToLspRange(t.FetchPositionLength().Range),
-			Children:       functionParametersToDocumentSymbols(t.Parameters()),
+			Range:          *tokenToLspRange(t.FunctionName().FetchPositionLength().Range),
+			SelectionRange: *tokenToLspRange(t.FunctionName().FetchPositionLength().Range),
+			Children:       functionParametersToDocumentSymbols(t.Value().Parameters()),
 		}
 	}
 	return nil
@@ -349,7 +355,7 @@ func findAllLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filter
 	var sourceFileReferences []token.SourceFileReference
 
 	switch t := decoratedToken.(type) {
-	case *decorated.Import:
+	case *decorated.ImportStatement:
 		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
 	case *decorated.FunctionParameterDefinition:
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
@@ -405,7 +411,7 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 	var sourceFileReferences []token.SourceFileReference
 
 	switch t := decoratedToken.(type) {
-	case *decorated.Import:
+	case *decorated.ImportStatement:
 		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
 	case *decorated.FunctionParameterDefinition:
 		for _, ref := range t.References() {
@@ -546,13 +552,19 @@ func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connect
 
 	for _, rootToken := range s.scanner.RootTokens(toDocumentURI(params.TextDocument.URI)) {
 		switch t := rootToken.(type) {
-		case *decorated.FunctionValue:
-			textToDisplay := fmt.Sprintf("%d references", len(t.References()))
-			if len(t.References()) == 0 {
+		case *decorated.NamedFunctionValue:
+			value := t.Value()
+			count := len(value.References())
+			var textToDisplay string
+			if count == 0 {
 				textToDisplay = "no references"
+			} else if count == 1 {
+				textToDisplay = "one reference"
+			} else {
+				textToDisplay = fmt.Sprintf("%d references", count)
 			}
 			codeLens := &lsp.CodeLens{
-				Range: *tokenToLspRange(t.Annotation().FetchPositionLength().Range),
+				Range: *tokenToLspRange(value.Annotation().FetchPositionLength().Range),
 				Command: lsp.Command{
 					Title:     textToDisplay,
 					Command:   "",

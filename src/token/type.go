@@ -51,6 +51,8 @@ const (
 	Case
 	Of
 	Alias
+	As
+	Exposing
 	TypeDef
 	Asm
 	ExternalFunction

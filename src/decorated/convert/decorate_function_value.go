@@ -44,8 +44,8 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	return newVariableContext
 }
 
-func DecorateFunctionValue(d DecorateStream, annotation *decorated.Annotation, potentialFunc *ast.FunctionValue, forcedFunctionTypeLike dectype.FunctionTypeLike,
-	functionName *ast.VariableIdentifier, context *VariableContext, comments token.CommentBlock) (*decorated.FunctionValue, decshared.DecoratedError) {
+func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationStatement, potentialFunc *ast.FunctionValue, forcedFunctionTypeLike dectype.FunctionTypeLike,
+	functionName *ast.VariableIdentifier, context *VariableContext, comments *ast.MultilineComment) (*decorated.FunctionValue, decshared.DecoratedError) {
 	forcedFunctionType := DerefFunctionTypeLike(forcedFunctionTypeLike)
 	if forcedFunctionType == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", potentialFunc))
@@ -84,7 +84,7 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.Annotation, p
 		return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, expression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
 	}
 
-	checkForNoLint := CheckForNoLint(comments)
+	checkForNoLint := "a" // CheckForNoLint(comments)
 	if checkForNoLint != "unused" {
 		for _, functionVariable := range subVariableContext.InternalLookups() {
 			if !functionVariable.WasReferenced() {

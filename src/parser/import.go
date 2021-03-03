@@ -33,8 +33,8 @@ func parseModuleName(p ParseStream) ([]*ast.TypeIdentifier, parerr.ParseError) {
 	return lookups, nil
 }
 
-func parseImport(p ParseStream, keyword token.VariableSymbolToken,
-	indentation int, precedingComments token.CommentBlock) (ast.Expression, parerr.ParseError) {
+func parseImport(p ParseStream, keywordImport token.Keyword,
+	indentation int, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
 	_, spaceAfterKeywordErr := p.eatOneSpace("space after IMPORT")
 	if spaceAfterKeywordErr != nil {
 		return nil, spaceAfterKeywordErr
@@ -47,6 +47,9 @@ func parseImport(p ParseStream, keyword token.VariableSymbolToken,
 
 	var alias *ast.TypeIdentifier
 
+	var keywordAs *token.Keyword
+	var keywordExposing *token.Keyword
+
 	wasNewLine := p.detectNewLine()
 	exposeAll := false
 	var identifiersToExpose []*ast.VariableIdentifier
@@ -57,7 +60,8 @@ func parseImport(p ParseStream, keyword token.VariableSymbolToken,
 		if spaceAfterModuleReferenceErr != nil {
 			return nil, spaceAfterModuleReferenceErr
 		}
-		if p.maybeKeywordAs() {
+		if keyword, foundKeyword := p.maybeKeywordAs(); foundKeyword {
+			keywordAs = &keyword
 			_, spaceAfterAliasErr := p.eatOneSpace("space after alias")
 			if spaceAfterAliasErr != nil {
 				return nil, spaceAfterAliasErr
@@ -73,7 +77,8 @@ func parseImport(p ParseStream, keyword token.VariableSymbolToken,
 				p.addWarning("it is advised to use the last part of the import as alias. `import Some.Long.Name as Name`", p.positionLength())
 			}
 
-		} else if p.maybeKeywordExposing() {
+		} else if keyword, foundKeyword := p.maybeKeywordExposing(); foundKeyword {
+			keywordExposing = &keyword
 			if _, spaceErr := p.eatOneSpace("after exposing"); spaceErr != nil {
 				return nil, spaceErr
 			}
@@ -104,5 +109,5 @@ func parseImport(p ParseStream, keyword token.VariableSymbolToken,
 		wasNewLine = p.detectNewLine()
 	}
 
-	return ast.NewImport(keyword, moduleReference, alias, typesToExpose, identifiersToExpose, exposeAll, precedingComments), nil
+	return ast.NewImport(keywordImport, keywordAs, keywordExposing, moduleReference, alias, typesToExpose, identifiersToExpose, exposeAll, precedingComments), nil
 }

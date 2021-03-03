@@ -37,7 +37,7 @@ func (a *FunctionParameterDefinition) String() string {
 }
 
 func (a *FunctionParameterDefinition) HumanReadable() string {
-	return fmt.Sprintf("%v : %v", a.identifier, a.generatedType.HumanReadable())
+	return "Function Parameter"
 }
 
 func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileReference {
@@ -56,14 +56,14 @@ type FunctionValue struct {
 	forcedFunctionType  dectype.FunctionTypeLike
 	decoratedExpression Expression
 	parameters          []*FunctionParameterDefinition
-	commentBlock        token.CommentBlock
+	commentBlock        *ast.MultilineComment
 	astFunction         *ast.FunctionValue
 	sourceFileReference token.SourceFileReference
 	references          []*FunctionReference
-	annotation          *Annotation
+	annotation          *AnnotationStatement
 }
 
-func NewFunctionValue(annotation *Annotation, astFunction *ast.FunctionValue, forcedFunctionType dectype.FunctionTypeLike, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock token.CommentBlock) *FunctionValue {
+func NewFunctionValue(annotation *AnnotationStatement, astFunction *ast.FunctionValue, forcedFunctionType dectype.FunctionTypeLike, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock *ast.MultilineComment) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
@@ -77,7 +77,7 @@ func (f *FunctionValue) AstFunctionValue() *ast.FunctionValue {
 	return f.astFunction
 }
 
-func (f *FunctionValue) Annotation() *Annotation {
+func (f *FunctionValue) Annotation() *AnnotationStatement {
 	return f.annotation
 }
 
@@ -133,7 +133,7 @@ func (f *FunctionValue) FetchPositionLength() token.SourceFileReference {
 	return f.sourceFileReference
 }
 
-func (f *FunctionValue) CommentBlock() token.CommentBlock {
+func (f *FunctionValue) CommentBlock() *ast.MultilineComment {
 	return f.commentBlock
 }
 

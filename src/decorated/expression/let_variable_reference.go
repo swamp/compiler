@@ -27,7 +27,7 @@ func (g *LetVariableReference) String() string {
 }
 
 func (g *LetVariableReference) HumanReadable() string {
-	return fmt.Sprintf("%v", g.ident)
+	return "Reference to Let variable"
 }
 
 func (g *LetVariableReference) LetVariable() *LetVariable {

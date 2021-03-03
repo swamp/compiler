@@ -117,8 +117,8 @@ func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag boo
 		allFunctions = append(allFunctions, functions...)
 		externalFunctions := module.ExternalFunctions()
 		for _, externalFunction := range externalFunctions {
-			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.FunctionName, token.SourceFileReference{}, 0)))
-			fakeFunc := generate.NewExternalFunction(fakeName, 0, externalFunction.ParameterCount)
+			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.AstExternalFunction.FunctionName(), token.SourceFileReference{}, 0)))
+			fakeFunc := generate.NewExternalFunction(fakeName, 0, externalFunction.AstExternalFunction.ParameterCount())
 			allExternalFunctions = append(allExternalFunctions, fakeFunc)
 		}
 	}

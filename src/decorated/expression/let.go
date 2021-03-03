@@ -17,6 +17,7 @@ type LetVariable struct {
 	name         *ast.VariableIdentifier
 	variableType dtype.Type
 	references   []*LetVariableReference
+	comment      *ast.MultilineComment
 }
 
 func (l *LetVariable) String() string {
@@ -43,10 +44,15 @@ func (l *LetVariable) References() []*LetVariableReference {
 	return l.references
 }
 
-func NewLetVariable(name *ast.VariableIdentifier, variableType dtype.Type) *LetVariable {
+func (l *LetVariable) Comment() *ast.MultilineComment {
+	return l.comment
+}
+
+func NewLetVariable(name *ast.VariableIdentifier, variableType dtype.Type, comment *ast.MultilineComment) *LetVariable {
 	return &LetVariable{
 		name:         name,
 		variableType: variableType,
+		comment:      comment,
 	}
 }
 
@@ -55,16 +61,17 @@ func (l *LetVariable) FetchPositionLength() token.SourceFileReference {
 }
 
 type LetAssignment struct {
-	expression  Expression
-	letVariable *LetVariable
-	inclusive   token.SourceFileReference
-	references  []*LetVariableReference
+	expression       Expression
+	letVariable      *LetVariable
+	inclusive        token.SourceFileReference
+	references       []*LetVariableReference
+	astLetAssignment ast.LetAssignment
 }
 
-func NewLetAssignment(name *ast.VariableIdentifier, expression Expression) *LetAssignment {
-	letVar := NewLetVariable(name, expression.Type())
+func NewLetAssignment(astLetAssignment ast.LetAssignment, name *ast.VariableIdentifier, expression Expression) *LetAssignment {
+	letVar := NewLetVariable(name, expression.Type(), astLetAssignment.CommentBlock())
 	inclusive := token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), expression.FetchPositionLength())
-	return &LetAssignment{letVariable: letVar, expression: expression, inclusive: inclusive}
+	return &LetAssignment{letVariable: letVar, expression: expression, inclusive: inclusive, astLetAssignment: astLetAssignment}
 }
 
 func (l *LetAssignment) String() string {

@@ -21,7 +21,7 @@ func NewExternalFunction(tokens string, parameterCount uint, posLen token.Source
 	return &ExternalFunction{tokens: tokens, parameterCount: parameterCount, posLen: posLen}
 }
 
-func (d *ExternalFunction) ExternalFunction() string {
+func (d *ExternalFunction) FunctionName() string {
 	return d.tokens
 }
 
@@ -34,7 +34,7 @@ func (d *ExternalFunction) FetchPositionLength() token.SourceFileReference {
 }
 
 func (d *ExternalFunction) String() string {
-	return fmt.Sprintf("[external function: %v %d]", d.ExternalFunction(), d.ParameterCount())
+	return fmt.Sprintf("[external function: %v %d]", d.FunctionName(), d.ParameterCount())
 }
 
 func (d *ExternalFunction) DebugString() string {
