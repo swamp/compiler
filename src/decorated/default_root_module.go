@@ -529,16 +529,16 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	listType := dectype.NewPrimitiveType(listIdentifier, []dtype.Type{localType})
 
 	r.DeclareType(listType)
-	r.DeclareAlias(listIdentifier, listType, nil)
+	r.DeclareFakeAlias(listIdentifier, listType, nil)
 
 	arrayType := dectype.NewPrimitiveType(arrayIdentifier, []dtype.Type{localType})
 	r.DeclareType(arrayType)
-	r.DeclareAlias(arrayIdentifier, arrayType, nil)
+	r.DeclareFakeAlias(arrayIdentifier, arrayType, nil)
 
 	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.SourceFileReference{}, 0))
 	typeRefType := dectype.NewPrimitiveType(arrayIdentifier, []dtype.Type{localType})
 	r.DeclareType(typeRefType)
-	r.DeclareAlias(typeRefIdentifier, typeRefType, nil)
+	r.DeclareFakeAlias(typeRefIdentifier, typeRefType, nil)
 
 	const verbose = true
 

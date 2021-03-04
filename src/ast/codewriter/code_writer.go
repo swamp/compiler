@@ -114,9 +114,9 @@ func writeTypeReference(typeReference *ast.TypeReference, colorer coloring.Color
 	}
 }
 
-func writeAliasStatement(alias *ast.AliasStatement, colorer coloring.Colorer, indentation int) {
+func writeAliasStatement(alias *ast.Alias, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("type alias ")
-	colorer.AliasNameSymbol(alias.TypeIdentifier().Symbol())
+	colorer.AliasNameSymbol(alias.Identifier().Symbol())
 	colorer.OneSpace()
 }
 
@@ -579,7 +579,7 @@ func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 			}
 		}
 		switch t := expression.(type) {
-		case *ast.AliasStatement:
+		case *ast.Alias:
 			writeAliasStatement(t, colorer, 0)
 		case *ast.FunctionValueNamedDefinition:
 			writeDefinitionAssignment(t, colorer, 0)

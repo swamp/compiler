@@ -13,7 +13,8 @@ import (
 )
 
 type ModuleName struct {
-	path []*ast.TypeIdentifier
+	path          []*ast.TypeIdentifier
+	precalculated string
 }
 
 func MakeModuleName(path []*ast.TypeIdentifier) ModuleName {
@@ -22,7 +23,7 @@ func MakeModuleName(path []*ast.TypeIdentifier) ModuleName {
 			panic("nil")
 		}
 	}
-	return ModuleName{path: path}
+	return ModuleName{path: path, precalculated: CalculateString(path)}
 }
 
 func MakeModuleNameFromString(name string) ModuleName {
@@ -33,13 +34,13 @@ func MakeModuleNameFromString(name string) ModuleName {
 		typeIdents = append(typeIdents, typeIdentifier)
 	}
 
-	return ModuleName{typeIdents}
+	return ModuleName{typeIdents, CalculateString(typeIdents)}
 }
 
-func (m ModuleName) String() string {
+func CalculateString(parts []*ast.TypeIdentifier) string {
 	s := ""
 
-	for index, p := range m.path {
+	for index, p := range parts {
 		if index > 0 {
 			s += "."
 		}
@@ -48,6 +49,10 @@ func (m ModuleName) String() string {
 	}
 
 	return s
+}
+
+func (m ModuleName) String() string {
+	return m.precalculated
 }
 
 func (m ModuleName) Path() []*ast.TypeIdentifier {

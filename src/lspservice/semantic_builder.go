@@ -99,9 +99,9 @@ func (s *SemanticBuilder) EncodedValues() []uint {
 	return s.encodedIntegers
 }
 
-func (s *SemanticBuilder) EncodeSymbol(debugString string, tokenRange token.Range, tokenType string, modifiers []string) error {
+func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string, modifiers []string) error {
 	if !tokenRange.IsAfter(s.lastRange) {
-		return fmt.Errorf("they must be in order! %v to %v and \n%v\n%v", s.lastRange, tokenRange, s.lastDebug, debugString)
+		return fmt.Errorf("they must be in order! %v to %v and \n%v", s.lastRange, tokenRange, s.lastDebug)
 	}
 	// log.Printf("adding symbol %v '%v'\n", tokenRange, debugString)
 
@@ -130,14 +130,13 @@ func (s *SemanticBuilder) EncodeSymbol(debugString string, tokenRange token.Rang
 
 	tokenLength := tokenRange.SingleLineLength()
 	if tokenLength == -1 {
-		return fmt.Errorf("token spans multiple lines %v %s", tokenType, debugString)
+		return fmt.Errorf("token spans multiple lines %v", tokenType)
 	}
 
 	encodedIntegers := [5]uint{deltaLine, deltaColumnFromLastStartColumn, uint(tokenLength), uint(tokenTypeId), modifierBitMask}
 
 	s.encodedIntegers = append(s.encodedIntegers, encodedIntegers[:]...)
 	s.lastRange = tokenRange
-	s.lastDebug = debugString
 
 	return nil
 }

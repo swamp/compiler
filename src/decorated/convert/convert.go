@@ -42,7 +42,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if subTypeErr != nil {
 			return nil, subTypeErr
 		}
-		return t.DeclareTypeAlias(info.Identifier(), subType)
+		return t.DeclareTypeAlias(info, subType)
 
 	case *ast.Record:
 		return DecorateRecordType(info, t)

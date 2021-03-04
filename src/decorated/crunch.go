@@ -7,6 +7,7 @@ package deccy
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -109,7 +110,14 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 
 	var rootNodesConverted []decorated.Node
 	for _, rootNode := range rootNodes {
-		rootNodesConverted = append(rootNodesConverted, rootNode)
+		converted, couldConver := rootNode.(decorated.Node)
+		if !couldConver {
+			panic(fmt.Sprintf("can not convert %T", rootNode))
+		}
+		if converted == nil || reflect.ValueOf(converted).IsNil() {
+			panic("can not be nil")
+		}
+		rootNodesConverted = append(rootNodesConverted, converted)
 	}
 	module.SetRootNodes(rootNodesConverted)
 

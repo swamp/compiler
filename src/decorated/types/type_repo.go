@@ -11,6 +11,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type TypeRepo struct {
@@ -101,13 +102,6 @@ func (t *TypeRepo) AddFunctionAtom(astFunctionType *ast.FunctionType, parameterT
 }
 
 func (t *TypeRepo) DeclareRecordType(r *RecordAtom) *RecordAtom {
-	combinedName := r.DecoratedName()
-	existing := t.FindTypeFromSignature(combinedName)
-	if existing != nil {
-		return existing.(*RecordAtom)
-	}
-
-	t.internalAdd(r)
 	return r
 }
 
@@ -115,14 +109,14 @@ type DecoratedTypeError interface {
 	Error() string
 }
 
-func (t *TypeRepo) DeclareTypeAlias(alias *ast.TypeIdentifier, concreteType dtype.Type) (*Alias, DecoratedTypeError) {
-	artifactTypeName := t.moduleName.JoinTypeIdentifier(alias)
+func (t *TypeRepo) DeclareTypeAlias(alias *ast.Alias, concreteType dtype.Type) (*Alias, DecoratedTypeError) {
+	artifactTypeName := t.moduleName.JoinTypeIdentifier(alias.Identifier())
 	newType := NewAliasType(alias, artifactTypeName, concreteType)
 	t.internalAdd(newType)
 	return newType, nil
 }
 
-func (t *TypeRepo) DeclareAlias(alias *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) (*Alias, DecoratedTypeError) {
+func (t *TypeRepo) DeclareAlias(alias *ast.Alias, referencedType dtype.Type, localComments []ast.LocalComment) (*Alias, DecoratedTypeError) {
 	if referencedType == nil {
 		panic("alias nil")
 	}
@@ -131,12 +125,22 @@ func (t *TypeRepo) DeclareAlias(alias *ast.TypeIdentifier, referencedType dtype.
 		//if foundType.AliasReferencedType() != referencedType {
 		//return nil, NewDifferentAliasTypes(foundType, referencedType)
 		//}
-		panic("declare alias")
+		//panic("declare alias")
 		return nil, nil
 		// return foundType, nil
 	}
 
-	return t.DeclareTypeAlias(alias, referencedType)
+	aliasType, err := t.DeclareTypeAlias(alias, referencedType)
+	if err != nil {
+		return nil, err
+	}
+
+	return aliasType, nil
+}
+
+func (t *TypeRepo) DeclareFakeAlias(name *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) (*Alias, DecoratedTypeError) {
+	alias := ast.NewAlias(token.Keyword{}, token.Keyword{}, name, nil)
+	return t.DeclareAlias(alias, referencedType, localComments)
 }
 
 // -----------------------------------------------------

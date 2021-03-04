@@ -2,6 +2,7 @@ package decorated
 
 import (
 	"log"
+	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -209,6 +210,14 @@ func expandChildNodesCustomTypeVariantReference(constructor *CustomTypeVariantRe
 	return tokens
 }
 
+func expandChildNodesCaseForTypeAlias(typeAlias *dectype.Alias) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(typeAlias.TypeIdentifier())...)
+	tokens = append(tokens, expandChildNodes(typeAlias.Next())...)
+
+	return tokens
+}
+
 func expandChildNodesCaseForCustomType(caseForCustomType *CaseCustomType) []TypeOrToken {
 	var tokens []TypeOrToken
 
@@ -222,7 +231,9 @@ func expandChildNodesCaseForCustomType(caseForCustomType *CaseCustomType) []Type
 		tokens = append(tokens, expandChildNodes(consequence.Expression())...)
 	}
 
-	tokens = append(tokens, expandChildNodes(caseForCustomType.DefaultCase())...)
+	if caseForCustomType.DefaultCase() != nil {
+		tokens = append(tokens, expandChildNodes(caseForCustomType.DefaultCase())...)
+	}
 
 	return tokens
 }
@@ -280,6 +291,9 @@ func expandChildNodesIf(ifExpression *If) []TypeOrToken {
 }
 
 func expandChildNodes(node Node) []TypeOrToken {
+	if node == nil || reflect.ValueOf(node).IsNil() {
+		panic("can not be nil")
+	}
 	tokens := []TypeOrToken{node}
 	switch t := node.(type) {
 	case *ast.TypeIdentifier:

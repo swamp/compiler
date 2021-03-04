@@ -11,8 +11,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func parseCustomType(p ParseStream, keyword token.VariableSymbolToken, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
-	keywordIndentation := keyword.FetchIndentation()
+func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments *ast.MultilineComment, keywordIndentation int) (ast.Expression, parerr.ParseError) {
 	_, firstOneSpaceErr := p.eatOneSpace("space after TYPE keyword")
 	if firstOneSpaceErr != nil {
 		return nil, firstOneSpaceErr
@@ -56,7 +55,7 @@ func parseCustomType(p ParseStream, keyword token.VariableSymbolToken, preceding
 	typeParameterContext := ast.NewTypeParameterIdentifierContext(typeParameterIdentifiers)
 
 	if isAlias {
-		return parseTypeAlias(p, tokenAlias, keywordIndentation, nameOfType, typeParameterContext, precedingComments)
+		return parseTypeAlias(p, keywordType, tokenAlias, keywordIndentation, nameOfType, typeParameterContext, precedingComments)
 	}
 
 	if !wasNewLineBeforeAssign {

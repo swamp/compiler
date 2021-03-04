@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 
 	"github.com/piot/go-lsp"
 	"github.com/piot/lsp-server/lspserv"
@@ -534,13 +535,16 @@ tokenModifiers: []string{
 
 func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (*lsp.SemanticTokens, error) {
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
+	fmt.Fprintf(os.Stderr, "get root tokens\n")
 	allTokens := s.scanner.RootTokens(sourceFileURI)
+	fmt.Fprintf(os.Stderr, "root tokens done\n")
 	builder := NewSemanticBuilder()
 	for _, foundToken := range allTokens {
 		if err := addSemanticToken(foundToken, builder); err != nil {
 			return nil, err
 		}
 	}
+	fmt.Fprintf(os.Stderr, "added all tokens done\n")
 	return &lsp.SemanticTokens{
 		ResultId: "",
 		Data:     builder.EncodedValues(),

@@ -867,11 +867,11 @@ func (e *UnknownAnnotationTypeReference) FetchPositionLength() token.SourceFileR
 }
 
 type UnknownTypeAliasType struct {
-	alias *ast.AliasStatement
+	alias *ast.Alias
 	err   dectype.DecoratedTypeError
 }
 
-func NewUnknownTypeAliasType(alias *ast.AliasStatement, err dectype.DecoratedTypeError) *UnknownTypeAliasType {
+func NewUnknownTypeAliasType(alias *ast.Alias, err dectype.DecoratedTypeError) *UnknownTypeAliasType {
 	return &UnknownTypeAliasType{err: err, alias: alias}
 }
 
@@ -880,7 +880,7 @@ func (e *UnknownTypeAliasType) Error() string {
 }
 
 func (e *UnknownTypeAliasType) FetchPositionLength() token.SourceFileReference {
-	return e.alias.TypeIdentifier().Symbol().SourceFileReference
+	return e.alias.FetchPositionLength()
 }
 
 type UnknownTypeInCustomTypeVariant struct {

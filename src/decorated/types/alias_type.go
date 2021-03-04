@@ -14,13 +14,17 @@ import (
 )
 
 type Alias struct {
-	name             *ast.TypeIdentifier
+	name             *ast.Alias
 	referencedType   dtype.Type
 	artifactTypeName ArtifactFullyQualifiedTypeName
 }
 
 func (u *Alias) String() string {
 	return fmt.Sprintf("[alias %v %v]", u.name.Name(), u.referencedType)
+}
+
+func (u *Alias) AstAlias() *ast.Alias {
+	return u.name
 }
 
 func (u *Alias) HumanReadable() string {
@@ -32,7 +36,7 @@ func (u *Alias) StatementString() string {
 }
 
 func (u *Alias) TypeIdentifier() *ast.TypeIdentifier {
-	return u.name
+	return u.name.Identifier()
 }
 
 func (u *Alias) FetchPositionLength() token.SourceFileReference {
@@ -71,7 +75,7 @@ func (u *Alias) Generate(params []dtype.Type) (dtype.Type, error) {
 	return u.referencedType.Generate(params)
 }
 
-func NewAliasType(name *ast.TypeIdentifier, artifactTypeName ArtifactFullyQualifiedTypeName,
+func NewAliasType(name *ast.Alias, artifactTypeName ArtifactFullyQualifiedTypeName,
 	referencedType dtype.Type) *Alias {
 	return &Alias{name: name, artifactTypeName: artifactTypeName, referencedType: referencedType}
 }

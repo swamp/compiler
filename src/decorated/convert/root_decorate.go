@@ -7,6 +7,8 @@ package decorator
 
 import (
 	"fmt"
+	"log"
+	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -30,12 +32,13 @@ func NewDefiner(dectorateStream DecorateStream, typeRepo *dectype.TypeRepo, debu
 	return g
 }
 
-func (g *Definer) createAliasTypeFromType(aliasName *ast.TypeIdentifier, subType dtype.Type) (*dectype.Alias, decshared.DecoratedError) {
-	existingType := g.typeRepo.FindTypeFromAlias(aliasName.Name())
+func (g *Definer) createAliasTypeFromType(aliasName *ast.Alias, subType dtype.Type) (*dectype.Alias, decshared.DecoratedError) {
+	existingType := g.typeRepo.FindTypeFromAlias(aliasName.DecoratedName())
 	if existingType != nil {
-		panic(fmt.Sprintf("type alias already defined %v", aliasName))
+		// panic(fmt.Sprintf("type alias already defined %v", aliasName))
 	}
 	t, typeErr := g.typeRepo.DeclareAlias(aliasName, subType, nil)
+	log.Printf("declaring %v\n", aliasName)
 	if typeErr != nil {
 		panic(typeErr)
 	}
@@ -78,13 +81,12 @@ func (g *Definer) functionAnnotation(identifier *ast.VariableIdentifier, constan
 	return g.AnnotateFunc(identifier, convertedType)
 }
 
-func (g *Definer) handleAliasStatement(alias *ast.AliasStatement) (*dectype.Alias, decshared.DecoratedError) {
-	t := alias.Type()
-	referencedType, referencedTypeErr := g.findTypeFromAstType(t)
+func (g *Definer) handleAliasStatement(alias *ast.Alias) (*dectype.Alias, decshared.DecoratedError) {
+	referencedType, referencedTypeErr := g.findTypeFromAstType(alias)
 	if referencedTypeErr != nil {
 		return nil, decorated.NewUnknownTypeAliasType(alias, referencedTypeErr)
 	}
-	return g.createAliasTypeFromType(alias.TypeIdentifier(), referencedType)
+	return g.createAliasTypeFromType(alias, referencedType)
 }
 
 func (g *Definer) findTypeFromAstType(constantType ast.Type) (dtype.Type, dectype.DecoratedTypeError) {
@@ -180,7 +182,7 @@ func (g *Definer) handleAnnotation(d DecorateStream, declaration *ast.Annotation
 
 func (g *Definer) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {
 	switch v := statement.(type) {
-	case *ast.AliasStatement:
+	case *ast.Alias:
 		return g.handleAliasStatement(v)
 	case *ast.CustomTypeStatement:
 		return g.handleCustomTypeStatement(v)
@@ -210,7 +212,7 @@ func (g *Definer) firstPass(program *ast.SourceFile) ([]decorated.TypeOrToken, d
 			return nil, err
 		}
 
-		if convertedStatement != nil {
+		if convertedStatement != nil && !reflect.ValueOf(convertedStatement).IsNil() {
 			rootNodes = append(rootNodes, convertedStatement)
 		}
 	}

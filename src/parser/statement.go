@@ -35,7 +35,8 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 
 	switch variableSymbol.Name() {
 	case "type":
-		return parseCustomType(p.stream, variableSymbol, precedingComments)
+		keywordType := token.NewKeyword(variableSymbol.Raw(), token.Import, variableSymbol.SourceFileReference)
+		return parseCustomType(p.stream, keywordType, precedingComments, variableSymbol.Indentation)
 	case "import":
 		keywordImport := token.NewKeyword(variableSymbol.Raw(), token.Import, variableSymbol.SourceFileReference)
 		return parseImport(p.stream, keywordImport, 0, precedingComments)

@@ -3,6 +3,7 @@ package lspservice
 import (
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
@@ -36,6 +37,7 @@ func (l *LspImpl) Compile(filename string) error {
 	if module == nil {
 		return fmt.Errorf("module can not be nil!")
 	}
+	fmt.Fprintf(os.Stderr, "COMPILE DONE!\n")
 
 	l.world = world
 
@@ -91,6 +93,12 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 	var bestToken decorated.TypeOrToken
 
 	for _, decoratedToken := range tokens {
+		if decoratedToken == nil {
+			panic("can not be nil")
+		}
+		if reflect.ValueOf(decoratedToken).IsNil() {
+			panic("bad here")
+		}
 		// log.Printf("checking node:%v '%v'\n", decoratedToken.FetchPositionLength(), decoratedToken.String())
 		foundRange := decoratedToken.FetchPositionLength().Range
 		if foundRange.Contains(position) {
