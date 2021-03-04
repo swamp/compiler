@@ -28,6 +28,10 @@ func (d *ModuleDefinition) Identifier() *ast.VariableIdentifier {
 	return d.localIdentifier
 }
 
+func (d *ModuleDefinition) ParentDefinitions() *ModuleDefinitions {
+	return d.createdIn
+}
+
 func (d *ModuleDefinition) FullyQualifiedVariableName() *FullyQualifiedVariableName {
 	return d.createdIn.ownedByModule.FullyQualifiedName(d.localIdentifier)
 }

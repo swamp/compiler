@@ -9,12 +9,12 @@ import (
 
 type ModuleReference struct {
 	module     *Module
-	identifier []*ast.TypeIdentifier
+	identifier *ast.ModuleReference
 	inclusive  token.SourceFileReference
 }
 
-func NewModuleReference(identifier []*ast.TypeIdentifier, module *Module) *ModuleReference {
-	inclusive := token.MakeInclusiveSourceFileReference(identifier[0].FetchPositionLength(), identifier[len(identifier)-1].FetchPositionLength())
+func NewModuleReference(identifier *ast.ModuleReference, module *Module) *ModuleReference {
+	inclusive := token.MakeInclusiveSourceFileReference(identifier.First().FetchPositionLength(), identifier.Last().FetchPositionLength())
 	ref := &ModuleReference{module: module, identifier: identifier, inclusive: inclusive}
 
 	module.AddReference(ref)
@@ -30,7 +30,7 @@ func (m *ModuleReference) Module() *Module {
 	return m.module
 }
 
-func (m *ModuleReference) Identifiers() []*ast.TypeIdentifier {
+func (m *ModuleReference) AstModuleReference() *ast.ModuleReference {
 	return m.identifier
 }
 

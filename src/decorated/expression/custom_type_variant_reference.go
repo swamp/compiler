@@ -15,7 +15,7 @@ import (
 )
 
 type CustomTypeVariantReference struct {
-	typeIdentifier    *ast.TypeIdentifier
+	named             *NamedDefinitionTypeReference
 	customTypeVariant *dectype.CustomTypeVariant
 }
 
@@ -24,7 +24,7 @@ func (g *CustomTypeVariantReference) Type() dtype.Type {
 }
 
 func (g *CustomTypeVariantReference) String() string {
-	return fmt.Sprintf("[customtypevariantref %v %v]", g.typeIdentifier, g.customTypeVariant)
+	return fmt.Sprintf("[customtypevariantref %v %v]", g.named, g.customTypeVariant)
 }
 
 func (g *CustomTypeVariantReference) HumanReadable() string {
@@ -36,15 +36,15 @@ func (g *CustomTypeVariantReference) CustomTypeVariant() *dectype.CustomTypeVari
 }
 
 func (g *CustomTypeVariantReference) AstIdentifier() *ast.TypeIdentifier {
-	return g.typeIdentifier
+	return g.named.ident
 }
 
-func NewCustomTypeVariantReference(typeIdentifier *ast.TypeIdentifier, customTypeVariant *dectype.CustomTypeVariant) *CustomTypeVariantReference {
-	ref := &CustomTypeVariantReference{typeIdentifier: typeIdentifier, customTypeVariant: customTypeVariant}
+func NewCustomTypeVariantReference(named *NamedDefinitionTypeReference, customTypeVariant *dectype.CustomTypeVariant) *CustomTypeVariantReference {
+	ref := &CustomTypeVariantReference{named: named, customTypeVariant: customTypeVariant}
 
 	return ref
 }
 
 func (g *CustomTypeVariantReference) FetchPositionLength() token.SourceFileReference {
-	return g.typeIdentifier.FetchPositionLength()
+	return g.named.FetchPositionLength()
 }

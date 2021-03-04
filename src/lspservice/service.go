@@ -542,7 +542,7 @@ func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
 	fmt.Fprintf(os.Stderr, "get root tokens\n")
 	allTokens := s.scanner.RootTokens(sourceFileURI)
-	fmt.Fprintf(os.Stderr, "root tokens done\n")
+	fmt.Fprintf(os.Stderr, "root tokens done %v\n", len(allTokens))
 	builder := NewSemanticBuilder()
 	for _, foundToken := range allTokens {
 		if err := addSemanticToken(foundToken, builder); err != nil {

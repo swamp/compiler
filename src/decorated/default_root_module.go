@@ -423,7 +423,7 @@ func compileToGlobal(rootModule *decorated.Module, globalModule *decorated.Modul
 	const errorAsWarning = false
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(name, token.SourceFileReference{}, 0))
 	newModule, err := InternalCompileToModule(nil, []*decorated.Module{globalModule, rootModule},
-		nil, dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{nameTypeIdentifier}),
+		nil, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})),
 		name, strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
 	if err != nil {
 		return nil, err
@@ -501,7 +501,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	var importModules []*decorated.Module
 	var copyModules []*decorated.Module
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("root-module", token.SourceFileReference{}, 0))
-	m := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{nameTypeIdentifier}), nil)
+	m := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), nil)
 	m.MarkAsInternal()
 	r := m.TypeRepo()
 	integerType := dectype.NewPrimitiveType(createTypeIdentifier("Int"), nil)
@@ -547,7 +547,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	defaultImportName := ast.NewTypeIdentifier(token.NewTypeSymbolToken("DefaultImport", token.SourceFileReference{}, 0))
 
 	globalModule, globalModuleErr := InternalCompileToModule(nil, nil, nil,
-		dectype.MakeArtifactFullyQualifiedModuleName([]*ast.TypeIdentifier{defaultImportName}), "(internal root)",
+		dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(defaultImportName)})), "(internal root)",
 		strings.TrimSpace(globalCode), enforceStyle, verbose, false)
 	if globalModuleErr != nil {
 		return nil, nil, globalModuleErr

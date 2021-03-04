@@ -12,7 +12,7 @@ import (
 )
 
 type Import struct {
-	path                []*TypeIdentifier
+	moduleReference     *ModuleReference
 	optionalAlias       *TypeIdentifier
 	typesToExpose       []*TypeIdentifier
 	definitionsToExpose []*VariableIdentifier
@@ -25,11 +25,11 @@ type Import struct {
 }
 
 func NewImport(keywordImport token.Keyword, keywordAs *token.Keyword, keywordExposing *token.Keyword,
-	path []*TypeIdentifier,
+	moduleReference *ModuleReference,
 	optionalAlias *TypeIdentifier, typesToExpose []*TypeIdentifier,
 	definitionsToExpose []*VariableIdentifier,
 	exposeAll bool, precedingComments *MultilineComment) *Import {
-	lastSourceRef := path[len(path)-1].FetchPositionLength()
+	lastSourceRef := moduleReference.Parts()[len(moduleReference.Parts())-1].FetchPositionLength()
 	if optionalAlias != nil {
 		lastSourceRef = optionalAlias.FetchPositionLength()
 	}
@@ -41,7 +41,7 @@ func NewImport(keywordImport token.Keyword, keywordAs *token.Keyword, keywordExp
 		keywordImport:   keywordImport,
 		keywordExposing: keywordExposing,
 		keywordAs:       keywordAs,
-		path:            path, optionalAlias: optionalAlias,
+		moduleReference: moduleReference, optionalAlias: optionalAlias,
 		exposeAll:           exposeAll,
 		typesToExpose:       typesToExpose,
 		definitionsToExpose: definitionsToExpose,
@@ -62,10 +62,6 @@ func (i *Import) KeywordAs() *token.Keyword {
 	return i.keywordAs
 }
 
-func (i *Import) Path() []*TypeIdentifier {
-	return i.path
-}
-
 func (i *Import) ExposeAll() bool {
 	return i.exposeAll
 }
@@ -74,8 +70,8 @@ func (i *Import) Alias() *TypeIdentifier {
 	return i.optionalAlias
 }
 
-func (i *Import) ModuleName() []*TypeIdentifier {
-	return i.path
+func (i *Import) ModuleName() *ModuleReference {
+	return i.moduleReference
 }
 
 func (i *Import) FetchPositionLength() token.SourceFileReference {
@@ -83,7 +79,7 @@ func (i *Import) FetchPositionLength() token.SourceFileReference {
 }
 
 func (i *Import) String() string {
-	s := fmt.Sprintf("[import %v", i.path)
+	s := fmt.Sprintf("[import %v", i.moduleReference)
 	if i.optionalAlias != nil {
 		s += fmt.Sprintf(" as %v", i.optionalAlias)
 	}

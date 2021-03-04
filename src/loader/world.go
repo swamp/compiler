@@ -44,7 +44,8 @@ func (w *World) AddModule(moduleName dectype.ArtifactFullyQualifiedModuleName, m
 	if convertErr != nil {
 		panic(convertErr)
 	}
-	w.absolutePathLookup[LocalFileSystemPath(localFilePath)] = module
+	localFilePathForThisModule := LocalFileSystemPath(localFilePath)
+	w.absolutePathLookup[localFilePathForThisModule] = module
 	w.modules = append(w.modules, module)
 }
 

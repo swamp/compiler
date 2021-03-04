@@ -26,6 +26,10 @@ func NewModuleDefinitions(ownedByModule *Module) *ModuleDefinitions {
 	}
 }
 
+func (d *ModuleDefinitions) OwnedByModule() *Module {
+	return d.ownedByModule
+}
+
 func (d *ModuleDefinitions) Definitions() []*ModuleDefinition {
 	var keys []*ModuleDefinition
 	for _, exprKey := range sortedExpressionKeys(d.definitions) {

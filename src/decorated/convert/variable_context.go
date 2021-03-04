@@ -53,7 +53,13 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 	}
 	switch t := def.Expression().(type) {
 	case *decorated.FunctionValue:
-		return decorated.NewFunctionReference(name, t), nil
+		var moduleRef *decorated.ModuleReference
+		if name.ModuleReference() != nil {
+			moduleRef = decorated.NewModuleReference(name.ModuleReference(), def.ModuleDefinition().ParentDefinitions().OwnedByModule())
+		}
+		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
+		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
+		return functionReference, nil
 	case *decorated.FunctionParameterDefinition:
 		return decorated.NewFunctionParameterReference(name, t), nil
 	case *decorated.LetAssignment:

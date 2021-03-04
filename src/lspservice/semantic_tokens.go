@@ -378,7 +378,7 @@ func addSemanticTokenImport(decoratedImport *decorated.ImportStatement, builder 
 		return err
 	}
 
-	for _, segment := range decoratedImport.AstImport().Path() {
+	for _, segment := range decoratedImport.AstImport().ModuleName().Parts() {
 		if err := builder.EncodeSymbol(segment.FetchPositionLength().Range, "namespace", nil); err != nil {
 			return err
 		}
@@ -599,9 +599,9 @@ func addSemanticTokenCurryFunction(funcCall *decorated.CurryFunction, builder *S
 }
 
 func addSemanticTokenFunctionReference(functionReference *decorated.FunctionReference, builder *SemanticBuilder) error {
-	isScoped := functionReference.Identifier().ModuleReference() != nil
+	isScoped := functionReference.NameReference().ModuleReference() != nil
 	if isScoped {
-		encodeModuleReference(builder, functionReference.Identifier().ModuleReference())
+		encodeModuleReference(builder, functionReference.NameReference().ModuleReference().AstModuleReference())
 	}
 
 	if err := builder.EncodeSymbol(functionReference.Identifier().FetchPositionLength().Range, "function", nil); err != nil {

@@ -12,13 +12,14 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-func parseModuleName(p ParseStream) ([]*ast.TypeIdentifier, parerr.ParseError) {
-	var lookups []*ast.TypeIdentifier
+func parseModuleName(p ParseStream) (*ast.ModuleReference, parerr.ParseError) {
+	var lookups []*ast.ModuleNamePart
 	importName, importNameErr := p.readTypeIdentifier()
 	if importNameErr != nil {
 		return nil, parerr.NewImportMustHaveUppercaseIdentifierError(importNameErr)
 	}
-	lookups = append(lookups, importName)
+	part := ast.NewModuleNamePart(importName)
+	lookups = append(lookups, part)
 	for {
 		if !p.maybeAccessor() {
 			break
@@ -27,10 +28,14 @@ func parseModuleName(p ParseStream) ([]*ast.TypeIdentifier, parerr.ParseError) {
 		if subNameErr != nil {
 			return nil, parerr.NewImportMustHaveUppercasePathError(subNameErr)
 		}
-		lookups = append(lookups, lookup)
+		part := ast.NewModuleNamePart(lookup)
+
+		lookups = append(lookups, part)
 	}
 
-	return lookups, nil
+	moduleRef := ast.NewModuleReference(lookups)
+
+	return moduleRef, nil
 }
 
 func parseImport(p ParseStream, keywordImport token.Keyword,
@@ -73,7 +78,7 @@ func parseImport(p ParseStream, keywordImport token.Keyword,
 			}
 			alias = foundAlias
 
-			if alias.Name() != moduleReference[len(moduleReference)-1].Name() {
+			if alias.Name() != moduleReference.Parts()[len(moduleReference.Parts())-1].Name() {
 				p.addWarning("it is advised to use the last part of the import as alias. `import Some.Long.Name as Name`", p.positionLength())
 			}
 

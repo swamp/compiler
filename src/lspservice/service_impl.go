@@ -65,6 +65,7 @@ func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []decorated.TypeOrTok
 	}
 	module, moduleErr := findModuleFromSourceFile(l.world, sourceFile)
 	if moduleErr != nil {
+		log.Printf("could not find source file %v\n", sourceFile)
 		return nil
 	}
 	var tokens []decorated.TypeOrToken

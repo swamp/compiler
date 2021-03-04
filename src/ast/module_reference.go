@@ -40,6 +40,14 @@ type ModuleReference struct {
 	inclusive token.SourceFileReference
 }
 
+func (m *ModuleReference) First() *ModuleNamePart {
+	return m.parts[0]
+}
+
+func (m *ModuleReference) Last() *ModuleNamePart {
+	return m.parts[len(m.parts)-1]
+}
+
 func (m *ModuleReference) String() string {
 	return fmt.Sprintf("[moduleref %v]", m.parts)
 }

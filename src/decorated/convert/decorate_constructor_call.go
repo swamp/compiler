@@ -31,7 +31,8 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 
 	switch e := unaliasedConstructor.(type) {
 	case *dectype.CustomTypeVariantConstructorType:
-		ref := decorated.NewCustomTypeVariantReference(call.TypeIdentifier(), e.Variant())
+		named := decorated.NewNamedDefinitionTypeReference(nil, call.TypeIdentifier())
+		ref := decorated.NewCustomTypeVariantReference(named, e.Variant())
 		return decorated.NewCustomTypeVariantConstructor(ref, decoratedExpressions), nil
 	case *dectype.RecordAtom:
 		{

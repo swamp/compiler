@@ -11,10 +11,10 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/token"
 )
 
 func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	/* TODO: SUpport recur again
 	functionExpressionIdentifier, wasIdentifier := call.FunctionExpression().(*ast.VariableIdentifier)
 
 	if wasIdentifier && functionExpressionIdentifier.Name() == "recur" {
@@ -26,6 +26,8 @@ func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, contex
 		functionReference := decorated.NewFunctionReference(functionExpressionIdentifier, namedDef.(*decorated.FunctionValue))
 		return functionReference, nil
 	}
+
+	*/
 
 	decoratedExpression, functionErr := DecorateExpression(d, call.FunctionExpression(), context)
 	if functionErr != nil {

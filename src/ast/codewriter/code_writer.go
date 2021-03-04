@@ -410,12 +410,12 @@ func writeExternalFunction(externalFunction *ast.ExternalFunction, colorer color
 func writeImport(importStatement *ast.Import, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("import")
 	colorer.OneSpace()
-	for index, pathPart := range importStatement.Path() {
+	for index, pathPart := range importStatement.ModuleName().Parts() {
 		if index > 0 {
 			colorer.OperatorString(".")
 		}
 
-		colorer.ModuleReference(pathPart.Symbol())
+		colorer.ModuleReference(pathPart.TypeIdentifier().Symbol())
 	}
 }
 

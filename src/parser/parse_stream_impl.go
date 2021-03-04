@@ -94,11 +94,9 @@ func (p *ParseStreamImpl) addWarning(description string, length token.SourceFile
 		length.Range.Position().Column()+1, "Warning", description)
 }
 
-func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, parerr.ParseError) {
+func (p *ParseStreamImpl) readVariableIdentifierInternal() (*ast.VariableIdentifier, parerr.ParseError) {
 	variableSymbol, variableSymbolErr := p.tokenizer.ParseVariableSymbol()
 	if variableSymbolErr != nil {
-		p.tokenizer.DebugPrint("went wrong here")
-
 		return nil, parerr.NewExpectedVariableIdentifierError(variableSymbolErr)
 	}
 	varIdent := ast.NewVariableIdentifier(variableSymbol)
@@ -106,9 +104,20 @@ func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, par
 	return varIdent, nil
 }
 
+func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, parerr.ParseError) {
+	variableIdentifier, variableIdentifierErr := p.readVariableIdentifierInternal()
+	if variableIdentifierErr != nil {
+		p.tokenizer.DebugPrint("went wrong here")
+
+		return nil, variableIdentifierErr
+	}
+
+	return variableIdentifier, nil
+}
+
 func (p *ParseStreamImpl) readKeyword() (token.Keyword, parerr.ParseError) {
 	pos := p.tokenizer.ParsingPosition()
-	ident, err := p.readVariableIdentifier()
+	ident, err := p.readVariableIdentifierInternal()
 	if err != nil {
 		return token.Keyword{}, err
 	}

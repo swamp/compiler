@@ -12,15 +12,18 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+// ModuleName is similar to a ModuleReference, however path can be nil
 type ModuleName struct {
-	path          []*ast.TypeIdentifier
+	path          *ast.ModuleReference
 	precalculated string
 }
 
-func MakeModuleName(path []*ast.TypeIdentifier) ModuleName {
-	for _, p := range path {
-		if p == nil {
-			panic("nil")
+func MakeModuleName(path *ast.ModuleReference) ModuleName {
+	if path != nil {
+		for _, p := range path.Parts() {
+			if p == nil {
+				panic("nil")
+			}
 		}
 	}
 	return ModuleName{path: path, precalculated: CalculateString(path)}
@@ -28,24 +31,30 @@ func MakeModuleName(path []*ast.TypeIdentifier) ModuleName {
 
 func MakeModuleNameFromString(name string) ModuleName {
 	parts := strings.Split(name, ".")
-	var typeIdents []*ast.TypeIdentifier
+	if len(parts) == 0 {
+		return MakeModuleName(nil)
+	}
+	var nameParts []*ast.ModuleNamePart
 	for _, part := range parts {
 		typeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(part, token.SourceFileReference{}, 0))
-		typeIdents = append(typeIdents, typeIdentifier)
+		part := ast.NewModuleNamePart(typeIdentifier)
+		nameParts = append(nameParts, part)
 	}
 
-	return ModuleName{typeIdents, CalculateString(typeIdents)}
+	return MakeModuleName(ast.NewModuleReference(nameParts))
 }
 
-func CalculateString(parts []*ast.TypeIdentifier) string {
+func CalculateString(ref *ast.ModuleReference) string {
 	s := ""
 
-	for index, p := range parts {
-		if index > 0 {
-			s += "."
-		}
+	if ref != nil {
+		for index, p := range ref.Parts() {
+			if index > 0 {
+				s += "."
+			}
 
-		s += p.Name()
+			s += p.TypeIdentifier().Name()
+		}
 	}
 
 	return s
@@ -55,7 +64,7 @@ func (m ModuleName) String() string {
 	return m.precalculated
 }
 
-func (m ModuleName) Path() []*ast.TypeIdentifier {
+func (m ModuleName) Path() *ast.ModuleReference {
 	return m.path
 }
 
@@ -63,7 +72,7 @@ type PackageRelativeModuleName struct {
 	ModuleName
 }
 
-func NewPackageRelativeModuleName(path []*ast.TypeIdentifier) PackageRelativeModuleName {
+func NewPackageRelativeModuleName(path *ast.ModuleReference) PackageRelativeModuleName {
 	return PackageRelativeModuleName{ModuleName: MakeModuleName(path)}
 }
 
@@ -75,7 +84,7 @@ type ArtifactFullyQualifiedTypeName struct {
 	ModuleName
 }
 
-func MakeArtifactFullyQualifiedModuleName(path []*ast.TypeIdentifier) ArtifactFullyQualifiedModuleName {
+func MakeArtifactFullyQualifiedModuleName(path *ast.ModuleReference) ArtifactFullyQualifiedModuleName {
 	return ArtifactFullyQualifiedModuleName{MakeModuleName(path)}
 }
 
@@ -91,18 +100,18 @@ func MakeSingleModuleName(path *ast.TypeIdentifier) SingleModuleName {
 	if path == nil {
 		return SingleModuleName{MakeModuleName(nil)}
 	}
-	return SingleModuleName{MakeModuleName([]*ast.TypeIdentifier{path})}
+	return SingleModuleName{MakeModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(path)}))}
 }
 
 func (m SingleModuleName) IsEmpty() bool {
-	return len(m.ModuleName.path) == 0
+	return m.path == nil
 }
 
 func (n *ArtifactFullyQualifiedModuleName) String() string {
 	return n.ModuleName.String()
 }
 
-func MakePackageRootModuleName(path []*ast.TypeIdentifier) PackageRootModuleName {
+func MakePackageRootModuleName(path *ast.ModuleReference) PackageRootModuleName {
 	return PackageRootModuleName{MakeModuleName(path)}
 }
 
@@ -111,8 +120,27 @@ func MakePackageRootModuleNameFromString(name string) PackageRootModuleName {
 }
 
 func (n PackageRootModuleName) Join(relative PackageRelativeModuleName) ArtifactFullyQualifiedModuleName {
-	paths := append(n.ModuleName.path, relative.path...)
-	return MakeArtifactFullyQualifiedModuleName(paths)
+	var existingParts []*ast.ModuleNamePart
+
+	var partsToAdd []*ast.ModuleNamePart
+
+	if n.path != nil {
+		existingParts = n.path.Parts()
+	}
+
+	if relative.Path() != nil {
+		partsToAdd = relative.Path().Parts()
+	}
+
+	paths := append(existingParts, partsToAdd...)
+
+	var modRef *ast.ModuleReference
+
+	if len(paths) > 0 {
+		modRef = ast.NewModuleReference(paths)
+	}
+
+	return MakeArtifactFullyQualifiedModuleName(modRef)
 }
 
 func (n ArtifactFullyQualifiedModuleName) JoinLocalName(relative *ast.VariableIdentifier) string {
@@ -126,21 +154,23 @@ func (n ArtifactFullyQualifiedModuleName) JoinLocalName(relative *ast.VariableId
 }
 
 func (n ArtifactFullyQualifiedModuleName) JoinTypeIdentifier(relative *ast.TypeIdentifier) ArtifactFullyQualifiedTypeName {
-	var newPaths []*ast.TypeIdentifier
+	var newPaths []*ast.ModuleNamePart
 
-	newPaths = append(newPaths, n.path...)
+	if n.path != nil {
+		newPaths = append(newPaths, n.path.Parts()...)
+	}
 
 	if relative.ModuleReference() != nil {
 		for _, mRef := range relative.ModuleReference().Parts() {
-			newPaths = append(newPaths, mRef.TypeIdentifier())
+			newPaths = append(newPaths, mRef)
 		}
 	}
-	newPaths = append(newPaths, relative)
+	newPaths = append(newPaths, ast.NewModuleNamePart(relative))
 
-	return ArtifactFullyQualifiedTypeName{ModuleName{path: newPaths}}
+	return ArtifactFullyQualifiedTypeName{ModuleName{path: ast.NewModuleReference(newPaths)}}
 }
 
-func MakePackageRelativeModuleName(path []*ast.TypeIdentifier) PackageRelativeModuleName {
+func MakePackageRelativeModuleName(path *ast.ModuleReference) PackageRelativeModuleName {
 	return PackageRelativeModuleName{MakeModuleName(path)}
 }
 

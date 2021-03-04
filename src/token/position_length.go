@@ -37,6 +37,10 @@ func (d *SourceFileDocument) EqualTo(uri DocumentURI) bool {
 	return d.Uri == uri
 }
 
+func (d *SourceFileDocument) String() string {
+	return fmt.Sprintf("document %v", d.Uri)
+}
+
 type SourceFileReference struct {
 	Range    Range
 	Document *SourceFileDocument

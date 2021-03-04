@@ -14,7 +14,7 @@ import (
 )
 
 type FunctionReference struct {
-	ident                   *ast.VariableIdentifier
+	definitionReference     *NamedDefinitionReference
 	referencedFunctionValue *FunctionValue
 }
 
@@ -23,11 +23,11 @@ func (g *FunctionReference) Type() dtype.Type {
 }
 
 func (g *FunctionReference) String() string {
-	return fmt.Sprintf("[functionref %v %v]", g.ident, g.referencedFunctionValue)
+	return fmt.Sprintf("[functionref %v %v]", g.definitionReference, g.referencedFunctionValue)
 }
 
 func (g *FunctionReference) DebugString() string {
-	return fmt.Sprintf("[functionref %v %v]", g.ident, g.referencedFunctionValue)
+	return fmt.Sprintf("[functionref %v %v]", g.definitionReference, g.referencedFunctionValue)
 }
 
 func (g *FunctionReference) HumanReadable() string {
@@ -35,20 +35,24 @@ func (g *FunctionReference) HumanReadable() string {
 }
 
 func (g *FunctionReference) Identifier() *ast.VariableIdentifier {
-	return g.ident
+	return g.definitionReference.ident
+}
+
+func (g *FunctionReference) NameReference() *NamedDefinitionReference {
+	return g.definitionReference
 }
 
 func (g *FunctionReference) FunctionValue() *FunctionValue {
 	return g.referencedFunctionValue
 }
 
-func NewFunctionReference(ident *ast.VariableIdentifier,
+func NewFunctionReference(definitionReference *NamedDefinitionReference,
 	referencedFunctionValue *FunctionValue) *FunctionReference {
 	if referencedFunctionValue == nil {
 		panic("cant be nil")
 	}
 
-	ref := &FunctionReference{ident: ident, referencedFunctionValue: referencedFunctionValue}
+	ref := &FunctionReference{definitionReference: definitionReference, referencedFunctionValue: referencedFunctionValue}
 
 	referencedFunctionValue.AddReferee(ref)
 
@@ -56,5 +60,5 @@ func NewFunctionReference(ident *ast.VariableIdentifier,
 }
 
 func (g *FunctionReference) FetchPositionLength() token.SourceFileReference {
-	return g.ident.FetchPositionLength()
+	return g.definitionReference.FetchPositionLength()
 }

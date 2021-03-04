@@ -40,7 +40,10 @@ func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
 
 func expandChildNodesFunctionReference(fn *FunctionReference) []TypeOrToken {
 	var tokens []TypeOrToken
-	// tokens = append(tokens, expandChildNodes(fn.ident)...)
+	optionalModuleRef := fn.NameReference().ModuleReference()
+	if optionalModuleRef != nil {
+		tokens = append(tokens, optionalModuleRef)
+	}
 	return tokens
 }
 

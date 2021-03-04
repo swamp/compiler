@@ -136,7 +136,12 @@ func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context 
 		}
 		lookupExpression := def.Expression()
 		functionValue, _ := lookupExpression.(*decorated.FunctionValue)
-		functionReference := decorated.NewFunctionReference(t, functionValue)
+		var decoratedModuleReference *decorated.ModuleReference
+		if t.ModuleReference() != nil {
+			decoratedModuleReference = decorated.NewModuleReference(t.ModuleReference(), def.ModuleDefinition().ParentDefinitions().OwnedByModule())
+		}
+		nameWithModuleRef := decorated.NewNamedDefinitionReference(decoratedModuleReference, t)
+		functionReference := decorated.NewFunctionReference(nameWithModuleRef, functionValue)
 		functionExpression = functionReference
 		leftAstCall = ast.NewFunctionCall(functionReference, nil)
 	}

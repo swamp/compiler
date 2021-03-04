@@ -7,6 +7,7 @@ package loader
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	deccy "github.com/swamp/compiler/src/decorated"
@@ -66,6 +67,7 @@ func (l *ModuleRepository) FetchModuleInPackageEx(artifactFullyModuleName dectyp
 	secondTry := dectype.MakeArtifactFullyQualifiedModuleName(packageRelativeModuleName.Path())
 	module = l.world.FindModule(secondTry)
 	if module != nil {
+		log.Printf("found relative module %v", packageRelativeModuleName)
 		return module, nil
 	}
 	// fmt.Printf("world:%v\n", l.world)
