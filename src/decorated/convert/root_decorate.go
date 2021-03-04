@@ -7,7 +7,6 @@ package decorator
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
@@ -38,7 +37,7 @@ func (g *Definer) createAliasTypeFromType(aliasName *ast.Alias, subType dtype.Ty
 		// panic(fmt.Sprintf("type alias already defined %v", aliasName))
 	}
 	t, typeErr := g.typeRepo.DeclareAlias(aliasName, subType, nil)
-	log.Printf("declaring %v\n", aliasName)
+	//	log.Printf("declaring %v\n", aliasName)
 	if typeErr != nil {
 		panic(typeErr)
 	}

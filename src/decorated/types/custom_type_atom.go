@@ -27,12 +27,7 @@ func (s *CustomTypeAtom) String() string {
 }
 
 func (s *CustomTypeAtom) HumanReadable() string {
-	str := fmt.Sprintf("type %v = ", s.name)
-	for _, variant := range s.variants {
-		str += "\n"
-		str += variant.HumanReadable()
-	}
-	return str
+	return s.name.Name()
 }
 
 func (s *CustomTypeAtom) ShortString() string {

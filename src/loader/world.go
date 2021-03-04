@@ -40,7 +40,7 @@ func (w *World) AddModule(moduleName dectype.ArtifactFullyQualifiedModuleName, m
 	}
 	w.moduleLookup[moduleName.String()] = module
 
-	localFilePath, convertErr := module.DocumentURI().ToLocalFilePath()
+	localFilePath, convertErr := module.Document().Uri.ToLocalFilePath()
 	if convertErr != nil {
 		panic(convertErr)
 	}

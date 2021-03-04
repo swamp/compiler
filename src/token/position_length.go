@@ -56,6 +56,10 @@ func (s SourceFileReference) ToReferenceString() string {
 	return fmt.Sprintf("%v:%d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1)
 }
 
+func (s SourceFileReference) String() string {
+	return s.ToReferenceString()
+}
+
 func MakeSourceFileReferenceFromString(uri string, tokenRange Range) SourceFileReference {
 	return SourceFileReference{
 		Range:    tokenRange,

@@ -25,7 +25,7 @@ func NewMultilineComment(commentToken token.MultiLineCommentToken) *MultilineCom
 }
 
 func (i *MultilineComment) Value() string {
-	return i.commentToken.Raw()
+	return i.commentToken.Text()
 }
 
 func (i *MultilineComment) String() string {

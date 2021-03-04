@@ -11,24 +11,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/token"
 )
-
-type FakeLiteral struct {
-	storedType dtype.Type
-}
-
-func NewFakeLiteral(storedType dtype.Type) *FakeLiteral {
-	return &FakeLiteral{storedType: storedType}
-}
-
-func (f *FakeLiteral) Type() dtype.Type {
-	return f.storedType
-}
-
-func (f *FakeLiteral) FetchPositionLength() token.SourceFileReference {
-	return token.SourceFileReference{}
-}
 
 func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType, context *VariableContext) (*decorated.CaseCustomType, decshared.DecoratedError) {
 	decoratedTest, decoratedTestErr := DecorateExpression(d, caseExpression.Test(), context)
@@ -119,7 +102,9 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 				param := decorated.NewCaseConsequenceParameter(ident, argumentType)
 				parameters = append(parameters, param)
 			}
-			decoratedConsequence := decorated.NewCaseConsequenceCustomType(foundVariant.Index(), consequenceField.Identifier(),
+
+			variantReference := decorated.NewCustomTypeVariantReference(consequenceField.Identifier(), foundVariant)
+			decoratedConsequence := decorated.NewCaseConsequenceCustomType(foundVariant.Index(), variantReference,
 				parameters, decoratedExpression)
 			decoratedConsequences = append(decoratedConsequences, decoratedConsequence)
 		}

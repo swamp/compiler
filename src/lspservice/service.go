@@ -93,6 +93,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 
 	var codeSignature string
 	var name string
+	var documentation string
 	if isItAType {
 		codeSignature = tokenType.HumanReadable()
 		name = "type"
@@ -112,13 +113,13 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 			switch t := normalToken.(type) {
 			case *decorated.FunctionReference:
 				if t.FunctionValue().CommentBlock() != nil {
-					name += fmt.Sprintf("\n%v\n", t.FunctionValue().CommentBlock().Value())
+					documentation = t.FunctionValue().CommentBlock().Value()
 				}
 			}
 		}
 	}
 
-	showString := fmt.Sprintf("`%v` \n```swamp\n%v\n```\n", name, codeSignature)
+	showString := fmt.Sprintf("`%v`\n\n%v\n\n ```swamp\n%v\n```\n", name, documentation, codeSignature)
 
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{
@@ -134,13 +135,15 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileReference, error) {
 	switch t := decoratedToken.(type) {
 	case *decorated.ImportStatement:
-		return token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0))), nil
+		return t.Module().FetchPositionLength(), nil
 	case *decorated.FunctionParameterReference:
 		return t.ParameterRef().FetchPositionLength(), nil
 	case *decorated.LetVariableReference:
 		return t.LetVariable().FetchPositionLength(), nil
 	case *decorated.FunctionReference:
 		return t.FunctionValue().FetchPositionLength(), nil
+	case *decorated.ModuleReference:
+		return t.Module().FetchPositionLength(), nil
 	case *decorated.RecordFieldReference:
 		return t.RecordTypeField().VariableIdentifier().FetchPositionLength(), nil
 	case *decorated.CustomTypeVariantReference:
@@ -182,15 +185,17 @@ func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, co
 
 	sourceFileReference, lookupErr := tokenToDefinition(decoratedToken)
 	if lookupErr != nil {
+		log.Printf("couldn't find any definition for %T\n", decoratedToken)
 		return nil, nil
 	}
 
 	if sourceFileReference.Document == nil {
-		log.Printf("couldn't go to definition for %T\n", decoratedToken)
+		log.Printf("couldn't go to definition for %T, no document \n", decoratedToken)
 		return nil, nil
 	}
 
 	location := sourceFileReferenceToLocation(sourceFileReference)
+	log.Printf("definition for %T resulted in %v \n", decoratedToken, sourceFileReference)
 
 	return location, nil
 }

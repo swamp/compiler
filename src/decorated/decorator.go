@@ -62,11 +62,14 @@ func (d *Decorator) ImportModule(importAst *ast.Import, relativeModuleName decty
 		panic("no module to import (DecorateImport)")
 	}
 
+	moduleRef := decorated.NewModuleReference(importAst.ModuleName(), moduleToImport)
+	var moduleAliasRef *decorated.ModuleReference
 	if !alias.IsEmpty() {
 		relativeModuleName = dectype.MakePackageRelativeModuleName(alias.Path())
+		moduleAliasRef = decorated.NewModuleReference(alias.Path(), moduleToImport)
 	}
 
-	importStatement := decorated.NewImport(importAst, moduleToImport)
+	importStatement := decorated.NewImport(importAst, moduleRef, moduleAliasRef)
 
 	importModuleErr := d.Import(moduleToImport, relativeModuleName, exposeAll)
 	if importModuleErr != nil {

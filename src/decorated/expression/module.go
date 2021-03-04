@@ -68,13 +68,14 @@ type Module struct {
 	externalFunctions []*ExternalFunctionDeclaration
 
 	isInternal               bool
-	sourceFileUri            token.DocumentURI
+	sourceFileUri            *token.SourceFileDocument
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	rootNodes                []Node
 	nodes                    []TypeOrToken
+	references               []*ModuleReference
 }
 
-func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri token.DocumentURI) *Module {
+func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri *token.SourceFileDocument) *Module {
 	importedTypes := dectype.NewExposedTypes()
 	m := &Module{
 		fullyQualifiedModuleName: fullyQualifiedModuleName, exposedTypes: dectype.NewExposedTypes(),
@@ -90,11 +91,23 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	return m
 }
 
+func (m *Module) FetchPositionLength() token.SourceFileReference {
+	return token.MakeSourceFileReference(m.sourceFileUri, token.NewPositionLength(token.NewPositionTopLeft(), 0, 0))
+}
+
+func (m *Module) AddReference(ref *ModuleReference) {
+	m.references = append(m.references, ref)
+}
+
+func (m *Module) References() []*ModuleReference {
+	return m.references
+}
+
 func (m *Module) SetProgram(program *ast.SourceFile) {
 	m.program = program
 }
 
-func (m *Module) DocumentURI() token.DocumentURI {
+func (m *Module) Document() *token.SourceFileDocument {
 	return m.sourceFileUri
 }
 
@@ -106,13 +119,25 @@ func (m *Module) SetRootNodes(nodes []Node) {
 			log.Printf("root node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
 		}
 	}
-	m.nodes = ExpandAllChildNodes(nodes)
+	expandedNodes := ExpandAllChildNodes(nodes)
+	m.nodes = nil
 
-	if false {
-		log.Printf("all nodes in: %v\n", m.FullyQualifiedModuleName())
-		for _, x := range m.nodes {
-			log.Printf("node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
+	moduleLocalPath, _ := m.sourceFileUri.Uri.ToLocalFilePath()
+	// log.Printf("all nodes in: %v\n", m.FullyQualifiedModuleName())
+	for _, node := range expandedNodes {
+		sourceRef := node.FetchPositionLength()
+		if sourceRef.Document == nil {
+			// panic(fmt.Sprintf("source ref can not be nil for %v", node))
+			continue
 		}
+		localPath, _ := sourceRef.Document.Uri.ToLocalFilePath()
+		if localPath != moduleLocalPath {
+			// panic(fmt.Sprintf("how can this be %v vs %v", localPath, m.sourceFileUri))
+			// log.Printf("not matching %v and %v\n", localPath, moduleLocalPath)
+			continue
+		}
+		// log.Printf("node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
+		m.nodes = append(m.nodes, node)
 	}
 }
 

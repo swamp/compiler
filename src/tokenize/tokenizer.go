@@ -95,6 +95,10 @@ func (t *Tokenizer) SourceFile() *token.SourceFileURI {
 	return token.MakeSourceFileURI(t.r.RelativeFilename())
 }
 
+func (t *Tokenizer) Document() *token.SourceFileDocument {
+	return t.document
+}
+
 func (t *Tokenizer) MakeRange(pos token.PositionToken) token.Range {
 	return token.NewPositionLengthFromEndPosition(pos.Position(), t.position.Position(), pos.Indentation())
 }

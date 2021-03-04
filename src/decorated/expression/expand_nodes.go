@@ -4,7 +4,6 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -41,7 +40,7 @@ func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
 
 func expandChildNodesFunctionReference(fn *FunctionReference) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.ident)...)
+	// tokens = append(tokens, expandChildNodes(fn.ident)...)
 	return tokens
 }
 
@@ -69,6 +68,15 @@ func expandChildNodesAnnotation(fn *AnnotationStatement) []TypeOrToken {
 	return tokens
 }
 
+func expandChildNodesImportStatement(importStatement *ImportStatement) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(importStatement.ModuleReference())...)
+	if importStatement.Alias() != nil {
+		tokens = append(tokens, expandChildNodes(importStatement.Alias())...)
+	}
+	return tokens
+}
+
 func expandChildNodesFunctionType(fn *dectype.FunctionAtom) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, parameter := range fn.FunctionParameterTypes() {
@@ -79,9 +87,9 @@ func expandChildNodesFunctionType(fn *dectype.FunctionAtom) []TypeOrToken {
 
 func expandChildNodesCustomType(fn *dectype.CustomTypeAtom) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.TypeIdentifier())...)
+	// tokens = append(tokens, expandChildNodes(fn.TypeIdentifier())...) Can not expand type identifiers, need meaning
 	for _, variant := range fn.Variants() {
-		tokens = append(tokens, expandChildNodes(variant.Name())...)
+		tokens = append(tokens, expandChildNodes(variant)...)
 		for _, param := range variant.ParameterTypes() {
 			tokens = append(tokens, expandChildNodes(param)...)
 		}
@@ -92,7 +100,7 @@ func expandChildNodesCustomType(fn *dectype.CustomTypeAtom) []TypeOrToken {
 func expandChildNodesRecordType(fn *dectype.RecordAtom) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, field := range fn.ParseOrderedFields() {
-		tokens = append(tokens, expandChildNodes(field.VariableIdentifier())...)
+		// tokens = append(tokens, expandChildNodes(field.VariableIdentifier())...)  // TODO: Need meaning
 		tokens = append(tokens, expandChildNodes(field.Type())...)
 	}
 	return tokens
@@ -180,7 +188,7 @@ func expandChildNodesCustomTypeVariantConstructor(constructor *CustomTypeVariant
 
 func expandChildNodesRecordConstructor(constructor *RecordConstructor) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...)
+	// tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...) // TODO: Need meaning
 
 	for _, arg := range constructor.arguments {
 		tokens = append(tokens, expandChildNodes(arg.FieldName())...)
@@ -206,7 +214,7 @@ func expandChildNodesGuard(guard *Guard) []TypeOrToken {
 
 func expandChildNodesCustomTypeVariantReference(constructor *CustomTypeVariantReference) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...)
+	// tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...) // TODO: Need meaning
 	return tokens
 }
 
@@ -224,7 +232,7 @@ func expandChildNodesCaseForCustomType(caseForCustomType *CaseCustomType) []Type
 	tokens = append(tokens, expandChildNodes(caseForCustomType.Test())...)
 
 	for _, consequence := range caseForCustomType.Consequences() {
-		tokens = append(tokens, expandChildNodes(consequence.Identifier())...)
+		tokens = append(tokens, expandChildNodes(consequence.VariantReference())...)
 		for _, param := range consequence.Parameters() {
 			tokens = append(tokens, expandChildNodes(param)...)
 		}
@@ -296,27 +304,12 @@ func expandChildNodes(node Node) []TypeOrToken {
 	}
 	tokens := []TypeOrToken{node}
 	switch t := node.(type) {
-	case *ast.TypeIdentifier:
-		if t.ModuleReference() != nil {
-			tokens = append(tokens, t.ModuleReference())
-		}
-		return tokens
-	case *ast.VariableIdentifier:
-		if t.ModuleReference() != nil {
-			tokens = append(tokens, t.ModuleReference())
-		}
-		return tokens
-	case *ast.ModuleReference:
-		for _, part := range t.Parts() {
-			tokens = append(tokens, part)
-		}
-		return tokens
-	case *ast.ModuleNamePart:
+	case *ModuleReference:
 		return tokens
 	case *AnnotationStatement:
 		return append(tokens, expandChildNodesAnnotation(t)...)
-	case *ImportStatement: // TODO:
-		return tokens
+	case *ImportStatement:
+		return append(tokens, expandChildNodesImportStatement(t)...)
 	case *FunctionValue:
 		return append(tokens, expandChildNodesFunctionValue(t)...)
 	case *FunctionReference:
@@ -336,7 +329,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *RecordLiteral:
 		return append(tokens, expandChildNodesRecordLiteral(t)...)
 	case *FunctionParameterDefinition:
-		return append(tokens, expandChildNodes(t.identifier)...)
+		return tokens
 	case *NamedFunctionValue:
 		return append(tokens, expandChildNodesNamedFunctionValue(t)...)
 	case *CustomTypeVariantConstructor:
@@ -392,6 +385,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *StringLiteral: // Should not be expanded
 		return tokens
+	case *MultilineComment: // Should not be expanded
+		return tokens
 	case *RecordLiteralField: // Should not be expanded
 		return tokens
 	case *BitwiseUnaryOperator:
@@ -419,6 +414,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesFunctionType(t)...)
 	case *dectype.CustomTypeAtom:
 		return append(tokens, expandChildNodesCustomType(t)...)
+	case *dectype.CustomTypeVariant:
+		return tokens
 	case *dectype.RecordAtom:
 		return append(tokens, expandChildNodesRecordType(t)...)
 	case *dectype.FunctionTypeReference:

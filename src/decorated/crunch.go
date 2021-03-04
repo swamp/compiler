@@ -10,13 +10,11 @@ import (
 	"reflect"
 	"strings"
 
-	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/token"
-
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/parser"
 	"github.com/swamp/compiler/src/runestream"
 	"github.com/swamp/compiler/src/tokenize"
@@ -76,9 +74,8 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 		parser.ShowError(tokenizer, absoluteFilename, programErr, verbose, errorAsWarning)
 		return nil, programErr
 	}
-	sourceFile := token.DocumentURI(absoluteFilename)
 
-	module := decorated.NewModule(moduleName, sourceFile)
+	module := decorated.NewModule(moduleName, tokenizer.Document())
 
 	converter := NewDecorator(moduleRepository, module)
 

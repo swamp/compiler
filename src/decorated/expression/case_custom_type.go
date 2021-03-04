@@ -41,13 +41,13 @@ func NewCaseConsequenceParameter(name *ast.VariableIdentifier, parameterType dty
 }
 
 type CaseConsequenceCustomType struct {
-	variantName   *ast.TypeIdentifier
+	variantName   *CustomTypeVariantReference
 	parameters    []*CaseConsequenceParameter
 	expression    Expression
 	internalIndex int
 }
 
-func NewCaseConsequenceCustomType(internalIndex int, variantName *ast.TypeIdentifier, parameters []*CaseConsequenceParameter,
+func NewCaseConsequenceCustomType(internalIndex int, variantName *CustomTypeVariantReference, parameters []*CaseConsequenceParameter,
 	expression Expression) *CaseConsequenceCustomType {
 	return &CaseConsequenceCustomType{
 		internalIndex: internalIndex, variantName: variantName, parameters: parameters,
@@ -63,7 +63,7 @@ func (c *CaseConsequenceCustomType) InternalIndex() int {
 	return c.internalIndex
 }
 
-func (c *CaseConsequenceCustomType) Identifier() *ast.TypeIdentifier {
+func (c *CaseConsequenceCustomType) VariantReference() *CustomTypeVariantReference {
 	return c.variantName
 }
 

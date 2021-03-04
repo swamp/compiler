@@ -235,7 +235,7 @@ func addSemanticTokenCaseForCustomType(caseNode *decorated.CaseCustomType, build
 	}
 
 	for _, consequence := range caseNode.Consequences() {
-		if err := encodeEnumMember(builder, consequence.Identifier()); err != nil {
+		if err := encodeEnumMember(builder, consequence.VariantReference().AstIdentifier()); err != nil {
 			return err
 		}
 

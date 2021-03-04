@@ -14,11 +14,12 @@ import (
 
 type ImportStatement struct {
 	astImport       *ast.Import
-	moduleReference *Module
+	moduleReference *ModuleReference
+	alias           *ModuleReference
 }
 
-func NewImport(astImport *ast.Import, moduleReference *Module) *ImportStatement {
-	return &ImportStatement{astImport: astImport, moduleReference: moduleReference}
+func NewImport(astImport *ast.Import, moduleReference *ModuleReference, alias *ModuleReference) *ImportStatement {
+	return &ImportStatement{astImport: astImport, moduleReference: moduleReference, alias: alias}
 }
 
 func (l *ImportStatement) String() string {
@@ -30,6 +31,14 @@ func (l *ImportStatement) StatementString() string {
 }
 
 func (l *ImportStatement) Module() *Module {
+	return l.moduleReference.module
+}
+
+func (l *ImportStatement) Alias() *ModuleReference {
+	return l.alias
+}
+
+func (l *ImportStatement) ModuleReference() *ModuleReference {
 	return l.moduleReference
 }
 

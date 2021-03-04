@@ -28,7 +28,7 @@ func (g *CustomTypeVariantReference) String() string {
 }
 
 func (g *CustomTypeVariantReference) HumanReadable() string {
-	return fmt.Sprintf("%v", g.typeIdentifier)
+	return "Variant Reference"
 }
 
 func (g *CustomTypeVariantReference) CustomTypeVariant() *dectype.CustomTypeVariant {
