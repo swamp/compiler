@@ -32,3 +32,12 @@ func decorateIdentifier(d DecorateStream, ident *ast.VariableIdentifier, context
 
 	return expression, nil
 }
+
+func decorateIdentifierScoped(d DecorateStream, ident *ast.VariableIdentifierScoped, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	expression := context.FindScopedNamedDecoratedExpression(ident)
+	if expression == nil {
+		return nil, decorated.NewUnknownVariable(ident.AstVariableReference())
+	}
+
+	return expression, nil
+}

@@ -8,6 +8,10 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type TypeReferenceScopedOrNormal interface {
+	dtype.Type
+}
+
 type TypeReference struct {
 	referencedType dtype.Type
 	typeIdentfier  *ast.TypeIdentifier

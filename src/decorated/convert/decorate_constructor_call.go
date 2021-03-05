@@ -26,7 +26,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
 	}
 
-	variantConstructor := d.TypeRepo().FindTypeFromName(call.TypeIdentifier().Name())
+	variantConstructor := call.TypeIdentifier()
 	unaliasedConstructor := dectype.Unalias(variantConstructor)
 
 	switch e := unaliasedConstructor.(type) {

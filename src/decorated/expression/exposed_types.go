@@ -10,6 +10,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -18,7 +19,7 @@ type ExposedTypes struct {
 	types            []dtype.Type
 }
 
-func NewExposedTypes() *ExposedTypes {
+func NewExposedTypes(module *decorated.Module) *ExposedTypes {
 	return &ExposedTypes{identifierToType: make(map[string]dtype.Type)}
 }
 

@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
@@ -203,6 +204,7 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 			return nil, termErr
 		}
 	}
+	log.Printf("term token %T %v", term, term)
 
 	leftExp := term
 	leftExpErr := termErr
@@ -219,9 +221,11 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 
 	p.stream.nodes = append(p.stream.nodes, leftExp)
 	_, isTypeIdentifier := term.(*ast.TypeIdentifier)
+	_, isScopedTypeIdentifier := term.(*ast.TypeIdentifierScoped)
 	_, isVariableIdentifier := term.(*ast.VariableIdentifier)
+	_, isScopedVariableIdentifier := term.(*ast.VariableIdentifierScoped)
 
-	if isTypeIdentifier || isVariableIdentifier {
+	if isTypeIdentifier || isScopedTypeIdentifier || isVariableIdentifier || isScopedVariableIdentifier {
 		isCall := p.peekIsCall()
 		if isCall {
 			_, _, spaceErr := p.stream.maybeOneSpace()

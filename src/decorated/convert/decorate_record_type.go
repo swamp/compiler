@@ -8,10 +8,11 @@ package decorator
 import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func DecorateRecordType(info *ast.Record, t *dectype.TypeRepo) (*dectype.RecordAtom, dectype.DecoratedTypeError) {
+func DecorateRecordType(info *ast.Record, t decorated.TypeAddAndReferenceMaker) (*dectype.RecordAtom, decorated.TypeError) {
 	var convertedFields []*dectype.RecordField
 	for _, field := range info.Fields() {
 		convertedFieldType, convertedFieldTypeErr := ConvertFromAstToDecorated(field.Type(), t)
@@ -37,5 +38,5 @@ func DecorateRecordType(info *ast.Record, t *dectype.TypeRepo) (*dectype.RecordA
 
 	record := dectype.NewRecordType(info, convertedFields, convertedParameters)
 
-	return t.DeclareRecordType(record), nil
+	return record, nil
 }

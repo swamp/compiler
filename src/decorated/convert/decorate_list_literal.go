@@ -39,7 +39,7 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 		detectedType = dectype.NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.SourceFileReference{}, 0)))
 	}
 
-	listType := d.TypeRepo().FindTypeFromAlias(containerName)
+	listType := d.TypeRepo().FindBuiltInType(containerName)
 	if listType == nil {
 		panic("container literal must have a container type defined to use literals")
 	}

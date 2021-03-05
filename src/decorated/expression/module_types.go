@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-package dectype
+package decorated
 
 import (
 	"fmt"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -18,11 +19,11 @@ type TypeRepo struct {
 	identifierToType    map[string]dtype.Type
 	types               []dtype.Type
 	parentImportedTypes *ExposedTypes
-	moduleName          ArtifactFullyQualifiedModuleName
+	sourceModule        *Module
 }
 
-func NewTypeRepo(moduleName ArtifactFullyQualifiedModuleName, imported *ExposedTypes) *TypeRepo {
-	t := &TypeRepo{parentImportedTypes: imported, moduleName: moduleName, identifierToType: make(map[string]dtype.Type)}
+func NewTypeRepo(sourceModule *Module, imported *ExposedTypes) *TypeRepo {
+	t := &TypeRepo{parentImportedTypes: imported, sourceModule: sourceModule, identifierToType: make(map[string]dtype.Type)}
 	return t
 }
 
@@ -38,8 +39,8 @@ func (t *TypeRepo) ImportedTypes() *ExposedTypes {
 	return t.parentImportedTypes
 }
 
-func (t *TypeRepo) ModuleName() ArtifactFullyQualifiedModuleName {
-	return t.moduleName
+func (t *TypeRepo) SourceModule() *Module {
+	return t.sourceModule
 }
 
 // -----------------------------------------------------
@@ -73,7 +74,7 @@ func (t *TypeRepo) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) dtype
 	if foundType == nil {
 		return nil
 	}
-	ref := NewTypeReference(typeIdentifier, foundType)
+	ref := dectype.NewTypeReference(typeIdentifier, foundType)
 
 	return ref
 }
@@ -91,17 +92,17 @@ func (t *TypeRepo) DeclareType(realType dtype.Type) error {
 	return nil
 }
 
-func (t *TypeRepo) AddFunctionAtom(astFunctionType *ast.FunctionType, parameterTypes []dtype.Type) *FunctionAtom {
-	newType := NewFunctionAtom(astFunctionType, parameterTypes)
+func (t *TypeRepo) AddFunctionAtom(astFunctionType *ast.FunctionType, parameterTypes []dtype.Type) *dectype.FunctionAtom {
+	newType := dectype.NewFunctionAtom(astFunctionType, parameterTypes)
 	existing := t.FindTypeFromSignature(newType.DecoratedName())
 	if existing != nil {
-		return existing.(*FunctionAtom)
+		return existing.(*dectype.FunctionAtom)
 	}
 	t.internalAdd(newType)
 	return newType
 }
 
-func (t *TypeRepo) DeclareRecordType(r *RecordAtom) *RecordAtom {
+func (t *TypeRepo) DeclareRecordType(r *dectype.RecordAtom) *dectype.RecordAtom {
 	return r
 }
 
@@ -109,14 +110,14 @@ type DecoratedTypeError interface {
 	Error() string
 }
 
-func (t *TypeRepo) DeclareTypeAlias(alias *ast.Alias, concreteType dtype.Type) (*Alias, DecoratedTypeError) {
-	artifactTypeName := t.moduleName.JoinTypeIdentifier(alias.Identifier())
-	newType := NewAliasType(alias, artifactTypeName, concreteType)
+func (t *TypeRepo) DeclareTypeAlias(alias *ast.Alias, concreteType dtype.Type) (*dectype.Alias, DecoratedTypeError) {
+	artifactTypeName := t.sourceModule.fullyQualifiedModuleName.JoinTypeIdentifier(alias.Identifier())
+	newType := dectype.NewAliasType(alias, artifactTypeName, concreteType)
 	t.internalAdd(newType)
 	return newType, nil
 }
 
-func (t *TypeRepo) DeclareAlias(alias *ast.Alias, referencedType dtype.Type, localComments []ast.LocalComment) (*Alias, DecoratedTypeError) {
+func (t *TypeRepo) DeclareAlias(alias *ast.Alias, referencedType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, DecoratedTypeError) {
 	if referencedType == nil {
 		panic("alias nil")
 	}
@@ -138,7 +139,7 @@ func (t *TypeRepo) DeclareAlias(alias *ast.Alias, referencedType dtype.Type, loc
 	return aliasType, nil
 }
 
-func (t *TypeRepo) DeclareFakeAlias(name *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) (*Alias, DecoratedTypeError) {
+func (t *TypeRepo) DeclareFakeAlias(name *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, DecoratedTypeError) {
 	alias := ast.NewAlias(token.Keyword{}, token.Keyword{}, name, nil)
 	return t.DeclareAlias(alias, referencedType, localComments)
 }
@@ -189,7 +190,7 @@ func stringInSlice(a string, list []string) bool {
 }
 
 func isTypeToIgnoreForDebugOutput(repoType dtype.Type) bool {
-	_, isPrimitive := repoType.(*PrimitiveAtom)
+	_, isPrimitive := repoType.(*dectype.PrimitiveAtom)
 	if isPrimitive {
 		return true
 	}

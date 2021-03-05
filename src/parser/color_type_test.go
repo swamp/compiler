@@ -28,7 +28,7 @@ func testColor(t *testing.T, code string) {
 		parser.ColorType(expr.Expression().Type(), 0, false, colorer)
 	}
 
-	for _, definedType := range module.TypeRepo().AllLocalTypes() {
+	for _, definedType := range module.TypeRepo().AllModuleTypes() {
 		parser.ColorType(definedType, 0, false, colorer)
 	}
 }

@@ -8,9 +8,14 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
+	"github.com/swamp/compiler/src/token"
 )
 
-func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (*ast.TypeIdentifier, parerr.ParseError) {
+type TypeIdentifierNormalOrScoped interface {
+	FetchPositionLength() token.SourceFileReference
+}
+
+func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (TypeIdentifierNormalOrScoped, parerr.ParseError) {
 	var moduleNameParts []*ast.ModuleNamePart
 
 	for p.maybeAccessor() {
@@ -25,8 +30,9 @@ func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (*
 
 	if len(moduleNameParts) > 0 {
 		moduleReference := ast.NewModuleReference(moduleNameParts)
-		x = ast.NewQualifiedTypeIdentifier(x.Symbol(), moduleReference)
+		return ast.NewQualifiedTypeIdentifierScoped(moduleReference, x), nil
 	}
+
 	return x, nil
 }
 
@@ -66,7 +72,11 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 				return nil, typeParameterIdentifiersErr
 			}
 		}
-		return ast.NewTypeReference(x, typeParameters), nil
+		scoped, isScoped := x.(*ast.TypeIdentifierScoped)
+		if isScoped {
+			return ast.NewScopedTypeReference(scoped, typeParameters), nil
+		}
+		return ast.NewTypeReference(x.(*ast.TypeIdentifier), typeParameters), nil
 	} else if ident, wasVariableIdentifier := p.wasVariableIdentifier(); wasVariableIdentifier {
 		typeParameter := ast.NewTypeParameter(ident)
 		return ast.NewLocalType(typeParameter), nil

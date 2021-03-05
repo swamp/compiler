@@ -13,7 +13,7 @@ import (
 )
 
 func decorateCharacter(d DecorateStream, ch *ast.CharacterLiteral) (decorated.Expression, decshared.DecoratedError) {
-	characterType := d.TypeRepo().FindTypeFromName("Char")
+	characterType := d.TypeRepo().FindBuiltInType("Char")
 	if characterType == nil {
 		panic("internal error. String is an unknown type")
 	}

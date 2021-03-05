@@ -18,7 +18,7 @@ import (
 )
 
 type Definer struct {
-	typeRepo          *dectype.TypeRepo
+	typeRepo          decorated.TypeAddAndReferenceMaker
 	localAnnotation   *decorated.AnnotationStatement
 	localComments     []decorated.Comment
 	localCommentBlock *ast.MultilineComment
@@ -26,17 +26,13 @@ type Definer struct {
 	decorateStream    DecorateStream
 }
 
-func NewDefiner(dectorateStream DecorateStream, typeRepo *dectype.TypeRepo, debugName string) *Definer {
+func NewDefiner(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker, debugName string) *Definer {
 	g := &Definer{verboseFlag: false, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo}
 	return g
 }
 
 func (g *Definer) createAliasTypeFromType(aliasName *ast.Alias, subType dtype.Type) (*dectype.Alias, decshared.DecoratedError) {
-	existingType := g.typeRepo.FindTypeFromAlias(aliasName.DecoratedName())
-	if existingType != nil {
-		// panic(fmt.Sprintf("type alias already defined %v", aliasName))
-	}
-	t, typeErr := g.typeRepo.DeclareAlias(aliasName, subType, nil)
+	t, typeErr := g.typeRepo.AddTypeAlias(aliasName, subType, nil)
 	//	log.Printf("declaring %v\n", aliasName)
 	if typeErr != nil {
 		panic(typeErr)
@@ -88,7 +84,7 @@ func (g *Definer) handleAliasStatement(alias *ast.Alias) (*dectype.Alias, decsha
 	return g.createAliasTypeFromType(alias, referencedType)
 }
 
-func (g *Definer) findTypeFromAstType(constantType ast.Type) (dtype.Type, dectype.DecoratedTypeError) {
+func (g *Definer) findTypeFromAstType(constantType ast.Type) (dtype.Type, decorated.TypeError) {
 	t, tErr := ConvertFromAstToDecorated(constantType, g.typeRepo)
 	if tErr != nil {
 		return nil, tErr
@@ -96,7 +92,7 @@ func (g *Definer) findTypeFromAstType(constantType ast.Type) (dtype.Type, dectyp
 	return t, nil
 }
 
-func ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType ast.Type, typeRepo *dectype.TypeRepo, localComments []ast.LocalComment) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+func ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType ast.Type, typeRepo decorated.TypeAddAndReferenceMaker, localComments []ast.LocalComment) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	customType2, _ := hopefullyCustomType.(*ast.CustomType)
 	resultType, tErr := DecorateCustomType(customType2, typeRepo)
 	if tErr != nil {
@@ -112,7 +108,7 @@ func (g *Definer) handleCustomTypeStatement(customTypeStatement *ast.CustomTypeS
 	if convertErr != nil {
 		return nil, convertErr
 	}
-	typeErr := g.typeRepo.DeclareType(customType)
+	typeErr := g.typeRepo.AddCustomType(customType)
 	if typeErr != nil {
 		panic(typeErr)
 	}

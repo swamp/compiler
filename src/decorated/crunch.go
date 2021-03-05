@@ -7,6 +7,7 @@ package deccy
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 
@@ -77,10 +78,10 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 
 	module := decorated.NewModule(moduleName, tokenizer.Document())
 
-	converter := NewDecorator(moduleRepository, module)
-
 	for _, aliasModule := range aliasModules {
-		CopyModuleToModule(module, aliasModule)
+		if err := CopyModuleToModule(module, aliasModule); err != nil {
+			return nil, err
+		}
 	}
 
 	for _, importModule := range importModules {
@@ -92,16 +93,27 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 		if importErr != nil {
 			return nil, decorated.NewInternalError(importErr)
 		}
+
 	}
 
-	definerScan := decorator.NewDefiner(converter, module.TypeRepo(), "compiletomodule")
+	log.Printf("======== imported modules")
+	for _, importedModule := range module.ImportedModules().AllModules() {
+		log.Printf("> importedModule %v", importedModule.FullyQualifiedModuleName())
+	}
+
+	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.TypeRepo(), module.ImportedTypes())
+	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.TypeRepo())
+
+	converter := NewDecorator(moduleRepository, module, createAndLookup)
+
+	definerScan := decorator.NewDefiner(converter, createAndLookup, "compiletomodule")
 	rootNodes, generateErr := definerScan.Define(program)
 	if generateErr != nil {
 		parser.ShowError(tokenizer, absoluteFilename, generateErr, verbose, errorAsWarning)
 		return nil, generateErr
 	}
 
-	module.ExposedTypes().AddTypes(module.TypeRepo().AllLocalTypes())
+	module.ExposedTypes().AddTypes(module.TypeRepo().AllTypes())
 	module.ExposedDefinitions().AddDefinitions(module.Definitions().Definitions())
 	module.SetProgram(program)
 
@@ -130,15 +142,10 @@ func ImportModuleToModule(target *decorated.Module, source *decorated.Module, so
 		panic("no source")
 	}
 
-	exposedTypes := source.ExposedTypes().AllExposedTypes()
+	exposedTypes := source.ExposedTypes().AllTypes()
 	exposedDefinitions := source.ExposedDefinitions().ReferencedDefinitions()
 
-	target.ImportedTypes().AddTypesWithModulePrefix(exposedTypes, sourceMountedModuleName)
-
-	importErr := target.ImportedDefinitions().AddDefinitionsWithModulePrefix(source.ExposedDefinitions().ReferencedDefinitions(), sourceMountedModuleName)
-	if importErr != nil {
-		return importErr
-	}
+	target.ImportedModules().ImportModule(sourceMountedModuleName.Path(), source)
 
 	if exposeAll {
 		target.ImportedTypes().AddTypes(exposedTypes)
@@ -148,10 +155,10 @@ func ImportModuleToModule(target *decorated.Module, source *decorated.Module, so
 	return nil
 }
 
-func CopyModuleToModule(target *decorated.Module, source *decorated.Module) {
-	target.TypeRepo().CopyTypes(source.TypeRepo().AllLocalTypes())
+func CopyModuleToModule(target *decorated.Module, source *decorated.Module) decshared.DecoratedError {
+	return target.TypeRepo().CopyTypes(source.TypeRepo().AllTypes())
 }
 
 func ExposeEverythingInModule(target *decorated.Module) {
-	target.ExposedTypes().AddTypes(target.TypeRepo().AllLocalTypes())
+	target.ExposedTypes().AddTypes(target.TypeRepo().AllTypes())
 }

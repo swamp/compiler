@@ -347,7 +347,7 @@ func (e *ConstructorArgumentTypeMismatch) Error() string {
 }
 
 func (e *ConstructorArgumentTypeMismatch) FetchPositionLength() token.SourceFileReference {
-	return e.call.TypeIdentifier().Symbol().SourceFileReference
+	return e.call.TypeIdentifier().FetchPositionLength()
 }
 
 type ExpectedCustomTypeVariantConstructor struct {
@@ -364,7 +364,7 @@ func (e *ExpectedCustomTypeVariantConstructor) Error() string {
 }
 
 func (e *ExpectedCustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {
-	return e.call.TypeIdentifier().Symbol().SourceFileReference
+	return e.call.TypeIdentifier().FetchPositionLength()
 }
 
 type WrongTypeForRecordConstructorField struct {
@@ -388,7 +388,7 @@ func (e *WrongTypeForRecordConstructorField) Error() string {
 }
 
 func (e *WrongTypeForRecordConstructorField) FetchPositionLength() token.SourceFileReference {
-	return e.call.TypeIdentifier().Symbol().SourceFileReference
+	return e.call.TypeIdentifier().FetchPositionLength()
 }
 
 type WrongNumberOfFieldsInConstructor struct {
@@ -408,7 +408,7 @@ func (e *WrongNumberOfFieldsInConstructor) Error() string {
 }
 
 func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.SourceFileReference {
-	return e.call.TypeIdentifier().Symbol().SourceFileReference
+	return e.call.TypeIdentifier().FetchPositionLength()
 }
 
 type UnhandledCustomTypeVariants struct {
@@ -851,10 +851,10 @@ func (e *InternalError) FetchPositionLength() token.SourceFileReference {
 
 type UnknownAnnotationTypeReference struct {
 	annotationIdentifier *ast.VariableIdentifier
-	err                  dectype.DecoratedTypeError
+	err                  TypeError
 }
 
-func NewUnknownAnnotationTypeReference(annotationIdentifier *ast.VariableIdentifier, err dectype.DecoratedTypeError) *UnknownAnnotationTypeReference {
+func NewUnknownAnnotationTypeReference(annotationIdentifier *ast.VariableIdentifier, err TypeError) *UnknownAnnotationTypeReference {
 	return &UnknownAnnotationTypeReference{err: err, annotationIdentifier: annotationIdentifier}
 }
 
@@ -868,10 +868,10 @@ func (e *UnknownAnnotationTypeReference) FetchPositionLength() token.SourceFileR
 
 type UnknownTypeAliasType struct {
 	alias *ast.Alias
-	err   dectype.DecoratedTypeError
+	err   TypeError
 }
 
-func NewUnknownTypeAliasType(alias *ast.Alias, err dectype.DecoratedTypeError) *UnknownTypeAliasType {
+func NewUnknownTypeAliasType(alias *ast.Alias, err TypeError) *UnknownTypeAliasType {
 	return &UnknownTypeAliasType{err: err, alias: alias}
 }
 
@@ -885,10 +885,10 @@ func (e *UnknownTypeAliasType) FetchPositionLength() token.SourceFileReference {
 
 type UnknownTypeInCustomTypeVariant struct {
 	variant *ast.CustomTypeVariant
-	err     dectype.DecoratedTypeError
+	err     TypeError
 }
 
-func NewUnknownTypeInCustomTypeVariant(variant *ast.CustomTypeVariant, err dectype.DecoratedTypeError) *UnknownTypeInCustomTypeVariant {
+func NewUnknownTypeInCustomTypeVariant(variant *ast.CustomTypeVariant, err TypeError) *UnknownTypeInCustomTypeVariant {
 	return &UnknownTypeInCustomTypeVariant{err: err, variant: variant}
 }
 

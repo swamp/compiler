@@ -212,9 +212,10 @@ func encodeModuleAlias(builder *SemanticBuilder, astModuleAlias *ast.TypeIdentif
 	return nil
 }
 
-func encodeStructReferenceWithModuleReference(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
-	if identifier.ModuleReference() != nil {
-		encodeModuleReference(builder, identifier.ModuleReference())
+func encodeStructReferenceWithModuleReference(builder *SemanticBuilder, identifier ast.TypeIdentifierNormalOrScoped) error {
+	scoped, isScoped := identifier.(*ast.TypeIdentifierScoped)
+	if isScoped {
+		encodeModuleReference(builder, scoped.ModuleReference())
 	}
 	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "class", nil)
 }

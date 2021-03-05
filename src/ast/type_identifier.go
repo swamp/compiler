@@ -11,27 +11,20 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type TypeIdentifierNormalOrScoped interface {
+	IsDefaultSymbol() bool
+	FetchPositionLength() token.SourceFileReference
+}
+
 type TypeIdentifier struct {
-	symbolToken     token.TypeSymbolToken
-	moduleReference *ModuleReference
+	symbolToken token.TypeSymbolToken
 }
 
 func NewTypeIdentifier(symbolToken token.TypeSymbolToken) *TypeIdentifier {
 	return &TypeIdentifier{symbolToken: symbolToken}
 }
 
-func NewQualifiedTypeIdentifier(symbolToken token.TypeSymbolToken, moduleReference *ModuleReference) *TypeIdentifier {
-	return &TypeIdentifier{symbolToken: symbolToken, moduleReference: moduleReference}
-}
-
-func (i *TypeIdentifier) ModuleReference() *ModuleReference {
-	return i.moduleReference
-}
-
 func (i *TypeIdentifier) Name() string {
-	if i.moduleReference != nil {
-		return i.moduleReference.ModuleName() + "." + i.symbolToken.Name()
-	}
 	return i.symbolToken.Name()
 }
 
@@ -40,9 +33,6 @@ func (i *TypeIdentifier) Symbol() token.TypeSymbolToken {
 }
 
 func (i *TypeIdentifier) String() string {
-	if i.moduleReference != nil {
-		return i.moduleReference.ModuleName() + "." + i.symbolToken.String()
-	}
 	return i.symbolToken.String()
 }
 

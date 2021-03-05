@@ -31,6 +31,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateCasePatternMatching(d, v, context)
 	case *ast.VariableIdentifier:
 		return decorateIdentifier(d, v, context)
+	case *ast.VariableIdentifierScoped:
+		return decorateIdentifierScoped(d, v, context)
 	case *ast.IntegerLiteral:
 		return decorateInteger(d, v)
 	case *ast.FixedLiteral:
