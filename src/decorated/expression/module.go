@@ -10,9 +10,25 @@ import (
 	"log"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
+
+type TypeReferenceMaker interface {
+	CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, decshared.DecoratedError)
+	CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, decshared.DecoratedError)
+	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError)
+}
+
+type TypeAddAndReferenceMaker interface {
+	TypeReferenceMaker
+	AddTypeAlias(alias *ast.Alias, concreteType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, TypeError)
+	AddCustomType(customType *dectype.CustomTypeAtom) TypeError
+	FindBuiltInType(s string) dtype.Type
+	SourceModule() *Module
+}
 
 type FullyQualifiedVariableName struct {
 	module     *Module
@@ -52,15 +68,15 @@ func (d *ExternalFunctionDeclaration) String() string {
 }
 
 type Module struct {
-	typeRepo *dectype.TypeRepo
+	localTypes        *ModuleTypes
+	localDefinitions  *ModuleDefinitions
+	localDeclarations *ModuleDeclarations
 
-	definitions  *ModuleDefinitions
-	declarations *ModuleDeclarations
-
-	importedTypes       *dectype.ExposedTypes
+	importedTypes       *ExposedTypes
+	importedModules     *ModuleImports
 	importedDefinitions *ModuleReferenceDefinitions
 
-	exposedTypes       *dectype.ExposedTypes
+	exposedTypes       *ExposedTypes
 	exposedDefinitions *ModuleReferenceDefinitions
 
 	program *ast.SourceFile
@@ -76,17 +92,20 @@ type Module struct {
 }
 
 func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri *token.SourceFileDocument) *Module {
-	importedTypes := dectype.NewExposedTypes()
 	m := &Module{
-		fullyQualifiedModuleName: fullyQualifiedModuleName, exposedTypes: dectype.NewExposedTypes(),
-		importedTypes: importedTypes,
-		sourceFileUri: sourceFileUri,
+		fullyQualifiedModuleName: fullyQualifiedModuleName,
+		sourceFileUri:            sourceFileUri,
+		importedModules:          NewModuleImports(),
 	}
-	m.typeRepo = dectype.NewTypeRepo(fullyQualifiedModuleName, importedTypes)
-	m.definitions = NewModuleDefinitions(m)
+
+	m.exposedTypes = NewExposedTypes(m)
+	m.importedTypes = NewExposedTypes(m)
+	m.localTypes = NewModuleTypes(m)
+	m.localDefinitions = NewModuleDefinitions(m)
+	m.localDeclarations = NewModuleDeclarations(m)
+
 	m.importedDefinitions = NewModuleReferenceDefinitions(m)
 	m.exposedDefinitions = NewModuleReferenceDefinitions(m)
-	m.declarations = NewModuleDeclarations(m)
 
 	return m
 }
@@ -183,24 +202,28 @@ func (m *Module) FullyQualifiedModuleName() dectype.ArtifactFullyQualifiedModule
 	return m.fullyQualifiedModuleName
 }
 
-func (m *Module) TypeRepo() *dectype.TypeRepo {
-	return m.typeRepo
+func (m *Module) TypeRepo() *ModuleTypes {
+	return m.localTypes
 }
 
-func (m *Module) ExposedTypes() *dectype.ExposedTypes {
+func (m *Module) ExposedTypes() *ExposedTypes {
 	return m.exposedTypes
 }
 
-func (m *Module) ImportedTypes() *dectype.ExposedTypes {
+func (m *Module) ImportedTypes() *ExposedTypes {
 	return m.importedTypes
 }
 
+func (m *Module) ImportedModules() *ModuleImports {
+	return m.importedModules
+}
+
 func (m *Module) Definitions() *ModuleDefinitions {
-	return m.definitions
+	return m.localDefinitions
 }
 
 func (m *Module) Declarations() *ModuleDeclarations {
-	return m.declarations
+	return m.localDeclarations
 }
 
 func (m *Module) ImportedDefinitions() *ModuleReferenceDefinitions {
@@ -212,7 +235,7 @@ func (m *Module) ExposedDefinitions() *ModuleReferenceDefinitions {
 }
 
 func (m *Module) LocalAndImportedDefinitions() *ModuleDefinitionsCombine {
-	importAndLocal := NewModuleDefinitionsCombine(m.Definitions(), m.ImportedDefinitions())
+	importAndLocal := NewModuleDefinitionsCombine(m.Definitions(), m.ImportedDefinitions(), m.importedModules)
 
 	return importAndLocal
 }
@@ -223,7 +246,7 @@ func (m *Module) DebugOutput(debug string) {
 }
 
 func (m *Module) ShortString() string {
-	return m.typeRepo.ShortString() + "\n" + m.definitions.ShortString()
+	return m.localTypes.ShortString() + "\n" + m.localDefinitions.ShortString()
 }
 
 func (m *Module) String() string {
@@ -233,8 +256,10 @@ func (m *Module) String() string {
 	s += m.exposedDefinitions.ShortString()
 	s += "\nmodule:\n"
 	s += m.ShortString()
-	s += "\nimported:\n"
+	s += "\nimported definitions:\n"
 	s += m.importedDefinitions.ShortString()
+	s += "\nimported modules:\n"
+	s += m.importedModules.String()
 	s += "\n--------------------------------\n"
 
 	return s
@@ -244,9 +269,9 @@ func (m *Module) DebugString() string {
 	s := "---DEBUG--------- "
 	s += m.fullyQualifiedModuleName.String()
 	s += " ----------- \n"
-	s += m.typeRepo.DebugString()
+	s += m.localTypes.DebugString()
 	s += "\n"
-	s += m.definitions.DebugString()
+	s += m.localDefinitions.DebugString()
 	s += "\n-----------------------\n"
 
 	return s

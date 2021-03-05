@@ -58,7 +58,7 @@ type ModuleReferenceDefinitions struct {
 
 func NewModuleReferenceDefinitions(ownedByModule *Module) *ModuleReferenceDefinitions {
 	if ownedByModule == nil {
-		panic("sorry, all definitions must be owned by a module")
+		panic("sorry, all localDefinitions must be owned by a module")
 	}
 	return &ModuleReferenceDefinitions{
 		ownedByModule:         ownedByModule,
@@ -79,7 +79,7 @@ func (d *ModuleReferenceDefinitions) ReferencedDefinitions() []*ModuleDefinition
 func (d *ModuleReferenceDefinitions) AddDefinitions(definitions []*ModuleDefinition) error {
 	for _, def := range definitions {
 		if def == nil {
-			panic("not allowed with empty definitions")
+			panic("not allowed with empty localDefinitions")
 		}
 		addErr := d.AddDefinition(def.Identifier(), def)
 		if addErr != nil {

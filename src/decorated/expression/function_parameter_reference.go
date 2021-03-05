@@ -14,7 +14,7 @@ import (
 )
 
 type FunctionParameterReference struct {
-	ident               *ast.VariableIdentifier
+	ident               ast.ScopedOrNormalVariableIdentifier
 	referencedParameter *FunctionParameterDefinition
 }
 
@@ -30,7 +30,7 @@ func (g *FunctionParameterReference) HumanReadable() string {
 	return fmt.Sprintf("Parameter Reference")
 }
 
-func (g *FunctionParameterReference) Identifier() *ast.VariableIdentifier {
+func (g *FunctionParameterReference) Identifier() ast.ScopedOrNormalVariableIdentifier {
 	return g.ident
 }
 
@@ -38,7 +38,7 @@ func (g *FunctionParameterReference) ParameterRef() *FunctionParameterDefinition
 	return g.referencedParameter
 }
 
-func NewFunctionParameterReference(ident *ast.VariableIdentifier,
+func NewFunctionParameterReference(ident ast.ScopedOrNormalVariableIdentifier,
 	referencedParameter *FunctionParameterDefinition) *FunctionParameterReference {
 	if referencedParameter == nil {
 		panic("cant be nil")

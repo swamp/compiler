@@ -160,12 +160,22 @@ func (n ArtifactFullyQualifiedModuleName) JoinTypeIdentifier(relative *ast.TypeI
 		newPaths = append(newPaths, n.path.Parts()...)
 	}
 
-	if relative.ModuleReference() != nil {
-		for _, mRef := range relative.ModuleReference().Parts() {
-			newPaths = append(newPaths, mRef)
-		}
-	}
 	newPaths = append(newPaths, ast.NewModuleNamePart(relative))
+
+	return ArtifactFullyQualifiedTypeName{ModuleName{path: ast.NewModuleReference(newPaths)}}
+}
+
+func (n ArtifactFullyQualifiedModuleName) JoinTypeIdentifierScoped(relative *ast.TypeIdentifierScoped) ArtifactFullyQualifiedTypeName {
+	var newPaths []*ast.ModuleNamePart
+
+	if n.path != nil {
+		newPaths = append(newPaths, n.path.Parts()...)
+	}
+
+	for _, mRef := range relative.ModuleReference().Parts() {
+		newPaths = append(newPaths, mRef)
+	}
+	newPaths = append(newPaths, ast.NewModuleNamePart(relative.Symbol()))
 
 	return ArtifactFullyQualifiedTypeName{ModuleName{path: ast.NewModuleReference(newPaths)}}
 }

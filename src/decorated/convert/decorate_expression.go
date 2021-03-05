@@ -31,6 +31,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateCasePatternMatching(d, v, context)
 	case *ast.VariableIdentifier:
 		return decorateIdentifier(d, v, context)
+	case *ast.VariableIdentifierScoped:
+		return decorateIdentifierScoped(d, v, context)
 	case *ast.IntegerLiteral:
 		return decorateInteger(d, v)
 	case *ast.FixedLiteral:
@@ -66,7 +68,7 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 	case *ast.BinaryOperator:
 		return decorateBinaryOperator(d, v, context)
 	default:
-		return nil, decorated.NewInternalError(fmt.Errorf("don't know how to decorate %v %T", e, e))
+		return nil, decorated.NewInternalError(fmt.Errorf("don't know how to decorate %v %T %v", e, e, e.FetchPositionLength()))
 	}
 }
 

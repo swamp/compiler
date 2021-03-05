@@ -13,7 +13,7 @@ import (
 )
 
 func decorateFixed(d DecorateStream, fixed *ast.FixedLiteral) (decorated.Expression, decshared.DecoratedError) {
-	fixedType := d.TypeRepo().FindTypeFromName("Fixed")
+	fixedType := d.TypeRepo().FindBuiltInType("Fixed")
 	if fixedType == nil {
 		panic("internal error. Int is an unknown type")
 	}

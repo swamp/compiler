@@ -23,7 +23,7 @@ func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, contex
 		if resolveErr != nil {
 			return nil, resolveErr
 		}
-		functionReference := decorated.NewFunctionReference(functionExpressionIdentifier, namedDef.(*decorated.FunctionValue))
+		functionReference := decorated.NewFunctionReference(functionExpressionIdentifier, namedDef.(*decorated.FunctionExpression))
 		return functionReference, nil
 	}
 

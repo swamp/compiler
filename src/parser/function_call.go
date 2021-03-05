@@ -11,15 +11,23 @@ import (
 )
 
 func parseFunctionCall(p ParseStream, startIndentation int, expressionResolveToFunction ast.Expression) (ast.Expression, parerr.ParseError) {
+	_, isJustATypeIdentifier := expressionResolveToFunction.(ast.TypeIdentifierNormalOrScoped)
 	arguments, argumentsErr := parseFunctionCallArguments(p, startIndentation)
 	if argumentsErr != nil {
 		return nil, argumentsErr
 	}
 
-	typeIdentifier, isJustATypeIdentifier := expressionResolveToFunction.(*ast.TypeIdentifier)
 	if isJustATypeIdentifier {
-		return ast.NewConstructorCall(typeIdentifier, arguments), nil
+		scoped, wasScoped := expressionResolveToFunction.(*ast.TypeIdentifierScoped)
+		var someRef ast.TypeReferenceScopedOrNormal
+		if wasScoped {
+			someRef = ast.NewScopedTypeReference(scoped, nil)
+		} else {
+			someRef = ast.NewTypeReference(expressionResolveToFunction.(*ast.TypeIdentifier), nil)
+		}
+		return ast.NewConstructorCall(someRef, arguments), nil
 	}
+
 	call := ast.NewFunctionCall(expressionResolveToFunction, arguments)
 
 	return call, nil

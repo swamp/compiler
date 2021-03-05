@@ -7,10 +7,10 @@ import (
 
 type NamedDefinitionTypeReference struct {
 	optionalModuleReference *ModuleReference
-	ident                   *ast.TypeIdentifier
+	ident                   ast.TypeIdentifierNormalOrScoped
 }
 
-func NewNamedDefinitionTypeReference(optionalModuleReference *ModuleReference, ident *ast.TypeIdentifier) *NamedDefinitionTypeReference {
+func NewNamedDefinitionTypeReference(optionalModuleReference *ModuleReference, ident ast.TypeIdentifierNormalOrScoped) *NamedDefinitionTypeReference {
 	return &NamedDefinitionTypeReference{
 		optionalModuleReference: optionalModuleReference,
 		ident:                   ident,
@@ -21,7 +21,7 @@ func (r *NamedDefinitionTypeReference) ModuleReference() *ModuleReference {
 	return r.optionalModuleReference
 }
 
-func (r *NamedDefinitionTypeReference) AstIdentifier() *ast.TypeIdentifier {
+func (r *NamedDefinitionTypeReference) AstIdentifier() ast.TypeIdentifierNormalOrScoped {
 	return r.ident
 }
 

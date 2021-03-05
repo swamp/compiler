@@ -77,7 +77,7 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 }
 
 /*
-func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.FunctionValue) (ast.FunctionValue, parerr.ParseError) {
+func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.FunctionExpression) (ast.FunctionExpression, parerr.ParseError) {
 	_, spaceErr := p.eatOneSpace("space after pipe left")
 	if spaceErr != nil {
 		return nil, spaceErr
@@ -136,10 +136,18 @@ func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context 
 		}
 		lookupExpression := def.Expression()
 		functionValue, _ := lookupExpression.(*decorated.FunctionValue)
-		var decoratedModuleReference *decorated.ModuleReference
-		if t.ModuleReference() != nil {
-			decoratedModuleReference = decorated.NewModuleReference(t.ModuleReference(), def.ModuleDefinition().ParentDefinitions().OwnedByModule())
+		nameWithModuleRef := decorated.NewNamedDefinitionReference(nil, t)
+		functionReference := decorated.NewFunctionReference(nameWithModuleRef, functionValue)
+		functionExpression = functionReference
+		leftAstCall = ast.NewFunctionCall(functionReference, nil)
+	case *ast.VariableIdentifierScoped:
+		def := context.FindScopedNamedDecoratedExpression(t)
+		if def == nil {
+			return nil, nil, nil, decorated.NewInternalError(fmt.Errorf("couldn't find %v", t))
 		}
+		lookupExpression := def.Expression()
+		functionValue, _ := lookupExpression.(*decorated.FunctionValue)
+		decoratedModuleReference := decorated.NewModuleReference(t.ModuleReference(), def.ModuleDefinition().ParentDefinitions().OwnedByModule())
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(decoratedModuleReference, t)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, functionValue)
 		functionExpression = functionReference
@@ -261,7 +269,7 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 		if incompatibleErr != nil {
 			return nil, decorated.NewUnMatchingBooleanOperatorTypes(infix, leftExpression, rightExpression)
 		}
-		boolType := d.TypeRepo().FindTypeFromName("Bool")
+		boolType := d.TypeRepo().FindBuiltInType("Bool")
 		if boolType == nil {
 			return nil, decorated.NewTypeNotFound("Bool")
 		}
@@ -274,7 +282,7 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 		if incompatibleErr != nil {
 			return nil, decorated.NewLogicalOperatorsMustBeBoolean(infix, leftExpression, rightExpression)
 		}
-		boolType := d.TypeRepo().FindTypeFromName("Bool")
+		boolType := d.TypeRepo().FindBuiltInType("Bool")
 		if boolType == nil {
 			return nil, decorated.NewTypeNotFound("Bool")
 		}

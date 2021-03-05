@@ -790,7 +790,7 @@ func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable,
 		arguments = append(arguments, argReg)
 	}
 
-	fn := call.FunctionValue()
+	fn := call.FunctionExpression()
 
 	functionRegister, functionGenErr := generateExpressionWithSourceVar(code, fn, genContext, "functioncall")
 	if functionGenErr != nil {
@@ -915,9 +915,9 @@ func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Expres
 		if foundVar != nil {
 			return foundVar, nil
 		}
-		foundNamedExpression := genContext.definitions.FindNamedDecoratedExpression(ident)
+		foundNamedExpression := genContext.definitions.FindScopedNamedDecoratedExpressionScopedOrNormal(ident)
 		if foundNamedExpression == nil {
-			return nil, fmt.Errorf("sorry, I don't know what '%v' is", ident)
+			return nil, fmt.Errorf("sorry, I don't know what '%v' is %v", ident, ident.FetchPositionLength())
 		}
 		fullyQualifiedName := foundNamedExpression.FullyQualifiedName()
 		refConstant, _ := genContext.context.Constants().AllocateFunctionReferenceConstant(fullyQualifiedName)

@@ -95,7 +95,7 @@ func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuil
 	}
 
 	for _, variant := range f.Variants() {
-		if err := encodeEnumMember(builder, variant.Name()); err != nil {
+		if err := encodeEnumMemberTypeIdentifier(builder, variant.Name()); err != nil {
 			return err
 		}
 
@@ -138,7 +138,7 @@ func addSemanticTokenCustomTypeVariantReference(ref *decorated.CustomTypeVariant
 }
 
 func addSemanticTokenRecordConstructor(constructor *decorated.RecordConstructor, builder *SemanticBuilder) error {
-	if err := encodeStructReferenceWithModuleReference(builder, constructor.AstTypeIdentifier()); err != nil {
+	if err := encodeStructReferenceWithModuleReference(builder, constructor.AstTypeReference().SomeTypeIdentifier()); err != nil {
 		return err
 	}
 
@@ -184,7 +184,11 @@ func encodeOperator(builder *SemanticBuilder, operator token.OperatorToken) erro
 	return builder.EncodeSymbol(operator.FetchPositionLength().Range, "operator", nil)
 }
 
-func encodeEnumMember(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
+func encodeEnumMember(builder *SemanticBuilder, identifier ast.TypeIdentifierNormalOrScoped) error {
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enumMember", nil)
+}
+
+func encodeEnumMemberTypeIdentifier(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
 	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enumMember", nil)
 }
 
@@ -212,9 +216,10 @@ func encodeModuleAlias(builder *SemanticBuilder, astModuleAlias *ast.TypeIdentif
 	return nil
 }
 
-func encodeStructReferenceWithModuleReference(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
-	if identifier.ModuleReference() != nil {
-		encodeModuleReference(builder, identifier.ModuleReference())
+func encodeStructReferenceWithModuleReference(builder *SemanticBuilder, identifier ast.TypeIdentifierNormalOrScoped) error {
+	scoped, isScoped := identifier.(*ast.TypeIdentifierScoped)
+	if isScoped {
+		encodeModuleReference(builder, scoped.ModuleReference())
 	}
 	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "class", nil)
 }
@@ -571,7 +576,7 @@ func addSemanticTokenArrayLiteral(arrayLiteral *decorated.ArrayLiteral, builder 
 }
 
 func addSemanticTokenFunctionCall(funcCall *decorated.FunctionCall, builder *SemanticBuilder) error {
-	if err := addSemanticToken(funcCall.FunctionValue(), builder); err != nil {
+	if err := addSemanticToken(funcCall.FunctionExpression(), builder); err != nil {
 		return err
 	}
 
@@ -752,7 +757,7 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenCustomType(t, builder)
 
 	default:
-		log.Printf("semantic unhandled %T %v\n", t, t)
+		log.Printf("semantic unhandled %T\n", t)
 	}
 
 	return nil

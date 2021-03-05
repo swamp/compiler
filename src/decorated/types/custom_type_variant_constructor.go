@@ -13,12 +13,11 @@ import (
 )
 
 type CustomTypeVariantConstructorType struct {
-	variant  *CustomTypeVariant
-	typeRepo *TypeRepo
+	variant *CustomTypeVariant
 }
 
-func NewCustomTypeVariantConstructorType(typeRepo *TypeRepo, variant *CustomTypeVariant) *CustomTypeVariantConstructorType {
-	return &CustomTypeVariantConstructorType{variant: variant, typeRepo: typeRepo}
+func NewCustomTypeVariantConstructorType(variant *CustomTypeVariant) *CustomTypeVariantConstructorType {
+	return &CustomTypeVariantConstructorType{variant: variant}
 }
 
 func (s *CustomTypeVariantConstructorType) Variant() *CustomTypeVariant {

@@ -30,3 +30,7 @@ func NewLocalType(typeArgument *TypeParameter) *LocalType {
 func NewTypeReference(ident *TypeIdentifier, arguments []Type) *TypeReference {
 	return &TypeReference{ident: ident, arguments: arguments}
 }
+
+func NewScopedTypeReference(ident *TypeIdentifierScoped, arguments []Type) *TypeReferenceScoped {
+	return &TypeReferenceScoped{ident: ident, arguments: arguments}
+}

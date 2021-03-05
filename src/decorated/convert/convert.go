@@ -22,8 +22,33 @@ func AstParametersToArgumentNames(typeParameters []*ast.TypeParameter) []*dtype.
 	return argumentNames
 }
 
+func newInvokerType(astTypeReference ast.TypeReferenceScopedOrNormal, foundType dectype.TypeReferenceScopedOrNormal, t decorated.TypeAddAndReferenceMaker) (dtype.Type, error) {
+	unaliasedTypeToCheck := dectype.Unalias(foundType)
+
+	if unaliasedTypeToCheck.ParameterCount() != len(astTypeReference.Arguments()) {
+		return nil, fmt.Errorf("problems number of arguments %v (\n\n%v\n vs\n\n%v\n) (found %T, expected %T) found %v vs expected %v (%v)", astTypeReference, foundType, astTypeReference, foundType, astTypeReference, foundType.ParameterCount(), len(astTypeReference.Arguments()), astTypeReference.Arguments())
+	}
+
+	if foundType.ParameterCount() == 0 {
+		return foundType, nil
+	}
+
+	var convertedParameters []dtype.Type
+
+	for _, a := range astTypeReference.Arguments() {
+		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
+		if convertedParameterErr != nil {
+			return nil, convertedParameterErr
+		}
+
+		convertedParameters = append(convertedParameters, convertedParameter)
+	}
+
+	return dectype.NewInvokerType(foundType, convertedParameters)
+}
+
 func ConvertFromAstToDecorated(astType ast.Type,
-	t *dectype.TypeRepo) (dtype.Type, dectype.DecoratedTypeError) {
+	t decorated.TypeAddAndReferenceMaker) (dtype.Type, decorated.TypeError) {
 	switch info := astType.(type) {
 	case *ast.FunctionType:
 		var convertedParameters []dtype.Type
@@ -34,7 +59,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			}
 			convertedParameters = append(convertedParameters, convertedParameter)
 		}
-		functionType := t.AddFunctionAtom(info, convertedParameters)
+		functionType := dectype.NewFunctionAtom(info, convertedParameters)
 		return dectype.NewFunctionTypeReference(info, functionType), nil
 
 	case *ast.Alias:
@@ -42,14 +67,17 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if subTypeErr != nil {
 			return nil, subTypeErr
 		}
-		return t.DeclareTypeAlias(info, subType)
+		return t.AddTypeAlias(info, subType, nil)
 
 	case *ast.Record:
 		return DecorateRecordType(info, t)
 
 	case *ast.TypeIdentifier:
 		refName := info.Symbol().Name()
-		foundType := t.CreateTypeReference(info)
+		foundType, err := t.CreateTypeReference(info)
+		if err != nil {
+			return nil, err
+		}
 		if foundType == nil {
 			return nil, fmt.Errorf("couldn't find type identifier %v", refName)
 		}
@@ -57,36 +85,26 @@ func ConvertFromAstToDecorated(astType ast.Type,
 
 	case *ast.LocalType:
 		return dectype.NewLocalType(info.TypeParameter()), nil
-
-	case *ast.TypeReference:
-		refName := info.TypeResolver()
-		foundType := t.CreateTypeReference(refName)
+	case *ast.TypeReferenceScoped:
+		foundType, err := t.CreateTypeScopedReference(info.TypeResolver())
+		if err != nil {
+			return nil, err
+		}
 		if foundType == nil {
-			return nil, fmt.Errorf("couldn't find type reference %v", refName)
+			return nil, fmt.Errorf("coulfdn't find type reference %v", info)
+		}
+		return newInvokerType(info, foundType, t)
+	case *ast.TypeReference:
+		refName := info.TypeIdentifier()
+		foundType, err := t.CreateTypeReference(refName)
+		if err != nil {
+			return nil, err
+		}
+		if foundType == nil {
+			return nil, fmt.Errorf("coulfdn't find type reference %v", refName)
 		}
 
-		unaliasedTypeToCheck := dectype.Unalias(foundType)
-
-		if unaliasedTypeToCheck.ParameterCount() != len(info.Arguments()) {
-			return nil, fmt.Errorf("problems number of arguments %v (\n\n%v\n vs\n\n%v\n) (found %T, expected %T) found %v vs expected %v (%v)", refName, foundType, info, foundType, info, foundType.ParameterCount(), len(info.Arguments()), info.Arguments())
-		}
-
-		if foundType.ParameterCount() == 0 {
-			return foundType, nil
-		}
-
-		var convertedParameters []dtype.Type
-
-		for _, a := range info.Arguments() {
-			convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
-			if convertedParameterErr != nil {
-				return nil, convertedParameterErr
-			}
-
-			convertedParameters = append(convertedParameters, convertedParameter)
-		}
-
-		return dectype.NewInvokerType(foundType, convertedParameters)
+		return newInvokerType(info, foundType, t)
 	case *ast.TypeParameter:
 		return dectype.NewLocalType(info), nil
 	default:

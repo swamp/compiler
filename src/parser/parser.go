@@ -203,6 +203,7 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 			return nil, termErr
 		}
 	}
+	// log.Printf("term token %T %v", term, term)
 
 	leftExp := term
 	leftExpErr := termErr
@@ -218,10 +219,12 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 	}
 
 	p.stream.nodes = append(p.stream.nodes, leftExp)
-	_, isTypeIdentifier := term.(*ast.TypeIdentifier)
+	notScopedTypeIdent, isTypeIdentifier := term.(*ast.TypeIdentifier)
+	scopedTypeIdent, isScopedTypeIdentifier := term.(*ast.TypeIdentifierScoped)
 	_, isVariableIdentifier := term.(*ast.VariableIdentifier)
+	_, isScopedVariableIdentifier := term.(*ast.VariableIdentifierScoped)
 
-	if isTypeIdentifier || isVariableIdentifier {
+	if isTypeIdentifier || isScopedTypeIdentifier || isVariableIdentifier || isScopedVariableIdentifier {
 		isCall := p.peekIsCall()
 		if isCall {
 			_, _, spaceErr := p.stream.maybeOneSpace()
@@ -230,9 +233,16 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 			}
 			leftExp, leftExpErr = parseFunctionCall(p.stream, startIndentation, leftExp)
 		} else {
-			typeIdentifier, isTypeIdentifier := term.(*ast.TypeIdentifier)
-			if isTypeIdentifier {
-				leftExp = ast.NewConstructorCall(typeIdentifier, nil)
+			if isTypeIdentifier || isScopedTypeIdentifier {
+				// This happens when there is a constructor call which takes no arguments
+				// Usually a custom type variant constructor
+				var someRef ast.TypeReferenceScopedOrNormal
+				if isScopedTypeIdentifier {
+					someRef = ast.NewScopedTypeReference(scopedTypeIdent, nil)
+				} else {
+					someRef = ast.NewTypeReference(notScopedTypeIdent, nil)
+				}
+				leftExp = ast.NewConstructorCall(someRef, nil)
 			}
 		}
 	}

@@ -198,6 +198,9 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		return writeFunction(writer, t)
 	case *CustomType:
 		return writeCustom(writer, t)
+	case *TypeRefType:
+		// TODO:
+		return writePrimitive(writer, SwtiTypeResourceName)
 	}
 
 	return fmt.Errorf("strange, unknown info type %v %T", entry, entry)

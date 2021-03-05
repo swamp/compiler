@@ -20,7 +20,7 @@ type ModuleDeclarations struct {
 
 func NewModuleDeclarations(ownedByModule *Module) *ModuleDeclarations {
 	if ownedByModule == nil {
-		panic("sorry, all definitions must be owned by a module")
+		panic("sorry, all localDefinitions must be owned by a module")
 	}
 	return &ModuleDeclarations{
 		ownedByModule: ownedByModule, types: make(map[string]dtype.Type),
