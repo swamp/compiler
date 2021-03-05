@@ -3,57 +3,64 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-package dectype
+package decorated
 
 import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
-	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
 type ExposedTypes struct {
 	identifierToType map[string]dtype.Type
-	types            []dtype.Type
 }
 
-func NewExposedTypes(module *decorated.Module) *ExposedTypes {
+func NewExposedTypes(module *Module) *ExposedTypes {
 	return &ExposedTypes{identifierToType: make(map[string]dtype.Type)}
 }
 
-func (e *ExposedTypes) AddType(t dtype.Type) {
-	e.identifierToType[t.DecoratedName()] = t
-	e.types = append(e.types, t)
+func (e *ExposedTypes) internalAddType(name string, t dtype.Type) {
+	e.identifierToType[name] = t
 }
 
-func (e *ExposedTypes) AddTypes(allTypes []dtype.Type) {
-	for _, t := range allTypes {
-		e.AddType(t)
+func (e *ExposedTypes) AddTypes(allTypes map[string]dtype.Type) {
+	for name, t := range allTypes {
+		e.internalAddType(name, t)
 	}
 }
 
-func (e *ExposedTypes) AddTypesWithModulePrefix(allTypes []dtype.Type, prefix PackageRelativeModuleName) {
-	for _, t := range allTypes {
-		fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(t.DecoratedName(), token.SourceFileReference{}, 0))
+func (e *ExposedTypes) AddTypesWithModulePrefix(allTypes map[string]dtype.Type, prefix dectype.PackageRelativeModuleName) {
+	for name, t := range allTypes {
+		fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(name, token.SourceFileReference{}, 0))
 		fullyQualifiedName := prefix.JoinLocalName(fakeVariable)
 		e.identifierToType[fullyQualifiedName] = t
-		e.types = append(e.types, t)
 	}
 }
 
-func (e *ExposedTypes) FindTypeFromSignature(complete string) dtype.Type {
-	return e.identifierToType[complete]
+func (t *ExposedTypes) AddBuiltInTypes(name *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) TypeError {
+	t.internalAddType(name.Name(), referencedType)
+
+	return nil
 }
 
-func (e *ExposedTypes) AllExposedTypes() []dtype.Type {
-	return e.types
+func (e *ExposedTypes) FindType(complete *ast.TypeIdentifier) dtype.Type {
+	return e.identifierToType[complete.Name()]
+}
+
+func (e *ExposedTypes) FindBuiltInType(s string) dtype.Type {
+	return e.identifierToType[s]
+}
+
+func (e *ExposedTypes) AllTypes() map[string]dtype.Type {
+	return e.identifierToType
 }
 
 func (e *ExposedTypes) ShortString() string {
 	s := ""
-	for _, exposedType := range e.types {
+	for _, exposedType := range e.identifierToType {
 		s += fmt.Sprintf("%v : %v\n", exposedType.DecoratedName(), exposedType.DecoratedName())
 	}
 
@@ -62,7 +69,7 @@ func (e *ExposedTypes) ShortString() string {
 
 func (e *ExposedTypes) DebugString() string {
 	s := ""
-	for _, exposedType := range e.types {
+	for _, exposedType := range e.identifierToType {
 		s += fmt.Sprintf("%p %v : %v\n", exposedType, exposedType.DecoratedName(), exposedType.DecoratedName())
 	}
 

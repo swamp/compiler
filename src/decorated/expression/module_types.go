@@ -7,70 +7,50 @@ package decorated
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
-type TypeRepo struct {
-	identifierToType    map[string]dtype.Type
-	types               []dtype.Type
-	parentImportedTypes *ExposedTypes
-	sourceModule        *Module
+type ModuleTypes struct {
+	identifierToType map[string]dtype.Type
+	sourceModule     *Module
 }
 
-func NewTypeRepo(sourceModule *Module, imported *ExposedTypes) *TypeRepo {
-	t := &TypeRepo{parentImportedTypes: imported, sourceModule: sourceModule, identifierToType: make(map[string]dtype.Type)}
+func NewModuleTypes(sourceModule *Module) *ModuleTypes {
+	t := &ModuleTypes{sourceModule: sourceModule, identifierToType: make(map[string]dtype.Type)}
 	return t
 }
 
-func (t *TypeRepo) AllTypes() map[string]dtype.Type {
+func (t *ModuleTypes) AllTypes() map[string]dtype.Type {
 	return t.identifierToType
 }
 
-func (t *TypeRepo) AllLocalTypes() []dtype.Type {
-	return t.types
-}
-
-func (t *TypeRepo) ImportedTypes() *ExposedTypes {
-	return t.parentImportedTypes
-}
-
-func (t *TypeRepo) SourceModule() *Module {
+func (t *ModuleTypes) SourceModule() *Module {
 	return t.sourceModule
 }
 
 // -----------------------------------------------------
 //                    Find
 // -----------------------------------------------------
-func (t *TypeRepo) FindTypeFromSignature(complete string) dtype.Type {
-	found := t.identifierToType[complete]
-	if found == nil {
-		if t.parentImportedTypes != nil {
-			return t.parentImportedTypes.FindTypeFromSignature(complete)
-		}
-	}
+//
+func (t *ModuleTypes) FindType(identifier *ast.TypeIdentifier) dtype.Type {
+	found := t.identifierToType[identifier.Name()]
 	return found
 }
 
-func (t *TypeRepo) FindType(typeToSearchFor dtype.Type) dtype.Type {
-	return t.FindTypeFromSignature(typeToSearchFor.DecoratedName())
+func (t *ModuleTypes) FindBuiltInType(name string) dtype.Type {
+	found := t.identifierToType[name]
+	return found
 }
 
-func (t *TypeRepo) FindTypeFromAlias(alias string) dtype.Type {
-	return t.FindTypeFromSignature(alias)
-}
-
-func (t *TypeRepo) FindTypeFromName(alias string) dtype.Type {
-	foundType := t.FindTypeFromSignature(alias)
-	return foundType
-}
-
-func (t *TypeRepo) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) dtype.Type {
-	foundType := t.FindTypeFromSignature(typeIdentifier.Name())
+func (t *ModuleTypes) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) dtype.Type {
+	foundType := t.FindType(typeIdentifier)
 	if foundType == nil {
 		return nil
 	}
@@ -83,72 +63,52 @@ func (t *TypeRepo) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) dtype
 //                    Declare
 // -----------------------------------------------------
 
-func (t *TypeRepo) DeclareType(realType dtype.Type) error {
-	existingType := t.FindType(realType)
+func (t *ModuleTypes) internalAddType(typeIdentifier *ast.TypeIdentifier, realType dtype.Type) error {
+	existingType := t.FindType(typeIdentifier)
 	if existingType != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingType)
 	}
-	t.internalAdd(realType)
+	t.internalAdd(typeIdentifier, realType)
 	return nil
 }
 
-func (t *TypeRepo) AddFunctionAtom(astFunctionType *ast.FunctionType, parameterTypes []dtype.Type) *dectype.FunctionAtom {
-	newType := dectype.NewFunctionAtom(astFunctionType, parameterTypes)
-	existing := t.FindTypeFromSignature(newType.DecoratedName())
-	if existing != nil {
-		return existing.(*dectype.FunctionAtom)
-	}
-	t.internalAdd(newType)
-	return newType
+func (t *ModuleTypes) InternalAddPrimitive(typeIdentifier *ast.TypeIdentifier, atom *dectype.PrimitiveAtom) error {
+	return t.internalAddType(typeIdentifier, atom)
 }
 
-func (t *TypeRepo) DeclareRecordType(r *dectype.RecordAtom) *dectype.RecordAtom {
-	return r
-}
-
-type DecoratedTypeError interface {
+type TypeError interface {
 	Error() string
 }
 
-func (t *TypeRepo) DeclareTypeAlias(alias *ast.Alias, concreteType dtype.Type) (*dectype.Alias, DecoratedTypeError) {
+func (t *ModuleTypes) AddTypeAlias(alias *ast.Alias, concreteType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, TypeError) {
 	artifactTypeName := t.sourceModule.fullyQualifiedModuleName.JoinTypeIdentifier(alias.Identifier())
 	newType := dectype.NewAliasType(alias, artifactTypeName, concreteType)
-	t.internalAdd(newType)
+	t.internalAddType(alias.Identifier(), newType)
 	return newType, nil
 }
 
-func (t *TypeRepo) DeclareAlias(alias *ast.Alias, referencedType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, DecoratedTypeError) {
-	if referencedType == nil {
-		panic("alias nil")
-	}
-	foundType := t.FindTypeFromAlias(alias.Name())
-	if foundType != nil {
-		//if foundType.AliasReferencedType() != referencedType {
-		//return nil, NewDifferentAliasTypes(foundType, referencedType)
-		//}
-		//panic("declare alias")
-		return nil, nil
-		// return foundType, nil
-	}
-
-	aliasType, err := t.DeclareTypeAlias(alias, referencedType)
-	if err != nil {
-		return nil, err
-	}
-
-	return aliasType, nil
+func (t *ModuleTypes) internalAddVariantConstructorType(constructor *dectype.CustomTypeVariantConstructorType) {
+	t.internalAddType(constructor.Variant().Name(), constructor)
 }
 
-func (t *TypeRepo) DeclareFakeAlias(name *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, DecoratedTypeError) {
-	alias := ast.NewAlias(token.Keyword{}, token.Keyword{}, name, nil)
-	return t.DeclareAlias(alias, referencedType, localComments)
+func (t *ModuleTypes) addCustomTypeVariantConstructors(customType *dectype.CustomTypeAtom) {
+	for _, variant := range customType.Variants() {
+		constructorType := dectype.NewCustomTypeVariantConstructorType(variant)
+		t.internalAddVariantConstructorType(constructorType)
+	}
+}
+
+func (t *ModuleTypes) AddCustomType(customType *dectype.CustomTypeAtom) TypeError {
+	t.internalAddType(customType.TypeIdentifier(), customType)
+	t.addCustomTypeVariantConstructors(customType)
+	return nil
 }
 
 // -----------------------------------------------------
 //                    Other
 // -----------------------------------------------------
 
-func (t *TypeRepo) DebugOutput() {
+func (t *ModuleTypes) DebugOutput() {
 	fmt.Println(t.DebugString())
 }
 
@@ -164,19 +124,15 @@ func TraverseToString(t dtype.Type) string {
 	return s
 }
 
-func (t *TypeRepo) DebugString() string {
+func (t *ModuleTypes) DebugString() string {
 	s := "Type Repo:\n"
-	for k, v := range t.types {
+	for k, v := range t.identifierToType {
 		s += fmt.Sprintf(".. %p %v : %v\n", v, k, TraverseToString(v))
 	}
-
-	s += "Imported types:\n"
-
-	s += t.parentImportedTypes.DebugString()
 	return s
 }
 
-func (t *TypeRepo) String() string {
+func (t *ModuleTypes) String() string {
 	return t.DebugString()
 }
 
@@ -201,9 +157,9 @@ func isTypeToIgnoreForDebugOutput(repoType dtype.Type) bool {
 	return false
 }
 
-func (t *TypeRepo) ShortString() string {
+func (t *ModuleTypes) ShortString() string {
 	s := ""
-	for _, repoType := range t.types {
+	for _, repoType := range t.identifierToType {
 		if isTypeToIgnoreForDebugOutput(repoType) {
 			continue
 		}
@@ -214,23 +170,24 @@ func (t *TypeRepo) ShortString() string {
 	return s
 }
 
-func (t *TypeRepo) internalAdd(realType dtype.Type) {
-	t.internalAddWithString(realType.DecoratedName(), realType)
+func (t *ModuleTypes) internalAdd(identifier *ast.TypeIdentifier, realType dtype.Type) {
+	t.internalAddWithString(identifier.Name(), realType)
 }
 
-func (t *TypeRepo) internalAddWithString(name string, realType dtype.Type) {
-	// fmt.Printf("Adding type %v\n", realType.Name())
+func (t *ModuleTypes) internalAddWithString(name string, realType dtype.Type) {
+	log.Printf("Adding type %v\n", name)
 	hasType := t.identifierToType[name]
 	if hasType != nil {
 		panic("already have name " + name)
 	}
 	t.identifierToType[name] = realType
-	t.types = append(t.types, realType)
 }
 
-func (t *TypeRepo) CopyTypes(realTypes []dtype.Type) error {
-	for _, copyType := range realTypes {
-		copyErr := t.CopyType(copyType)
+func (t *ModuleTypes) CopyTypes(realTypes map[string]dtype.Type) decshared.DecoratedError {
+	for nameOfType, copyType := range realTypes {
+		symbol := token.NewTypeSymbolToken(nameOfType, t.sourceModule.FetchPositionLength(), 0)
+		fakeIdentifier := ast.NewTypeIdentifier(symbol)
+		copyErr := t.CopyType(fakeIdentifier, copyType)
 		if copyErr != nil {
 			return copyErr
 		}
@@ -238,11 +195,14 @@ func (t *TypeRepo) CopyTypes(realTypes []dtype.Type) error {
 	return nil
 }
 
-func (t *TypeRepo) CopyType(realType dtype.Type) error {
-	existingType := t.FindTypeFromName(realType.DecoratedName())
+func (t *ModuleTypes) CopyType(nameOfType *ast.TypeIdentifier, realType dtype.Type) decshared.DecoratedError {
+	existingType := t.FindType(nameOfType)
 	if existingType != nil {
-		return fmt.Errorf("copy: sorry, '%v' already declared", existingType)
+		return NewInternalError(fmt.Errorf("copy: sorry, '%v' already declared", existingType))
 	}
-	t.internalAddWithString(realType.DecoratedName(), realType)
+
+	log.Printf("copying %v, %T", nameOfType.Name(), realType)
+
+	t.internalAddWithString(nameOfType.Name(), realType)
 	return nil
 }
