@@ -13,7 +13,7 @@ import (
 )
 
 func decorateBoolean(d DecorateStream, boolean *ast.BooleanLiteral) (decorated.Expression, decshared.DecoratedError) {
-	boolType := d.TypeRepo().FindTypeFromName("Bool")
+	boolType := d.TypeRepo().FindBuiltInType("Bool")
 	if boolType == nil {
 		return nil, decorated.NewTypeNotFound("Bool")
 	}

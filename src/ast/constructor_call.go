@@ -13,14 +13,14 @@ import (
 
 type ConstructorCall struct {
 	arguments     []Expression
-	functionValue *TypeIdentifier
+	functionValue TypeReferenceScopedOrNormal
 }
 
-func NewConstructorCall(functionValue *TypeIdentifier, arguments []Expression) *ConstructorCall {
+func NewConstructorCall(functionValue TypeReferenceScopedOrNormal, arguments []Expression) *ConstructorCall {
 	return &ConstructorCall{functionValue: functionValue, arguments: arguments}
 }
 
-func (i *ConstructorCall) TypeIdentifier() *TypeIdentifier {
+func (i *ConstructorCall) TypeReference() TypeReferenceScopedOrNormal {
 	return i.functionValue
 }
 
@@ -33,7 +33,7 @@ func (i *ConstructorCall) OverwriteArguments(args []Expression) {
 }
 
 func (i *ConstructorCall) FetchPositionLength() token.SourceFileReference {
-	return i.functionValue.symbolToken.SourceFileReference
+	return i.functionValue.FetchPositionLength()
 }
 
 func (i *ConstructorCall) String() string {

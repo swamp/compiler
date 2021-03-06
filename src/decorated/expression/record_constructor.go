@@ -18,10 +18,10 @@ type RecordConstructor struct {
 	arguments           []*RecordLiteralAssignment
 	parseOrderArguments []Expression
 	recordType          *dectype.RecordAtom
-	typeIdentifier      *ast.TypeIdentifier
+	typeIdentifier      ast.TypeReferenceScopedOrNormal
 }
 
-func NewRecordConstructor(typeIdentifier *ast.TypeIdentifier, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
+func NewRecordConstructor(typeIdentifier ast.TypeReferenceScopedOrNormal, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
 	return &RecordConstructor{typeIdentifier: typeIdentifier, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
 }
 
@@ -29,7 +29,7 @@ func (c *RecordConstructor) SortedAssignments() []*RecordLiteralAssignment {
 	return c.arguments
 }
 
-func (c *RecordConstructor) AstTypeIdentifier() *ast.TypeIdentifier {
+func (c *RecordConstructor) AstTypeReference() ast.TypeReferenceScopedOrNormal {
 	return c.typeIdentifier
 }
 
@@ -50,5 +50,5 @@ func (c *RecordConstructor) HumanReadable() string {
 }
 
 func (c *RecordConstructor) FetchPositionLength() token.SourceFileReference {
-	return c.typeIdentifier.Symbol().SourceFileReference
+	return c.typeIdentifier.FetchPositionLength()
 }

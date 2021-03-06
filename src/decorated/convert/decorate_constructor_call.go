@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -26,12 +27,16 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
 	}
 
-	variantConstructor := d.TypeRepo().FindTypeFromName(call.TypeIdentifier().Name())
+	variantConstructor, err := d.TypeRepo().CreateSomeTypeReference(call.TypeReference().SomeTypeIdentifier())
+	if err != nil {
+		return nil, err
+	}
+
 	unaliasedConstructor := dectype.Unalias(variantConstructor)
 
 	switch e := unaliasedConstructor.(type) {
 	case *dectype.CustomTypeVariantConstructorType:
-		named := decorated.NewNamedDefinitionTypeReference(nil, call.TypeIdentifier())
+		named := decorated.NewNamedDefinitionTypeReference(nil, call.TypeReference().SomeTypeIdentifier())
 		ref := decorated.NewCustomTypeVariantReference(named, e.Variant())
 		return decorated.NewCustomTypeVariantConstructor(ref, decoratedExpressions), nil
 	case *dectype.RecordAtom:
@@ -43,7 +48,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				if wasRecord {
 					compatibleErr := dectype.CompatibleTypes(recordLiteral.Type(), e)
 					if compatibleErr == nil {
-						return decorated.NewRecordConstructorRecord(call.TypeIdentifier(), e, recordLiteral), nil
+						return decorated.NewRecordConstructorRecord(call.TypeReference(), e, recordLiteral), nil
 					}
 				}
 			}
@@ -72,9 +77,10 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				}
 			}
 
-			return decorated.NewRecordConstructor(call.TypeIdentifier(), e, alphaOrderedAssignments, decoratedExpressions), nil
+			return decorated.NewRecordConstructor(call.TypeReference(), e, alphaOrderedAssignments, decoratedExpressions), nil
 		}
 	default:
+		log.Printf("expected a constructor here %T", unaliasedConstructor)
 		return nil, decorated.NewExpectedCustomTypeVariantConstructor(call)
 	}
 }

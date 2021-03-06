@@ -49,7 +49,7 @@ func expandChildNodesFunctionReference(fn *FunctionReference) []TypeOrToken {
 
 func expandChildNodesFunctionCall(fn *FunctionCall) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.FunctionValue())...)
+	tokens = append(tokens, expandChildNodes(fn.FunctionExpression())...)
 	for _, argument := range fn.Arguments() {
 		tokens = append(tokens, expandChildNodes(argument)...)
 	}
@@ -90,7 +90,7 @@ func expandChildNodesFunctionType(fn *dectype.FunctionAtom) []TypeOrToken {
 
 func expandChildNodesCustomType(fn *dectype.CustomTypeAtom) []TypeOrToken {
 	var tokens []TypeOrToken
-	// tokens = append(tokens, expandChildNodes(fn.TypeIdentifier())...) Can not expand type identifiers, need meaning
+	// tokens = append(tokens, expandChildNodes(fn.TypeReference())...) Can not expand type identifiers, need meaning
 	for _, variant := range fn.Variants() {
 		tokens = append(tokens, expandChildNodes(variant)...)
 		for _, param := range variant.ParameterTypes() {
@@ -116,6 +116,12 @@ func expandChildNodesFunctionTypeReference(fn *dectype.FunctionTypeReference) []
 }
 
 func expandChildNodesTypeReference(fn *dectype.TypeReference) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(fn.Next())...)
+	return tokens
+}
+
+func expandChildNodesTypeReferenceScoped(fn *dectype.TypeReferenceScoped) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(fn.Next())...)
 	return tokens
@@ -149,6 +155,15 @@ func expandChildNodesLetAssignment(assignment *LetAssignment) []TypeOrToken {
 func expandChildNodesListLiteral(listLiteral *ListLiteral) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, expression := range listLiteral.Expressions() {
+		tokens = append(tokens, expandChildNodes(expression)...)
+	}
+
+	return tokens
+}
+
+func expandChildNodesArrayLiteral(arrayLiteral *ArrayLiteral) []TypeOrToken {
+	var tokens []TypeOrToken
+	for _, expression := range arrayLiteral.Expressions() {
 		tokens = append(tokens, expandChildNodes(expression)...)
 	}
 
@@ -329,6 +344,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesLetAssignment(t)...)
 	case *ListLiteral:
 		return append(tokens, expandChildNodesListLiteral(t)...)
+	case *ArrayLiteral:
+		return append(tokens, expandChildNodesArrayLiteral(t)...)
 	case *RecordLiteral:
 		return append(tokens, expandChildNodesRecordLiteral(t)...)
 	case *FunctionParameterDefinition:
@@ -378,9 +395,13 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *IntegerLiteral: // Should not be expanded
 		return tokens
+	case *FixedLiteral: // Should not be expanded
+		return tokens
 	case *CharacterLiteral: // Should not be expanded
 		return tokens
 	case *TypeIdLiteral: // Should not be expanded
+		return tokens
+	case *ResourceNameLiteral: // Should not be expanded
 		return tokens
 	case *StringInterpolation: // Should not be expanded
 		return tokens
@@ -425,6 +446,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesFunctionTypeReference(t)...)
 	case *dectype.TypeReference:
 		return append(tokens, expandChildNodesTypeReference(t)...)
+	case *dectype.TypeReferenceScoped:
+		return append(tokens, expandChildNodesTypeReferenceScoped(t)...)
 	default:
 		log.Printf("expand_nodes: could not expand: %T\n", t)
 		return tokens

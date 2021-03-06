@@ -19,12 +19,13 @@ type ModuleRepository interface {
 }
 
 type Decorator struct {
-	module           *decorated.Module
-	moduleRepository ModuleRepository
+	module              *decorated.Module
+	moduleRepository    ModuleRepository
+	typeLookUpAndCreate decorated.TypeAddAndReferenceMaker
 }
 
-func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module) *Decorator {
-	d := &Decorator{module: module, moduleRepository: moduleRepository}
+func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module, typeLookUpAndCreate decorated.TypeAddAndReferenceMaker) *Decorator {
+	d := &Decorator{module: module, moduleRepository: moduleRepository, typeLookUpAndCreate: typeLookUpAndCreate}
 	return d
 }
 
@@ -32,8 +33,8 @@ func (d *Decorator) Import(source *decorated.Module, relativeName dectype.Packag
 	return ImportModuleToModule(d.module, source, relativeName, exposeAll)
 }
 
-func (d *Decorator) TypeRepo() *dectype.TypeRepo {
-	return d.module.TypeRepo()
+func (d *Decorator) TypeRepo() decorated.TypeAddAndReferenceMaker {
+	return d.typeLookUpAndCreate
 }
 
 func (d *Decorator) ModuleDefinitions() *decorated.ModuleDefinitions {

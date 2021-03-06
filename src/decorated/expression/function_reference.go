@@ -34,7 +34,7 @@ func (g *FunctionReference) HumanReadable() string {
 	return "function reference"
 }
 
-func (g *FunctionReference) Identifier() *ast.VariableIdentifier {
+func (g *FunctionReference) Identifier() ast.ScopedOrNormalVariableIdentifier {
 	return g.definitionReference.ident
 }
 

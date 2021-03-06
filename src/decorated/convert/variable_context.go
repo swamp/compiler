@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -20,7 +21,26 @@ type VariableContext struct {
 }
 
 func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *VariableContext {
+	if parentDefinitions == nil {
+		panic("parentDefinitions nil")
+	}
 	return &VariableContext{parent: nil, parentDefinitions: parentDefinitions, lookup: make(map[string]*decorated.NamedDecoratedExpression)}
+}
+
+func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression decorated.Expression) (decorated.Expression, decshared.DecoratedError) {
+	switch t := expression.(type) {
+	case *decorated.FunctionValue:
+		var moduleRef *decorated.ModuleReference
+		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
+		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
+		return functionReference, nil
+	case *decorated.FunctionParameterDefinition:
+		return decorated.NewFunctionParameterReference(name, t), nil
+	case *decorated.LetAssignment:
+		return decorated.NewLetVariableReference(name, t), nil
+	default:
+		return nil, decorated.NewInternalError(fmt.Errorf("what to do with '%v' => %T", name, t))
+	}
 }
 
 func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression, decshared.DecoratedError) {
@@ -51,22 +71,7 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 			return t, nil
 		}
 	}
-	switch t := def.Expression().(type) {
-	case *decorated.FunctionValue:
-		var moduleRef *decorated.ModuleReference
-		if name.ModuleReference() != nil {
-			moduleRef = decorated.NewModuleReference(name.ModuleReference(), def.ModuleDefinition().ParentDefinitions().OwnedByModule())
-		}
-		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
-		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
-		return functionReference, nil
-	case *decorated.FunctionParameterDefinition:
-		return decorated.NewFunctionParameterReference(name, t), nil
-	case *decorated.LetAssignment:
-		return decorated.NewLetVariableReference(name, t), nil
-	default:
-		return nil, decorated.NewInternalError(fmt.Errorf("what to do with '%v' => %T", name, t))
-	}
+	return ReferenceFromVariable(name, def.Expression())
 }
 
 func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecoratedExpression {
@@ -76,6 +81,7 @@ func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecorated
 func (c *VariableContext) FindNamedDecoratedExpression(name *ast.VariableIdentifier) *decorated.NamedDecoratedExpression {
 	def := c.lookup[name.Name()]
 	if def == nil {
+
 		if c.parent != nil {
 			return c.parent.FindNamedDecoratedExpression(name)
 		}
@@ -91,6 +97,29 @@ func (c *VariableContext) FindNamedDecoratedExpression(name *ast.VariableIdentif
 		def.SetReferenced()
 	}
 	return def
+}
+
+func (c *VariableContext) FindScopedNamedDecoratedExpression(name *ast.VariableIdentifierScoped) *decorated.NamedDecoratedExpression {
+	if c.parentDefinitions == nil {
+		log.Printf("it was scoped, but I don't have any parent definitions %v", name)
+		return nil
+	}
+	mDef := c.parentDefinitions.FindScopedDefinitionExpression(name)
+	if mDef == nil {
+		return nil
+	}
+
+	def := decorated.NewNamedDecoratedExpression(mDef.FullyQualifiedVariableName().String(), mDef, mDef.Expression())
+
+	return def
+}
+
+func (c *VariableContext) FindScopedNamedDecoratedExpressionScopedOrNormal(name ast.ScopedOrNormalVariableIdentifier) *decorated.NamedDecoratedExpression {
+	scoped, wasScoped := name.(*ast.VariableIdentifierScoped)
+	if wasScoped {
+		return c.FindScopedNamedDecoratedExpression(scoped)
+	}
+	return c.FindNamedDecoratedExpression(name.(*ast.VariableIdentifier))
 }
 
 func (c *VariableContext) Add(name *ast.VariableIdentifier, namedExpression *decorated.NamedDecoratedExpression) {
@@ -110,5 +139,5 @@ func (c *VariableContext) String() string {
 }
 
 func (c *VariableContext) MakeVariableContext() *VariableContext {
-	return &VariableContext{parent: c, lookup: make(map[string]*decorated.NamedDecoratedExpression)}
+	return &VariableContext{parent: c, lookup: make(map[string]*decorated.NamedDecoratedExpression), parentDefinitions: c.parentDefinitions}
 }

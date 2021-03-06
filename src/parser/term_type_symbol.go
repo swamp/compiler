@@ -18,9 +18,12 @@ func parseTypeSymbol(p ParseStream, startIndentation int, typeSymbol token.TypeS
 	for p.maybeAccessor() {
 		part := ast.NewModuleNamePart(x)
 		moduleNameParts = append(moduleNameParts, part)
+		if typeSymbol.Name() == "Char" {
+			typeSymbol = typeSymbol
+		}
 		if variable, wasVariable := p.wasVariableIdentifier(); wasVariable {
 			moduleReference := ast.NewModuleReference(moduleNameParts)
-			finalVar := ast.NewQualifiedVariableIdentifier(variable, moduleReference)
+			finalVar := ast.NewQualifiedVariableIdentifierScoped(moduleReference, variable)
 			return finalVar, nil
 		}
 		var someErr parerr.ParseError
@@ -31,7 +34,7 @@ func parseTypeSymbol(p ParseStream, startIndentation int, typeSymbol token.TypeS
 	}
 	if len(moduleNameParts) > 0 {
 		moduleReference := ast.NewModuleReference(moduleNameParts)
-		x = ast.NewQualifiedTypeIdentifier(x.Symbol(), moduleReference)
+		return ast.NewQualifiedTypeIdentifierScoped(moduleReference, x), nil
 	}
 
 	return x, nil

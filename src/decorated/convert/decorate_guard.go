@@ -26,7 +26,7 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 		if condition == nil {
 			panic("condition is nil")
 		}
-		boolType := d.TypeRepo().FindTypeFromName("Bool")
+		boolType := d.TypeRepo().FindBuiltInType("Bool")
 		if boolType == nil {
 			panic("internal error. Bool type doesn't exist")
 		}

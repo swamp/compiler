@@ -19,15 +19,8 @@ func finalizeCustomType(customType *dectype.CustomTypeAtom) {
 	}
 }
 
-func decorateCustomTypeVariantConstructors(customType *dectype.CustomTypeAtom, typeRepo *dectype.TypeRepo) {
-	for _, variant := range customType.Variants() {
-		constructorType := dectype.NewCustomTypeVariantConstructorType(typeRepo, variant)
-		typeRepo.DeclareType(constructorType)
-	}
-}
-
 func DecorateCustomType(customTypeDefinition *ast.CustomType,
-	typeRepo *dectype.TypeRepo) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+	typeRepo decorated.TypeAddAndReferenceMaker) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	var variants []*dectype.CustomTypeVariant
 
 	for astVariantIndex, astVariant := range customTypeDefinition.Variants() {
@@ -47,10 +40,10 @@ func DecorateCustomType(customTypeDefinition *ast.CustomType,
 	}
 
 	decoratedNames := AstParametersToArgumentNames(customTypeDefinition.FindAllLocalTypes())
-	artifactTypeName := typeRepo.ModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
+	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
 	s := dectype.NewCustomType(customTypeDefinition.Identifier(), artifactTypeName, decoratedNames, variants)
 	finalizeCustomType(s)
-	decorateCustomTypeVariantConstructors(s, typeRepo)
+	// decorateCustomTypeVariantConstructors(s, typeRepo)
 
 	return s, nil
 }

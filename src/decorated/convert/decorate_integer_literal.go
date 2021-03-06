@@ -13,7 +13,7 @@ import (
 )
 
 func decorateInteger(d DecorateStream, integer *ast.IntegerLiteral) (decorated.Expression, decshared.DecoratedError) {
-	integerType := d.TypeRepo().FindTypeFromName("Int")
+	integerType := d.TypeRepo().FindBuiltInType("Int")
 	if integerType == nil {
 		panic("internal error. Int is an unknown type")
 	}

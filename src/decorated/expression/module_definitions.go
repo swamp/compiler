@@ -18,7 +18,7 @@ type ModuleDefinitions struct {
 
 func NewModuleDefinitions(ownedByModule *Module) *ModuleDefinitions {
 	if ownedByModule == nil {
-		panic("sorry, all definitions must be owned by a module")
+		panic("sorry, all localDefinitions must be owned by a module")
 	}
 	return &ModuleDefinitions{
 		ownedByModule: ownedByModule,

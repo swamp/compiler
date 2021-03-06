@@ -94,16 +94,39 @@ func writeModuleReference(moduleReference *ast.ModuleReference, colorer coloring
 	colorer.OperatorString(".")
 }
 
-func writeTypeIdentifier(typeIdentifier *ast.TypeIdentifier, colorer coloring.Colorer) {
+func writeScopedTypeIdentifier(typeIdentifier *ast.TypeIdentifierScoped, colorer coloring.Colorer) {
 	moduleReference := typeIdentifier.ModuleReference()
-	if moduleReference != nil {
-		writeModuleReference(moduleReference, colorer)
-	}
+	writeModuleReference(moduleReference, colorer)
+	colorer.TypeSymbol(typeIdentifier.Symbol().Symbol())
+}
+
+func writeTypeIdentifier(typeIdentifier *ast.TypeIdentifier, colorer coloring.Colorer) {
 	colorer.TypeSymbol(typeIdentifier.Symbol())
 }
 
+func writeSomeTypeIdentifier(typeIdentifier ast.TypeIdentifierNormalOrScoped, colorer coloring.Colorer) {
+	scoped, wasScoped := typeIdentifier.(*ast.TypeIdentifierScoped)
+	if wasScoped {
+		writeScopedTypeIdentifier(scoped, colorer)
+	} else {
+		writeTypeIdentifier(typeIdentifier.(*ast.TypeIdentifier), colorer)
+	}
+}
+
 func writeTypeReference(typeReference *ast.TypeReference, colorer coloring.Colorer) {
-	writeTypeIdentifier(typeReference.TypeResolver(), colorer)
+	writeTypeIdentifier(typeReference.TypeIdentifier(), colorer)
+	hasArguments := len(typeReference.Arguments()) > 0
+	if !hasArguments {
+		return
+	}
+	colorer.OneSpace()
+	for _, field := range typeReference.Arguments() {
+		writeType(field, colorer, true, 0)
+	}
+}
+
+func writeScopedTypeReference(typeReference *ast.TypeReferenceScoped, colorer coloring.Colorer) {
+	writeSomeTypeIdentifier(typeReference.TypeResolver(), colorer)
 	hasArguments := len(typeReference.Arguments()) > 0
 	if !hasArguments {
 		return
@@ -190,11 +213,15 @@ func writeGuard(guardExpression *ast.GuardExpression, colorer coloring.Colorer, 
 }
 
 func writeGetVariable(identifier *ast.VariableIdentifier, colorer coloring.Colorer, indentation int) {
+	colorer.VariableSymbol(identifier.Symbol())
+}
+
+func writeGetScopedVariable(identifier *ast.VariableIdentifierScoped, colorer coloring.Colorer, indentation int) {
 	moduleReference := identifier.ModuleReference()
 	if moduleReference != nil {
 		writeModuleReference(moduleReference, colorer)
 	}
-	colorer.VariableSymbol(identifier.Symbol())
+	colorer.VariableSymbol(identifier.AstVariableReference().Symbol())
 }
 
 func writeIntegerLiteral(identifier *ast.IntegerLiteral, colorer coloring.Colorer, indentation int) {
@@ -322,7 +349,7 @@ func writeTypeParameters(typeParameters []*ast.TypeParameter, colorer coloring.C
 */
 
 func writeConstructorCall(constructorCall *ast.ConstructorCall, colorer coloring.Colorer, indentation int) {
-	writeTypeIdentifier(constructorCall.TypeIdentifier(), colorer)
+	writeSomeTypeIdentifier(constructorCall.TypeReference().SomeTypeIdentifier(), colorer)
 	hasArguments := len(constructorCall.Arguments()) > 0
 	if hasArguments {
 		colorer.OneSpace()

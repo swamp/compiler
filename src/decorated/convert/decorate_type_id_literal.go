@@ -14,7 +14,7 @@ import (
 )
 
 func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression, decshared.DecoratedError) {
-	typeRefType := d.TypeRepo().FindTypeFromName("TypeRef")
+	typeRefType := d.TypeRepo().FindBuiltInType("TypeRef")
 	if typeRefType == nil {
 		panic("internal error. TypeRef is an unknown type")
 	}

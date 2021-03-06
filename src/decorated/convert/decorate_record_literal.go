@@ -73,7 +73,6 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 	}
 
 	recordType := dectype.NewRecordType(nil, recordTypeFields, nil) // TODO: FIX
-	typeRepoRecordType := d.TypeRepo().DeclareRecordType(recordType)
 
 	for _, assignment := range record.ParseOrderedAssignments() {
 		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, assignment.Expression(), context)
@@ -86,5 +85,5 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 		sortedRecordAssignment = append(sortedRecordAssignment, recordAssignment)
 	}
 
-	return decorated.NewRecordLiteral(typeRepoRecordType, decoratedRecordLiteralExpression, sortedRecordAssignment), nil
+	return decorated.NewRecordLiteral(recordType, decoratedRecordLiteralExpression, sortedRecordAssignment), nil
 }
