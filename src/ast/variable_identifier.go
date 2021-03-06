@@ -13,6 +13,8 @@ import (
 
 type ScopedOrNormalVariableIdentifier interface {
 	Symbol() token.VariableSymbolToken
+	FetchPositionLength() token.SourceFileReference
+	Name() string
 }
 
 type VariableIdentifier struct {

@@ -2,7 +2,6 @@ package decorated
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/ast"
 )
@@ -16,7 +15,6 @@ func NewModuleImports() *ModuleImports {
 }
 
 func (m *ModuleImports) ImportModule(moduleName *ast.ModuleReference, module *Module) {
-	log.Printf("**** imported module %v = %v", moduleName.ModuleName(), module.FullyQualifiedModuleName())
 	m.modules[moduleName.ModuleName()] = module
 }
 

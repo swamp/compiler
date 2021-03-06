@@ -28,6 +28,10 @@ func (i *VariableIdentifierScoped) ModuleReference() *ModuleReference {
 	return i.moduleReference
 }
 
+func (i *VariableIdentifierScoped) Symbol() token.VariableSymbolToken {
+	return i.symbol.Symbol()
+}
+
 func (i *VariableIdentifierScoped) FetchPositionLength() token.SourceFileReference {
 	return i.symbol.FetchPositionLength()
 }

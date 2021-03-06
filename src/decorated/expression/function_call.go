@@ -20,15 +20,15 @@ type FunctionCall struct {
 	astFunctionCall         *ast.FunctionCall
 }
 
-func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionType Expression, returnType dtype.Type, assignments []Expression) *FunctionCall {
-	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionType, assignments: assignments, returnType: returnType}
+func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression, returnType dtype.Type, assignments []Expression) *FunctionCall {
+	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, assignments: assignments, returnType: returnType}
 }
 
 func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
 	return c.astFunctionCall
 }
 
-func (c *FunctionCall) FunctionValue() Expression {
+func (c *FunctionCall) FunctionExpression() Expression {
 	return c.functionValueExpression
 }
 

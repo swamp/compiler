@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
@@ -175,7 +174,6 @@ func (t *ModuleTypes) internalAdd(identifier *ast.TypeIdentifier, realType dtype
 }
 
 func (t *ModuleTypes) internalAddWithString(name string, realType dtype.Type) {
-	log.Printf("Adding type %v\n", name)
 	hasType := t.identifierToType[name]
 	if hasType != nil {
 		panic("already have name " + name)
@@ -200,8 +198,6 @@ func (t *ModuleTypes) CopyType(nameOfType *ast.TypeIdentifier, realType dtype.Ty
 	if existingType != nil {
 		return NewInternalError(fmt.Errorf("copy: sorry, '%v' already declared", existingType))
 	}
-
-	log.Printf("copying %v, %T", nameOfType.Name(), realType)
 
 	t.internalAddWithString(nameOfType.Name(), realType)
 	return nil

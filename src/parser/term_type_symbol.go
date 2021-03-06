@@ -18,6 +18,9 @@ func parseTypeSymbol(p ParseStream, startIndentation int, typeSymbol token.TypeS
 	for p.maybeAccessor() {
 		part := ast.NewModuleNamePart(x)
 		moduleNameParts = append(moduleNameParts, part)
+		if typeSymbol.Name() == "Char" {
+			typeSymbol = typeSymbol
+		}
 		if variable, wasVariable := p.wasVariableIdentifier(); wasVariable {
 			moduleReference := ast.NewModuleReference(moduleNameParts)
 			finalVar := ast.NewQualifiedVariableIdentifierScoped(moduleReference, variable)

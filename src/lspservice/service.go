@@ -161,7 +161,7 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 	case *decorated.LetVariable:
 		return t.FetchPositionLength(), nil
 	case *decorated.FunctionCall:
-		return tokenToDefinition(t.FunctionValue())
+		return tokenToDefinition(t.FunctionExpression())
 	case *decorated.CurryFunction:
 		return tokenToDefinition(t.FunctionValue())
 	// TYPES

@@ -576,7 +576,7 @@ func addSemanticTokenArrayLiteral(arrayLiteral *decorated.ArrayLiteral, builder 
 }
 
 func addSemanticTokenFunctionCall(funcCall *decorated.FunctionCall, builder *SemanticBuilder) error {
-	if err := addSemanticToken(funcCall.FunctionValue(), builder); err != nil {
+	if err := addSemanticToken(funcCall.FunctionExpression(), builder); err != nil {
 		return err
 	}
 
@@ -757,7 +757,7 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenCustomType(t, builder)
 
 	default:
-		log.Printf("semantic unhandled %T %v\n", t, t)
+		log.Printf("semantic unhandled %T\n", t)
 	}
 
 	return nil

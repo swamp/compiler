@@ -7,7 +7,6 @@ package deccy
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
@@ -550,8 +549,6 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	typeRefType := dectype.NewPrimitiveType(typeRefIdentifier, []dtype.Type{localType})
 
 	addPrimitive(globalModuleTypes, typeRefType)
-
-	log.Printf("globalTypes:%v", globalModuleTypes)
 
 	const verbose = true
 

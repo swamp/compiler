@@ -12,11 +12,6 @@ import (
 
 func parseFunctionCall(p ParseStream, startIndentation int, expressionResolveToFunction ast.Expression) (ast.Expression, parerr.ParseError) {
 	_, isJustATypeIdentifier := expressionResolveToFunction.(ast.TypeIdentifierNormalOrScoped)
-	if isJustATypeIdentifier {
-		p.debugInfo("this is a constructor call")
-	} else {
-		p.debugInfo("this is a normal call")
-	}
 	arguments, argumentsErr := parseFunctionCallArguments(p, startIndentation)
 	if argumentsErr != nil {
 		return nil, argumentsErr

@@ -131,6 +131,18 @@ func (t *ResourceNameType) HumanReadable() string {
 	return "ResourceName"
 }
 
+type TypeRefType struct {
+	Type
+}
+
+func (t *TypeRefType) String() string {
+	return "TypeRef"
+}
+
+func (t *TypeRefType) HumanReadable() string {
+	return "TypeRef"
+}
+
 type ListType struct {
 	Type
 	itemType InfoType
@@ -528,6 +540,17 @@ func (c *Chunk) doWeHaveResourceName() int {
 	return -1
 }
 
+func (c *Chunk) doWeHaveTypeRef() int {
+	for index, infoType := range c.infoTypes {
+		_, isTypeRef := infoType.(*TypeRefType)
+		if isTypeRef {
+			return index
+		}
+	}
+
+	return -1
+}
+
 func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, error) {
 	var consumedVariants []Variant
 	for _, variant := range custom.Variants() {
@@ -748,6 +771,20 @@ func (c *Chunk) consumeResourceName() (InfoType, error) {
 	return proposedNewResourceName, nil
 }
 
+func (c *Chunk) consumeTypeRef() (InfoType, error) {
+	indexArray := c.doWeHaveTypeRef()
+	if indexArray != -1 {
+		return c.infoTypes[indexArray].(*TypeRefType), nil
+	}
+
+	proposedTypeRefType := &TypeRefType{}
+
+	proposedTypeRefType.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, proposedTypeRefType)
+
+	return proposedTypeRefType, nil
+}
+
 func (c *Chunk) consumeBool() (InfoType, error) {
 	indexArray := c.doWeHaveBool()
 	if indexArray != -1 {
@@ -796,9 +833,11 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 		return c.consumeResourceName()
 	} else if name == "Blob" {
 		return c.consumeBlob()
+	} else if name == "TypeRef" {
+		return c.consumeTypeRef()
 	}
 
-	return nil, fmt.Errorf("unknown primitive %v", primitive)
+	return nil, fmt.Errorf("chunk: consume: unknown primitive %v", primitive)
 }
 
 func (c *Chunk) consumeLocalType(localType *dectype.LocalType) (InfoType, error) {
@@ -894,9 +933,11 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 		return c.ConsumeAtom(invokerAtom)
 	case *dectype.TypeReference:
 		return c.Consume(t.Next())
+	case *dectype.TypeReferenceScoped:
+		return c.Consume(t.Next())
 	}
 
-	return nil, fmt.Errorf("unknown thing %T", p)
+	return nil, fmt.Errorf("chunk: consume: unknown thing %T", p)
 }
 
 func (c *Chunk) ConsumeTypes(types []dtype.Type) ([]InfoType, error) {

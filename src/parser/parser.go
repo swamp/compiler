@@ -7,7 +7,6 @@ package parser
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
@@ -204,7 +203,7 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 			return nil, termErr
 		}
 	}
-	log.Printf("term token %T %v", term, term)
+	// log.Printf("term token %T %v", term, term)
 
 	leftExp := term
 	leftExpErr := termErr

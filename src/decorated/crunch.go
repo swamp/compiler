@@ -7,7 +7,6 @@ package deccy
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 
@@ -94,11 +93,6 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 			return nil, decorated.NewInternalError(importErr)
 		}
 
-	}
-
-	log.Printf("======== imported modules")
-	for _, importedModule := range module.ImportedModules().AllModules() {
-		log.Printf("> importedModule %v", importedModule.FullyQualifiedModuleName())
 	}
 
 	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.TypeRepo(), module.ImportedTypes())

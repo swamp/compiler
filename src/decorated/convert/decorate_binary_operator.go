@@ -77,7 +77,7 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 }
 
 /*
-func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.FunctionValue) (ast.FunctionValue, parerr.ParseError) {
+func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.FunctionExpression) (ast.FunctionExpression, parerr.ParseError) {
 	_, spaceErr := p.eatOneSpace("space after pipe left")
 	if spaceErr != nil {
 		return nil, spaceErr
@@ -148,7 +148,7 @@ func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context 
 		lookupExpression := def.Expression()
 		functionValue, _ := lookupExpression.(*decorated.FunctionValue)
 		decoratedModuleReference := decorated.NewModuleReference(t.ModuleReference(), def.ModuleDefinition().ParentDefinitions().OwnedByModule())
-		nameWithModuleRef := decorated.NewNamedDefinitionReference(decoratedModuleReference, t.AstVariableReference())
+		nameWithModuleRef := decorated.NewNamedDefinitionReference(decoratedModuleReference, t)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, functionValue)
 		functionExpression = functionReference
 		leftAstCall = ast.NewFunctionCall(functionReference, nil)

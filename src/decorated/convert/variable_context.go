@@ -27,6 +27,22 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 	return &VariableContext{parent: nil, parentDefinitions: parentDefinitions, lookup: make(map[string]*decorated.NamedDecoratedExpression)}
 }
 
+func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression decorated.Expression) (decorated.Expression, decshared.DecoratedError) {
+	switch t := expression.(type) {
+	case *decorated.FunctionValue:
+		var moduleRef *decorated.ModuleReference
+		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
+		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
+		return functionReference, nil
+	case *decorated.FunctionParameterDefinition:
+		return decorated.NewFunctionParameterReference(name, t), nil
+	case *decorated.LetAssignment:
+		return decorated.NewLetVariableReference(name, t), nil
+	default:
+		return nil, decorated.NewInternalError(fmt.Errorf("what to do with '%v' => %T", name, t))
+	}
+}
+
 func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression, decshared.DecoratedError) {
 	def := c.FindNamedDecoratedExpression(name)
 	if def == nil {
@@ -55,19 +71,7 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 			return t, nil
 		}
 	}
-	switch t := def.Expression().(type) {
-	case *decorated.FunctionValue:
-		var moduleRef *decorated.ModuleReference
-		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
-		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
-		return functionReference, nil
-	case *decorated.FunctionParameterDefinition:
-		return decorated.NewFunctionParameterReference(name, t), nil
-	case *decorated.LetAssignment:
-		return decorated.NewLetVariableReference(name, t), nil
-	default:
-		return nil, decorated.NewInternalError(fmt.Errorf("what to do with '%v' => %T", name, t))
-	}
+	return ReferenceFromVariable(name, def.Expression())
 }
 
 func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecoratedExpression {
@@ -108,6 +112,14 @@ func (c *VariableContext) FindScopedNamedDecoratedExpression(name *ast.VariableI
 	def := decorated.NewNamedDecoratedExpression(mDef.FullyQualifiedVariableName().String(), mDef, mDef.Expression())
 
 	return def
+}
+
+func (c *VariableContext) FindScopedNamedDecoratedExpressionScopedOrNormal(name ast.ScopedOrNormalVariableIdentifier) *decorated.NamedDecoratedExpression {
+	scoped, wasScoped := name.(*ast.VariableIdentifierScoped)
+	if wasScoped {
+		return c.FindScopedNamedDecoratedExpression(scoped)
+	}
+	return c.FindNamedDecoratedExpression(name.(*ast.VariableIdentifier))
 }
 
 func (c *VariableContext) Add(name *ast.VariableIdentifier, namedExpression *decorated.NamedDecoratedExpression) {

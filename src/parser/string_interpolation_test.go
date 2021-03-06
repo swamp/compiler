@@ -7,6 +7,9 @@ package parser
 
 import (
 	"testing"
+
+	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/token"
 )
 
 func TestInterpolation(t *testing.T) {
@@ -49,16 +52,24 @@ func TestInterpolationSubstitution2(t *testing.T) {
 	}
 }
 
-func TestInterpolationSubstitutionExpression(t *testing.T) {
-	expr, _ := replaceInterpolationStringToExpression(`some ${a 23 b}after ${b}`)
+func replaceInterpolationStringToExpressionHelper(t *testing.T, s string) *ast.StringInterpolation {
+	expr, err := replaceInterpolationStringToExpression(token.NewStringToken(s, s, token.SourceFileReference{}))
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	return expr
+}
+
+func TestInterpolationSubstitutionExpression(t *testing.T) {
+	expr := replaceInterpolationStringToExpressionHelper(t, `some ${a 23 b}after ${b}`)
 	if expr.String() != `((('some ' ++ [call Debug.$toString [[call $a [#23 $b]]]]) ++ 'after ') ++ [call Debug.$toString [$b]])` {
 		t.Errorf("wrong expression")
 	}
 }
 
 func TestInterpolationStringExpression2(t *testing.T) {
-	expr, _ := replaceInterpolationStringToExpression(`${a} ${b}`)
+	expr := replaceInterpolationStringToExpressionHelper(t, `${a} ${b}`)
 	if expr.String() != `((('' ++ [call Debug.$toString [$a]]) ++ ' ') ++ [call Debug.$toString [$b]])` {
 		t.Errorf("wrong expression")
 	}
