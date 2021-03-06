@@ -17,10 +17,10 @@ import (
 type RecordConstructorRecord struct {
 	recordType     *dectype.RecordAtom
 	record         *RecordLiteral
-	typeIdentifier *ast.TypeIdentifier
+	typeIdentifier ast.TypeReferenceScopedOrNormal
 }
 
-func NewRecordConstructorRecord(typeIdentifier *ast.TypeIdentifier, recordType *dectype.RecordAtom, record *RecordLiteral) *RecordConstructorRecord {
+func NewRecordConstructorRecord(typeIdentifier ast.TypeReferenceScopedOrNormal, recordType *dectype.RecordAtom, record *RecordLiteral) *RecordConstructorRecord {
 	return &RecordConstructorRecord{typeIdentifier: typeIdentifier, record: record, recordType: recordType}
 }
 
@@ -37,5 +37,5 @@ func (c *RecordConstructorRecord) String() string {
 }
 
 func (c *RecordConstructorRecord) FetchPositionLength() token.SourceFileReference {
-	return c.typeIdentifier.Symbol().SourceFileReference
+	return c.typeIdentifier.FetchPositionLength()
 }

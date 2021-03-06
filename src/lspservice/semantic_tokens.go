@@ -95,7 +95,7 @@ func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuil
 	}
 
 	for _, variant := range f.Variants() {
-		if err := encodeEnumMember(builder, variant.Name()); err != nil {
+		if err := encodeEnumMemberTypeIdentifier(builder, variant.Name()); err != nil {
 			return err
 		}
 
@@ -138,7 +138,7 @@ func addSemanticTokenCustomTypeVariantReference(ref *decorated.CustomTypeVariant
 }
 
 func addSemanticTokenRecordConstructor(constructor *decorated.RecordConstructor, builder *SemanticBuilder) error {
-	if err := encodeStructReferenceWithModuleReference(builder, constructor.AstTypeIdentifier()); err != nil {
+	if err := encodeStructReferenceWithModuleReference(builder, constructor.AstTypeReference().SomeTypeIdentifier()); err != nil {
 		return err
 	}
 
@@ -184,7 +184,11 @@ func encodeOperator(builder *SemanticBuilder, operator token.OperatorToken) erro
 	return builder.EncodeSymbol(operator.FetchPositionLength().Range, "operator", nil)
 }
 
-func encodeEnumMember(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
+func encodeEnumMember(builder *SemanticBuilder, identifier ast.TypeIdentifierNormalOrScoped) error {
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enumMember", nil)
+}
+
+func encodeEnumMemberTypeIdentifier(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
 	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enumMember", nil)
 }
 

@@ -95,7 +95,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		}
 		return newInvokerType(info, foundType, t)
 	case *ast.TypeReference:
-		refName := info.TypeResolver()
+		refName := info.TypeIdentifier()
 		foundType, err := t.CreateTypeReference(refName)
 		if err != nil {
 			return nil, err

@@ -347,7 +347,7 @@ func (e *ConstructorArgumentTypeMismatch) Error() string {
 }
 
 func (e *ConstructorArgumentTypeMismatch) FetchPositionLength() token.SourceFileReference {
-	return e.call.TypeIdentifier().FetchPositionLength()
+	return e.call.TypeReference().FetchPositionLength()
 }
 
 type ExpectedCustomTypeVariantConstructor struct {
@@ -360,11 +360,11 @@ func NewExpectedCustomTypeVariantConstructor(call *ast.ConstructorCall) *Expecte
 }
 
 func (e *ExpectedCustomTypeVariantConstructor) Error() string {
-	return fmt.Sprintf("expected constructor %v", e.call.TypeIdentifier())
+	return fmt.Sprintf("expected constructor %v", e.call.TypeReference())
 }
 
 func (e *ExpectedCustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {
-	return e.call.TypeIdentifier().FetchPositionLength()
+	return e.call.TypeReference().FetchPositionLength()
 }
 
 type WrongTypeForRecordConstructorField struct {
@@ -388,7 +388,7 @@ func (e *WrongTypeForRecordConstructorField) Error() string {
 }
 
 func (e *WrongTypeForRecordConstructorField) FetchPositionLength() token.SourceFileReference {
-	return e.call.TypeIdentifier().FetchPositionLength()
+	return e.call.TypeReference().FetchPositionLength()
 }
 
 type WrongNumberOfFieldsInConstructor struct {
@@ -408,7 +408,7 @@ func (e *WrongNumberOfFieldsInConstructor) Error() string {
 }
 
 func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.SourceFileReference {
-	return e.call.TypeIdentifier().FetchPositionLength()
+	return e.call.TypeReference().FetchPositionLength()
 }
 
 type UnhandledCustomTypeVariants struct {

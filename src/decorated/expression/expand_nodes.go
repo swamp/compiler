@@ -90,7 +90,7 @@ func expandChildNodesFunctionType(fn *dectype.FunctionAtom) []TypeOrToken {
 
 func expandChildNodesCustomType(fn *dectype.CustomTypeAtom) []TypeOrToken {
 	var tokens []TypeOrToken
-	// tokens = append(tokens, expandChildNodes(fn.TypeIdentifier())...) Can not expand type identifiers, need meaning
+	// tokens = append(tokens, expandChildNodes(fn.TypeReference())...) Can not expand type identifiers, need meaning
 	for _, variant := range fn.Variants() {
 		tokens = append(tokens, expandChildNodes(variant)...)
 		for _, param := range variant.ParameterTypes() {

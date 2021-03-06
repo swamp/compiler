@@ -68,3 +68,17 @@ func (l *TypeLookup) CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifie
 
 	return dectype.NewTypeReferenceScoped(typeIdentifier, foundType), nil
 }
+
+func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
+	scoped, wasScope := someTypeIdentifier.(*ast.TypeIdentifierScoped)
+	if wasScope {
+		return l.CreateTypeScopedReference(scoped)
+	}
+
+	normal, wasNormal := someTypeIdentifier.(*ast.TypeIdentifier)
+	if !wasNormal {
+		return nil, NewInternalError(fmt.Errorf("not sure of this type identifier %T", someTypeIdentifier))
+	}
+
+	return l.CreateTypeReference(normal)
+}

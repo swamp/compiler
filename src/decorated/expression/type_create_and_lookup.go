@@ -32,6 +32,10 @@ func (l *TypeCreateAndLookup) CreateTypeScopedReference(typeIdentifier *ast.Type
 	return l.lookup.CreateTypeScopedReference(typeIdentifier)
 }
 
+func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
+	return l.lookup.CreateSomeTypeReference(someTypeIdentifier)
+}
+
 func (l *TypeCreateAndLookup) FindBuiltInType(s string) dtype.Type {
 	return l.localTypes.FindBuiltInType(s)
 }

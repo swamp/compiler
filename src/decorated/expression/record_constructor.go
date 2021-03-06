@@ -18,10 +18,10 @@ type RecordConstructor struct {
 	arguments           []*RecordLiteralAssignment
 	parseOrderArguments []Expression
 	recordType          *dectype.RecordAtom
-	typeIdentifier      ast.TypeIdentifierNormalOrScoped
+	typeIdentifier      ast.TypeReferenceScopedOrNormal
 }
 
-func NewRecordConstructor(typeIdentifier ast.TypeIdentifierNormalOrScoped, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
+func NewRecordConstructor(typeIdentifier ast.TypeReferenceScopedOrNormal, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
 	return &RecordConstructor{typeIdentifier: typeIdentifier, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
 }
 
@@ -29,7 +29,7 @@ func (c *RecordConstructor) SortedAssignments() []*RecordLiteralAssignment {
 	return c.arguments
 }
 
-func (c *RecordConstructor) AstTypeIdentifier() ast.TypeIdentifierNormalOrScoped {
+func (c *RecordConstructor) AstTypeReference() ast.TypeReferenceScopedOrNormal {
 	return c.typeIdentifier
 }
 

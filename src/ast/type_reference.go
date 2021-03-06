@@ -14,6 +14,7 @@ import (
 type TypeReferenceScopedOrNormal interface {
 	Arguments() []Type
 	FetchPositionLength() token.SourceFileReference
+	SomeTypeIdentifier() TypeIdentifierNormalOrScoped
 }
 
 type TypeReference struct {
@@ -32,12 +33,20 @@ func (i *TypeReference) DebugString() string {
 	return ""
 }
 
-func (i *TypeReference) TypeResolver() *TypeIdentifier {
+func (i *TypeReference) TypeIdentifier() *TypeIdentifier {
+	return i.ident
+}
+
+func (i *TypeReference) SomeTypeIdentifier() TypeIdentifierNormalOrScoped {
 	return i.ident
 }
 
 func (i *TypeReference) Arguments() []Type {
 	return i.arguments
+}
+
+func (i *TypeReference) DecoratedName() string {
+	return ""
 }
 
 func (i *TypeReference) Name() string {

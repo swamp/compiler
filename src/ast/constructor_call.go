@@ -20,7 +20,7 @@ func NewConstructorCall(functionValue TypeReferenceScopedOrNormal, arguments []E
 	return &ConstructorCall{functionValue: functionValue, arguments: arguments}
 }
 
-func (i *ConstructorCall) TypeIdentifier() TypeReferenceScopedOrNormal {
+func (i *ConstructorCall) TypeReference() TypeReferenceScopedOrNormal {
 	return i.functionValue
 }
 

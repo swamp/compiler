@@ -220,8 +220,8 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 	}
 
 	p.stream.nodes = append(p.stream.nodes, leftExp)
-	_, isTypeIdentifier := term.(*ast.TypeIdentifier)
-	_, isScopedTypeIdentifier := term.(*ast.TypeIdentifierScoped)
+	notScopedTypeIdent, isTypeIdentifier := term.(*ast.TypeIdentifier)
+	scopedTypeIdent, isScopedTypeIdentifier := term.(*ast.TypeIdentifierScoped)
 	_, isVariableIdentifier := term.(*ast.VariableIdentifier)
 	_, isScopedVariableIdentifier := term.(*ast.VariableIdentifierScoped)
 
@@ -234,9 +234,16 @@ func (p *Parser) internalParseExpression(filterPrecedence Precedence, startInden
 			}
 			leftExp, leftExpErr = parseFunctionCall(p.stream, startIndentation, leftExp)
 		} else {
-			typeIdentifier, isTypeIdentifier := term.(*ast.TypeIdentifier)
-			if isTypeIdentifier {
-				leftExp = ast.NewConstructorCall(typeIdentifier, nil)
+			if isTypeIdentifier || isScopedTypeIdentifier {
+				// This happens when there is a constructor call which takes no arguments
+				// Usually a custom type variant constructor
+				var someRef ast.TypeReferenceScopedOrNormal
+				if isScopedTypeIdentifier {
+					someRef = ast.NewScopedTypeReference(scopedTypeIdent, nil)
+				} else {
+					someRef = ast.NewTypeReference(notScopedTypeIdent, nil)
+				}
+				leftExp = ast.NewConstructorCall(someRef, nil)
 			}
 		}
 	}

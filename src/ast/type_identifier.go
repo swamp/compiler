@@ -14,6 +14,7 @@ import (
 type TypeIdentifierNormalOrScoped interface {
 	IsDefaultSymbol() bool
 	FetchPositionLength() token.SourceFileReference
+	Name() string
 }
 
 type TypeIdentifier struct {
@@ -37,7 +38,7 @@ func (i *TypeIdentifier) String() string {
 }
 
 func (i *TypeIdentifier) DebugString() string {
-	return fmt.Sprintf("[TypeIdentifier]")
+	return fmt.Sprintf("[TypeReference]")
 }
 
 func (i *TypeIdentifier) IsDefaultSymbol() bool {

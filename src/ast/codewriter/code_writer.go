@@ -103,7 +103,7 @@ func writeTypeIdentifier(typeIdentifier *ast.TypeIdentifier, colorer coloring.Co
 }
 
 func writeTypeReference(typeReference *ast.TypeReference, colorer coloring.Colorer) {
-	writeTypeIdentifier(typeReference.TypeResolver(), colorer)
+	writeTypeIdentifier(typeReference.TypeIdentifier(), colorer)
 	hasArguments := len(typeReference.Arguments()) > 0
 	if !hasArguments {
 		return
@@ -322,7 +322,7 @@ func writeTypeParameters(typeParameters []*ast.TypeParameter, colorer coloring.C
 */
 
 func writeConstructorCall(constructorCall *ast.ConstructorCall, colorer coloring.Colorer, indentation int) {
-	writeTypeIdentifier(constructorCall.TypeIdentifier(), colorer)
+	writeTypeIdentifier(constructorCall.TypeReference(), colorer)
 	hasArguments := len(constructorCall.Arguments()) > 0
 	if hasArguments {
 		colorer.OneSpace()

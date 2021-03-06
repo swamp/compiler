@@ -23,6 +23,11 @@ func Unalias(t dtype.Type) dtype.Type {
 		return Unalias(typeRef.Next())
 	}
 
+	scopedTypeRef, wasScopedTypeRef := t.(*TypeReferenceScoped)
+	if wasScopedTypeRef {
+		return Unalias(scopedTypeRef.Next())
+	}
+
 	return t
 }
 
@@ -35,6 +40,11 @@ func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 	typeRef, wasTypeRef := t.(*TypeReference)
 	if wasTypeRef {
 		return Unalias(typeRef.Next())
+	}
+
+	scopedTypeRef, wasScopedTypeRef := t.(*TypeReferenceScoped)
+	if wasScopedTypeRef {
+		return Unalias(scopedTypeRef.Next())
 	}
 
 	fnTypeRef, wasFnTypeRef := t.(*FunctionTypeReference)

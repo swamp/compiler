@@ -27,7 +27,15 @@ func (i *TypeReferenceScoped) DebugString() string {
 	return ""
 }
 
+func (i *TypeReferenceScoped) DecoratedName() string {
+	return ""
+}
+
 func (i *TypeReferenceScoped) TypeResolver() *TypeIdentifierScoped {
+	return i.ident
+}
+
+func (i *TypeReferenceScoped) SomeTypeIdentifier() TypeIdentifierNormalOrScoped {
 	return i.ident
 }
 
