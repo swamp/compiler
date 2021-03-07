@@ -60,6 +60,10 @@ func (s SourceFileReference) ToReferenceString() string {
 	return fmt.Sprintf("%v:%d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1)
 }
 
+func (s SourceFileReference) ToCompleteReferenceString() string {
+	return fmt.Sprintf("%v:%d:%d - %d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
+}
+
 func (s SourceFileReference) String() string {
 	return s.ToReferenceString()
 }

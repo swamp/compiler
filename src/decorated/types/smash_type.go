@@ -154,7 +154,7 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 		return original, nil
 	}
 
-	return NewCustomType(original.name, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil, convertedVariants), nil
+	return NewCustomType(original.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil, convertedVariants), nil
 }
 
 func fillContextFromFunctions(context *TypeParameterContextOther, original *FunctionAtom, other *FunctionAtom) (*FunctionAtom, error) {

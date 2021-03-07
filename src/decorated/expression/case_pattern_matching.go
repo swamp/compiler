@@ -102,5 +102,5 @@ func (i *CasePatternMatching) DebugString() string {
 }
 
 func (i *CasePatternMatching) FetchPositionLength() token.SourceFileReference {
-	return i.test.FetchPositionLength()
+	return i.astCase.FetchPositionLength()
 }

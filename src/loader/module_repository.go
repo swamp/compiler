@@ -22,12 +22,12 @@ type ModuleReader interface {
 
 type ModuleRepository struct {
 	moduleReader      ModuleReader
-	world             *World
+	world             *Package
 	moduleNamespace   dectype.PackageRootModuleName
 	resolutionModules []dectype.PackageRelativeModuleName
 }
 
-func NewModuleRepository(world *World, moduleNamespace dectype.PackageRootModuleName, moduleReader ModuleReader) *ModuleRepository {
+func NewModuleRepository(world *Package, moduleNamespace dectype.PackageRootModuleName, moduleReader ModuleReader) *ModuleRepository {
 	return &ModuleRepository{world: world, moduleNamespace: moduleNamespace, moduleReader: moduleReader}
 }
 

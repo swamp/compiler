@@ -77,7 +77,8 @@ func (c *FmtCmd) Run() error {
 type LspCmd struct{}
 
 func (c *LspCmd) Run() error {
-	lspService := &lspservice.LspImpl{}
+	fileSystem := loader.NewFileSystemDocumentProvider()
+	lspService := lspservice.NewLspImpl(fileSystem)
 	service := lspservice.NewService(lspService, lspService)
 	fmt.Fprintf(os.Stderr, "LSP Server initiated. Will receive commands from stdin and send reply on stdout")
 	lspServ := lspserv.NewService(service)

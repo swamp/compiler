@@ -420,9 +420,10 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return expandChildNodes(&t.UnaryOperator)
 	case *LogicalUnaryOperator:
 		return expandChildNodes(&t.UnaryOperator)
-
 	case *UnaryOperator:
 		return expandChildNodes(t.Left())
+	case *Constant:
+		return tokens
 	case *BinaryOperator:
 		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:

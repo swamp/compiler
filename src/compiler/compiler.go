@@ -25,7 +25,7 @@ import (
 	swampdisasm "github.com/swamp/disassembler/lib"
 )
 
-func CheckUnused(world *loader.World) {
+func CheckUnused(world *loader.Package) {
 	for _, module := range world.AllModules() {
 		if module.IsInternal() {
 			continue
@@ -39,13 +39,13 @@ func CheckUnused(world *loader.World) {
 	}
 }
 
-func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
+func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.Package, *decorated.Module, error) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
 	} else {
 		mainPrefix = filepath.Dir(mainSourceFile)
 	}
-	world := loader.NewWorld()
+	world := loader.NewPackage(loader.LocalFileSystemRoot(mainPrefix))
 
 	worldDecorator, worldDecoratorErr := loader.NewWorldDecorator(enforceStyle, verboseFlag)
 	if worldDecoratorErr != nil {
@@ -71,7 +71,7 @@ func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider
 	return world, libraryModule, nil
 }
 
-func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.World, *decorated.Module, error) {
+func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.Package, *decorated.Module, error) {
 	if !file.IsDir(mainSource) {
 		mainSource = filepath.Dir(mainSource)
 	}
@@ -88,7 +88,7 @@ type CoreFunctionInfo struct {
 	ParamCount uint
 }
 
-func GenerateAndLink(world *loader.World, outputFilename string, verboseFlag bool) error {
+func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag bool) error {
 	gen := generate.NewGenerator()
 	var allFunctions []*generate.Function
 	var allExternalFunctions []*generate.ExternalFunction

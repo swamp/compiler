@@ -130,7 +130,7 @@ func (f *FunctionValue) Expression() Expression {
 }
 
 func (f *FunctionValue) FetchPositionLength() token.SourceFileReference {
-	return f.sourceFileReference
+	return f.astFunction.FetchPositionLength()
 }
 
 func (f *FunctionValue) CommentBlock() *ast.MultilineComment {

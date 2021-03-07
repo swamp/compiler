@@ -41,7 +41,7 @@ func DecorateCustomType(customTypeDefinition *ast.CustomType,
 
 	decoratedNames := AstParametersToArgumentNames(customTypeDefinition.FindAllLocalTypes())
 	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
-	s := dectype.NewCustomType(customTypeDefinition.Identifier(), artifactTypeName, decoratedNames, variants)
+	s := dectype.NewCustomType(customTypeDefinition, artifactTypeName, decoratedNames, variants)
 	finalizeCustomType(s)
 	// decorateCustomTypeVariantConstructors(s, typeRepo)
 

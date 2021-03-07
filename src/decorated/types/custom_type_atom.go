@@ -14,12 +14,17 @@ import (
 )
 
 type CustomTypeAtom struct {
-	nameToField           map[string]*CustomTypeVariant
-	parameters            []dtype.Type
-	variants              []*CustomTypeVariant
-	name                  *ast.TypeIdentifier
+	nameToField map[string]*CustomTypeVariant
+	parameters  []dtype.Type
+	variants    []*CustomTypeVariant
+	// name                  *ast.TypeIdentifier
+	astCustomType         *ast.CustomType
 	artifactTypeName      ArtifactFullyQualifiedTypeName
 	genericLocalTypeNames []*dtype.TypeArgumentName
+}
+
+func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
+	return s.astCustomType
 }
 
 func (s *CustomTypeAtom) String() string {
@@ -27,7 +32,7 @@ func (s *CustomTypeAtom) String() string {
 }
 
 func (s *CustomTypeAtom) HumanReadable() string {
-	return s.name.Name()
+	return s.astCustomType.Identifier().Name()
 }
 
 func (s *CustomTypeAtom) ShortString() string {
@@ -41,15 +46,15 @@ func (s *CustomTypeAtom) ShortString() string {
 }
 
 func (s *CustomTypeAtom) FetchPositionLength() token.SourceFileReference {
-	return s.name.FetchPositionLength()
+	return s.astCustomType.FetchPositionLength()
 }
 
 func (s *CustomTypeAtom) TypeIdentifier() *ast.TypeIdentifier {
-	return s.name
+	return s.astCustomType.Identifier()
 }
 
 func (s *CustomTypeAtom) DecoratedName() string {
-	return s.name.Name()
+	return s.astCustomType.Identifier().Name()
 }
 
 func (s *CustomTypeAtom) AtomName() string {
@@ -76,7 +81,7 @@ func (s *CustomTypeAtom) ConcretizedName() string {
 	return s.DecoratedName()
 }
 
-func NewCustomType(name *ast.TypeIdentifier, artifactTypeName ArtifactFullyQualifiedTypeName,
+func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName,
 	genericLocalTypeNames []*dtype.TypeArgumentName, variants []*CustomTypeVariant) *CustomTypeAtom {
 	nameToField := make(map[string]*CustomTypeVariant)
 	for index, variant := range variants {
@@ -91,7 +96,7 @@ func NewCustomType(name *ast.TypeIdentifier, artifactTypeName ArtifactFullyQuali
 	}
 
 	return &CustomTypeAtom{
-		name: name, artifactTypeName: artifactTypeName,
+		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
 		genericLocalTypeNames: genericLocalTypeNames, variants: variants, nameToField: nameToField,
 	}
 }

@@ -135,5 +135,5 @@ func (i *CaseCustomType) DebugString() string {
 }
 
 func (i *CaseCustomType) FetchPositionLength() token.SourceFileReference {
-	return i.test.FetchPositionLength()
+	return i.caseExpression.FetchPositionLength()
 }

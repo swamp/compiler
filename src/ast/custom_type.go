@@ -15,6 +15,7 @@ type CustomType struct {
 	name           *TypeIdentifier
 	typeParameters []*TypeParameter
 	variants       []*CustomTypeVariant
+	keywordType    token.Keyword
 }
 
 func (i *CustomType) String() string {
@@ -39,4 +40,8 @@ func (i *CustomType) FindAllLocalTypes() []*TypeParameter {
 
 func (i *CustomType) FetchPositionLength() token.SourceFileReference {
 	return i.name.FetchPositionLength()
+}
+
+func (i *CustomType) KeywordType() token.Keyword {
+	return i.keywordType
 }

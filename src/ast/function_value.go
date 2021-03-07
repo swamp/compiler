@@ -16,13 +16,18 @@ type FunctionValue struct {
 	expression         Expression
 	debugAssignedValue token.VariableSymbolToken
 	commentBlock       *MultilineComment
+	inclusive          token.SourceFileReference
 }
 
 func NewFunctionValue(debugAssignedValue token.VariableSymbolToken, parameters []*VariableIdentifier,
 	expression Expression, commentBlock *MultilineComment) *FunctionValue {
+	inclusive := token.MakeInclusiveSourceFileReference(debugAssignedValue.FetchPositionLength(), expression.FetchPositionLength())
+	if inclusive.Range.End().Line() == 0 && inclusive.Range.End().Column() == 0 {
+		panic("problem")
+	}
 	return &FunctionValue{
 		debugAssignedValue: debugAssignedValue, parameters: parameters,
-		expression: expression, commentBlock: commentBlock,
+		expression: expression, commentBlock: commentBlock, inclusive: inclusive,
 	}
 }
 
@@ -39,7 +44,7 @@ func (i *FunctionValue) Expression() Expression {
 }
 
 func (i *FunctionValue) FetchPositionLength() token.SourceFileReference {
-	return i.debugAssignedValue.SourceFileReference
+	return i.inclusive
 }
 
 func (i *FunctionValue) DebugFunctionIdentifier() token.VariableSymbolToken {

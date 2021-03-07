@@ -107,7 +107,7 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 	}
 
 	var customType ast.Type
-	newCustomType := ast.NewCustomType(nameOfType, fields, typeParameterIdentifiers)
+	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, typeParameterIdentifiers)
 	customType = newCustomType
 
 	statement := ast.NewCustomTypeStatement(nameOfType, customType, precedingComments)

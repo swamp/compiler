@@ -43,7 +43,7 @@ func FindSettingsDirectory(swampDirectory string) (string, error) {
 	return "", fmt.Errorf("sorry, couldn't find settings file from %v and up. Not a library", swampDirectory)
 }
 
-func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *World, repository deccy.ModuleRepository, swampDirectory string, verboseFlag bool) decshared.DecoratedError {
+func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, verboseFlag bool) decshared.DecoratedError {
 	settingsFilename := filepath.Join(swampDirectory, ".swamp.toml")
 
 	mapping := make(map[string]string)
@@ -85,7 +85,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *World, repositor
 	return nil
 }
 
-func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *World, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError) {
 	const verboseFlag = false
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
@@ -117,7 +117,7 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *World, repository d
 	return newRepository.FetchMainModuleInPackage(verboseFlag)
 }
 
-func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *World, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName) (*World, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName) (*Package, decshared.DecoratedError) {
 	const verboseFlag = false
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
@@ -152,7 +152,7 @@ func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *World, repository
 	return world, nil
 }
 
-func (r *LibraryReaderAndDecorator) CompileAllInLibraryFindSettings(world *World, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName) (*World, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) CompileAllInLibraryFindSettings(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName) (*Package, decshared.DecoratedError) {
 	foundSettingsDirectory, err := FindSettingsDirectory(absoluteDirectory)
 	if err != nil {
 		return nil, decorated.NewInternalError(err)

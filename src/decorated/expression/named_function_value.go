@@ -9,10 +9,15 @@ import (
 
 type FunctionName struct {
 	identifier *ast.VariableIdentifier
+	value      *FunctionValue
 }
 
 func (f *FunctionName) Ident() *ast.VariableIdentifier {
 	return f.identifier
+}
+
+func (f *FunctionName) FunctionValue() *FunctionValue {
+	return f.value
 }
 
 func (f *FunctionName) FetchPositionLength() token.SourceFileReference {
@@ -27,6 +32,10 @@ func (f *FunctionName) HumanReadable() string {
 	return "This is the name of the function"
 }
 
+func NewFunctionName(identifier *ast.VariableIdentifier, value *FunctionValue) *FunctionName {
+	return &FunctionName{identifier: identifier, value: value}
+}
+
 type NamedFunctionValue struct {
 	identifier *FunctionName
 	value      *FunctionValue
@@ -36,7 +45,7 @@ type NamedFunctionValue struct {
 func NewNamedFunctionValue(identifier *ast.VariableIdentifier, value *FunctionValue) *NamedFunctionValue {
 	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), value.sourceFileReference)
 	return &NamedFunctionValue{
-		identifier: &FunctionName{identifier: identifier},
+		identifier: NewFunctionName(identifier, value),
 		value:      value,
 		inclusive:  inclusive,
 	}
@@ -59,5 +68,5 @@ func (n *NamedFunctionValue) Value() *FunctionValue {
 }
 
 func (n *NamedFunctionValue) FetchPositionLength() token.SourceFileReference {
-	return n.inclusive
+	return n.value.FetchPositionLength()
 }

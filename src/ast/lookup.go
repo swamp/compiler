@@ -14,10 +14,12 @@ import (
 type Lookups struct {
 	contextIdentifier *VariableIdentifier
 	fieldNames        []*VariableIdentifier
+	inclusive         token.SourceFileReference
 }
 
 func NewLookups(contextIdentifier *VariableIdentifier, identifiers []*VariableIdentifier) *Lookups {
-	return &Lookups{contextIdentifier: contextIdentifier, fieldNames: identifiers}
+	inclusive := token.MakeInclusiveSourceFileReference(contextIdentifier.FetchPositionLength(), identifiers[len(identifiers)-1].FetchPositionLength())
+	return &Lookups{contextIdentifier: contextIdentifier, fieldNames: identifiers, inclusive: inclusive}
 }
 
 func (i *Lookups) ContextIdentifier() *VariableIdentifier {
@@ -25,7 +27,7 @@ func (i *Lookups) ContextIdentifier() *VariableIdentifier {
 }
 
 func (i *Lookups) FetchPositionLength() token.SourceFileReference {
-	return i.contextIdentifier.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *Lookups) FieldNames() []*VariableIdentifier {

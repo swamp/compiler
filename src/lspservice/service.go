@@ -273,6 +273,10 @@ func findReferences(uri lsp.DocumentURI, position lsp.Position, scanner Decorate
 		for _, ref := range t.References() {
 			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
 		}
+	case *decorated.FunctionName:
+		for _, ref := range t.FunctionValue().References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
 	}
 
 	return sourceFileReferences, nil
@@ -321,7 +325,7 @@ func convertRootTokenToOutlineSymbol(rootToken decorated.TypeOrToken) *lsp.Docum
 			Detail:         t.Value().Type().HumanReadable(),
 			Kind:           lsp.SKFunction,
 			Tags:           nil,
-			Range:          *tokenToLspRange(t.FunctionName().FetchPositionLength().Range),
+			Range:          *tokenToLspRange(t.FetchPositionLength().Range),
 			SelectionRange: *tokenToLspRange(t.FunctionName().FetchPositionLength().Range),
 			Children:       functionParametersToDocumentSymbols(t.Value().Parameters()),
 		}

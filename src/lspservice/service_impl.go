@@ -13,13 +13,13 @@ import (
 )
 
 type LspImpl struct {
-	world         *loader.World
+	workspace     *loader.Workspace
 	documentCache *DocumentCache
 }
 
-func (l *LspImpl) NewLspImp(fallbackProvider loader.DocumentProvider) *LspImpl {
+func NewLspImpl(fallbackProvider loader.DocumentProvider) *LspImpl {
 	return &LspImpl{
-		world:         nil,
+		workspace:     loader.NewWorkspace(loader.LocalFileSystemRoot("")),
 		documentCache: NewDocumentCache(fallbackProvider),
 	}
 }
@@ -33,18 +33,17 @@ func (l *LspImpl) Compile(filename string) error {
 	if err != nil {
 		return err
 	}
-
 	if module == nil {
 		return fmt.Errorf("module can not be nil!")
 	}
 	fmt.Fprintf(os.Stderr, "COMPILE DONE!\n")
 
-	l.world = world
+	l.workspace.AddOrReplacePackage(world)
 
 	return nil
 }
 
-func findModuleFromSourceFile(world *loader.World, sourceFileURI token.DocumentURI) (*decorated.Module, error) {
+func findModuleFromSourceFile(world *loader.Package, sourceFileURI token.DocumentURI) (*decorated.Module, error) {
 	localFilePath, convertErr := sourceFileURI.ToLocalFilePath()
 	if convertErr != nil {
 		return nil, convertErr
@@ -58,14 +57,23 @@ func findModuleFromSourceFile(world *loader.World, sourceFileURI token.DocumentU
 	return foundModule, nil
 }
 
-func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []decorated.TypeOrToken {
-	if reflect.ValueOf(l.world).IsNil() {
-		log.Printf("world is nil, probably compilation didn't work")
+func (l *LspImpl) FindModuleHelper(sourceFile token.DocumentURI) *decorated.Module {
+	localPath, err := sourceFile.ToLocalFilePath()
+	if err != nil {
 		return nil
 	}
-	module, moduleErr := findModuleFromSourceFile(l.world, sourceFile)
-	if moduleErr != nil {
+	module, _ := l.workspace.FindModuleFromSourceFile(loader.LocalFileSystemPath(localPath))
+	if module == nil {
 		log.Printf("could not find source file %v\n", sourceFile)
+		return nil
+	}
+
+	return module
+}
+
+func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []decorated.TypeOrToken {
+	module := l.FindModuleHelper(sourceFile)
+	if module == nil {
 		return nil
 	}
 	var tokens []decorated.TypeOrToken
@@ -77,14 +85,11 @@ func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []decorated.TypeOrTok
 }
 
 func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Position) decorated.TypeOrToken {
-	if reflect.ValueOf(l.world).IsNil() {
-		log.Printf("world is nil, probably compilation didn't work")
+	module := l.FindModuleHelper(sourceFile)
+	if module == nil {
 		return nil
 	}
-	module, moduleErr := findModuleFromSourceFile(l.world, sourceFile)
-	if moduleErr != nil {
-		return nil
-	}
+
 	tokens := module.Nodes()
 
 	smallestRange := token.MakeRange(
@@ -113,7 +118,7 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 	if bestToken == nil {
 		log.Printf("FindToken: couldn't find anything at %v %v\n", sourceFile, position)
 	} else {
-		log.Printf("FindToken: best is: %T\n", bestToken)
+		log.Printf("FindToken: best is: %T %v\n", bestToken, bestToken.FetchPositionLength().ToCompleteReferenceString())
 	}
 
 	return bestToken

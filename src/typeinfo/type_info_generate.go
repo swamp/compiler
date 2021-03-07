@@ -61,7 +61,7 @@ func GenerateModule(module *decorated.Module) ([]byte, TypeLookup, error) {
 	return octets, chunk, nil
 }
 
-func Generate(world *loader.World) (*Chunk, error) {
+func Generate(world *loader.Package) (*Chunk, error) {
 	const verboseFlag = false
 
 	chunk := &Chunk{}

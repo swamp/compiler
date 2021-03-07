@@ -15,8 +15,8 @@ type Type interface {
 	FetchPositionLength() token.SourceFileReference
 }
 
-func NewCustomType(customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter) *CustomType {
-	c := &CustomType{name: customTypeName, variants: variants, typeParameters: typeParameterIdentifiers}
+func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter) *CustomType {
+	c := &CustomType{keywordType: keywordType, name: customTypeName, variants: variants, typeParameters: typeParameterIdentifiers}
 	for _, variant := range variants {
 		variant.SetParent(c)
 	}

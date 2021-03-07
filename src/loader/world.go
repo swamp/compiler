@@ -12,29 +12,34 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-type World struct {
+type Package struct {
 	moduleLookup       map[string]*decorated.Module
 	absolutePathLookup map[LocalFileSystemPath]*decorated.Module
 	modules            []*decorated.Module
+	root               LocalFileSystemRoot
 }
 
-func NewWorld() *World {
-	return &World{moduleLookup: make(map[string]*decorated.Module), absolutePathLookup: make(map[LocalFileSystemPath]*decorated.Module)}
+func NewPackage(root LocalFileSystemRoot) *Package {
+	return &Package{root: root, moduleLookup: make(map[string]*decorated.Module), absolutePathLookup: make(map[LocalFileSystemPath]*decorated.Module)}
 }
 
-func (w *World) AllModules() []*decorated.Module {
+func (w *Package) Root() LocalFileSystemRoot {
+	return w.root
+}
+
+func (w *Package) AllModules() []*decorated.Module {
 	return w.modules
 }
 
-func (w *World) FindModule(moduleName dectype.ArtifactFullyQualifiedModuleName) *decorated.Module {
+func (w *Package) FindModule(moduleName dectype.ArtifactFullyQualifiedModuleName) *decorated.Module {
 	return w.moduleLookup[moduleName.String()]
 }
 
-func (w *World) FindModuleFromAbsoluteFilePath(absolutePath LocalFileSystemPath) *decorated.Module {
+func (w *Package) FindModuleFromAbsoluteFilePath(absolutePath LocalFileSystemPath) *decorated.Module {
 	return w.absolutePathLookup[absolutePath]
 }
 
-func (w *World) AddModule(moduleName dectype.ArtifactFullyQualifiedModuleName, module *decorated.Module) {
+func (w *Package) AddModule(moduleName dectype.ArtifactFullyQualifiedModuleName, module *decorated.Module) {
 	if module == nil {
 		panic("not a good module")
 	}
@@ -49,7 +54,7 @@ func (w *World) AddModule(moduleName dectype.ArtifactFullyQualifiedModuleName, m
 	w.modules = append(w.modules, module)
 }
 
-func (w *World) String() string {
+func (w *Package) String() string {
 	s := ""
 	for key, module := range w.modules {
 		s += fmt.Sprintf("\n\n===== MODULE %v =======\n", key)

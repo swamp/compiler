@@ -110,7 +110,7 @@ func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*C
 		replacedVariants = append(replacedVariants, newField)
 	}
 
-	return NewCustomType(customType.TypeIdentifier(), ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil, replacedVariants), nil
+	return NewCustomType(customType.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil, replacedVariants), nil
 }
 
 func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, error) {

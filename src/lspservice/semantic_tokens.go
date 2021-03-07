@@ -91,6 +91,9 @@ func addSemanticTokenRecordType(f *dectype.RecordAtom, builder *SemanticBuilder)
 }
 
 func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuilder) error {
+	if err := encodeKeyword(builder, f.AstCustomType().KeywordType()); err != nil {
+		return err
+	}
 	if err := encodeEnum(builder, f.TypeIdentifier()); err != nil {
 		return err
 	}
@@ -540,6 +543,20 @@ func addSemanticTokenString(stringLiteral *decorated.StringLiteral, builder *Sem
 	return nil
 }
 
+func addSemanticTokenResourceNameLiteral(resourceNameLiteral *decorated.ResourceNameLiteral, builder *SemanticBuilder) error {
+	if err := builder.EncodeSymbol(resourceNameLiteral.FetchPositionLength().Range, "operator", nil); err != nil {
+		return err
+	}
+	return nil
+}
+
+func addSemanticTokenBooleanLiteral(stringLiteral *decorated.BooleanLiteral, builder *SemanticBuilder) error {
+	if err := builder.EncodeSymbol(stringLiteral.FetchPositionLength().Range, "number", nil); err != nil {
+		return err
+	}
+	return nil
+}
+
 func addSemanticTokenStringInterpolation(stringInterpolation *decorated.StringInterpolation, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(stringInterpolation.FetchPositionLength().Range, "string", nil); err != nil {
 		return err
@@ -760,10 +777,16 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenUnaryOperator(t, builder)
 	case *decorated.RecordLiteral:
 		return addSemanticTokenRecordLiteral(t, builder)
+	case *decorated.ResourceNameLiteral:
+		return addSemanticTokenResourceNameLiteral(t, builder)
 	case *decorated.LetVariableReference:
 		return addSemanticTokenLetVariableReference(t, builder)
 	case *decorated.StringLiteral:
 		return addSemanticTokenString(t, builder)
+	case *decorated.BooleanLiteral:
+		return addSemanticTokenBooleanLiteral(t, builder)
+	case *decorated.ArithmeticUnaryOperator:
+		return addSemanticTokenUnaryOperator(&t.UnaryOperator, builder)
 	case *decorated.StringInterpolation:
 		return addSemanticTokenStringInterpolation(t, builder)
 	case *decorated.TypeIdLiteral:
@@ -820,6 +843,10 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticToken(&t.BinaryOperator, builder)
 	case *decorated.Constant:
 		return addSemanticTokenConstant(t, builder)
+	case *decorated.ExternalFunctionDeclaration:
+		return nil // TODO: decorate external
+	case *decorated.AsmConstant:
+		return nil // TODO: decorate asm constant
 
 		// TYPES
 		//
