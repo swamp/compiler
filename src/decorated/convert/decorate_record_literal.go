@@ -60,7 +60,8 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 		fieldExists := existingField != nil
 		if !fieldExists {
 			if allowToAddFields {
-				recordTypeField := dectype.NewRecordField(assignment.Identifier(), encounteredFieldType)
+				fieldName := dectype.NewRecordFieldName(assignment.Identifier())
+				recordTypeField := dectype.NewRecordField(fieldName, encounteredFieldType)
 				recordTypeFields = append(recordTypeFields, recordTypeField)
 			} else {
 				return nil, decorated.NewNewRecordLiteralFieldNotInType(assignment, foundTemplateRecord)

@@ -169,8 +169,8 @@ func (u *RecordAtom) IsEqual(other_ dtype.Atom) error {
 	for index, field := range u.sortedFields {
 		otherField := otherFields[index]
 
-		if otherField.name.Name() != field.name.Name() {
-			return fmt.Errorf("field names differ\n %v\n %v", otherField, field)
+		if otherField.Name() != field.Name() {
+			return fmt.Errorf("field names differ '%v' <-> '%v'\n %v\n %v", otherField.name.Name(), field.name.Name(), otherField, field)
 		}
 		otherFieldType, otherFieldTypeErr := otherField.Type().Resolve()
 		if otherFieldTypeErr != nil {

@@ -16,23 +16,23 @@ func NewTypeCreateAndLookup(lookup *TypeLookup, localTypes *ModuleTypes) *TypeCr
 	return &TypeCreateAndLookup{localTypes: localTypes, lookup: lookup}
 }
 
-func (l *TypeCreateAndLookup) AddTypeAlias(alias *ast.Alias, concreteType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, TypeError) {
-	return l.localTypes.AddTypeAlias(alias, concreteType, localComments)
+func (l *TypeCreateAndLookup) AddTypeAlias(alias *dectype.Alias) TypeError {
+	return l.localTypes.AddTypeAlias(alias)
 }
 
 func (l *TypeCreateAndLookup) AddCustomType(customType *dectype.CustomTypeAtom) TypeError {
 	return l.localTypes.AddCustomType(customType)
 }
 
-func (l *TypeCreateAndLookup) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, decshared.DecoratedError) {
+func (l *TypeCreateAndLookup) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, *NamedDefinitionTypeReference, decshared.DecoratedError) {
 	return l.lookup.CreateTypeReference(typeIdentifier)
 }
 
-func (l *TypeCreateAndLookup) CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, decshared.DecoratedError) {
+func (l *TypeCreateAndLookup) CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, *NamedDefinitionTypeReference, decshared.DecoratedError) {
 	return l.lookup.CreateTypeScopedReference(typeIdentifier)
 }
 
-func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
+func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, *NamedDefinitionTypeReference, decshared.DecoratedError) {
 	return l.lookup.CreateSomeTypeReference(someTypeIdentifier)
 }
 

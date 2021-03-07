@@ -556,7 +556,7 @@ func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariabl
 			paramVariable := consequenceContext.context.AllocateVariable(consequenceLabelVariableName)
 			parameters = append(parameters, paramVariable)
 		}
-		labelVariableName := assembler.NewVariableName(consequence.VariantReference().AstIdentifier().Name())
+		labelVariableName := assembler.NewVariableName(consequence.VariantReference().AstIdentifier().SomeTypeIdentifier().Name())
 		caseLabel := consequencesCode.Label(labelVariableName, "case")
 		caseExprErr := generateExpression(consequencesCode, target, consequence.Expression(), &consequenceContext)
 		if caseExprErr != nil {

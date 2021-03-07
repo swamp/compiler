@@ -8,7 +8,6 @@ package decorated
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -18,19 +17,23 @@ type RecordConstructor struct {
 	arguments           []*RecordLiteralAssignment
 	parseOrderArguments []Expression
 	recordType          *dectype.RecordAtom
-	typeIdentifier      ast.TypeReferenceScopedOrNormal
+	definitionReference *NamedDefinitionTypeReference
 }
 
-func NewRecordConstructor(typeIdentifier ast.TypeReferenceScopedOrNormal, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
-	return &RecordConstructor{typeIdentifier: typeIdentifier, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
+// typeIdentifier ast.TypeReferenceScopedOrNormal
+func NewRecordConstructor(definitionReference *NamedDefinitionTypeReference, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
+	if definitionReference == nil {
+		panic("can not be nil")
+	}
+	return &RecordConstructor{definitionReference: definitionReference, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
 }
 
 func (c *RecordConstructor) SortedAssignments() []*RecordLiteralAssignment {
 	return c.arguments
 }
 
-func (c *RecordConstructor) AstTypeReference() ast.TypeReferenceScopedOrNormal {
-	return c.typeIdentifier
+func (c *RecordConstructor) NamedTypeReference() *NamedDefinitionTypeReference {
+	return c.definitionReference
 }
 
 func (c *RecordConstructor) ParseOrderArguments() []Expression {
@@ -42,7 +45,7 @@ func (c *RecordConstructor) Type() dtype.Type {
 }
 
 func (c *RecordConstructor) String() string {
-	return fmt.Sprintf("[record-constructor %v %v]", c.typeIdentifier, c.arguments)
+	return fmt.Sprintf("[record-constructor %v %v]", c.definitionReference, c.arguments)
 }
 
 func (c *RecordConstructor) HumanReadable() string {
@@ -50,5 +53,5 @@ func (c *RecordConstructor) HumanReadable() string {
 }
 
 func (c *RecordConstructor) FetchPositionLength() token.SourceFileReference {
-	return c.typeIdentifier.FetchPositionLength()
+	return c.definitionReference.FetchPositionLength()
 }

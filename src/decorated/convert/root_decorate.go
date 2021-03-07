@@ -31,7 +31,9 @@ func NewDefiner(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndRef
 	return g
 }
 
+/*
 func (g *Definer) createAliasTypeFromType(aliasName *ast.Alias, subType dtype.Type) (*dectype.Alias, decshared.DecoratedError) {
+
 	t, typeErr := g.typeRepo.AddTypeAlias(aliasName, subType, nil)
 	//	log.Printf("declaring %v\n", aliasName)
 	if typeErr != nil {
@@ -40,7 +42,7 @@ func (g *Definer) createAliasTypeFromType(aliasName *ast.Alias, subType dtype.Ty
 	g.localComments = nil
 	return t, nil
 }
-
+*/
 func (g *Definer) AnnotateConstant(identifier *ast.VariableIdentifier, realType dtype.Type) decshared.DecoratedError {
 	g.localAnnotation = decorated.NewAnnotation(identifier, realType)
 	return nil
@@ -76,12 +78,17 @@ func (g *Definer) functionAnnotation(identifier *ast.VariableIdentifier, constan
 	return g.AnnotateFunc(identifier, convertedType)
 }
 
-func (g *Definer) handleAliasStatement(alias *ast.Alias) (*dectype.Alias, decshared.DecoratedError) {
-	referencedType, referencedTypeErr := g.findTypeFromAstType(alias)
+func (g *Definer) handleAliasStatement(astAlias *ast.Alias) (*dectype.Alias, decshared.DecoratedError) {
+	referencedType, referencedTypeErr := g.findTypeFromAstType(astAlias)
 	if referencedTypeErr != nil {
-		return nil, decorated.NewUnknownTypeAliasType(alias, referencedTypeErr)
+		return nil, decorated.NewUnknownTypeAliasType(astAlias, referencedTypeErr)
 	}
-	return g.createAliasTypeFromType(alias, referencedType)
+	alias, wasAlias := referencedType.(*dectype.Alias)
+	if !wasAlias {
+		return nil, decorated.NewInternalError(fmt.Errorf("was supposed to be an alias here"))
+	}
+
+	return alias, g.typeRepo.AddTypeAlias(alias)
 }
 
 func (g *Definer) findTypeFromAstType(constantType ast.Type) (dtype.Type, decorated.TypeError) {

@@ -27,10 +27,14 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 	return &VariableContext{parent: nil, parentDefinitions: parentDefinitions, lookup: make(map[string]*decorated.NamedDecoratedExpression)}
 }
 
-func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression decorated.Expression) (decorated.Expression, decshared.DecoratedError) {
+func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression decorated.Expression, module *decorated.Module) (decorated.Expression, decshared.DecoratedError) {
 	switch t := expression.(type) {
 	case *decorated.FunctionValue:
 		var moduleRef *decorated.ModuleReference
+		scoped, wasScoped := name.(*ast.VariableIdentifierScoped)
+		if wasScoped {
+			moduleRef = decorated.NewModuleReference(scoped.ModuleReference(), module)
+		}
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
 		return functionReference, nil
@@ -71,7 +75,7 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 			return t, nil
 		}
 	}
-	return ReferenceFromVariable(name, def.Expression())
+	return ReferenceFromVariable(name, def.Expression(), nil)
 }
 
 func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecoratedExpression {

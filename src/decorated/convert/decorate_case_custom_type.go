@@ -104,7 +104,8 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 			}
 
 			// Intentionally without module reference for easier reading
-			named := decorated.NewNamedDefinitionTypeReference(nil, consequenceField.Identifier())
+			fieldTypeRef := ast.NewTypeReference(consequenceField.Identifier(), nil)
+			named := decorated.NewNamedDefinitionTypeReference(nil, fieldTypeRef)
 			variantReference := decorated.NewCustomTypeVariantReference(named, foundVariant)
 			decoratedConsequence := decorated.NewCaseConsequenceCustomType(foundVariant.Index(), variantReference,
 				parameters, decoratedExpression)

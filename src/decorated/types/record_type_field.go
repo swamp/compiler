@@ -10,16 +10,41 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
+
+type RecordFieldName struct {
+	name *ast.VariableIdentifier
+}
+
+func NewRecordFieldName(identifier *ast.VariableIdentifier) *RecordFieldName {
+	return &RecordFieldName{name: identifier}
+}
+
+func (r *RecordFieldName) Name() *ast.VariableIdentifier {
+	return r.name
+}
+
+func (r *RecordFieldName) String() string {
+	return r.name.String()
+}
+
+func (r *RecordFieldName) FetchPositionLength() token.SourceFileReference {
+	return r.name.FetchPositionLength()
+}
+
+func (r *RecordFieldName) HumanReadable() string {
+	return "type field name"
+}
 
 type RecordField struct {
 	index     int
-	name      *ast.VariableIdentifier
+	name      *RecordFieldName
 	fieldType dtype.Type
 }
 
-func NewRecordField(name *ast.VariableIdentifier, fieldType dtype.Type) *RecordField {
-	return &RecordField{index: -1, name: name, fieldType: fieldType}
+func NewRecordField(fieldName *RecordFieldName, fieldType dtype.Type) *RecordField {
+	return &RecordField{index: -1, name: fieldName, fieldType: fieldType}
 }
 
 func (s *RecordField) SetIndexBySorter(index int) {
@@ -34,10 +59,14 @@ func (s *RecordField) Index() int {
 }
 
 func (s *RecordField) Name() string {
-	return s.name.Name()
+	return s.name.Name().Name()
 }
 
 func (s *RecordField) VariableIdentifier() *ast.VariableIdentifier {
+	return s.name.Name()
+}
+
+func (s *RecordField) FieldName() *RecordFieldName {
 	return s.name
 }
 

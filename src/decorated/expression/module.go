@@ -17,14 +17,14 @@ import (
 )
 
 type TypeReferenceMaker interface {
-	CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, decshared.DecoratedError)
-	CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, decshared.DecoratedError)
-	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError)
+	CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, *NamedDefinitionTypeReference, decshared.DecoratedError)
+	CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, *NamedDefinitionTypeReference, decshared.DecoratedError)
+	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, *NamedDefinitionTypeReference, decshared.DecoratedError)
 }
 
 type TypeAddAndReferenceMaker interface {
 	TypeReferenceMaker
-	AddTypeAlias(alias *ast.Alias, concreteType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, TypeError)
+	AddTypeAlias(alias *dectype.Alias) TypeError
 	AddCustomType(customType *dectype.CustomTypeAtom) TypeError
 	FindBuiltInType(s string) dtype.Type
 	SourceModule() *Module

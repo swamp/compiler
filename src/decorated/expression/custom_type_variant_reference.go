@@ -35,7 +35,7 @@ func (g *CustomTypeVariantReference) CustomTypeVariant() *dectype.CustomTypeVari
 	return g.customTypeVariant
 }
 
-func (g *CustomTypeVariantReference) AstIdentifier() ast.TypeIdentifierNormalOrScoped {
+func (g *CustomTypeVariantReference) AstIdentifier() ast.TypeReferenceScopedOrNormal {
 	return g.named.ident
 }
 

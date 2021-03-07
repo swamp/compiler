@@ -8,6 +8,7 @@ package dectype
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
@@ -74,9 +75,21 @@ func (u *InvokerType) Next() dtype.Type {
 	return nil
 }
 
-func NewInvokerType(typeToInvoke dtype.Type, params []dtype.Type) (*InvokerType, error) {
+type InternalError struct {
+	Err error
+}
+
+func (e *InternalError) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
+}
+
+func (e *InternalError) Error() string {
+	return e.Err.Error()
+}
+
+func NewInvokerType(typeToInvoke dtype.Type, params []dtype.Type) (*InvokerType, decshared.DecoratedError) {
 	if len(params) != typeToInvoke.ParameterCount() {
-		return nil, fmt.Errorf("wrong parameter count")
+		return nil, &InternalError{fmt.Errorf("wrong parameter count")}
 	}
 	for _, param := range params {
 		if param == nil {

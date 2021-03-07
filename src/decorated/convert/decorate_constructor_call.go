@@ -27,7 +27,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
 	}
 
-	variantConstructor, err := d.TypeRepo().CreateSomeTypeReference(call.TypeReference().SomeTypeIdentifier())
+	variantConstructor, namedTypeReference, err := d.TypeRepo().CreateSomeTypeReference(call.TypeReference().SomeTypeIdentifier())
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +36,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 
 	switch e := unaliasedConstructor.(type) {
 	case *dectype.CustomTypeVariantConstructorType:
-		named := decorated.NewNamedDefinitionTypeReference(nil, call.TypeReference().SomeTypeIdentifier())
-		ref := decorated.NewCustomTypeVariantReference(named, e.Variant())
+		ref := decorated.NewCustomTypeVariantReference(namedTypeReference, e.Variant())
 		return decorated.NewCustomTypeVariantConstructor(ref, decoratedExpressions), nil
 	case *dectype.RecordAtom:
 		{
@@ -77,7 +76,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				}
 			}
 
-			return decorated.NewRecordConstructor(call.TypeReference(), e, alphaOrderedAssignments, decoratedExpressions), nil
+			return decorated.NewRecordConstructor(namedTypeReference, e, alphaOrderedAssignments, decoratedExpressions), nil
 		}
 	default:
 		log.Printf("expected a constructor here %T", unaliasedConstructor)

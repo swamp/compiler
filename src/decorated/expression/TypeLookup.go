@@ -23,53 +23,61 @@ func NewTypeLookup(moduleImports *ModuleImports, localTypes *ModuleTypes, import
 	}
 }
 
-func (l *TypeLookup) FindType(typeIdentifier *ast.TypeIdentifier) (dtype.Type, decshared.DecoratedError) {
+func (l *TypeLookup) FindType(typeIdentifier *ast.TypeIdentifier) (dtype.Type, *NamedDefinitionTypeReference, decshared.DecoratedError) {
+	ref := ast.NewTypeReference(typeIdentifier, nil)
+	namedTypeRef := NewNamedDefinitionTypeReference(nil, ref)
+
 	foundLocalType := l.localTypes.FindType(typeIdentifier)
 	if foundLocalType != nil {
-		return foundLocalType, nil
+		return foundLocalType, namedTypeRef, nil
 	}
 
 	foundLocalType = l.importedTypes.FindType(typeIdentifier)
 	if foundLocalType == nil {
-		return nil, NewInternalError(fmt.Errorf("could not find imported type %v", typeIdentifier))
+		return nil, nil, NewInternalError(fmt.Errorf("could not find imported type %v", typeIdentifier))
 	}
 
-	return foundLocalType, nil
+	return foundLocalType, namedTypeRef, nil
 }
 
-func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (dtype.Type, decshared.DecoratedError) {
+func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (dtype.Type, *NamedDefinitionTypeReference, decshared.DecoratedError) {
 	moduleFound := l.moduleImports.FindModule(typeIdentifier.ModuleReference())
 	if moduleFound == nil {
-		return nil, NewInternalError(fmt.Errorf("could not find module %v", typeIdentifier.ModuleReference()))
+		return nil, nil, NewInternalError(fmt.Errorf("could not find module %v", typeIdentifier.ModuleReference()))
 	}
 
+	moduleReference := NewModuleReference(typeIdentifier.ModuleReference(), moduleFound)
+	typeReferenceScoped := ast.NewScopedTypeReference(typeIdentifier, nil)
+	namedTypeRef := NewNamedDefinitionTypeReference(moduleReference, typeReferenceScoped)
 	foundExposedType := moduleFound.ExposedTypes().FindType(typeIdentifier.Symbol())
 	if foundExposedType == nil {
-		return nil, NewInternalError(fmt.Errorf("could not find exposed type %v in module %v", typeIdentifier, moduleFound))
+		return nil, nil, NewInternalError(fmt.Errorf("could not find exposed type %v in module %v", typeIdentifier, moduleFound))
 	}
 
-	return foundExposedType, nil
+	return foundExposedType, namedTypeRef, nil
 }
 
-func (l *TypeLookup) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, decshared.DecoratedError) {
-	foundType, err := l.FindType(typeIdentifier)
+func (l *TypeLookup) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, *NamedDefinitionTypeReference, decshared.DecoratedError) {
+	foundType, namedRef, err := l.FindType(typeIdentifier)
 	if err != nil {
-		return nil, err
+		return nil, namedRef, err
 	}
 
-	return dectype.NewTypeReference(typeIdentifier, foundType), nil
+	typeRef := dectype.NewTypeReference(typeIdentifier, foundType)
+
+	return typeRef, namedRef, nil
 }
 
-func (l *TypeLookup) CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, decshared.DecoratedError) {
-	foundType, err := l.FindTypeScoped(typeIdentifier)
+func (l *TypeLookup) CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, *NamedDefinitionTypeReference, decshared.DecoratedError) {
+	foundType, module, err := l.FindTypeScoped(typeIdentifier)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return dectype.NewTypeReferenceScoped(typeIdentifier, foundType), nil
+	return dectype.NewTypeReferenceScoped(typeIdentifier, foundType), module, nil
 }
 
-func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
+func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, *NamedDefinitionTypeReference, decshared.DecoratedError) {
 	scoped, wasScope := someTypeIdentifier.(*ast.TypeIdentifierScoped)
 	if wasScope {
 		return l.CreateTypeScopedReference(scoped)
@@ -77,7 +85,7 @@ func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifi
 
 	normal, wasNormal := someTypeIdentifier.(*ast.TypeIdentifier)
 	if !wasNormal {
-		return nil, NewInternalError(fmt.Errorf("not sure of this type identifier %T", someTypeIdentifier))
+		return nil, nil, NewInternalError(fmt.Errorf("not sure of this type identifier %T", someTypeIdentifier))
 	}
 
 	return l.CreateTypeReference(normal)

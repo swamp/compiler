@@ -103,7 +103,7 @@ func expandChildNodesCustomType(fn *dectype.CustomTypeAtom) []TypeOrToken {
 func expandChildNodesRecordType(fn *dectype.RecordAtom) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, field := range fn.ParseOrderedFields() {
-		// tokens = append(tokens, expandChildNodes(field.VariableIdentifier())...)  // TODO: Need meaning
+		tokens = append(tokens, expandChildNodes(field.FieldName())...)
 		tokens = append(tokens, expandChildNodes(field.Type())...)
 	}
 	return tokens
@@ -206,7 +206,10 @@ func expandChildNodesCustomTypeVariantConstructor(constructor *CustomTypeVariant
 
 func expandChildNodesRecordConstructor(constructor *RecordConstructor) []TypeOrToken {
 	var tokens []TypeOrToken
-	// tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...) // TODO: Need meaning
+	optionalModuleRef := constructor.NamedTypeReference().ModuleReference()
+	if optionalModuleRef != nil {
+		tokens = append(tokens, optionalModuleRef)
+	}
 
 	for _, arg := range constructor.arguments {
 		tokens = append(tokens, expandChildNodes(arg.FieldName())...)
@@ -442,6 +445,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *dectype.RecordAtom:
 		return append(tokens, expandChildNodesRecordType(t)...)
+	case *dectype.RecordFieldName:
+		return tokens
 	case *dectype.FunctionTypeReference:
 		return append(tokens, expandChildNodesFunctionTypeReference(t)...)
 	case *dectype.TypeReference:

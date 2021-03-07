@@ -77,13 +77,16 @@ func (t *ModuleTypes) InternalAddPrimitive(typeIdentifier *ast.TypeIdentifier, a
 
 type TypeError interface {
 	Error() string
+	FetchPositionLength() token.SourceFileReference
 }
 
-func (t *ModuleTypes) AddTypeAlias(alias *ast.Alias, concreteType dtype.Type, localComments []ast.LocalComment) (*dectype.Alias, TypeError) {
-	artifactTypeName := t.sourceModule.fullyQualifiedModuleName.JoinTypeIdentifier(alias.Identifier())
-	newType := dectype.NewAliasType(alias, artifactTypeName, concreteType)
-	t.internalAddType(alias.Identifier(), newType)
-	return newType, nil
+/*
+
+
+ */
+func (t *ModuleTypes) AddTypeAlias(alias *dectype.Alias) TypeError {
+	t.internalAddType(alias.TypeIdentifier(), alias)
+	return nil
 }
 
 func (t *ModuleTypes) internalAddVariantConstructorType(constructor *dectype.CustomTypeVariantConstructorType) {

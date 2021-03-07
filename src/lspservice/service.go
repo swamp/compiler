@@ -169,6 +169,8 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.FunctionAtom().FetchPositionLength(), nil
 	case *dectype.TypeReference:
 		return t.Next().FetchPositionLength(), nil
+	case *dectype.TypeReferenceScoped:
+		return t.Next().FetchPositionLength(), nil
 	}
 
 	return token.SourceFileReference{}, fmt.Errorf("couldn't find anything for %T", decoratedToken)
@@ -546,6 +548,7 @@ func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn
 	builder := NewSemanticBuilder()
 	for _, foundToken := range allTokens {
 		if err := addSemanticToken(foundToken, builder); err != nil {
+			log.Printf("was problem with token %v %v", foundToken, err)
 			return nil, err
 		}
 	}

@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -22,11 +23,11 @@ func AstParametersToArgumentNames(typeParameters []*ast.TypeParameter) []*dtype.
 	return argumentNames
 }
 
-func newInvokerType(astTypeReference ast.TypeReferenceScopedOrNormal, foundType dectype.TypeReferenceScopedOrNormal, t decorated.TypeAddAndReferenceMaker) (dtype.Type, error) {
+func newInvokerType(astTypeReference ast.TypeReferenceScopedOrNormal, foundType dectype.TypeReferenceScopedOrNormal, t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
 	unaliasedTypeToCheck := dectype.Unalias(foundType)
 
 	if unaliasedTypeToCheck.ParameterCount() != len(astTypeReference.Arguments()) {
-		return nil, fmt.Errorf("problems number of arguments %v (\n\n%v\n vs\n\n%v\n) (found %T, expected %T) found %v vs expected %v (%v)", astTypeReference, foundType, astTypeReference, foundType, astTypeReference, foundType.ParameterCount(), len(astTypeReference.Arguments()), astTypeReference.Arguments())
+		return nil, decorated.NewInternalError(fmt.Errorf("problems number of arguments %v (\n\n%v\n vs\n\n%v\n) (found %T, expected %T) found %v vs expected %v (%v)", astTypeReference, foundType, astTypeReference, foundType, astTypeReference, foundType.ParameterCount(), len(astTypeReference.Arguments()), astTypeReference.Arguments()))
 	}
 
 	if foundType.ParameterCount() == 0 {
@@ -48,7 +49,7 @@ func newInvokerType(astTypeReference ast.TypeReferenceScopedOrNormal, foundType 
 }
 
 func ConvertFromAstToDecorated(astType ast.Type,
-	t decorated.TypeAddAndReferenceMaker) (dtype.Type, decorated.TypeError) {
+	t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
 	switch info := astType.(type) {
 	case *ast.FunctionType:
 		var convertedParameters []dtype.Type
@@ -67,41 +68,43 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if subTypeErr != nil {
 			return nil, subTypeErr
 		}
-		return t.AddTypeAlias(info, subType, nil)
+		artifactTypeName := t.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(info.Identifier())
+		newType := dectype.NewAliasType(info, artifactTypeName, subType)
+		return newType, t.AddTypeAlias(newType)
 
 	case *ast.Record:
 		return DecorateRecordType(info, t)
 
 	case *ast.TypeIdentifier:
 		refName := info.Symbol().Name()
-		foundType, err := t.CreateTypeReference(info)
+		foundType, _, err := t.CreateTypeReference(info)
 		if err != nil {
 			return nil, err
 		}
 		if foundType == nil {
-			return nil, fmt.Errorf("couldn't find type identifier %v", refName)
+			return nil, decorated.NewInternalError(fmt.Errorf("couldn't find type identifier %v", refName))
 		}
 		return foundType, nil
 
 	case *ast.LocalType:
 		return dectype.NewLocalType(info.TypeParameter()), nil
 	case *ast.TypeReferenceScoped:
-		foundType, err := t.CreateTypeScopedReference(info.TypeResolver())
+		foundType, _, err := t.CreateTypeScopedReference(info.TypeResolver())
 		if err != nil {
 			return nil, err
 		}
 		if foundType == nil {
-			return nil, fmt.Errorf("coulfdn't find type reference %v", info)
+			return nil, decorated.NewInternalError(fmt.Errorf("coulfdn't find type reference %v", info))
 		}
 		return newInvokerType(info, foundType, t)
 	case *ast.TypeReference:
 		refName := info.TypeIdentifier()
-		foundType, err := t.CreateTypeReference(refName)
+		foundType, _, err := t.CreateTypeReference(refName)
 		if err != nil {
 			return nil, err
 		}
 		if foundType == nil {
-			return nil, fmt.Errorf("coulfdn't find type reference %v", refName)
+			return nil, decorated.NewInternalError(fmt.Errorf("coulfdn't find type reference %v", refName))
 		}
 
 		return newInvokerType(info, foundType, t)

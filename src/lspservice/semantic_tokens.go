@@ -132,13 +132,13 @@ func addSemanticTokenCustomTypeVariantConstructor(constructor *decorated.CustomT
 }
 
 func addSemanticTokenCustomTypeVariantReference(ref *decorated.CustomTypeVariantReference, builder *SemanticBuilder) error {
-	encodeEnumMember(builder, ref.AstIdentifier())
+	encodeEnumMember(builder, ref.AstIdentifier().SomeTypeIdentifier())
 
 	return nil
 }
 
 func addSemanticTokenRecordConstructor(constructor *decorated.RecordConstructor, builder *SemanticBuilder) error {
-	if err := encodeStructReferenceWithModuleReference(builder, constructor.AstTypeReference().SomeTypeIdentifier()); err != nil {
+	if err := encodeStructReferenceWithModuleReference(builder, constructor.NamedTypeReference().AstIdentifier().SomeTypeIdentifier()); err != nil {
 		return err
 	}
 
@@ -240,7 +240,7 @@ func addSemanticTokenCaseForCustomType(caseNode *decorated.CaseCustomType, build
 	}
 
 	for _, consequence := range caseNode.Consequences() {
-		if err := encodeEnumMember(builder, consequence.VariantReference().AstIdentifier()); err != nil {
+		if err := encodeEnumMember(builder, consequence.VariantReference().AstIdentifier().SomeTypeIdentifier()); err != nil {
 			return err
 		}
 
@@ -365,6 +365,16 @@ func addTypeReferenceInvoker(referenceRange token.Range, invoker *dectype.Invoke
 		if err := builder.EncodeSymbol(param.FetchPositionLength().Range, "typeParameter", tokenModifiersForParam); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func addTypeReferenceAlias(referenceRange token.Range, alias *dectype.Alias, builder *SemanticBuilder) error {
+	tokenModifiers := []string{"declaration"}
+
+	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers); err != nil {
+		return err
 	}
 
 	return nil
@@ -633,6 +643,8 @@ func addSemanticTokenTypeReference(typeReference *dectype.TypeReference, builder
 		return addTypeReferencePrimitive(referenceRange, t, builder)
 	case *dectype.InvokerType:
 		return addTypeReferenceInvoker(referenceRange, t, builder)
+	case *dectype.Alias:
+		return addTypeReferenceAlias(referenceRange, t, builder)
 	}
 	log.Printf("unhandled typeReference %T %v\n", next, next)
 
@@ -658,6 +670,7 @@ func addSemanticTokenFunctionTypeReference(typeReference *dectype.FunctionTypeRe
 }
 
 func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilder) error {
+	// log.Printf("addSemantic for %T", typeOrToken)
 	switch t := typeOrToken.(type) {
 	case *decorated.NamedFunctionValue:
 		return addSemanticTokenNamedFunctionValue(t, builder)
