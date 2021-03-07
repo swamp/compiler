@@ -47,6 +47,34 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 	}
 }
 
+func createConstantHelper(identifier ast.ScopedOrNormalVariableIdentifier, expression *decorated.FunctionValue) (*decorated.Constant, decshared.DecoratedError) {
+	return decorated.NewConstant(identifier, expression), nil
+}
+
+func createConstant(identifier ast.ScopedOrNormalVariableIdentifier, functionValue *decorated.FunctionValue) (*decorated.Constant, decshared.DecoratedError) {
+	perhapsConstantExpression := functionValue.Expression()
+	switch perhapsConstantExpression.(type) {
+	case *decorated.IntegerLiteral:
+		return createConstantHelper(identifier, functionValue)
+	case *decorated.StringLiteral:
+		return createConstantHelper(identifier, functionValue)
+	case *decorated.CharacterLiteral:
+		return createConstantHelper(identifier, functionValue)
+	case *decorated.TypeIdLiteral:
+		return createConstantHelper(identifier, functionValue)
+	case *decorated.ResourceNameLiteral:
+		return createConstantHelper(identifier, functionValue)
+	case *decorated.RecordLiteral:
+		return createConstantHelper(identifier, functionValue)
+	case *decorated.ListLiteral:
+		return createConstantHelper(identifier, functionValue)
+	case *decorated.FixedLiteral:
+		return createConstantHelper(identifier, functionValue)
+	}
+
+	return nil, decorated.NewInternalError(fmt.Errorf("not a constant %T", perhapsConstantExpression))
+}
+
 func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression, decshared.DecoratedError) {
 	def := c.FindNamedDecoratedExpression(name)
 	if def == nil {
@@ -55,25 +83,8 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 
 	def.SetReferenced()
 
-	if constantExpression, wasConstant := isConstant(def.Expression()); wasConstant {
-		switch t := constantExpression.(type) {
-		case *decorated.IntegerLiteral:
-			return t, nil
-		case *decorated.StringLiteral:
-			return t, nil
-		case *decorated.CharacterLiteral:
-			return t, nil
-		case *decorated.TypeIdLiteral:
-			return t, nil
-		case *decorated.ResourceNameLiteral:
-			return t, nil
-		case *decorated.RecordLiteral:
-			return t, nil
-		case *decorated.ListLiteral:
-			return t, nil
-		case *decorated.FixedLiteral:
-			return t, nil
-		}
+	if functionValue, wasConstant := isConstant(def.Expression()); wasConstant {
+		return createConstant(name, functionValue)
 	}
 	return ReferenceFromVariable(name, def.Expression(), nil)
 }

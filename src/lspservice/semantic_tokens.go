@@ -1,6 +1,7 @@
 package lspservice
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/swamp/compiler/src/ast"
@@ -109,6 +110,13 @@ func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuil
 	return nil
 }
 
+func addSemanticTokenConstant(f *decorated.Constant, builder *SemanticBuilder) error {
+	if err := encodeConstant(f.FetchPositionLength().Range, builder); err != nil {
+		return err
+	}
+	return nil
+}
+
 func addTypeReferencePrimitive(referenceRange token.Range, primitive *dectype.PrimitiveAtom, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(referenceRange, "type", []string{"declaration", "defaultLibrary"}); err != nil {
 		return err
@@ -196,8 +204,16 @@ func encodeEnum(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error 
 	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enum", nil)
 }
 
+func encodeConstantTypeIdentifier(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enum", nil)
+}
+
+func encodeConstant(rangeFound token.Range, builder *SemanticBuilder) error {
+	return builder.EncodeSymbol(rangeFound, "macro", nil)
+}
+
 func encodeVariable(builder *SemanticBuilder, identifier *ast.VariableIdentifier) error {
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "variable", nil)
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "variable", []string{"readonly"})
 }
 
 func encodeModuleReference(builder *SemanticBuilder, astModuleReference *ast.ModuleReference) error {
@@ -370,6 +386,19 @@ func addTypeReferenceInvoker(referenceRange token.Range, invoker *dectype.Invoke
 	return nil
 }
 
+func addTypeReferenceCustomType(referenceRange token.Range, invoker *dectype.CustomTypeAtom, builder *SemanticBuilder) error {
+	tokenModifiers := []string{"declaration"}
+	if IsBuiltInType(invoker) {
+		tokenModifiers = append(tokenModifiers, "defaultLibrary")
+	}
+
+	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func addTypeReferenceAlias(referenceRange token.Range, alias *dectype.Alias, builder *SemanticBuilder) error {
 	tokenModifiers := []string{"declaration"}
 
@@ -381,9 +410,6 @@ func addTypeReferenceAlias(referenceRange token.Range, alias *dectype.Alias, bui
 }
 
 func addTypeReferenceFunctionType(referenceRange token.Range, functionType *dectype.FunctionAtom, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(referenceRange, "function", nil); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -428,7 +454,7 @@ func addSemanticTokenLet(decoratedLet *decorated.Let, builder *SemanticBuilder) 
 		if assignment.LetVariable().Comment() != nil {
 			encodeComment(builder, assignment.LetVariable().Comment().Token().CommentToken)
 		}
-		if err := builder.EncodeSymbol(assignment.LetVariable().FetchPositionLength().Range, "variable", nil); err != nil {
+		if err := builder.EncodeSymbol(assignment.LetVariable().FetchPositionLength().Range, "variable", []string{"readonly"}); err != nil {
 			return err
 		}
 
@@ -501,7 +527,7 @@ func addSemanticTokenRecordLiteral(recordLiteral *decorated.RecordLiteral, build
 }
 
 func addSemanticTokenLetVariableReference(letVarReference *decorated.LetVariableReference, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(letVarReference.FetchPositionLength().Range, "variable", nil); err != nil {
+	if err := builder.EncodeSymbol(letVarReference.FetchPositionLength().Range, "variable", []string{"readonly"}); err != nil {
 		return err
 	}
 	return nil
@@ -634,10 +660,7 @@ func addSemanticTokenFunctionParameterReference(parameter *decorated.FunctionPar
 	return nil
 }
 
-func addSemanticTokenTypeReference(typeReference *dectype.TypeReference, builder *SemanticBuilder) error {
-	next := typeReference.Next()
-
-	referenceRange := typeReference.FetchPositionLength().Range
+func typeReferenceHelper(next dtype.Type, referenceRange token.Range, builder *SemanticBuilder) error {
 	switch t := next.(type) {
 	case *dectype.PrimitiveAtom:
 		return addTypeReferencePrimitive(referenceRange, t, builder)
@@ -645,28 +668,71 @@ func addSemanticTokenTypeReference(typeReference *dectype.TypeReference, builder
 		return addTypeReferenceInvoker(referenceRange, t, builder)
 	case *dectype.Alias:
 		return addTypeReferenceAlias(referenceRange, t, builder)
-	}
-	log.Printf("unhandled typeReference %T %v\n", next, next)
-
-	return nil
-}
-
-func addSemanticTokenFunctionTypeReference(typeReference *dectype.FunctionTypeReference, builder *SemanticBuilder) error {
-	next := typeReference.Next()
-
-	referenceRange := typeReference.FetchPositionLength().Range
-	switch t := next.(type) {
-	case *dectype.PrimitiveAtom:
-		return addTypeReferencePrimitive(referenceRange, t, builder)
-	case *dectype.InvokerType:
-		return addTypeReferenceInvoker(referenceRange, t, builder)
+	case *dectype.CustomTypeAtom:
+		return addTypeReferenceCustomType(referenceRange, t, builder)
 	case *dectype.FunctionAtom:
 		return addTypeReferenceFunctionType(referenceRange, t, builder)
 	}
+	log.Printf("unhandled typeReference %T %v\n", next, next)
 
-	log.Printf("unhandlded function typeReference %T %v\n", next, next)
+	return fmt.Errorf("unhandled typeReference %T %v\n", next, next)
+}
 
-	return nil
+func addSemanticTokenTypeReference(typeReference *dectype.TypeReference, builder *SemanticBuilder) error {
+	referenceRange := typeReference.FetchPositionLength().Range
+	next := typeReference.Next()
+
+	return typeReferenceHelper(next, referenceRange, builder)
+}
+
+func addSemanticTokenTypeReferenceScoped(typeReference *dectype.TypeReferenceScoped, builder *SemanticBuilder) error {
+	if err := encodeModuleReference(builder, typeReference.TypeIdentifierScoped().ModuleReference()); err != nil {
+		return err
+	}
+	referenceRange := typeReference.FetchPositionLength().Range
+	return typeReferenceHelper(typeReference.Next(), referenceRange, builder)
+}
+
+func typeReferenceParamHelper(param dtype.Type, builder *SemanticBuilder) error {
+	switch t := param.(type) {
+	case *dectype.FunctionTypeReference:
+		return addSemanticTokenFunctionTypeReference(t, builder)
+	case *dectype.TypeReferenceScoped:
+		return addSemanticTokenTypeReferenceScoped(t, builder)
+	case *dectype.TypeReference:
+		return addSemanticTokenTypeReference(t, builder)
+	case *dectype.InvokerType:
+		return addSemanticToken(t, builder)
+	case *dectype.FunctionAtom:
+		return addSemanticToken(t, builder)
+	case *dectype.RecordAtom:
+		return addSemanticToken(t, builder)
+	}
+	log.Printf("unknown param %T", param)
+	return fmt.Errorf("unknown param %T", param)
+}
+
+func addSemanticTokenFunctionTypeReference(typeReference *dectype.FunctionTypeReference, builder *SemanticBuilder) error {
+	for _, param := range typeReference.FunctionAtom().FunctionParameterTypes() {
+		if err := typeReferenceParamHelper(param, builder); err != nil {
+			return err
+		}
+	}
+	/*
+		referenceRange := typeReference.FetchPositionLength().Range
+		switch t := next.(type) {
+		case *dectype.PrimitiveAtom:
+			return addTypeReferencePrimitive(referenceRange, t, builder)
+		case *dectype.InvokerType:
+			return addTypeReferenceInvoker(referenceRange, t, builder)
+		case *dectype.FunctionAtom:
+			return addTypeReferenceFunctionType(referenceRange, t, builder)
+		}
+	*/
+
+	// log.Printf("unhandled function typeReference %T %v\n", next, next)
+
+	return typeReferenceHelper(typeReference.Next(), typeReference.FetchPositionLength().Range, builder)
 }
 
 func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilder) error {
@@ -752,12 +818,16 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticToken(&t.UnaryOperator, builder)
 	case *decorated.ConsOperator:
 		return addSemanticToken(&t.BinaryOperator, builder)
+	case *decorated.Constant:
+		return addSemanticTokenConstant(t, builder)
 
 		// TYPES
 		//
 
 	case *dectype.TypeReference:
 		return addSemanticTokenTypeReference(t, builder)
+	case *dectype.TypeReferenceScoped:
+		return addSemanticTokenTypeReferenceScoped(t, builder)
 	case *dectype.FunctionTypeReference:
 		return addSemanticTokenFunctionTypeReference(t, builder)
 	case *dectype.FunctionAtom:

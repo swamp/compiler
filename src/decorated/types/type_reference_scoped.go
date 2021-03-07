@@ -24,6 +24,10 @@ func (t *TypeReferenceScoped) FetchPositionLength() token.SourceFileReference {
 	return t.typeIdentfier.FetchPositionLength()
 }
 
+func (t *TypeReferenceScoped) TypeIdentifierScoped() *ast.TypeIdentifierScoped {
+	return t.typeIdentfier
+}
+
 func (t *TypeReferenceScoped) HumanReadable() string {
 	return t.referencedType.HumanReadable()
 }

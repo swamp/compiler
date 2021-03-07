@@ -733,6 +733,10 @@ func generateFunctionReference(code *assembler.Code, target assembler.TargetVari
 	return nil
 }
 
+func generateConstant(code *assembler.Code, target assembler.TargetVariable, constant *decorated.Constant, context *generateContext) error {
+	return generateExpression(code, target, constant.Expression(), context)
+}
+
 func generateLocalFunctionParameterReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.FunctionParameterReference, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.Identifier().Name())
 	variable := context.FindVariable(varName)
@@ -1058,6 +1062,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.FunctionReference:
 		return generateFunctionReference(code, target, e, genContext.context)
+
+	case *decorated.Constant:
+		return generateConstant(code, target, e, genContext)
 
 	case *decorated.FunctionParameterReference:
 		return generateLocalFunctionParameterReference(code, target, e, genContext.context)
