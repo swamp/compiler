@@ -20,21 +20,28 @@ type DecoratedTokenScanner interface {
 }
 
 type Compiler interface {
-	Compile(filename string) error
+	Compile(filename string) (*decorated.Module, error)
 }
 
 type DocumentCacher interface {
 	GetDocument(filename LocalFileSystemPath, version DocumentVersion) (*InMemoryDocument, error)
 }
 
-type Service struct {
-	scanner   DecoratedTokenScanner
-	compiler  Compiler
-	documents DocumentCacher
+type Workspacer interface {
+	AllModules() []*decorated.Module
 }
 
-func NewService(compiler Compiler, scanner DecoratedTokenScanner, documents DocumentCacher) *Service {
-	return &Service{scanner: scanner, compiler: compiler, documents: documents}
+type Service struct {
+	scanner     DecoratedTokenScanner
+	compiler    Compiler
+	documents   DocumentCacher
+	workspacer  Workspacer
+	diagnostics *DiagnosticsForDocuments
+}
+
+func NewService(compiler Compiler, scanner DecoratedTokenScanner, documents DocumentCacher, workspacer Workspacer) *Service {
+	diagnostics := NewDiagnosticsForDocuments()
+	return &Service{scanner: scanner, compiler: compiler, documents: documents, workspacer: workspacer, diagnostics: diagnostics}
 }
 
 func (s *Service) Reset() error {
@@ -590,13 +597,77 @@ func (s *Service) getDocumentHelper(documentIdentifier lsp.VersionedTextDocument
 	return s.documents.GetDocument(LocalFileSystemPath(localPath), DocumentVersion(documentIdentifier.Version))
 }
 
+type DiagnosticsForDocument struct {
+	diagnostics []lsp.Diagnostic
+}
+
+func (d *DiagnosticsForDocument) Add(lspDiagnostic lsp.Diagnostic) {
+	d.diagnostics = append(d.diagnostics, lspDiagnostic)
+}
+
+func (d *DiagnosticsForDocument) All() []lsp.Diagnostic {
+	return d.diagnostics
+}
+
+func (d *DiagnosticsForDocument) IsEmpty() bool {
+	return len(d.diagnostics) == 0
+}
+
+func (d *DiagnosticsForDocument) Clear() {
+	d.diagnostics = []lsp.Diagnostic{}
+}
+
+type DiagnosticsForDocuments struct {
+	allDiagnostics map[string]*DiagnosticsForDocument
+}
+
+func NewDiagnosticsForDocuments() *DiagnosticsForDocuments {
+	return &DiagnosticsForDocuments{make(map[string]*DiagnosticsForDocument)}
+}
+
+func (d *DiagnosticsForDocuments) All() map[string]*DiagnosticsForDocument {
+	return d.allDiagnostics
+}
+
+func (d *DiagnosticsForDocuments) Clear() {
+	for _, document := range d.allDiagnostics {
+		document.Clear()
+	}
+}
+
+func (d *DiagnosticsForDocuments) Tidy() {
+	var toBeDeleted []string
+	for key, document := range d.allDiagnostics {
+		if document.IsEmpty() {
+			toBeDeleted = append(toBeDeleted, key)
+		}
+	}
+
+	for _, keyToDelete := range toBeDeleted {
+		delete(d.allDiagnostics, keyToDelete)
+	}
+}
+
+func (d *DiagnosticsForDocuments) Add(localPath LocalFileSystemPath, lspDiagnostic lsp.Diagnostic) {
+	foundLocalPath := string(localPath)
+	existingDiagDocument := d.allDiagnostics[foundLocalPath]
+	if existingDiagDocument == nil {
+		existingDiagDocument = &DiagnosticsForDocument{}
+		d.allDiagnostics[foundLocalPath] = existingDiagDocument
+	}
+
+	existingDiagDocument.Add(lspDiagnostic)
+}
+
 func (s *Service) CompileAndReportErrors(uri lsp.DocumentURI, version uint, conn lspserv.Connection) error {
 	localPath, localPathErr := toDocumentURI(uri).ToLocalFilePath()
 	if localPathErr != nil {
 		return localPathErr
 	}
 
-	compileErr := s.compiler.Compile(localPath)
+	s.diagnostics.Clear()
+	_, compileErr := s.compiler.Compile(localPath)
+	allDiagnostics := s.diagnostics
 	if compileErr != nil {
 		log.Printf("received err %T", compileErr)
 		moduleErr, wasModuleErr := compileErr.(*decorated.ModuleError)
@@ -604,48 +675,65 @@ func (s *Service) CompileAndReportErrors(uri lsp.DocumentURI, version uint, conn
 			compileErr = moduleErr.WrappedError()
 		}
 		multiErr, wasMultiErr := compileErr.(*decorated.MultiErrors)
-		if wasMultiErr {
-			var diagnostics []lsp.Diagnostic
-			for _, foundErr := range multiErr.Errors() {
-				sourcePosition := foundErr.FetchPositionLength()
-				if sourcePosition.Document == nil {
-					continue
-				}
-				foundLocalPath, errLocalPath := sourcePosition.Document.Uri.ToLocalFilePath()
-				if errLocalPath != nil {
-					return errLocalPath
-				}
-
-				if localPath == foundLocalPath {
-					lspDiagnostic := lsp.Diagnostic{
-						Range:           *tokenToLspRange(sourcePosition.Range),
-						Severity:        lsp.Error,
-						Code:            fmt.Sprintf("%T", foundErr),
-						CodeDescription: nil,
-						Source:          "swamp",
-						Message:         foundErr.Error(),
-					}
-					diagnostics = append(diagnostics, lspDiagnostic)
-				}
-			}
-			params := lsp.PublishDiagnosticsParams{
-				URI:         uri,
-				Version:     version,
-				Diagnostics: diagnostics,
-			}
-			conn.PublishDiagnostics(params)
+		if !wasMultiErr {
 			return nil
 		}
-		return compileErr
+		for _, foundErr := range multiErr.Errors() {
+			sourcePosition := foundErr.FetchPositionLength()
+			if sourcePosition.Document == nil {
+				continue
+			}
+			foundLocalPath, errLocalPath := sourcePosition.Document.Uri.ToLocalFilePath()
+			if errLocalPath != nil {
+				return errLocalPath
+			}
+
+			lspDiagnostic := lsp.Diagnostic{
+				Range:           *tokenToLspRange(sourcePosition.Range),
+				Severity:        lsp.Error,
+				Code:            fmt.Sprintf("%T", foundErr),
+				CodeDescription: nil,
+				Source:          "swamp",
+				Message:         foundErr.Error(),
+			}
+			allDiagnostics.Add(LocalFileSystemPath(foundLocalPath), lspDiagnostic)
+		}
 	}
 
-	// Clear errors
-	params := lsp.PublishDiagnosticsParams{
-		URI:         uri,
-		Version:     version,
-		Diagnostics: []lsp.Diagnostic{},
+	for _, workspaceModule := range s.workspacer.AllModules() {
+		for _, warning := range workspaceModule.Warnings() {
+			sourcePosition := warning.FetchPositionLength()
+			if sourcePosition.Document == nil {
+				continue
+			}
+			foundLocalPath, errLocalPath := sourcePosition.Document.Uri.ToLocalFilePath()
+			if errLocalPath != nil {
+				return errLocalPath
+			}
+
+			lspDiagnostic := lsp.Diagnostic{
+				Range:           *tokenToLspRange(sourcePosition.Range),
+				Severity:        lsp.Warning,
+				Code:            fmt.Sprintf("%T", warning),
+				CodeDescription: nil,
+				Source:          "swamp",
+				Message:         warning.Warning(),
+			}
+			allDiagnostics.Add(LocalFileSystemPath(foundLocalPath), lspDiagnostic)
+		}
 	}
-	conn.PublishDiagnostics(params)
+
+	for uri, diagDocument := range allDiagnostics.All() {
+		params := lsp.PublishDiagnosticsParams{
+			URI:         lsp.DocumentURI(uri),
+			Version:     0,
+			Diagnostics: diagDocument.All(),
+		}
+		conn.PublishDiagnostics(params)
+	}
+
+	s.diagnostics.Tidy()
+
 	return nil
 }
 

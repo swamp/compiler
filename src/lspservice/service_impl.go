@@ -24,23 +24,23 @@ func NewLspImpl(fallbackProvider loader.DocumentProvider) *LspImpl {
 	}
 }
 
-func (l *LspImpl) Compile(filename string) error {
+func (l *LspImpl) Compile(filename string) (*decorated.Module, error) {
 	const enforceStyle = true
 
 	const verboseFlag = false
 
 	world, module, err := swampcompiler.CompileMainFindLibraryRoot(filename, l.documentCache, enforceStyle, verboseFlag)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if module == nil {
-		return fmt.Errorf("module can not be nil!")
+		return nil, fmt.Errorf("module can not be nil!")
 	}
 	fmt.Fprintf(os.Stderr, "COMPILE DONE!\n")
 
 	l.workspace.AddOrReplacePackage(world)
 
-	return nil
+	return module, nil
 }
 
 func findModuleFromSourceFile(world *loader.Package, sourceFileURI token.DocumentURI) (*decorated.Module, error) {
@@ -55,6 +55,15 @@ func findModuleFromSourceFile(world *loader.Package, sourceFileURI token.Documen
 	}
 
 	return foundModule, nil
+}
+
+func (l *LspImpl) AllModules() []*decorated.Module {
+	var allModules []*decorated.Module
+	for _, foundPackage := range l.workspace.AllPackages() {
+		allModules = append(allModules, foundPackage.AllModules()...)
+	}
+
+	return allModules
 }
 
 func (l *LspImpl) FindModuleHelper(sourceFile token.DocumentURI) *decorated.Module {

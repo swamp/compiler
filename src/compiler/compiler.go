@@ -8,7 +8,6 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"strings"
 
@@ -32,8 +31,9 @@ func CheckUnused(world *loader.Package) {
 		}
 		for _, def := range module.Definitions().Definitions() {
 			if !def.WasReferenced() {
-				sourceFileReference := def.Identifier().Symbol().FetchPositionLength().ToReferenceString()
-				log.Printf("%s Warning: '%v:%v' is never referenced\n", sourceFileReference, module.FullyQualifiedModuleName(), def.Identifier().Name())
+				module := def.ParentDefinitions().OwnedByModule()
+				warning := decorated.NewUnusedWarning(def)
+				module.AddWarning(warning)
 			}
 		}
 	}

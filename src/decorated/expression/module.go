@@ -90,6 +90,7 @@ type Module struct {
 	nodes                    []TypeOrToken
 	references               []*ModuleReference
 	errors                   []decshared.DecoratedError
+	warnings                 []decshared.DecoratedWarning
 }
 
 func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri *token.SourceFileDocument) *Module {
@@ -117,6 +118,15 @@ func (m *Module) FetchPositionLength() token.SourceFileReference {
 
 func (m *Module) AddReference(ref *ModuleReference) {
 	m.references = append(m.references, ref)
+}
+
+func (m *Module) AddWarning(warning decshared.DecoratedWarning) {
+	log.Printf("%s Warning: '%v' ", warning.FetchPositionLength().ToCompleteReferenceString(), warning.Warning())
+	m.warnings = append(m.warnings, warning)
+}
+
+func (m *Module) Warnings() []decshared.DecoratedWarning {
+	return m.warnings
 }
 
 func (m *Module) References() []*ModuleReference {
