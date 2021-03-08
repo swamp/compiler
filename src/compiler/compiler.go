@@ -60,7 +60,7 @@ func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider
 	rootPackage := NewPackageLoader(mainPrefix, documentProvider, mainNamespace, world, worldDecorator)
 
 	libraryReader := loader.NewLibraryReaderAndDecorator()
-	libraryModule, libErr := libraryReader.ReadLibraryModule(world, rootPackage.repository, mainSourceFile, mainNamespace)
+	libraryModule, libErr := libraryReader.ReadLibraryModule(world, rootPackage.repository, mainSourceFile, mainNamespace, documentProvider)
 	if libErr != nil {
 		return nil, nil, libErr
 	}

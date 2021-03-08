@@ -43,7 +43,7 @@ func FindSettingsDirectory(swampDirectory string) (string, error) {
 	return "", fmt.Errorf("sorry, couldn't find settings file from %v and up. Not a library", swampDirectory)
 }
 
-func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, verboseFlag bool) decshared.DecoratedError {
+func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, documentProvider DocumentProvider, verboseFlag bool) decshared.DecoratedError {
 	settingsFilename := filepath.Join(swampDirectory, ".swamp.toml")
 
 	mapping := make(map[string]string)
@@ -76,7 +76,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 			panic(fmt.Sprintf("could not find directory '%v' '%v'", swampDirectory, packagePath))
 			// moduleNameToFetch = dectype.MakePackageRelativeModuleName(nil)
 		}
-		_, moduleErr := r.ReadLibraryModule(world, repository, dependencyFilePrefix, rootNamespace)
+		_, moduleErr := r.ReadLibraryModule(world, repository, dependencyFilePrefix, rootNamespace, documentProvider)
 		if moduleErr != nil {
 			return moduleErr
 		}
@@ -85,7 +85,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 	return nil
 }
 
-func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName, documentProvider DocumentProvider) (*decorated.Module, decshared.DecoratedError) {
 	const verboseFlag = false
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
@@ -95,13 +95,11 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository
 	}
 	const enforceStyle = true
 
-	if err := r.loadAndApplySettings(world, repository, absoluteDirectory, verboseFlag); err != nil {
+	if err := r.loadAndApplySettings(world, repository, absoluteDirectory, documentProvider, verboseFlag); err != nil {
 		return nil, err
 	}
 
-	fileSystemProvider := NewFileSystemDocumentProvider()
-
-	fileLoader := NewLoader(absoluteDirectory, fileSystemProvider)
+	fileLoader := NewLoader(absoluteDirectory, documentProvider)
 
 	worldDecorator, worldDecoratorErr := NewWorldDecorator(enforceStyle, verboseFlag)
 	if worldDecoratorErr != nil {
@@ -127,7 +125,7 @@ func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, reposito
 	}
 	const enforceStyle = true
 
-	if err := r.loadAndApplySettings(world, repository, absoluteDirectory, verboseFlag); err != nil {
+	if err := r.loadAndApplySettings(world, repository, absoluteDirectory, documentProvider, verboseFlag); err != nil {
 		return nil, err
 	}
 

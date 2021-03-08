@@ -123,3 +123,11 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 
 	return bestToken
 }
+
+func (l *LspImpl) GetDocument(localFilePath LocalFileSystemPath, newVersion DocumentVersion) (*InMemoryDocument, error) {
+	inMemoryDocument, err := l.documentCache.GetDocumentByVersion(localFilePath, newVersion-1)
+	if err != nil {
+		return nil, err
+	}
+	return inMemoryDocument, nil
+}

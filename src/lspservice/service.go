@@ -24,13 +24,18 @@ type Compiler interface {
 	Compile(filename string) error
 }
 
-type Service struct {
-	scanner  DecoratedTokenScanner
-	compiler Compiler
+type DocumentCacher interface {
+	GetDocument(filename LocalFileSystemPath, version DocumentVersion) (*InMemoryDocument, error)
 }
 
-func NewService(compiler Compiler, scanner DecoratedTokenScanner) *Service {
-	return &Service{scanner: scanner, compiler: compiler}
+type Service struct {
+	scanner   DecoratedTokenScanner
+	compiler  Compiler
+	documents DocumentCacher
+}
+
+func NewService(compiler Compiler, scanner DecoratedTokenScanner, documents DocumentCacher) *Service {
+	return &Service{scanner: scanner, compiler: compiler, documents: documents}
 }
 
 func (s *Service) Reset() error {
@@ -75,6 +80,12 @@ func tokenToLspRange(rangeToken token.Range) *lsp.Range {
 		Start: tokenToLspPosition(rangeToken.Start()),
 		End:   exclusiveEndPosition,
 	}
+}
+
+func lspToTokenRange(lspRange lsp.Range) token.Range {
+	return token.MakeRange(
+		token.MakePosition(lspRange.Start.Line, lspRange.Start.Character),
+		token.MakePosition(lspRange.End.Line, lspRange.End.Character))
 }
 
 func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Hover, error) {
@@ -508,44 +519,6 @@ func (s *Service) HandleRename(params lsp.RenameParams) (*lsp.WorkspaceEdit, err
 	return nil, nil
 }
 
-/*
-"namespace",
-"type",
-"class",
-"enum",
-"interface",
-"struct",
-"typeParameter",
-"parameter",
-"variable",
-"property",
-"enumMember",
-"event",
-"function",
-"method",
-"macro",
-"keyword",
-"modifier",
-"comment",
-"string",
-"number",
-"regexp",
-"operator",
-},
-tokenModifiers: []string{
-"declaration",
-"definition",
-"readonly",
-"static",
-"deprecated",
-"abstract",
-"async",
-"modification",
-"documentation",
-"defaultLibrary",
-
-*/
-
 func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (*lsp.SemanticTokens, error) {
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
 	fmt.Fprintf(os.Stderr, "get root tokens\n")
@@ -634,5 +607,53 @@ func (s *Service) HandleDidOpen(params lsp.DidOpenTextDocumentParams, conn lspse
 		conn.PublishDiagnostics(c)
 	}
 
+	return nil
+}
+
+func (s *Service) getDocumentHelper(documentIdentifier lsp.VersionedTextDocumentIdentifier) (*InMemoryDocument, error) {
+	localPath, pathErr := toDocumentURI(documentIdentifier.URI).ToLocalFilePath()
+	if pathErr != nil {
+		return nil, pathErr
+	}
+
+	return s.documents.GetDocument(LocalFileSystemPath(localPath), DocumentVersion(documentIdentifier.Version))
+}
+
+func (s *Service) HandleDidChange(params lsp.DidChangeTextDocumentParams, conn lspserv.Connection) error {
+	foundDocument, err := s.getDocumentHelper(params.TextDocument)
+	if err != nil {
+		return err
+	}
+
+	for _, contentChange := range params.ContentChanges {
+		editRange := lspToTokenRange(contentChange.Range)
+		if changeErr := foundDocument.MakeChange(editRange, contentChange.Text); changeErr != nil {
+			return changeErr
+		}
+	}
+	foundDocument.UpdateVersion(DocumentVersion(params.TextDocument.Version))
+
+	localPath, localPathErr := toDocumentURI(params.TextDocument.URI).ToLocalFilePath()
+	if localPathErr != nil {
+		return localPathErr
+	}
+
+	compileErr := s.compiler.Compile(localPath)
+	if compileErr != nil {
+		return compileErr
+	}
+
+	return nil
+}
+
+func (s *Service) HandleDidClose(params lsp.DidCloseTextDocumentParams, conn lspserv.Connection) error {
+	return nil
+}
+
+func (s *Service) HandleWillSave(params lsp.WillSaveTextDocumentParams, conn lspserv.Connection) error {
+	return nil
+}
+
+func (s *Service) HandleDidSave(params lsp.DidSaveTextDocumentParams, conn lspserv.Connection) error {
 	return nil
 }

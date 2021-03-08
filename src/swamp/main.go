@@ -79,7 +79,7 @@ type LspCmd struct{}
 func (c *LspCmd) Run() error {
 	fileSystem := loader.NewFileSystemDocumentProvider()
 	lspService := lspservice.NewLspImpl(fileSystem)
-	service := lspservice.NewService(lspService, lspService)
+	service := lspservice.NewService(lspService, lspService, lspService)
 	fmt.Fprintf(os.Stderr, "LSP Server initiated. Will receive commands from stdin and send reply on stdout")
 	lspServ := lspserv.NewService(service)
 	const logOutput = false

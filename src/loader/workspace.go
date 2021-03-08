@@ -26,6 +26,7 @@ func (w *Workspace) AddProject(root LocalFileSystemRoot, project Project) {
 }
 
 func (w *Workspace) AddPackage(p *Package) {
+	log.Printf("adding package %v", p.root)
 	w.AddProject(p.Root(), p)
 }
 
@@ -43,7 +44,7 @@ func (w *Workspace) AllPackages() []*Package {
 func (w *Workspace) AddOrReplacePackage(p *Package) {
 	existingPackage := w.FindProject(p.root)
 	if existingPackage != nil {
-		log.Printf("remove package %v", p.Root())
+		log.Printf("remove for overwrite package %v", p.Root())
 		delete(w.projects, string(p.root))
 	}
 
