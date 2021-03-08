@@ -89,6 +89,7 @@ type Module struct {
 	rootNodes                []Node
 	nodes                    []TypeOrToken
 	references               []*ModuleReference
+	errors                   []decshared.DecoratedError
 }
 
 func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri *token.SourceFileDocument) *Module {
@@ -124,6 +125,14 @@ func (m *Module) References() []*ModuleReference {
 
 func (m *Module) SetProgram(program *ast.SourceFile) {
 	m.program = program
+}
+
+func (m *Module) SetErrors(errors []decshared.DecoratedError) {
+	m.errors = errors
+}
+
+func (m *Module) Errors() []decshared.DecoratedError {
+	return m.errors
 }
 
 func (m *Module) Document() *token.SourceFileDocument {

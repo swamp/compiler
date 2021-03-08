@@ -849,6 +849,26 @@ func (e *InternalError) FetchPositionLength() token.SourceFileReference {
 	return token.SourceFileReference{}
 }
 
+type MultiErrors struct {
+	errors []decshared.DecoratedError
+}
+
+func NewMultiErrors(errors []decshared.DecoratedError) *MultiErrors {
+	return &MultiErrors{errors: errors}
+}
+
+func (e *MultiErrors) Errors() []decshared.DecoratedError {
+	return e.errors
+}
+
+func (e *MultiErrors) Error() string {
+	return fmt.Sprintf("decoration multierrors %v", e.errors)
+}
+
+func (e *MultiErrors) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
+}
+
 type UnknownAnnotationTypeReference struct {
 	annotationIdentifier *ast.VariableIdentifier
 	err                  TypeError

@@ -3,7 +3,6 @@ package lspservice
 import (
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 
 	"github.com/piot/go-lsp"
@@ -579,35 +578,7 @@ func (s *Service) HandleDidChangeWatchedFiles(params lsp.DidChangeWatchedFilesPa
 }
 
 func (s *Service) HandleDidOpen(params lsp.DidOpenTextDocumentParams, conn lspserv.Connection) error {
-	fullUrl, urlErr := url.Parse(string(params.TextDocument.URI))
-	if urlErr != nil {
-		return urlErr
-	}
-	compileErr := s.compiler.Compile(fullUrl.Path)
-	if compileErr != nil {
-		log.Printf("couldn't compile it:%v\n", compileErr)
-		c := lsp.PublishDiagnosticsParams{
-			URI:     params.TextDocument.URI,
-			Version: uint(params.TextDocument.Version),
-			Diagnostics: []lsp.Diagnostic{{
-				Range: lsp.Range{
-					Start: lsp.Position{},
-					End:   lsp.Position{},
-				},
-				Severity:           lsp.Error,
-				Code:               "2899",
-				CodeDescription:    nil, // *CodeDescription `json:"codeDescription,omitempty"`
-				Source:             "swamp",
-				Message:            compileErr.Error(),
-				Tags:               nil,
-				RelatedInformation: nil,
-				Data:               nil,
-			}},
-		}
-		conn.PublishDiagnostics(c)
-	}
-
-	return nil
+	return s.CompileAndReportErrors(params.TextDocument.URI, uint(params.TextDocument.Version), conn)
 }
 
 func (s *Service) getDocumentHelper(documentIdentifier lsp.VersionedTextDocumentIdentifier) (*InMemoryDocument, error) {
@@ -617,6 +588,65 @@ func (s *Service) getDocumentHelper(documentIdentifier lsp.VersionedTextDocument
 	}
 
 	return s.documents.GetDocument(LocalFileSystemPath(localPath), DocumentVersion(documentIdentifier.Version))
+}
+
+func (s *Service) CompileAndReportErrors(uri lsp.DocumentURI, version uint, conn lspserv.Connection) error {
+	localPath, localPathErr := toDocumentURI(uri).ToLocalFilePath()
+	if localPathErr != nil {
+		return localPathErr
+	}
+
+	compileErr := s.compiler.Compile(localPath)
+	if compileErr != nil {
+		log.Printf("received err %T", compileErr)
+		moduleErr, wasModuleErr := compileErr.(*decorated.ModuleError)
+		if wasModuleErr {
+			compileErr = moduleErr.WrappedError()
+		}
+		multiErr, wasMultiErr := compileErr.(*decorated.MultiErrors)
+		if wasMultiErr {
+			var diagnostics []lsp.Diagnostic
+			for _, foundErr := range multiErr.Errors() {
+				sourcePosition := foundErr.FetchPositionLength()
+				if sourcePosition.Document == nil {
+					continue
+				}
+				foundLocalPath, errLocalPath := sourcePosition.Document.Uri.ToLocalFilePath()
+				if errLocalPath != nil {
+					return errLocalPath
+				}
+
+				if localPath == foundLocalPath {
+					lspDiagnostic := lsp.Diagnostic{
+						Range:           *tokenToLspRange(sourcePosition.Range),
+						Severity:        lsp.Error,
+						Code:            fmt.Sprintf("%T", foundErr),
+						CodeDescription: nil,
+						Source:          "swamp",
+						Message:         foundErr.Error(),
+					}
+					diagnostics = append(diagnostics, lspDiagnostic)
+				}
+			}
+			params := lsp.PublishDiagnosticsParams{
+				URI:         uri,
+				Version:     version,
+				Diagnostics: diagnostics,
+			}
+			conn.PublishDiagnostics(params)
+			return nil
+		}
+		return compileErr
+	}
+
+	// Clear errors
+	params := lsp.PublishDiagnosticsParams{
+		URI:         uri,
+		Version:     version,
+		Diagnostics: []lsp.Diagnostic{},
+	}
+	conn.PublishDiagnostics(params)
+	return nil
 }
 
 func (s *Service) HandleDidChange(params lsp.DidChangeTextDocumentParams, conn lspserv.Connection) error {
@@ -633,17 +663,7 @@ func (s *Service) HandleDidChange(params lsp.DidChangeTextDocumentParams, conn l
 	}
 	foundDocument.UpdateVersion(DocumentVersion(params.TextDocument.Version))
 
-	localPath, localPathErr := toDocumentURI(params.TextDocument.URI).ToLocalFilePath()
-	if localPathErr != nil {
-		return localPathErr
-	}
-
-	compileErr := s.compiler.Compile(localPath)
-	if compileErr != nil {
-		return compileErr
-	}
-
-	return nil
+	return s.CompileAndReportErrors(params.TextDocument.URI, uint(params.TextDocument.Version), conn)
 }
 
 func (s *Service) HandleDidClose(params lsp.DidCloseTextDocumentParams, conn lspserv.Connection) error {

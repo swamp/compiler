@@ -22,6 +22,7 @@ type Decorator struct {
 	module              *decorated.Module
 	moduleRepository    ModuleRepository
 	typeLookUpAndCreate decorated.TypeAddAndReferenceMaker
+	errors              []decshared.DecoratedError
 }
 
 func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module, typeLookUpAndCreate decorated.TypeAddAndReferenceMaker) *Decorator {
@@ -47,6 +48,14 @@ func (d *Decorator) AddDeclaration(identifier *ast.VariableIdentifier, ofType dt
 
 func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decorated.Expression) error {
 	return d.module.Definitions().AddDecoratedExpression(identifier, expr)
+}
+
+func (d *Decorator) AddDecoratedError(decoratedError decshared.DecoratedError) {
+	d.errors = append(d.errors, decoratedError)
+}
+
+func (d *Decorator) Errors() []decshared.DecoratedError {
+	return d.errors
 }
 
 func (d *Decorator) NewVariableContext() *decorator.VariableContext {
