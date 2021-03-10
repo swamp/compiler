@@ -744,6 +744,13 @@ func generateLocalFunctionParameterReference(code *assembler.Code, target assemb
 	return nil
 }
 
+func generateLocalConsequenceParameterReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.CaseConsequenceParameterReference, context *assembler.Context) error {
+	varName := assembler.NewVariableName(getVar.Identifier().Name())
+	variable := context.FindVariable(varName)
+	code.CopyVariable(target, variable)
+	return nil
+}
+
 func generateLetVariableReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.LetVariableReference, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.LetVariable().Name().Name())
 	variable := context.FindVariable(varName)
@@ -1068,6 +1075,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.FunctionParameterReference:
 		return generateLocalFunctionParameterReference(code, target, e, genContext.context)
+
+	case *decorated.CaseConsequenceParameterReference:
+		return generateLocalConsequenceParameterReference(code, target, e, genContext.context)
 
 	case *decorated.LetVariableReference:
 		return generateLetVariableReference(code, target, e, genContext.context)

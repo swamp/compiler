@@ -13,7 +13,8 @@ import (
 )
 
 type ParseStream interface {
-	addWarning(description string, length token.SourceFileReference)
+	AddWarning(parserError parerr.ParseError)
+	Warnings() []parerr.ParseError
 	addNode(node ast.Node)
 
 	// -----------------------------------------------------------------------------------------------------------------

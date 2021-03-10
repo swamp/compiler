@@ -37,6 +37,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 
 	for _, consequenceField := range caseExpression.Consequences() {
 		var foundVariant *dectype.CustomTypeVariant
+		var parameters []*decorated.CaseConsequenceParameter
 
 		consequenceVariableContext := context.MakeVariableContext()
 
@@ -59,13 +60,24 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 				return nil, decorated.NewCaseWrongParameterCountInCustomTypeVariant(caseExpression,
 					consequenceField, foundVariant)
 			}
-			for parameterIndex, parameter := range consequenceField.Arguments() {
-				parameterType := foundVariant.ParameterTypes()[parameterIndex]
-				fakeExpression := NewFakeExpression(parameterType)
-				fakeNamedExpresison := decorated.NewNamedDecoratedExpression("__", nil,
-					fakeExpression)
-				consequenceVariableContext.Add(parameter, fakeNamedExpresison)
+
+			for index, argumentType := range foundVariant.ParameterTypes() {
+				ident := consequenceField.Arguments()[index]
+				param := decorated.NewCaseConsequenceParameter(ident, argumentType)
+				fakeNamedExpression := decorated.NewNamedDecoratedExpression(ident.Name(), nil,
+					param)
+				consequenceVariableContext.Add(ident, fakeNamedExpression)
+				parameters = append(parameters, param)
 			}
+			/*
+				for parameterIndex, parameter := range consequenceField.Arguments() {
+					parameterType := foundVariant.ParameterTypes()[parameterIndex]
+					parameterExpand := decorated.NewCaseConsequenceParameter(parameter, parameterType, foundVariant, parameterIndex)
+
+
+				}
+
+			*/
 		}
 
 		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, consequenceField.Expression(),
@@ -95,12 +107,6 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 			if expectedArgumentCount != actualArgumentCount {
 				return nil, decorated.NewCaseWrongParameterCountInCustomTypeVariant(caseExpression, consequenceField,
 					foundVariant)
-			}
-			var parameters []*decorated.CaseConsequenceParameter
-			for index, argumentType := range foundVariant.ParameterTypes() {
-				ident := consequenceField.Arguments()[index]
-				param := decorated.NewCaseConsequenceParameter(ident, argumentType)
-				parameters = append(parameters, param)
 			}
 
 			// Intentionally without module reference for easier reading

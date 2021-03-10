@@ -42,6 +42,8 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 		return decorated.NewFunctionParameterReference(name, t), nil
 	case *decorated.LetAssignment:
 		return decorated.NewLetVariableReference(name, t), nil
+	case *decorated.CaseConsequenceParameter:
+		return decorated.NewCaseConsequenceParameterReference(name, t), nil
 	default:
 		return nil, decorated.NewInternalError(fmt.Errorf("what to do with '%v' => %T", name, t))
 	}

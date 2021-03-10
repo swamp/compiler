@@ -382,6 +382,9 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *BitwiseOperator:
 		return expandChildNodes(&t.BinaryOperator)
 
+	case *CaseConsequenceParameter:
+		return tokens
+
 	case *ArithmeticUnaryOperator:
 		return expandChildNodes(&t.UnaryOperator)
 	case *FunctionName: // Should not be expanded
@@ -395,6 +398,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *RecordFieldReference: // Should not be expanded
 		return tokens
 	case *FunctionParameterReference: // Should not be expanded
+		return tokens
+	case *CaseConsequenceParameterReference: // Should not be expanded
 		return tokens
 	case *IntegerLiteral: // Should not be expanded
 		return tokens

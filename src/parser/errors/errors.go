@@ -53,6 +53,40 @@ type ExpectedTypeOrParenError struct {
 	token.Token
 }
 
+type ExpectedNewLineCount struct {
+	reference   token.SourceFileReference
+	expected    int
+	encountered int
+}
+
+func NewExpectedNewLineCount(reference token.SourceFileReference, expected int, encountered int) ExpectedNewLineCount {
+	return ExpectedNewLineCount{reference: reference, expected: expected, encountered: encountered}
+}
+
+func (e ExpectedNewLineCount) Error() string {
+	return fmt.Sprintf("wrong exact number of line %v expected %v", e.encountered, e.expected)
+}
+
+func (e ExpectedNewLineCount) FetchPositionLength() token.SourceFileReference {
+	return e.reference
+}
+
+type UnexpectedImportAlias struct {
+	importStatement *ast.Import
+}
+
+func NewUnexpectedImportAlias(importStatement *ast.Import) UnexpectedImportAlias {
+	return UnexpectedImportAlias{importStatement: importStatement}
+}
+
+func (e UnexpectedImportAlias) Error() string {
+	return fmt.Sprintf("it is advised to use the last part of the import as alias. `import Some.Long.Name as Name` (%v)", e.importStatement.Alias().Name())
+}
+
+func (e UnexpectedImportAlias) FetchPositionLength() token.SourceFileReference {
+	return e.importStatement.FetchPositionLength()
+}
+
 func NewExpectedTypeOrParenError(t token.Token) ExpectedTypeOrParenError {
 	return ExpectedTypeOrParenError{Token: t}
 }
@@ -106,15 +140,19 @@ func (e ExpectedCaseConsequenceSymbolError) Error() string {
 }
 
 type ExpectedTwoLinesAfterStatement struct {
-	SubError
+	subError ParseError
 }
 
-func NewExpectedTwoLinesAfterStatement(err tokenize.TokenError) ExpectedTwoLinesAfterStatement {
-	return ExpectedTwoLinesAfterStatement{SubError: SubError{err}}
+func NewExpectedTwoLinesAfterStatement(err ParseError) ExpectedTwoLinesAfterStatement {
+	return ExpectedTwoLinesAfterStatement{subError: err}
 }
 
 func (e ExpectedTwoLinesAfterStatement) Error() string {
-	return fmt.Sprintf("needs exactly two empty lines after each statement %v", e.SubError)
+	return fmt.Sprintf("needs exactly two empty lines after each statement %v", e.subError)
+}
+
+func (e ExpectedTwoLinesAfterStatement) FetchPositionLength() token.SourceFileReference {
+	return e.subError.FetchPositionLength()
 }
 
 type ExpectedIndentationError struct {
@@ -488,6 +526,22 @@ func NewExpectedOneSpaceAfterVariableAndBeforeAssign(subError tokenize.TokenErro
 
 func (e ExpectedOneSpaceAfterVariableAndBeforeAssign) Error() string {
 	return fmt.Sprintf("expected a single space after variable and before '=' (%v)", e.SubError)
+}
+
+type ExpectedOneSpace struct {
+	sourceFileReference token.SourceFileReference
+}
+
+func NewExpectedOneSpace(sourceFileReference token.SourceFileReference) ExpectedOneSpace {
+	return ExpectedOneSpace{sourceFileReference: sourceFileReference}
+}
+
+func (e ExpectedOneSpace) Error() string {
+	return fmt.Sprintf("expected a single space here (%v)", e.sourceFileReference)
+}
+
+func (e ExpectedOneSpace) FetchPositionLength() token.SourceFileReference {
+	return e.sourceFileReference
 }
 
 type ExpectedOneSpaceAfterAssign struct {

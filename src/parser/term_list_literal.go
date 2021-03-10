@@ -19,17 +19,19 @@ func parseListLiteral(p ParseStream, startParen token.ParenToken, startIndentati
 	var rightBracketToken token.ParenToken
 
 	if rightBracketToken, wasRight = p.maybeRightBracket(); !wasRight {
-		if _, eatAfterErr := p.eatOneSpace("after left bracket ["); eatAfterErr != nil {
+		spaceReport, eatAfterErr := p.eatOneSpaceOrIndent("after left bracket [")
+		if eatAfterErr != nil {
 			return nil, eatAfterErr
 		}
+		subIndentation := spaceReport.ExactIndentation
 		for {
-			exp, expErr := p.parseExpressionNormal(startIndentation)
+			exp, expErr := p.parseExpressionNormal(subIndentation)
 			if expErr != nil {
 				return nil, expErr
 			}
 			expressions = append(expressions, exp)
 
-			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(startIndentation, tokenize.NotAllowedAtAll)
+			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(subIndentation, tokenize.NotAllowedAtAll)
 			if commaErr != nil {
 				return nil, commaErr
 			}

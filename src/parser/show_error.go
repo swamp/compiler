@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -45,7 +46,7 @@ func ShowSourceCode(tokenizer *tokenize.Tokenizer, highlightLine int,
 				return tokenize.NewInternalError(coloringErr)
 			}
 		}
-		fmt.Printf("%v\n", displayRow)
+		fmt.Fprintf(os.Stderr, "%v\n", displayRow)
 		if actualRow == highlightLine {
 			skipSpaces := highlightColumn
 			indentString := strings.Repeat(" ", skipSpaces)
@@ -54,7 +55,7 @@ func ShowSourceCode(tokenizer *tokenize.Tokenizer, highlightLine int,
 				repeatCount = 1
 			}
 			underlineString := color.HiYellowString(strings.Repeat("^", repeatCount))
-			fmt.Printf("%v%v\n", indentString, underlineString)
+			fmt.Fprintf(os.Stderr, "%v%v\n", indentString, underlineString)
 		}
 	}
 
@@ -144,7 +145,7 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 
 	errorString := colorToUse.Sprintf("%v:%d:%d: %v: %v", pathToShow, highlightLine+1, highlightColumn+1,
 		severityString, messageError)
-	fmt.Printf("\n%v\n", errorString)
+	fmt.Fprintf(os.Stderr, "\n%v\n", errorString)
 
 	color.NoColor = false
 	ShowSourceCode(tokenizer, highlightLine, highlightColumn, posLength)
@@ -170,7 +171,7 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	case *parerr.OneSpaceAfterRecordTypeColon:
 		showOneSpaceAfterRecordTypeColon(e, indentation, colorer)
 	default:
-		fmt.Printf("internal: I have no good description for error %T\n", e)
+		log.Printf("internal: I have no good description for error %T\n", e)
 	}
 
 	fmt.Fprintf(os.Stderr, colorer.String())

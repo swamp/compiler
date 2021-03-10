@@ -6,7 +6,6 @@
 package parser
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -37,7 +36,6 @@ func testParseExpressionInternal(code string, enforceStyle bool) (*ast.SourceFil
 	code = strings.TrimSpace(code)
 	tokenizer, tokenizerErr := testutil.Setup(code)
 	if tokenizerErr != nil {
-		fmt.Printf("error:%p\n", tokenizerErr)
 		ShowError(tokenizer, "test.swamp", tokenizerErr, true, errorsAsWarnings)
 		return nil, nil, tokenizerErr
 	}
@@ -45,7 +43,6 @@ func testParseExpressionInternal(code string, enforceStyle bool) (*ast.SourceFil
 	p := NewParser(tokenizer, enforceStyle)
 	program, programErr := p.ParseExpression()
 	if programErr != nil {
-		fmt.Printf("error:%v\n", programErr)
 		ShowError(tokenizer, "test.swamp", programErr, true, errorsAsWarnings)
 	}
 	return program, p.stream, programErr

@@ -8,9 +8,11 @@ import (
 	"github.com/piot/go-lsp"
 	"github.com/piot/lsp-server/lspserv"
 
+	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -154,6 +156,8 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 	case *decorated.ImportStatement:
 		return t.Module().FetchPositionLength(), nil
 	case *decorated.FunctionParameterReference:
+		return t.ParameterRef().FetchPositionLength(), nil
+	case *decorated.CaseConsequenceParameterReference:
 		return t.ParameterRef().FetchPositionLength(), nil
 	case *decorated.LetVariableReference:
 		return t.LetVariable().FetchPositionLength(), nil
@@ -397,7 +401,21 @@ func findAllLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filter
 				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
 			}
 		}
+
 	case *decorated.FunctionParameterReference:
+		return findAllLinkedSymbolsInDocument(t.ParameterRef(), filterDocument)
+
+	case *decorated.CaseConsequenceParameter:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.FetchPositionLength())
+		}
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+
+	case *decorated.CaseConsequenceParameterReference:
 		return findAllLinkedSymbolsInDocument(t.ParameterRef(), filterDocument)
 
 	case *decorated.LetVariable:
@@ -454,6 +472,16 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
 			sourceFileReferences = append(sourceFileReferences, t.ParameterRef().FetchPositionLength())
 		}
+	case *decorated.CaseConsequenceParameter:
+		for _, ref := range t.References() {
+			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
+				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+			}
+		}
+	case *decorated.CaseConsequenceParameterReference:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.ParameterRef().FetchPositionLength())
+		}
 	case *decorated.LetVariable:
 		for _, ref := range t.References() {
 			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
@@ -480,6 +508,8 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
 			sourceFileReferences = append(sourceFileReferences, t.FunctionValue().FetchPositionLength())
 		}
+	default:
+		log.Printf("not sure how to find linked symbols to %T", decoratedToken)
 	}
 
 	return sourceFileReferences
@@ -659,6 +689,47 @@ func (d *DiagnosticsForDocuments) Add(localPath LocalFileSystemPath, lspDiagnost
 	existingDiagDocument.Add(lspDiagnostic)
 }
 
+func createLspError(foundErr decshared.DecoratedError) (lsp.Diagnostic, error) {
+	sourcePosition := foundErr.FetchPositionLength()
+	if sourcePosition.Document == nil {
+		return lsp.Diagnostic{}, fmt.Errorf("source position document is nil")
+	}
+
+	lspDiagnostic := lsp.Diagnostic{
+		Range:           *tokenToLspRange(sourcePosition.Range),
+		Severity:        lsp.Error,
+		Code:            fmt.Sprintf("%T", foundErr),
+		CodeDescription: nil,
+		Source:          "swamp",
+		Message:         foundErr.Error(),
+	}
+
+	return lspDiagnostic, nil
+}
+
+func addLspError(allDiagnostics *DiagnosticsForDocuments, foundErr decshared.DecoratedError) error {
+	sourcePos := foundErr.FetchPositionLength()
+	if sourcePos.Document == nil {
+		// Must be an internal thing
+		log.Printf("document is nil! This should not happen %T %v", foundErr, foundErr)
+		return nil
+	}
+
+	foundLocalPath, errLocalPath := sourcePos.Document.Uri.ToLocalFilePath()
+	if errLocalPath != nil {
+		return errLocalPath
+	}
+
+	lspDiagnostic, lspDiagnosticErr := createLspError(foundErr)
+	if lspDiagnosticErr != nil {
+		return lspDiagnosticErr
+	}
+
+	allDiagnostics.Add(LocalFileSystemPath(foundLocalPath), lspDiagnostic)
+
+	return nil
+}
+
 func (s *Service) CompileAndReportErrors(uri lsp.DocumentURI, version uint, conn lspserv.Connection) error {
 	localPath, localPathErr := toDocumentURI(uri).ToLocalFilePath()
 	if localPathErr != nil {
@@ -673,30 +744,25 @@ func (s *Service) CompileAndReportErrors(uri lsp.DocumentURI, version uint, conn
 		moduleErr, wasModuleErr := compileErr.(*decorated.ModuleError)
 		if wasModuleErr {
 			compileErr = moduleErr.WrappedError()
+			log.Printf("wrapped err %T", compileErr)
 		}
 		multiErr, wasMultiErr := compileErr.(*decorated.MultiErrors)
 		if !wasMultiErr {
-			return nil
-		}
-		for _, foundErr := range multiErr.Errors() {
-			sourcePosition := foundErr.FetchPositionLength()
-			if sourcePosition.Document == nil {
-				continue
+			decErr, wasDecErr := compileErr.(decshared.DecoratedError)
+			if wasDecErr {
+				addLspError(allDiagnostics, decErr)
 			}
-			foundLocalPath, errLocalPath := sourcePosition.Document.Uri.ToLocalFilePath()
-			if errLocalPath != nil {
-				return errLocalPath
+			parErr, wasParErr := compileErr.(parerr.ParseError)
+			if wasParErr {
+				addLspError(allDiagnostics, parErr)
 			}
 
-			lspDiagnostic := lsp.Diagnostic{
-				Range:           *tokenToLspRange(sourcePosition.Range),
-				Severity:        lsp.Error,
-				Code:            fmt.Sprintf("%T", foundErr),
-				CodeDescription: nil,
-				Source:          "swamp",
-				Message:         foundErr.Error(),
+		} else {
+			for _, foundErr := range multiErr.Errors() {
+				if addErr := addLspError(allDiagnostics, foundErr); addErr != nil {
+					return addErr
+				}
 			}
-			allDiagnostics.Add(LocalFileSystemPath(foundLocalPath), lspDiagnostic)
 		}
 	}
 

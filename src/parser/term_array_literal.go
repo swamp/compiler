@@ -20,10 +20,11 @@ func parseArrayLiteral(p ParseStream, startParen token.ParenToken, startIndentat
 	var wasEndBracket bool
 
 	if endArrayBracket, wasEndBracket = p.maybeRightArrayBracket(); !wasEndBracket {
-		if _, eatAfterErr := p.eatOneSpace("after left array bracket [|"); eatAfterErr != nil {
+		spaceReport, eatAfterErr := p.eatOneSpaceOrIndent("after left array bracket [|")
+		if eatAfterErr != nil {
 			return nil, eatAfterErr
 		}
-
+		startIndentation = spaceReport.ExactIndentation
 		for {
 			exp, expErr := p.parseExpressionNormal(startIndentation)
 			if expErr != nil {

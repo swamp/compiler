@@ -854,6 +854,9 @@ type MultiErrors struct {
 }
 
 func NewMultiErrors(errors []decshared.DecoratedError) *MultiErrors {
+	if len(errors) == 0 {
+		panic("must have one or more errors in multi errors")
+	}
 	return &MultiErrors{errors: errors}
 }
 

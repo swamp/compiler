@@ -18,6 +18,7 @@ import (
 type CaseConsequenceParameter struct {
 	name          *ast.VariableIdentifier
 	parameterType dtype.Type
+	references    []*CaseConsequenceParameterReference
 }
 
 func (c *CaseConsequenceParameter) String() string {
@@ -34,6 +35,18 @@ func (c *CaseConsequenceParameter) Type() dtype.Type {
 
 func (c *CaseConsequenceParameter) FetchPositionLength() token.SourceFileReference {
 	return c.name.FetchPositionLength()
+}
+
+func (c *CaseConsequenceParameter) HumanReadable() string {
+	return "custom type variant parameter"
+}
+
+func (c *CaseConsequenceParameter) References() []*CaseConsequenceParameterReference {
+	return c.references
+}
+
+func (c *CaseConsequenceParameter) AddReferee(ref *CaseConsequenceParameterReference) {
+	c.references = append(c.references, ref)
 }
 
 func NewCaseConsequenceParameter(name *ast.VariableIdentifier, parameterType dtype.Type) *CaseConsequenceParameter {

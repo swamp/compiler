@@ -669,6 +669,14 @@ func addSemanticTokenFunctionReference(functionReference *decorated.FunctionRefe
 	return nil
 }
 
+func addSemanticTokenCustomTypeVariantParameterExpandReference(parameter *decorated.CaseConsequenceParameterReference, builder *SemanticBuilder) error {
+	if err := builder.EncodeSymbol(parameter.Identifier().FetchPositionLength().Range, "parameter", nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func addSemanticTokenFunctionParameterReference(parameter *decorated.FunctionParameterReference, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(parameter.Identifier().FetchPositionLength().Range, "parameter", nil); err != nil {
 		return err
@@ -811,6 +819,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenFunctionReference(t, builder)
 	case *decorated.FunctionParameterReference:
 		return addSemanticTokenFunctionParameterReference(t, builder)
+	case *decorated.CaseConsequenceParameterReference:
+		return addSemanticTokenCustomTypeVariantParameterExpandReference(t, builder)
 	case *decorated.CustomTypeVariantConstructor:
 		return addSemanticTokenCustomTypeVariantConstructor(t, builder)
 	case *decorated.CustomTypeVariantReference:

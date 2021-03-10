@@ -77,11 +77,6 @@ func parseImport(p ParseStream, keywordImport token.Keyword,
 				return nil, aliasErr
 			}
 			alias = foundAlias
-
-			if alias.Name() != moduleReference.Parts()[len(moduleReference.Parts())-1].Name() {
-				p.addWarning("it is advised to use the last part of the import as alias. `import Some.Long.Name as Name`", p.positionLength())
-			}
-
 		} else if keyword, foundKeyword := p.maybeKeywordExposing(); foundKeyword {
 			keywordExposing = &keyword
 			if _, spaceErr := p.eatOneSpace("after exposing"); spaceErr != nil {
@@ -114,5 +109,13 @@ func parseImport(p ParseStream, keywordImport token.Keyword,
 		wasNewLine = p.detectNewLine()
 	}
 
-	return ast.NewImport(keywordImport, keywordAs, keywordExposing, moduleReference, alias, typesToExpose, identifiersToExpose, exposeAll, precedingComments), nil
+	importStatement := ast.NewImport(keywordImport, keywordAs, keywordExposing, moduleReference, alias, typesToExpose, identifiersToExpose, exposeAll, precedingComments)
+	if alias != nil {
+		if alias.Name() != moduleReference.Parts()[len(moduleReference.Parts())-1].Name() {
+			err := parerr.NewUnexpectedImportAlias(importStatement)
+			p.AddWarning(err)
+		}
+	}
+
+	return importStatement, nil
 }

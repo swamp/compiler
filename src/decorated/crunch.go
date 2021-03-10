@@ -103,8 +103,11 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	definerScan := decorator.NewDefiner(converter, createAndLookup, "compiletomodule")
 	rootNodes, generateErr := definerScan.Define(program)
 	if generateErr != nil {
+		var allErrors []decshared.DecoratedError
+		allErrors = append(allErrors, generateErr)
+		allErrors = append(allErrors, converter.errors...)
 		// parser.ShowErrors(tokenizer, absoluteFilename, converter.Errors(), verbose, errorAsWarning)
-		return nil, decorated.NewMultiErrors(converter.errors)
+		return nil, decorated.NewMultiErrors(allErrors)
 	}
 
 	module.ExposedTypes().AddTypes(module.TypeRepo().AllTypes())
