@@ -36,26 +36,6 @@ func (l LookupField) FetchPositionLength() token.SourceFileReference {
 	return l.reference.FetchPositionLength()
 }
 
-/*
-type LookupVariable struct {
-	name       *ast.VariableIdentifier
-	lookupType dtype.Type
-}
-
-func (l LookupVariable) Identifier() *ast.VariableIdentifier {
-	return l.name
-}
-
-func (l LookupVariable) String() string {
-	return fmt.Sprintf("[lookupvar %v (%v)]", l.name, l.lookupType)
-}
-
-func (l LookupVariable) DecoratedExpression() dtype.Type {
-	return l.lookupType
-}
-
-*/
-
 type RecordLookups struct {
 	ExpressionNode
 	expressionToRecord Expression

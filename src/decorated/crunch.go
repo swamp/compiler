@@ -101,13 +101,17 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	converter := NewDecorator(moduleRepository, module, createAndLookup)
 
 	definerScan := decorator.NewDefiner(converter, createAndLookup, "compiletomodule")
+	var allErrors []decshared.DecoratedError
 	rootNodes, generateErr := definerScan.Define(program)
 	if generateErr != nil {
-		var allErrors []decshared.DecoratedError
 		allErrors = append(allErrors, generateErr)
-		allErrors = append(allErrors, converter.errors...)
-		// parser.ShowErrors(tokenizer, absoluteFilename, converter.Errors(), verbose, errorAsWarning)
-		return nil, decorated.NewMultiErrors(allErrors)
+	}
+	allErrors = append(allErrors, converter.Errors()...)
+
+	var returnErr decshared.DecoratedError
+
+	if len(allErrors) > 0 {
+		returnErr = decorated.NewMultiErrors(allErrors)
 	}
 
 	module.ExposedTypes().AddTypes(module.TypeRepo().AllTypes())
@@ -127,7 +131,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	}
 	module.SetRootNodes(rootNodesConverted)
 
-	return module, nil
+	return module, returnErr
 }
 
 func ImportModuleToModule(target *decorated.Module, source *decorated.Module, sourceMountedModuleName dectype.PackageRelativeModuleName, exposeAll bool) error {

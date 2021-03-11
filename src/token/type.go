@@ -62,7 +62,6 @@ const (
 	ResourceNameSymbol
 	TypeIdSymbol
 	TypeSymbol
-	Lambda
 	Import
 	BooleanType
 	NumberInteger

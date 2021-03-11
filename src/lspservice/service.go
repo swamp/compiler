@@ -405,7 +405,7 @@ func findAllLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filter
 	case *decorated.FunctionParameterReference:
 		return findAllLinkedSymbolsInDocument(t.ParameterRef(), filterDocument)
 
-	case *decorated.CaseConsequenceParameter:
+	case *decorated.CaseConsequenceParameterForCustomType:
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
 			sourceFileReferences = append(sourceFileReferences, t.FetchPositionLength())
 		}
@@ -472,7 +472,7 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
 			sourceFileReferences = append(sourceFileReferences, t.ParameterRef().FetchPositionLength())
 		}
-	case *decorated.CaseConsequenceParameter:
+	case *decorated.CaseConsequenceParameterForCustomType:
 		for _, ref := range t.References() {
 			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
 				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())

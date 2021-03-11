@@ -611,7 +611,7 @@ func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariabl
 	return nil
 }
 
-func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.CasePatternMatching, genContext *generateContext) error {
+func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVariable, caseExpr *decorated.CaseForPatternMatching, genContext *generateContext) error {
 	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), genContext, "cast-test")
 	if testErr != nil {
 		return testErr
@@ -1013,7 +1013,7 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	case *decorated.CaseCustomType:
 		return generateCaseCustomType(code, target, e, genContext)
 
-	case *decorated.CasePatternMatching:
+	case *decorated.CaseForPatternMatching:
 		return generateCasePatternMatching(code, target, e, genContext)
 
 	case *decorated.RecordLiteral:

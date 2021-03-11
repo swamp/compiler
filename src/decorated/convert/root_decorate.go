@@ -31,18 +31,6 @@ func NewDefiner(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndRef
 	return g
 }
 
-/*
-func (g *Definer) createAliasTypeFromType(aliasName *ast.Alias, subType dtype.Type) (*dectype.Alias, decshared.DecoratedError) {
-
-	t, typeErr := g.typeRepo.AddTypeAlias(aliasName, subType, nil)
-	//	log.Printf("declaring %v\n", aliasName)
-	if typeErr != nil {
-		panic(typeErr)
-	}
-	g.localComments = nil
-	return t, nil
-}
-*/
 func (g *Definer) AnnotateConstant(identifier *ast.VariableIdentifier, realType dtype.Type) decshared.DecoratedError {
 	g.localAnnotation = decorated.NewAnnotation(identifier, realType)
 	return nil
@@ -108,9 +96,8 @@ func ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType ast.Type, typ
 	return resultType, nil
 }
 
-func (g *Definer) handleCustomTypeStatement(customTypeStatement *ast.CustomTypeStatement) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
-	hopefullyCustomType := customTypeStatement.Type()
-	customType, convertErr := ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType, g.typeRepo, nil)
+func (g *Definer) handleCustomTypeStatement(customTypeStatement *ast.CustomType) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+	customType, convertErr := ConvertWrappedOrNormalCustomTypeStatement(customTypeStatement, g.typeRepo, nil)
 	g.localComments = nil
 	if convertErr != nil {
 		return nil, convertErr
@@ -186,7 +173,7 @@ func (g *Definer) convertStatement(statement ast.Expression) (decorated.Statemen
 	switch v := statement.(type) {
 	case *ast.Alias:
 		return g.handleAliasStatement(v)
-	case *ast.CustomTypeStatement:
+	case *ast.CustomType:
 		return g.handleCustomTypeStatement(v)
 	case *ast.Annotation:
 		return g.handleAnnotation(g.decorateStream, v)

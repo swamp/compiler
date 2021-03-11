@@ -10,85 +10,85 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
-	decshared "github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
-type CaseConsequenceParameter struct {
+type CaseConsequenceParameterForCustomType struct {
 	name          *ast.VariableIdentifier
 	parameterType dtype.Type
 	references    []*CaseConsequenceParameterReference
 }
 
-func (c *CaseConsequenceParameter) String() string {
+func (c *CaseConsequenceParameterForCustomType) String() string {
 	return fmt.Sprintf("[dcaseparm %v type:%v]", c.name, c.parameterType)
 }
 
-func (c *CaseConsequenceParameter) Identifier() *ast.VariableIdentifier {
+func (c *CaseConsequenceParameterForCustomType) Identifier() *ast.VariableIdentifier {
 	return c.name
 }
 
-func (c *CaseConsequenceParameter) Type() dtype.Type {
+func (c *CaseConsequenceParameterForCustomType) Type() dtype.Type {
 	return c.parameterType
 }
 
-func (c *CaseConsequenceParameter) FetchPositionLength() token.SourceFileReference {
+func (c *CaseConsequenceParameterForCustomType) FetchPositionLength() token.SourceFileReference {
 	return c.name.FetchPositionLength()
 }
 
-func (c *CaseConsequenceParameter) HumanReadable() string {
+func (c *CaseConsequenceParameterForCustomType) HumanReadable() string {
 	return "custom type variant parameter"
 }
 
-func (c *CaseConsequenceParameter) References() []*CaseConsequenceParameterReference {
+func (c *CaseConsequenceParameterForCustomType) References() []*CaseConsequenceParameterReference {
 	return c.references
 }
 
-func (c *CaseConsequenceParameter) AddReferee(ref *CaseConsequenceParameterReference) {
+func (c *CaseConsequenceParameterForCustomType) AddReferee(ref *CaseConsequenceParameterReference) {
 	c.references = append(c.references, ref)
 }
 
-func NewCaseConsequenceParameter(name *ast.VariableIdentifier, parameterType dtype.Type) *CaseConsequenceParameter {
-	return &CaseConsequenceParameter{name: name, parameterType: parameterType}
+func NewCaseConsequenceParameterForCustomType(name *ast.VariableIdentifier, parameterType dtype.Type) *CaseConsequenceParameterForCustomType {
+	return &CaseConsequenceParameterForCustomType{name: name, parameterType: parameterType}
 }
 
-type CaseConsequenceCustomType struct {
+type CaseConsequenceForCustomType struct {
 	variantName   *CustomTypeVariantReference
-	parameters    []*CaseConsequenceParameter
+	parameters    []*CaseConsequenceParameterForCustomType
 	expression    Expression
 	internalIndex int
 }
 
-func NewCaseConsequenceCustomType(internalIndex int, variantName *CustomTypeVariantReference, parameters []*CaseConsequenceParameter,
-	expression Expression) *CaseConsequenceCustomType {
-	return &CaseConsequenceCustomType{
+func NewCaseConsequenceForCustomType(internalIndex int, variantName *CustomTypeVariantReference, parameters []*CaseConsequenceParameterForCustomType,
+	expression Expression) *CaseConsequenceForCustomType {
+	return &CaseConsequenceForCustomType{
 		internalIndex: internalIndex, variantName: variantName, parameters: parameters,
 		expression: expression,
 	}
 }
 
-func (c *CaseConsequenceCustomType) Expression() Expression {
+func (c *CaseConsequenceForCustomType) Expression() Expression {
 	return c.expression
 }
 
-func (c *CaseConsequenceCustomType) InternalIndex() int {
+func (c *CaseConsequenceForCustomType) InternalIndex() int {
 	return c.internalIndex
 }
 
-func (c *CaseConsequenceCustomType) VariantReference() *CustomTypeVariantReference {
+func (c *CaseConsequenceForCustomType) VariantReference() *CustomTypeVariantReference {
 	return c.variantName
 }
 
-func (c *CaseConsequenceCustomType) Parameters() []*CaseConsequenceParameter {
+func (c *CaseConsequenceForCustomType) Parameters() []*CaseConsequenceParameterForCustomType {
 	return c.parameters
 }
 
-func (c *CaseConsequenceCustomType) String() string {
+func (c *CaseConsequenceForCustomType) String() string {
 	return fmt.Sprintf("[dcasecons %v (%v) => %v]", c.variantName, c.parameters, c.expression)
 }
 
-func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceCustomType, ch string) string {
+func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceForCustomType, ch string) string {
 	var out bytes.Buffer
 
 	for index, expression := range expressions {
@@ -102,16 +102,16 @@ func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceCustomType, ch
 
 type CaseCustomType struct {
 	test           Expression
-	cases          []*CaseConsequenceCustomType
+	cases          []*CaseConsequenceForCustomType
 	defaultCase    Expression
-	caseExpression *ast.CaseCustomType
+	caseExpression *ast.CaseForCustomType
 }
 
-func NewCaseCustomType(caseExpression *ast.CaseCustomType, test Expression, cases []*CaseConsequenceCustomType, defaultCase Expression) (*CaseCustomType, decshared.DecoratedError) {
+func NewCaseCustomType(caseExpression *ast.CaseForCustomType, test Expression, cases []*CaseConsequenceForCustomType, defaultCase Expression) (*CaseCustomType, decshared.DecoratedError) {
 	return &CaseCustomType{caseExpression: caseExpression, test: test, cases: cases, defaultCase: defaultCase}, nil
 }
 
-func (i *CaseCustomType) AstCaseCustomType() *ast.CaseCustomType {
+func (i *CaseCustomType) AstCaseCustomType() *ast.CaseForCustomType {
 	return i.caseExpression
 }
 
@@ -135,7 +135,7 @@ func (i *CaseCustomType) Test() Expression {
 	return i.test
 }
 
-func (i *CaseCustomType) Consequences() []*CaseConsequenceCustomType {
+func (i *CaseCustomType) Consequences() []*CaseConsequenceForCustomType {
 	return i.cases
 }
 

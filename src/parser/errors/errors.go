@@ -112,6 +112,22 @@ func (e InternalError) FetchPositionLength() token.SourceFileReference {
 	return token.SourceFileReference{}
 }
 
+type MustBeSpaceOrContinuation struct {
+	token.SourceFileReference
+}
+
+func NewMustBeSpaceOrContinuation(t token.SourceFileReference) MustBeSpaceOrContinuation {
+	return MustBeSpaceOrContinuation{SourceFileReference: t}
+}
+
+func (e MustBeSpaceOrContinuation) Error() string {
+	return fmt.Sprintf("must be space or continuation %v", e.SourceFileReference)
+}
+
+func (e MustBeSpaceOrContinuation) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{}
+}
+
 type NotATermError struct {
 	token.Token
 }
@@ -422,6 +438,22 @@ func NewExpectedElseKeyword(eatError tokenize.TokenError) ExpectedElseKeyword {
 
 func (e ExpectedElseKeyword) Error() string {
 	return fmt.Sprintf("expected else keyword %v", e.SubError)
+}
+
+type ExpectedInKeyword struct {
+	sourceReference token.SourceFileReference
+}
+
+func NewExpectedInKeyword(sourceReference token.SourceFileReference) ExpectedInKeyword {
+	return ExpectedInKeyword{sourceReference: sourceReference}
+}
+
+func (e ExpectedInKeyword) Error() string {
+	return fmt.Sprintf("expected IN keyword %v", e.sourceReference)
+}
+
+func (e ExpectedInKeyword) FetchPositionLength() token.SourceFileReference {
+	return e.sourceReference
 }
 
 type MissingElseExpression struct {

@@ -41,6 +41,7 @@ var precedences = map[token.Type]Precedence{
 
 type Parser struct {
 	stream *ParseStreamImpl
+	errors []parerr.ParseError
 }
 
 func NewParser(tokenizer *tokenize.Tokenizer, enforceStyle bool) *Parser {
@@ -81,12 +82,7 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 		if p.stream.tokenizer.MaybeEOF() {
 			break
 		}
-		/*
-			report, skipLinesErr := p.stream.tokenizer.SkipWhitespaceAllowCommentsToNextIndentation()
-			if skipLinesErr != nil {
-				return nil, skipLinesErr
-			}
-		*/
+
 		if (report.SpacesUntilMaybeNewline > 0 || linesToPad == -1) && report.IndentationSpaces > 0 {
 			return nil, parerr.NewExtraSpacing(p.stream.sourceFileReference())
 		}
@@ -115,7 +111,7 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 }
 
 func (p *Parser) ParseExpression() (*ast.SourceFile, parerr.ParseError) {
-	expressions := []ast.Expression{}
+	var expressions []ast.Expression
 
 	expression, expressionErr := p.parseExpressionNormal(0)
 	if expressionErr != nil {
@@ -271,6 +267,15 @@ func (p *Parser) parseExpression(precedence Precedence, startIndentation int) (a
 	return e, eErr
 }
 
+func (p *Parser) AddError(parseError parerr.ParseError) {
+	p.errors = append(p.errors, parseError)
+}
+
 func (p *Parser) parseExpressionNormal(startIndentation int) (ast.Expression, parerr.ParseError) {
-	return p.parseExpression(LOWEST, startIndentation)
+	expr, err := p.parseExpression(LOWEST, startIndentation)
+	if err != nil {
+		return nil, err
+	}
+
+	return expr, nil
 }

@@ -30,3 +30,7 @@ func (i *LocalType) TypeParameter() *TypeParameter {
 func (i *LocalType) FetchPositionLength() token.SourceFileReference {
 	return i.typeParameterReference.FetchPositionLength()
 }
+
+func NewLocalType(typeArgument *TypeParameter) *LocalType {
+	return &LocalType{typeParameterReference: typeArgument}
+}

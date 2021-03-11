@@ -21,23 +21,23 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 		return nil, spaceAfterCurlyErr
 	}
 
-	varIdent, wasAssign, foundIndentation, varIdentErr := p.readVariableIdentifierAssignOrUpdate()
+	varIdent, wasNormalRecordLiteral, _, varIdentErr := p.readVariableIdentifierAssignOrUpdate()
 	if varIdentErr != nil {
 		return nil, varIdentErr
 	}
-	if !wasAssign {
+	if !wasNormalRecordLiteral {
 		templateRecordIdentifier = varIdent
 	}
-	subIndentation := foundIndentation
+	subIndentation := indentation
 	for {
-		if wasAssign {
+		if wasNormalRecordLiteral {
 			exp, expErr := p.parseExpressionNormal(subIndentation)
 			if expErr != nil {
 				return nil, expErr
 			}
 			assignment := ast.NewRecordLiteralFieldAssignment(varIdent, exp)
 			recordFieldAssignments = append(recordFieldAssignments, assignment)
-			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(subIndentation, tokenize.SameLine)
+			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(indentation, tokenize.SameLine)
 			if commaErr != nil {
 				return nil, commaErr
 			}
@@ -67,7 +67,8 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 			return nil, parerr.NewExpectedOneSpaceAfterAssign(spaceAfterAssignErr)
 		}
 		subIndentation = report.ExactIndentation
-		wasAssign = true
+
+		wasNormalRecordLiteral = true
 	}
 
 	return ast.NewRecordLiteral(t, templateRecordIdentifier, recordFieldAssignments), nil

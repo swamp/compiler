@@ -160,7 +160,7 @@ func writeMultiLineComment(comment *ast.MultilineComment, colorer coloring.Color
 	colorer.KeywordString("-}")
 }
 
-func writeCase(caseExpression *ast.CaseCustomType, colorer coloring.Colorer, indentation int) {
+func writeCase(caseExpression *ast.CaseForCustomType, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("case")
 	colorer.OneSpace()
 	writeExpression(caseExpression.Test(), colorer, 0)
@@ -392,9 +392,9 @@ func writeFunctionCall(functionCall *ast.FunctionCall, colorer coloring.Colorer,
 	}
 }
 
-func writeCustomTypeStatement(customTypeStatement *ast.CustomTypeStatement, colorer coloring.Colorer, indentation int) {
+func writeCustomTypeStatement(customTypeStatement *ast.CustomType, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("type ")
-	writeTypeIdentifier(customTypeStatement.TypeIdentifier(), colorer)
+	writeTypeIdentifier(customTypeStatement.Identifier(), colorer)
 	colorer.OneSpace()
 	/*
 		colorer.OperatorString("=")
@@ -520,7 +520,7 @@ func writeExpression(expression ast.Expression, colorer coloring.Colorer, indent
 		{
 			writeBooleanLiteral(t, colorer, indentation)
 		}
-	case *ast.CaseCustomType:
+	case *ast.CaseForCustomType:
 		{
 			writeCase(t, colorer, indentation)
 		}
@@ -616,7 +616,7 @@ func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 			writeImport(t, colorer, 0)
 		case *ast.Annotation:
 			writeAnnotation(t, colorer, 0)
-		case *ast.CustomTypeStatement:
+		case *ast.CustomType:
 			{
 				writeCustomTypeStatement(t, colorer, 0)
 			}

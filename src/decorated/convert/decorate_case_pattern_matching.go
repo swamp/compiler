@@ -13,30 +13,9 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/token"
 )
 
-type FakeExpression struct {
-	storedType dtype.Type
-}
-
-func NewFakeExpression(storedType dtype.Type) *FakeExpression {
-	return &FakeExpression{storedType: storedType}
-}
-
-func (f *FakeExpression) Type() dtype.Type {
-	return f.storedType
-}
-
-func (f *FakeExpression) String() string {
-	return "totally fake"
-}
-
-func (f *FakeExpression) FetchPositionLength() token.SourceFileReference {
-	return token.SourceFileReference{}
-}
-
-func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatternMatching, context *VariableContext) (*decorated.CasePatternMatching, decshared.DecoratedError) {
+func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CaseForPatternMatching, context *VariableContext) (*decorated.CaseForPatternMatching, decshared.DecoratedError) {
 	decoratedTest, decoratedTestErr := DecorateExpression(d, caseExpression.Test(), context)
 	if decoratedTestErr != nil {
 		return nil, decoratedTestErr
@@ -45,7 +24,7 @@ func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatte
 	pureTestType := dectype.UnaliasWithResolveInvoker(decoratedTest.Type())
 	testType := pureTestType
 
-	var decoratedConsequences []*decorated.CaseConsequencePatternMatching
+	var decoratedConsequences []*decorated.CaseConsequenceForPatternMatching
 
 	var defaultCase decorated.Expression
 
@@ -103,6 +82,6 @@ func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CasePatte
 		return nil, decorated.NewInternalError(fmt.Errorf("must have a default case"))
 	}
 
-	c, err := decorated.NewCasePatternMatching(caseExpression, decoratedTest, decoratedConsequences, defaultCase)
+	c, err := decorated.NewCaseForPatternMatching(caseExpression, decoratedTest, decoratedConsequences, defaultCase)
 	return c, err
 }

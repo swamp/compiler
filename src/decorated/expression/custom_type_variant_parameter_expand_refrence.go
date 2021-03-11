@@ -15,7 +15,7 @@ import (
 
 type CaseConsequenceParameterReference struct {
 	ident               ast.ScopedOrNormalVariableIdentifier
-	referencedParameter *CaseConsequenceParameter
+	referencedParameter *CaseConsequenceParameterForCustomType
 }
 
 func (g *CaseConsequenceParameterReference) Type() dtype.Type {
@@ -34,12 +34,12 @@ func (g *CaseConsequenceParameterReference) Identifier() ast.ScopedOrNormalVaria
 	return g.ident
 }
 
-func (g *CaseConsequenceParameterReference) ParameterRef() *CaseConsequenceParameter {
+func (g *CaseConsequenceParameterReference) ParameterRef() *CaseConsequenceParameterForCustomType {
 	return g.referencedParameter
 }
 
 func NewCaseConsequenceParameterReference(ident ast.ScopedOrNormalVariableIdentifier,
-	referencedParameter *CaseConsequenceParameter) *CaseConsequenceParameterReference {
+	referencedParameter *CaseConsequenceParameterForCustomType) *CaseConsequenceParameterReference {
 	if referencedParameter == nil {
 		panic("cant be nil")
 	}

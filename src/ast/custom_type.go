@@ -12,10 +12,11 @@ import (
 )
 
 type CustomType struct {
-	name           *TypeIdentifier
-	typeParameters []*TypeParameter
-	variants       []*CustomTypeVariant
-	keywordType    token.Keyword
+	name              *TypeIdentifier
+	typeParameters    []*TypeParameter
+	variants          []*CustomTypeVariant
+	keywordType       token.Keyword
+	precedingComments *MultilineComment
 }
 
 func (i *CustomType) String() string {
@@ -44,4 +45,16 @@ func (i *CustomType) FetchPositionLength() token.SourceFileReference {
 
 func (i *CustomType) KeywordType() token.Keyword {
 	return i.keywordType
+}
+
+func (i *CustomType) DebugString() string {
+	return fmt.Sprintf("[custom-type-statement %v]", i.name)
+}
+
+func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter) *CustomType {
+	c := &CustomType{keywordType: keywordType, name: customTypeName, variants: variants, typeParameters: typeParameterIdentifiers}
+	for _, variant := range variants {
+		variant.SetParent(c)
+	}
+	return c
 }

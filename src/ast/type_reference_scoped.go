@@ -61,3 +61,7 @@ func (i *TypeReferenceScoped) Name() string {
 func (i *TypeReferenceScoped) FetchPositionLength() token.SourceFileReference {
 	return i.ident.FetchPositionLength()
 }
+
+func NewScopedTypeReference(ident *TypeIdentifierScoped, arguments []Type) *TypeReferenceScoped {
+	return &TypeReferenceScoped{ident: ident, arguments: arguments}
+}

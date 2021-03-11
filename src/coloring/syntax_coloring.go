@@ -123,10 +123,6 @@ func colorAsm(t token.AsmToken) string {
 	return color.HiBlackString(t.Raw())
 }
 
-func colorLambda(t token.LambdaToken) string {
-	return color.HiGreenString("\\")
-}
-
 func colorNewLine(t token.LineDelimiterToken) string {
 	return "\n"
 }
@@ -167,8 +163,6 @@ func colorToken(t token.Token) string {
 		return colorExternalFunction(v)
 	case token.AsmToken:
 		return colorAsm(v)
-	case token.LambdaToken:
-		return colorLambda(v)
 	case token.GuardToken:
 		return colorGuardToken(v)
 	}

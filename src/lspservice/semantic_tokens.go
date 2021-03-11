@@ -283,7 +283,7 @@ func addSemanticTokenCaseForCustomType(caseNode *decorated.CaseCustomType, build
 	return nil
 }
 
-func addSemanticTokenCaseForPatternMatching(caseNode *decorated.CasePatternMatching, builder *SemanticBuilder) error {
+func addSemanticTokenCaseForPatternMatching(caseNode *decorated.CaseForPatternMatching, builder *SemanticBuilder) error {
 	keywordCase := caseNode.AstCasePatternMatching().KeywordCase()
 	keywordOf := caseNode.AstCasePatternMatching().KeywordOf()
 	if err := encodeKeyword(builder, keywordCase); err != nil {
@@ -831,7 +831,7 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenRecordsLookup(t, builder)
 	case *decorated.CaseCustomType:
 		return addSemanticTokenCaseForCustomType(t, builder)
-	case *decorated.CasePatternMatching:
+	case *decorated.CaseForPatternMatching:
 		return addSemanticTokenCaseForPatternMatching(t, builder)
 	case *decorated.Guard:
 		return addSemanticTokenGuard(t, builder)

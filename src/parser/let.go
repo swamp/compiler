@@ -6,8 +6,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -76,7 +74,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 				return nil, expectedInErr
 			}
 			if inKeywordIdentifier.Type() != token.In {
-				return nil, parerr.NewInternalError(inKeywordIdentifier.FetchPositionLength(), fmt.Errorf("expected IN keyword here"))
+				return nil, parerr.NewExpectedInKeyword(inKeywordIdentifier.FetchPositionLength())
 			}
 			inKeyword = inKeywordIdentifier
 			break

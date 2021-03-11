@@ -50,7 +50,7 @@ func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequenc
 	return out.String()
 }
 
-type CasePatternMatching struct {
+type CaseForPatternMatching struct {
 	test        Expression
 	cases       []*CaseConsequencePatternMatching
 	keywordCase token.Keyword
@@ -58,36 +58,36 @@ type CasePatternMatching struct {
 	inclusive   token.SourceFileReference
 }
 
-func NewCaseForPatternMatching(keywordCase token.Keyword, keywordOf token.Keyword, test Expression, cases []*CaseConsequencePatternMatching) *CasePatternMatching {
+func NewCaseForPatternMatching(keywordCase token.Keyword, keywordOf token.Keyword, test Expression, cases []*CaseConsequencePatternMatching) *CaseForPatternMatching {
 	inclusive := token.MakeInclusiveSourceFileReference(keywordCase.FetchPositionLength(), cases[len(cases)-1].Expression().FetchPositionLength())
 
-	return &CasePatternMatching{keywordCase: keywordCase, keywordOf: keywordOf, test: test, cases: cases, inclusive: inclusive}
+	return &CaseForPatternMatching{keywordCase: keywordCase, keywordOf: keywordOf, test: test, cases: cases, inclusive: inclusive}
 }
 
-func (i *CasePatternMatching) String() string {
+func (i *CaseForPatternMatching) String() string {
 	return fmt.Sprintf("[casepm: %v of %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"))
 }
 
-func (i *CasePatternMatching) Test() Expression {
+func (i *CaseForPatternMatching) Test() Expression {
 	return i.test
 }
 
-func (i *CasePatternMatching) KeywordCase() token.Keyword {
+func (i *CaseForPatternMatching) KeywordCase() token.Keyword {
 	return i.keywordCase
 }
 
-func (i *CasePatternMatching) KeywordOf() token.Keyword {
+func (i *CaseForPatternMatching) KeywordOf() token.Keyword {
 	return i.keywordOf
 }
 
-func (i *CasePatternMatching) FetchPositionLength() token.SourceFileReference {
+func (i *CaseForPatternMatching) FetchPositionLength() token.SourceFileReference {
 	return i.inclusive
 }
 
-func (i *CasePatternMatching) Consequences() []*CaseConsequencePatternMatching {
+func (i *CaseForPatternMatching) Consequences() []*CaseConsequencePatternMatching {
 	return i.cases
 }
 
-func (i *CasePatternMatching) DebugString() string {
+func (i *CaseForPatternMatching) DebugString() string {
 	return "[casepm]"
 }

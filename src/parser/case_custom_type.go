@@ -7,8 +7,8 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-func parseCaseCustomType(p ParseStream, test ast.Expression, keywordCase token.Keyword, keywordOf token.Keyword, startIndentation int, consequenceIndentation int) (*ast.CaseCustomType, parerr.ParseError) {
-	var consequences []*ast.CaseConsequenceCustomType
+func parseCaseForCustomType(p ParseStream, test ast.Expression, keywordCase token.Keyword, keywordOf token.Keyword, startIndentation int, consequenceIndentation int) (*ast.CaseForCustomType, parerr.ParseError) {
+	var consequences []*ast.CaseConsequenceForCustomType
 	for {
 		var prefix *ast.TypeIdentifier
 		var parameters []*ast.VariableIdentifier

@@ -15,34 +15,34 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type CaseConsequencePatternMatching struct {
+type CaseConsequenceForPatternMatching struct {
 	literal        Expression
 	expression     Expression
 	astConsequence *ast.CaseConsequencePatternMatching
 	internalIndex  int
 }
 
-func NewCaseConsequencePatternMatching(astConsequence *ast.CaseConsequencePatternMatching, internalIndex int, literal Expression, expression Expression) *CaseConsequencePatternMatching {
-	return &CaseConsequencePatternMatching{internalIndex: internalIndex, astConsequence: astConsequence, literal: literal, expression: expression}
+func NewCaseConsequencePatternMatching(astConsequence *ast.CaseConsequencePatternMatching, internalIndex int, literal Expression, expression Expression) *CaseConsequenceForPatternMatching {
+	return &CaseConsequenceForPatternMatching{internalIndex: internalIndex, astConsequence: astConsequence, literal: literal, expression: expression}
 }
 
-func (c *CaseConsequencePatternMatching) Expression() Expression {
+func (c *CaseConsequenceForPatternMatching) Expression() Expression {
 	return c.expression
 }
 
-func (c *CaseConsequencePatternMatching) InternalIndex() int {
+func (c *CaseConsequenceForPatternMatching) InternalIndex() int {
 	return c.internalIndex
 }
 
-func (c *CaseConsequencePatternMatching) Literal() Expression {
+func (c *CaseConsequenceForPatternMatching) Literal() Expression {
 	return c.literal
 }
 
-func (c *CaseConsequencePatternMatching) String() string {
+func (c *CaseConsequenceForPatternMatching) String() string {
 	return fmt.Sprintf("[dpmcasecons %v => %v]", c.literal, c.expression)
 }
 
-func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequencePatternMatching, ch string) string {
+func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequenceForPatternMatching, ch string) string {
 	var out bytes.Buffer
 
 	for index, expression := range expressions {
@@ -54,18 +54,18 @@ func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequenc
 	return out.String()
 }
 
-type CasePatternMatching struct {
+type CaseForPatternMatching struct {
 	test        Expression
-	cases       []*CaseConsequencePatternMatching
+	cases       []*CaseConsequenceForPatternMatching
 	defaultCase Expression
-	astCase     *ast.CasePatternMatching
+	astCase     *ast.CaseForPatternMatching
 }
 
-func NewCasePatternMatching(astCase *ast.CasePatternMatching, test Expression, cases []*CaseConsequencePatternMatching, defaultCase Expression) (*CasePatternMatching, decshared.DecoratedError) {
-	return &CasePatternMatching{astCase: astCase, test: test, cases: cases, defaultCase: defaultCase}, nil
+func NewCaseForPatternMatching(astCase *ast.CaseForPatternMatching, test Expression, cases []*CaseConsequenceForPatternMatching, defaultCase Expression) (*CaseForPatternMatching, decshared.DecoratedError) {
+	return &CaseForPatternMatching{astCase: astCase, test: test, cases: cases, defaultCase: defaultCase}, nil
 }
 
-func (i *CasePatternMatching) Type() dtype.Type {
+func (i *CaseForPatternMatching) Type() dtype.Type {
 	if len(i.cases) == 0 {
 		return i.defaultCase.Type()
 	}
@@ -73,11 +73,11 @@ func (i *CasePatternMatching) Type() dtype.Type {
 	return firstCase.Expression().Type()
 }
 
-func (i *CasePatternMatching) AstCasePatternMatching() *ast.CasePatternMatching {
+func (i *CaseForPatternMatching) AstCasePatternMatching() *ast.CaseForPatternMatching {
 	return i.astCase
 }
 
-func (i *CasePatternMatching) String() string {
+func (i *CaseForPatternMatching) String() string {
 	if i.defaultCase != nil {
 		return fmt.Sprintf("[dpmcase: %v of %v default: %v]", i.test,
 			caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"), i.defaultCase)
@@ -85,22 +85,22 @@ func (i *CasePatternMatching) String() string {
 	return fmt.Sprintf("[dpmcase: %v of %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"))
 }
 
-func (i *CasePatternMatching) Test() Expression {
+func (i *CaseForPatternMatching) Test() Expression {
 	return i.test
 }
 
-func (i *CasePatternMatching) Consequences() []*CaseConsequencePatternMatching {
+func (i *CaseForPatternMatching) Consequences() []*CaseConsequenceForPatternMatching {
 	return i.cases
 }
 
-func (i *CasePatternMatching) DefaultCase() Expression {
+func (i *CaseForPatternMatching) DefaultCase() Expression {
 	return i.defaultCase
 }
 
-func (i *CasePatternMatching) DebugString() string {
+func (i *CaseForPatternMatching) DebugString() string {
 	return "[dpmcase]"
 }
 
-func (i *CasePatternMatching) FetchPositionLength() token.SourceFileReference {
+func (i *CaseForPatternMatching) FetchPositionLength() token.SourceFileReference {
 	return i.astCase.FetchPositionLength()
 }

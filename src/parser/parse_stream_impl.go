@@ -42,6 +42,29 @@ func NewParseStreamImpl(parser ParserInterface, tokenizer *tokenize.Tokenizer, e
 	return p
 }
 
+func (p *ParseStreamImpl) SkipToNextLineWithSameOrLowerIndent(indentation int) (int, tokenize.TokenError) {
+	for !p.tokenizer.MaybeEOF() {
+		report, tokenErr := p.tokenizer.SkipWhitespaceToNextIndentation()
+		if tokenErr != nil {
+			return -1, tokenErr
+		}
+
+		if report.EndOfFile {
+			return -1, tokenize.NewEncounteredEOF()
+		}
+
+		if report.NewLineCount == 0 && report.SpacesUntilMaybeNewline == 0 {
+			return -1, nil
+		}
+
+		if report.ExactIndentation <= indentation {
+			return report.ExactIndentation, nil
+		}
+	}
+
+	return -1, tokenize.NewEncounteredEOF()
+}
+
 func (p *ParseStreamImpl) debugInfo(s string) {
 	extract := p.tokenizer.DebugInfo()
 	fmt.Fprintf(os.Stderr, "*-- %s: (%d) %v\n", s, p.descent, p.tokenizer.ParsingPosition().Position())
@@ -153,21 +176,21 @@ func (p *ParseStreamImpl) skipMaybeSpaceAndSameIndentationOrContinuation() (toke
 			if report.SpacesUntilMaybeNewline == 1 || report.SpacesUntilMaybeNewline == 0 {
 				return report, nil
 			}
-			return report, parerr.NewInternalError(report.PositionLength, fmt.Errorf("must be space or continuation"))
+			return report, parerr.NewMustBeSpaceOrContinuation(report.PositionLength)
 		}
 
 		if report.ExactIndentation == report.PreviousExactIndentation || report.ExactIndentation == report.PreviousExactIndentation+1 {
 			return report, nil
 		}
 
-		return report, parerr.NewInternalError(report.PositionLength, fmt.Errorf("must be space or continuation3"))
+		return report, parerr.NewMustBeSpaceOrContinuation(report.PositionLength)
 	}
 
 	if report.NewLineCount == 0 || report.CloseIndentation >= report.PreviousCloseIndentation {
 		return report, nil
 	}
 
-	return report, parerr.NewInternalError(report.PositionLength, fmt.Errorf("must be space or continuation2"))
+	return report, parerr.NewMustBeSpaceOrContinuation(report.PositionLength)
 }
 
 func (p *ParseStreamImpl) maybeOneSpace() (bool, token.IndentationReport, parerr.ParseError) {

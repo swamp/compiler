@@ -67,3 +67,7 @@ func (i *TypeReference) Name() string {
 func (i *TypeReference) FetchPositionLength() token.SourceFileReference {
 	return i.ident.FetchPositionLength()
 }
+
+func NewTypeReference(ident *TypeIdentifier, arguments []Type) *TypeReference {
+	return &TypeReference{ident: ident, arguments: arguments}
+}

@@ -267,7 +267,7 @@ func expandChildNodesCaseForCustomType(caseForCustomType *CaseCustomType) []Type
 	return tokens
 }
 
-func expandChildNodesCaseForPatternMatching(caseForCustomType *CasePatternMatching) []TypeOrToken {
+func expandChildNodesCaseForPatternMatching(caseForCustomType *CaseForPatternMatching) []TypeOrToken {
 	var tokens []TypeOrToken
 
 	tokens = append(tokens, expandChildNodes(caseForCustomType.Test())...)
@@ -365,7 +365,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesCustomTypeVariantReference(t)...)
 	case *CaseCustomType:
 		return append(tokens, expandChildNodesCaseForCustomType(t)...)
-	case *CasePatternMatching:
+	case *CaseForPatternMatching:
 		return append(tokens, expandChildNodesCaseForPatternMatching(t)...)
 	case *PipeRightOperator:
 		return expandChildNodes(&t.BinaryOperator)
@@ -382,7 +382,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *BitwiseOperator:
 		return expandChildNodes(&t.BinaryOperator)
 
-	case *CaseConsequenceParameter:
+	case *CaseConsequenceParameterForCustomType:
 		return tokens
 
 	case *ArithmeticUnaryOperator:

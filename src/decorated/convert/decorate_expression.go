@@ -25,9 +25,9 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateIf(d, v, context)
 	case *ast.GuardExpression:
 		return decorateGuard(d, v, context)
-	case *ast.CaseCustomType:
+	case *ast.CaseForCustomType:
 		return decorateCaseCustomType(d, v, context)
-	case *ast.CasePatternMatching:
+	case *ast.CaseForPatternMatching:
 		return decorateCasePatternMatching(d, v, context)
 	case *ast.VariableIdentifier:
 		return decorateIdentifier(d, v, context)

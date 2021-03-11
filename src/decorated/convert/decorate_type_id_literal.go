@@ -24,13 +24,6 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 		return nil, decorated.NewInternalError(err)
 	}
 
-	/*
-		constructedType, err2 := dectype.NewInvokerType(typeRefType, []dtype.Type{decoratedType})
-		if err2 != nil {
-			return nil, decorated.NewInternalError(err2)
-		}
-	*/
-
 	constructedType, err2 := dectype.CallType(typeRefType, []dtype.Type{decoratedType})
 	if err2 != nil {
 		return nil, decorated.NewInternalError(err2)

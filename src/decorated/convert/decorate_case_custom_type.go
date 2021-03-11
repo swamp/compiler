@@ -13,7 +13,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType, context *VariableContext) (*decorated.CaseCustomType, decshared.DecoratedError) {
+func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomType, context *VariableContext) (*decorated.CaseCustomType, decshared.DecoratedError) {
 	decoratedTest, decoratedTestErr := DecorateExpression(d, caseExpression.Test(), context)
 	if decoratedTestErr != nil {
 		return nil, decoratedTestErr
@@ -29,7 +29,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 
 	handledCustomTypeVariants := make([]bool, customType.VariantCount())
 
-	var decoratedConsequences []*decorated.CaseConsequenceCustomType
+	var decoratedConsequences []*decorated.CaseConsequenceForCustomType
 
 	var defaultCase decorated.Expression
 
@@ -37,7 +37,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 
 	for _, consequenceField := range caseExpression.Consequences() {
 		var foundVariant *dectype.CustomTypeVariant
-		var parameters []*decorated.CaseConsequenceParameter
+		var parameters []*decorated.CaseConsequenceParameterForCustomType
 
 		consequenceVariableContext := context.MakeVariableContext()
 
@@ -63,7 +63,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 
 			for index, argumentType := range foundVariant.ParameterTypes() {
 				ident := consequenceField.Arguments()[index]
-				param := decorated.NewCaseConsequenceParameter(ident, argumentType)
+				param := decorated.NewCaseConsequenceParameterForCustomType(ident, argumentType)
 				fakeNamedExpression := decorated.NewNamedDecoratedExpression(ident.Name(), nil,
 					param)
 				consequenceVariableContext.Add(ident, fakeNamedExpression)
@@ -72,7 +72,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 			/*
 				for parameterIndex, parameter := range consequenceField.Arguments() {
 					parameterType := foundVariant.ParameterTypes()[parameterIndex]
-					parameterExpand := decorated.NewCaseConsequenceParameter(parameter, parameterType, foundVariant, parameterIndex)
+					parameterExpand := decorated.NewCaseConsequenceParameterForCustomType(parameter, parameterType, foundVariant, parameterIndex)
 
 
 				}
@@ -113,7 +113,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseCustomType
 			fieldTypeRef := ast.NewTypeReference(consequenceField.Identifier(), nil)
 			named := decorated.NewNamedDefinitionTypeReference(nil, fieldTypeRef)
 			variantReference := decorated.NewCustomTypeVariantReference(named, foundVariant)
-			decoratedConsequence := decorated.NewCaseConsequenceCustomType(foundVariant.Index(), variantReference,
+			decoratedConsequence := decorated.NewCaseConsequenceForCustomType(foundVariant.Index(), variantReference,
 				parameters, decoratedExpression)
 			decoratedConsequences = append(decoratedConsequences, decoratedConsequence)
 		}

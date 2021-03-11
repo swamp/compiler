@@ -121,6 +121,23 @@ func (e *UnknownBinaryOperator) FetchPositionLength() token.SourceFileReference 
 	return e.typeA.FetchPositionLength()
 }
 
+type UnusedVariable struct {
+	name     *NamedDecoratedExpression
+	function *ast.FunctionValue
+}
+
+func NewUnusedVariable(name *NamedDecoratedExpression, function *ast.FunctionValue) *UnusedVariable {
+	return &UnusedVariable{name: name, function: function}
+}
+
+func (e *UnusedVariable) Error() string {
+	return fmt.Sprintf("unused variable %v in %v", e.name.fullyQualifiedName, e.function)
+}
+
+func (e *UnusedVariable) FetchPositionLength() token.SourceFileReference {
+	return e.name.FetchPositionLength()
+}
+
 type LogicalOperatorLeftMustBeBoolean struct {
 	typeA       Expression
 	operator    *LogicalOperator
@@ -191,11 +208,11 @@ func (e *MustBeCustomType) FetchPositionLength() token.SourceFileReference {
 }
 
 type CaseCouldNotFindCustomVariantType struct {
-	caseExpression *ast.CaseCustomType
-	consequence    *ast.CaseConsequenceCustomType
+	caseExpression *ast.CaseForCustomType
+	consequence    *ast.CaseConsequenceForCustomType
 }
 
-func NewCaseCouldNotFindCustomVariantType(caseExpression *ast.CaseCustomType, consequence *ast.CaseConsequenceCustomType) *CaseCouldNotFindCustomVariantType {
+func NewCaseCouldNotFindCustomVariantType(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType) *CaseCouldNotFindCustomVariantType {
 	return &CaseCouldNotFindCustomVariantType{consequence: consequence, caseExpression: caseExpression}
 }
 
@@ -413,10 +430,10 @@ func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.SourceFil
 
 type UnhandledCustomTypeVariants struct {
 	unhandledVariants []*dectype.CustomTypeVariant
-	caseExpression    *ast.CaseCustomType
+	caseExpression    *ast.CaseForCustomType
 }
 
-func NewUnhandledCustomTypeVariants(caseExpression *ast.CaseCustomType, unhandledVariants []*dectype.CustomTypeVariant) *UnhandledCustomTypeVariants {
+func NewUnhandledCustomTypeVariants(caseExpression *ast.CaseForCustomType, unhandledVariants []*dectype.CustomTypeVariant) *UnhandledCustomTypeVariants {
 	return &UnhandledCustomTypeVariants{unhandledVariants: unhandledVariants, caseExpression: caseExpression}
 }
 
@@ -430,11 +447,11 @@ func (e *UnhandledCustomTypeVariants) FetchPositionLength() token.SourceFileRefe
 
 type AlreadyHandledCustomTypeVariant struct {
 	unhandledVariant *dectype.CustomTypeVariant
-	caseExpression   *ast.CaseCustomType
-	consequence      *ast.CaseConsequenceCustomType
+	caseExpression   *ast.CaseForCustomType
+	consequence      *ast.CaseConsequenceForCustomType
 }
 
-func NewAlreadyHandledCustomTypeVariant(caseExpression *ast.CaseCustomType, consequence *ast.CaseConsequenceCustomType, unhandledVariant *dectype.CustomTypeVariant) *AlreadyHandledCustomTypeVariant {
+func NewAlreadyHandledCustomTypeVariant(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType, unhandledVariant *dectype.CustomTypeVariant) *AlreadyHandledCustomTypeVariant {
 	return &AlreadyHandledCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression, consequence: consequence}
 }
 
@@ -519,8 +536,8 @@ func (e *CouldNotSmashFunctions) FetchPositionLength() token.SourceFileReference
 
 type CaseWrongParameterCountInCustomTypeVariant struct {
 	unhandledVariant *dectype.CustomTypeVariant
-	caseExpression   *ast.CaseCustomType
-	consequence      *ast.CaseConsequenceCustomType
+	caseExpression   *ast.CaseForCustomType
+	consequence      *ast.CaseConsequenceForCustomType
 }
 
 type ExtraFunctionArguments struct {
@@ -541,7 +558,7 @@ func (e *ExtraFunctionArguments) FetchPositionLength() token.SourceFileReference
 	return e.posLength
 }
 
-func NewCaseWrongParameterCountInCustomTypeVariant(caseExpression *ast.CaseCustomType, consequence *ast.CaseConsequenceCustomType, unhandledVariant *dectype.CustomTypeVariant) *CaseWrongParameterCountInCustomTypeVariant {
+func NewCaseWrongParameterCountInCustomTypeVariant(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType, unhandledVariant *dectype.CustomTypeVariant) *CaseWrongParameterCountInCustomTypeVariant {
 	return &CaseWrongParameterCountInCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression, consequence: consequence}
 }
 
