@@ -30,7 +30,7 @@ func parseFunctionCallArguments(p ParseStream, startIndentation int) ([]ast.Expr
 			}
 			arguments = append(arguments, e)
 
-			wasEnd, _, _ := p.eatArgumentSpaceOrDetectEndOfArguments(startIndentation)
+			wasEnd, _, _ := p.eatOneSpaceOrDetectEndOfFunctionCallArguments(startIndentation)
 			if wasEnd {
 				break
 			}

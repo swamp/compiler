@@ -58,7 +58,7 @@ func parseGuard(p ParseStream, guardToken token.GuardToken, startIndentation int
 			items = append(items, item)
 		}
 
-		wasContinuation, _, continuationErr := p.maybeNewLineContinuationAllowComment(startIndentation)
+		wasContinuation, _, continuationErr := p.eatOneNewLineContinuationOrDedentAllowComment(startIndentation)
 		if continuationErr != nil {
 			return nil, continuationErr
 		}

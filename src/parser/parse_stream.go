@@ -36,26 +36,29 @@ type ParseStream interface {
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Spacing
+	//
+	// Continuation is either a single space or a new line with exactly one indentation.
+	//
 	// -----------------------------------------------------------------------------------------------------------------
 	// maybeOneSpace is usually an optional space after a parenthesis start or end
 	maybeOneSpace() (bool, token.IndentationReport, parerr.ParseError)
-	maybeNewLineContinuation(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
-	maybeNewLineContinuationAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
-	maybeNewLineContinuationWithExtraEmptyLine(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
-
-	// Continuation is either a single space or a new line with exactly one indentation.
 	eatOneSpace(reason string) (token.IndentationReport, parerr.ParseError)
-	// eatContinuationReturnIndentation is very similar to eatOneSpaceOrIdent.
 	eatContinuationReturnIndentation(indentation int) (int, token.IndentationReport, parerr.ParseError)
+
+	// eatCommaSeparatorOrTermination is mostly for items in lists and arrays.
 	eatCommaSeparatorOrTermination(indentation int, allowComments tokenize.CommentAllowedType) (bool, token.IndentationReport, parerr.ParseError)
-	eatArgumentSpaceOrDetectEndOfArguments(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError)
+
+	eatOneSpaceOrDetectEndOfFunctionCallArguments(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 	// Block spacing is a helper function for when you specify if single space and new line indent is allowed.
 	eatBlockSpacingOneExtraLine(isBlock bool, keywordIndentation int) (token.IndentationReport, parerr.ParseError)
 
-	// eatNewLine is when we require that there should be a new line indentation.
+	// eatNewLine is when we require that there should be a new line continuation with exact same indentation.
 	eatNewLineContinuation(indentation int) (token.IndentationReport, parerr.ParseError)
 	eatNewLineContinuationAllowComment(indentation int) (token.IndentationReport, parerr.ParseError)
 
+	// eatNewLineContinuationOrDedent This is used when the blocks that does not allow empty lines. Like the custom type statement.
+	eatNewLineContinuationOrDedent(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
+	eatOneNewLineContinuationOrDedentAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 	// eatOneOrTwoNewLineContinuationOrDedent. This is used when the act of dedenting indicates that the block has ended
 	// Mostly used for the `let` block.
 	eatOneOrTwoNewLineContinuationOrDedent(indentation int) (bool, token.IndentationReport, parerr.ParseError)

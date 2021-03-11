@@ -85,7 +85,7 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		field := ast.NewCustomTypeVariant(index, variantIdentifier, variantTypes)
 		fields = append(fields, field)
 
-		continuedOneColumnBelow, _, foundPosLengthErr := p.maybeNewLineContinuation(expectedIndentation)
+		continuedOneColumnBelow, _, foundPosLengthErr := p.eatNewLineContinuationOrDedent(expectedIndentation)
 		if foundPosLengthErr != nil {
 			return nil, foundPosLengthErr
 		}

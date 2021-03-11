@@ -480,36 +480,12 @@ func (p *ParseStreamImpl) maybeNewLineContinuationHelper(expectedIndentation int
 	return true, report, nil
 }
 
-func (p *ParseStreamImpl) maybeNewLineContinuation(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
+func (p *ParseStreamImpl) eatNewLineContinuationOrDedent(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
 	return p.maybeNewLineContinuationHelper(expectedIndentation, tokenize.NotAllowedAtAll)
 }
 
-func (p *ParseStreamImpl) maybeNewLineContinuationAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
+func (p *ParseStreamImpl) eatOneNewLineContinuationOrDedentAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
 	return p.maybeNewLineContinuationHelper(expectedIndentation, tokenize.OwnLine)
-}
-
-func (p *ParseStreamImpl) maybeNewLineContinuationWithExtraEmptyLine(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
-	save := p.tokenizer.Tell()
-	report, err := p.tokenizer.SkipWhitespaceToNextIndentation()
-	if err != nil {
-		return false, report, nil
-	}
-
-	if p.disableEnforceStyle {
-		if report.CloseIndentation == expectedIndentation {
-			return true, report, nil
-		}
-		if tokenize.LegalContinuationSpace(report, !p.disableEnforceStyle) {
-			return true, report, nil
-		}
-	} else {
-		if report.ExactIndentation == expectedIndentation && report.NewLineCount == 2 {
-			return true, report, nil
-		}
-	}
-
-	p.tokenizer.Seek(save)
-	return false, report, nil
 }
 
 func (p *ParseStreamImpl) maybeUpToOneLogicalSpaceForContinuation(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
@@ -891,7 +867,7 @@ func (p *ParseStreamImpl) eatOneOrTwoNewLineContinuationOrDedent(currentIndentat
 	return false, report, parerr.NewExpectedOneSpaceOrExtraIndent(subErr)
 }
 
-func (p *ParseStreamImpl) eatArgumentSpaceOrDetectEndOfArguments(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
+func (p *ParseStreamImpl) eatOneSpaceOrDetectEndOfFunctionCallArguments(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
 	saveInfo := p.tokenizer.Tell()
 	report, err := p.tokenizer.SkipWhitespaceToNextIndentation()
 	if err != nil {
