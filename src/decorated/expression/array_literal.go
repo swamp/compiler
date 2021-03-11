@@ -42,3 +42,7 @@ func (c *ArrayLiteral) String() string {
 func (c *ArrayLiteral) FetchPositionLength() token.SourceFileReference {
 	return c.astArrayLiteral.FetchPositionLength()
 }
+
+func (c *ArrayLiteral) HumanReadable() string {
+	return "Array Literal"
+}

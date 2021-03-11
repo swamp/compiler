@@ -742,7 +742,7 @@ func (p *ParseStreamImpl) eatContinuationReturnIndentation(indentation int) (int
 		}
 	} else {
 		if report.SpacesUntilMaybeNewline == 1 {
-			return indentation, report, nil
+			return -1, report, nil
 		}
 
 		if report.NewLineCount == 1 && report.ExactIndentation == indentation+1 {

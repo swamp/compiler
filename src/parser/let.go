@@ -43,7 +43,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 		if beforeExpressionSpaceErr != nil {
 			return nil, beforeExpressionSpaceErr
 		}
-		wasBlock := detectedIndent != expectedIndentation
+		wasBlock := detectedIndent > expectedIndentation
 		expressionIndentation := expectedIndentation
 		if wasBlock {
 			expressionIndentation = expressionIndentation + 1

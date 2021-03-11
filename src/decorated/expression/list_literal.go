@@ -42,3 +42,7 @@ func (c *ListLiteral) String() string {
 func (c *ListLiteral) FetchPositionLength() token.SourceFileReference {
 	return c.astLiteral.FetchPositionLength()
 }
+
+func (c *ListLiteral) HumanReadable() string {
+	return "List Literal"
+}

@@ -66,7 +66,7 @@ func addSemanticTokenTypeAlias(f *dectype.Alias, builder *SemanticBuilder) error
 		return err
 	}
 
-	if err := encodeEnum(builder, f.TypeIdentifier()); err != nil {
+	if err := encodeTypeDeclaration(builder, f.TypeIdentifier()); err != nil {
 		return err
 	}
 
@@ -108,6 +108,14 @@ func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuil
 				return err
 			}
 		}
+	}
+
+	return nil
+}
+
+func addSemanticTokenGenericType(f *dectype.LocalType, builder *SemanticBuilder) error {
+	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "typeParameter", []string{"declaration"}); err != nil {
+		return err
 	}
 
 	return nil
@@ -183,6 +191,10 @@ func encodeKeyword(builder *SemanticBuilder, keyword token.Keyword) error {
 	return builder.EncodeSymbol(keyword.FetchPositionLength().Range, "keyword", nil)
 }
 
+func encodeTypeDeclaration(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "type", []string{"declaration"})
+}
+
 func encodeComment(builder *SemanticBuilder, comment token.CommentToken) error {
 	return builder.EncodeSymbol(comment.FetchPositionLength().Range, "comment", nil)
 }
@@ -204,10 +216,6 @@ func encodeEnumMemberTypeIdentifier(builder *SemanticBuilder, identifier *ast.Ty
 }
 
 func encodeEnum(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enum", nil)
-}
-
-func encodeConstantTypeIdentifier(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
 	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enum", nil)
 }
 
@@ -381,7 +389,7 @@ func addTypeReferenceInvoker(referenceRange token.Range, invoker *dectype.Invoke
 		if IsBuiltInType(param) {
 			tokenModifiersForParam = append(tokenModifiersForParam, "defaultLibrary")
 		}
-		if err := builder.EncodeSymbol(param.FetchPositionLength().Range, "typeParameter", tokenModifiersForParam); err != nil {
+		if err := addSemanticToken(param, builder); err != nil {
 			return err
 		}
 	}
@@ -732,6 +740,8 @@ func typeReferenceParamHelper(param dtype.Type, builder *SemanticBuilder) error 
 		return addSemanticToken(t, builder)
 	case *dectype.RecordAtom:
 		return addSemanticToken(t, builder)
+	case *dectype.LocalType:
+		return addSemanticToken(t, builder)
 	}
 	log.Printf("unknown param %T", param)
 	return fmt.Errorf("unknown param %T", param)
@@ -875,6 +885,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenRecordType(t, builder)
 	case *dectype.CustomTypeAtom:
 		return addSemanticTokenCustomType(t, builder)
+	case *dectype.LocalType:
+		return addSemanticTokenGenericType(t, builder)
 
 	default:
 		log.Printf("semantic unhandled %T\n", t)
