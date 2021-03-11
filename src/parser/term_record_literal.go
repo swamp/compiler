@@ -21,7 +21,7 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 		return nil, spaceAfterCurlyErr
 	}
 
-	varIdent, wasNormalRecordLiteral, _, varIdentErr := p.readVariableIdentifierAssignOrUpdate()
+	varIdent, wasNormalRecordLiteral, _, varIdentErr := p.readVariableIdentifierAssignOrUpdate(indentation)
 	if varIdentErr != nil {
 		return nil, varIdentErr
 	}
@@ -62,11 +62,11 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 			return nil, newAssignErr
 		}
 
-		report, spaceAfterAssignErr := p.eatOneSpaceOrIndent("space after assign (=) in record literal")
+		newIndentation, _, spaceAfterAssignErr := p.eatContinuationReturnIndentation(subIndentation)
 		if spaceAfterAssignErr != nil {
 			return nil, parerr.NewExpectedOneSpaceAfterAssign(spaceAfterAssignErr)
 		}
-		subIndentation = report.ExactIndentation
+		subIndentation = newIndentation
 
 		wasNormalRecordLiteral = true
 	}

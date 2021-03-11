@@ -23,7 +23,7 @@ type ParseStream interface {
 	readTypeIdentifier() (*ast.TypeIdentifier, parerr.ParseError)
 	readVariableIdentifier() (*ast.VariableIdentifier, parerr.ParseError)
 	readKeyword() (token.Keyword, parerr.ParseError)
-	readVariableIdentifierAssignOrUpdate() (*ast.VariableIdentifier, bool, int, parerr.ParseError)
+	readVariableIdentifierAssignOrUpdate(expectedIndentation int) (*ast.VariableIdentifier, bool, int, parerr.ParseError)
 	readRightBracket() (token.ParenToken, parerr.ParseError)
 	readRightParen() (token.ParenToken, parerr.ParseError)
 	readRightArrayBracket() (token.ParenToken, parerr.ParseError)
@@ -33,25 +33,36 @@ type ParseStream interface {
 	readElse() (token.Keyword, parerr.ParseError)
 
 	readGuardPipe() (token.GuardToken, parerr.ParseError)
+
 	// -----------------------------------------------------------------------------------------------------------------
-	// eat. Similar to read, but discards the result
+	// Spacing
 	// -----------------------------------------------------------------------------------------------------------------
+	// maybeOneSpace is usually an optional space after a parenthesis start or end
+	maybeOneSpace() (bool, token.IndentationReport, parerr.ParseError)
+	maybeNewLineContinuation(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
+	maybeNewLineContinuationAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
+	maybeNewLineContinuationWithExtraEmptyLine(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 
 	// Continuation is either a single space or a new line with exactly one indentation.
 	eatOneSpace(reason string) (token.IndentationReport, parerr.ParseError)
-	eatOneSpaceOrIndent(reason string) (token.IndentationReport, parerr.ParseError)
+	// eatContinuationReturnIndentation is very similar to eatOneSpaceOrIdent.
 	eatContinuationReturnIndentation(indentation int) (int, token.IndentationReport, parerr.ParseError)
-	eatArgumentSpaceOrDetectEndOfArguments(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError)
-
 	eatCommaSeparatorOrTermination(indentation int, allowComments tokenize.CommentAllowedType) (bool, token.IndentationReport, parerr.ParseError)
+	eatArgumentSpaceOrDetectEndOfArguments(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError)
+	// Block spacing is a helper function for when you specify if single space and new line indent is allowed.
+	eatBlockSpacingOneExtraLine(isBlock bool, keywordIndentation int) (token.IndentationReport, parerr.ParseError)
 
+	// eatNewLine is when we require that there should be a new line indentation.
 	eatNewLineContinuation(indentation int) (token.IndentationReport, parerr.ParseError)
 	eatNewLineContinuationAllowComment(indentation int) (token.IndentationReport, parerr.ParseError)
+
+	// eatOneOrTwoNewLineContinuationOrDedent. This is used when the act of dedenting indicates that the block has ended
+	// Mostly used for the `let` block.
 	eatOneOrTwoNewLineContinuationOrDedent(indentation int) (bool, token.IndentationReport, parerr.ParseError)
 
-	// Block spacing is a helper function for when you both allow single space and new line continuations.
-	eatBlockSpacing(isBlock bool, keywordIndentation int) (token.IndentationReport, parerr.ParseError)
-	eatBlockSpacingOneExtraLine(isBlock bool, keywordIndentation int) (token.IndentationReport, parerr.ParseError)
+	// -----------------------------------------------------------------------------------------------------------------
+	// eat. Similar to read, but discards the result
+	// -----------------------------------------------------------------------------------------------------------------
 
 	eatOperatorUpdate() parerr.ParseError
 	eatRightArrow() parerr.ParseError
@@ -63,7 +74,7 @@ type ParseStream interface {
 	eatIn() parerr.ParseError
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// was. it symbol was detected, it is same as 'eat', but returns false without any error if symbol wasn't present.
+	// was. it symbol was detected, it is same as 'read', but returns false without any error if symbol wasn't present.
 	// -----------------------------------------------------------------------------------------------------------------
 	wasDefaultSymbol() (token.RuneToken, bool)
 	wasVariableIdentifier() (*ast.VariableIdentifier, bool)
@@ -72,10 +83,6 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	// maybe. similar to "was*", but only returns a boolean indicating if the symbol was present.
 	// -----------------------------------------------------------------------------------------------------------------
-	maybeOneSpace() (bool, token.IndentationReport, parerr.ParseError)
-	maybeNewLineContinuation(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
-	maybeNewLineContinuationAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
-	maybeNewLineContinuationWithExtraEmptyLine(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 
 	maybeKeywordAlias() (token.Keyword, bool)
 	maybeKeywordExposing() (token.Keyword, bool)

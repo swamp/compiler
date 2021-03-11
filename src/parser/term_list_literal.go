@@ -19,11 +19,11 @@ func parseListLiteral(p ParseStream, startParen token.ParenToken, startIndentati
 	var rightBracketToken token.ParenToken
 
 	if rightBracketToken, wasRight = p.maybeRightBracket(); !wasRight {
-		spaceReport, eatAfterErr := p.eatOneSpaceOrIndent("after left bracket [")
+		newIndentation, _, eatAfterErr := p.eatContinuationReturnIndentation(startIndentation)
 		if eatAfterErr != nil {
 			return nil, eatAfterErr
 		}
-		subIndentation := spaceReport.ExactIndentation
+		subIndentation := newIndentation
 		for {
 			exp, expErr := p.parseExpressionNormal(subIndentation)
 			if expErr != nil {
