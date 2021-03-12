@@ -9,7 +9,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func (t *Tokenizer) parseResourceName(startPos token.PositionToken) (token.Token, error) {
+func (t *Tokenizer) parseResourceName(startPos token.PositionToken) (token.Token, TokenError) {
 	var a string
 
 	ch := t.nextRune()

@@ -9,7 +9,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func (t *Tokenizer) parseAnySymbol(startPosition token.PositionToken) (token.Token, error) {
+func (t *Tokenizer) parseAnySymbol(startPosition token.PositionToken) (token.Token, TokenError) {
 	ch := t.nextRune()
 	t.unreadRune()
 	if isUpperCaseLetter(ch) {

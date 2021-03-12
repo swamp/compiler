@@ -240,6 +240,46 @@ func LegalContinuationSpaceIndentation(report token.IndentationReport, indentati
 	return false
 }
 
+func LegalOneSpaceOrSameIndentation(report token.IndentationReport, indentation int, enforceStyle bool) (bool, TokenError) {
+	if enforceStyle {
+		if report.NewLineCount == 1 && report.ExactIndentation == indentation {
+			return true, nil
+		}
+		if report.SpacesUntilMaybeNewline == 1 && report.NewLineCount == 0 {
+			return false, nil
+		}
+	} else {
+		if report.CloseIndentation > indentation {
+			return true, nil
+		}
+		if report.NewLineCount == 0 && report.SpacesUntilMaybeNewline > 0 {
+			return false, nil
+		}
+	}
+
+	return false, NewUnexpectedIndentationError(report.PositionLength, 0, 0)
+}
+
+func LegalOneSpaceOrNewLineIndentation(report token.IndentationReport, indentation int, enforceStyle bool) (bool, TokenError) {
+	if enforceStyle {
+		if report.NewLineCount == 1 && report.ExactIndentation == indentation+1 {
+			return true, nil
+		}
+		if report.SpacesUntilMaybeNewline == 1 && report.NewLineCount == 0 {
+			return false, nil
+		}
+	} else {
+		if report.CloseIndentation > indentation {
+			return true, nil
+		}
+		if report.NewLineCount == 0 && report.SpacesUntilMaybeNewline > 0 {
+			return false, nil
+		}
+	}
+
+	return false, NewUnexpectedIndentationError(report.PositionLength, 0, 0)
+}
+
 func LegalContinuationSpace(report token.IndentationReport, enforceStyle bool) bool {
 	if enforceStyle {
 		if report.SpacesUntilMaybeNewline == 1 {
@@ -540,28 +580,28 @@ func (t *Tokenizer) skipSpaces() {
 	}
 }
 
-func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.CharacterToken, error) {
+func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.CharacterToken, TokenError) {
 	ch := t.nextRune()
 	if ch == 0 {
-		return token.CharacterToken{}, fmt.Errorf("unexpected end of character")
+		return token.CharacterToken{}, NewEncounteredEOF()
 	}
 
 	if ch == '\\' {
 		// Escape character
 		ch = t.nextRune()
 		if ch == 0 {
-			return token.CharacterToken{}, fmt.Errorf("unexpected end of character")
+			return token.CharacterToken{}, NewEncounteredEOF()
 		}
 	}
 	terminator := t.nextRune()
 	if terminator != '\'' {
-		return token.CharacterToken{}, fmt.Errorf("expected ' after character")
+		return token.CharacterToken{}, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), '\'', terminator)
 	}
 	posLen := t.MakeSourceFileReference(startPosition)
 	return token.NewCharacterToken("'"+string(ch)+"'", ch, posLen), nil
 }
 
-func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, error) {
+func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, TokenError) {
 	var a string
 	raw := string(startStringRune)
 	for {
@@ -571,7 +611,7 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 			break
 		}
 		if ch == 0 {
-			return token.StringToken{}, fmt.Errorf("unexpected end while finding end of string")
+			return token.StringToken{}, NewEncounteredEOF()
 		}
 
 		if ch == '\\' {
@@ -614,19 +654,19 @@ func (t *Tokenizer) isTriple(ch rune, startStringRune rune) (bool, error) {
 	return false, nil
 }
 
-func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, error) {
+func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, TokenError) {
 	var a string
 	raw := string(startStringRune + startStringRune + startStringRune)
 	for {
 		ch := t.nextRune()
 		raw += string(ch)
 		if ch == 0 {
-			return token.StringToken{}, fmt.Errorf("unexpected end while finding end of triple string")
+			return token.StringToken{}, NewEncounteredEOF()
 		}
 
 		wasEnd, err := t.isTriple(ch, startStringRune)
 		if err != nil {
-			return token.StringToken{}, err
+			return token.StringToken{}, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), '\'', ' ')
 		}
 
 		if wasEnd {
@@ -715,7 +755,7 @@ func (t *Tokenizer) ParseStartingKeyword() (token.Token, TokenError) {
 	return t.ParseVariableSymbol()
 }
 
-func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, error) {
+func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, TokenError) {
 	posToken := t.position
 	r := t.nextRune()
 	singleCharLength := t.MakeSourceFileReference(posToken)
@@ -745,7 +785,7 @@ func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, error) {
 		}
 	}
 	t.unreadRune()
-	return nil, fmt.Errorf("not an end token")
+	return nil, NewNotEndToken(singleCharLength, r)
 }
 
 func (t *Tokenizer) ReadTermTokenOrEndOrSeparator() (token.Token, error) {
@@ -756,7 +796,7 @@ func (t *Tokenizer) ReadTermTokenOrEndOrSeparator() (token.Token, error) {
 	return t.readTermToken()
 }
 
-func (t *Tokenizer) ReadOpenOperatorToken(r rune, singleCharLength token.SourceFileReference) (token.Token, error) {
+func (t *Tokenizer) ReadOpenOperatorToken(r rune, singleCharLength token.SourceFileReference) (token.Token, TokenError) {
 	posToken := t.position
 	if r == '(' {
 		return token.NewParenToken(string(r), token.LeftParen, singleCharLength, " L( "), nil
@@ -777,10 +817,10 @@ func (t *Tokenizer) ReadOpenOperatorToken(r rune, singleCharLength token.SourceF
 		return token.NewParenToken(string(r), token.LeftBracket, singleCharLength, " [ "), nil
 	}
 
-	return nil, fmt.Errorf("not an operator")
+	return nil, NewNotAnOpenOperatorError(t.MakeSourceFileReference(posToken), r)
 }
 
-func (t *Tokenizer) readTermToken() (token.Token, error) {
+func (t *Tokenizer) readTermToken() (token.Token, TokenError) {
 	posToken := t.position
 	r := t.nextRune()
 	singleCharLength := t.MakeSourceFileReference(posToken)
@@ -817,7 +857,7 @@ func (t *Tokenizer) readTermToken() (token.Token, error) {
 		if next == ' ' {
 			return token.NewGuardToken(singleCharLength, string(r), " guard "), nil
 		}
-		return nil, fmt.Errorf("started as guard | but is something else")
+		return nil, NewUnexpectedEatTokenError(singleCharLength, ' ', ' ')
 	} else if r == '-' {
 		return token.NewOperatorToken(token.OperatorUnaryMinus, singleCharLength, string(r), "unary-"), nil
 	} else if r == '_' {
@@ -836,7 +876,7 @@ func (t *Tokenizer) readTermToken() (token.Token, error) {
 			return foundOperator, nil
 		}
 	}
-	return nil, fmt.Errorf("unknown rune '%c' %v", r, r)
+	return nil, NewUnexpectedEatTokenError(t.MakeSourceFileReference(posToken), r, ' ')
 }
 
 func (t *Tokenizer) ReadTermToken() (token.Token, TokenError) {

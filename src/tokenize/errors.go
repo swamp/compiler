@@ -53,6 +53,45 @@ func (e UnexpectedEatTokenError) Error() string {
 	return fmt.Sprintf("unexpected rune. required %v, but encountered %v", string(e.requiredRune), string(e.encounteredRune))
 }
 
+type NotAnOpenOperatorError struct {
+	StandardTokenError
+	encounteredRune rune
+}
+
+func NewNotAnOpenOperatorError(posLength token.SourceFileReference, encounteredRune rune) NotAnOpenOperatorError {
+	return NotAnOpenOperatorError{StandardTokenError: StandardTokenError{posLength}, encounteredRune: encounteredRune}
+}
+
+func (e NotAnOpenOperatorError) Error() string {
+	return fmt.Sprintf("unexpected rune. required an open operator, but encountered %v", string(e.encounteredRune))
+}
+
+type NotAParenToken struct {
+	StandardTokenError
+	encounteredToken token.Token
+}
+
+func NewNotAParenToken(posLength token.SourceFileReference, encounteredToken token.Token) NotAParenToken {
+	return NotAParenToken{StandardTokenError: StandardTokenError{posLength}, encounteredToken: encounteredToken}
+}
+
+func (e NotAParenToken) Error() string {
+	return fmt.Sprintf("unexpected rune. required an open operator, but encountered %v", e.encounteredToken)
+}
+
+type NotEndToken struct {
+	StandardTokenError
+	encounteredToken rune
+}
+
+func NewNotEndToken(posLength token.SourceFileReference, encounteredToken rune) NotEndToken {
+	return NotEndToken{StandardTokenError: StandardTokenError{posLength}, encounteredToken: encounteredToken}
+}
+
+func (e NotEndToken) Error() string {
+	return fmt.Sprintf("unexpected rune. required an open operator, but encountered %v", e.encounteredToken)
+}
+
 type InternalError struct {
 	err error
 }

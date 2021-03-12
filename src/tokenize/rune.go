@@ -22,15 +22,15 @@ func isLetter(ch rune) bool {
 }
 
 func isUpperCaseLetter(ch rune) bool {
-	return (ch >= 'A' && ch <= 'Z')
+	return ch >= 'A' && ch <= 'Z'
 }
 
 func isLowerCaseLetter(ch rune) bool {
-	return (ch >= 'a' && ch <= 'z')
+	return ch >= 'a' && ch <= 'z'
 }
 
 func isDigit(ch rune) bool {
-	return (ch >= '0' && ch <= '9')
+	return ch >= '0' && ch <= '9'
 }
 
 func isHexDigit(ch rune) bool {
@@ -44,10 +44,6 @@ func isSymbol(ch rune) bool {
 func isStartString(ch rune) bool {
 	return ch == '\'' || ch == '"'
 }
-
-//func isOperator(ch rune) bool {
-//return strings.Contains(":|<=>!-+*/.&^~", string(ch))
-//}
 
 func isUnaryOperator(ch rune) bool {
 	return strings.Contains(":!-+^~", string(ch)) // HACK ':' should not be in here

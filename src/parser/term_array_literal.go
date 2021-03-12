@@ -24,15 +24,15 @@ func parseArrayLiteral(p ParseStream, startParen token.ParenToken, startIndentat
 		if eatAfterErr != nil {
 			return nil, eatAfterErr
 		}
-		startIndentation = newIndentation
+		subIndentation := newIndentation
 		for {
-			exp, expErr := p.parseExpressionNormal(startIndentation)
+			exp, expErr := p.parseExpressionNormal(subIndentation)
 			if expErr != nil {
 				return nil, expErr
 			}
 			expressions = append(expressions, exp)
 
-			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(startIndentation, tokenize.NotAllowedAtAll)
+			wasComma, _, commaErr := p.eatCommaSeparatorOrTermination(subIndentation, tokenize.NotAllowedAtAll)
 			if commaErr != nil {
 				return nil, commaErr
 			}

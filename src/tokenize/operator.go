@@ -49,7 +49,11 @@ func (t *Tokenizer) ParseUnaryOperator() (token.Token, TokenError) {
 		operatorType = token.OperatorUnaryMinus
 	case '!':
 		operatorType = token.OperatorUnaryNot
-
+		next := t.nextRune()
+		if next == '=' {
+			return nil, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), 'x', ' ')
+		}
+		t.unreadRune()
 	}
 	return token.NewOperatorToken(operatorType, t.MakeSourceFileReference(startPosition), raw, debugString), nil
 }
@@ -193,13 +197,13 @@ func (t *Tokenizer) ReadAnyOperator() (token.Token, TokenError) {
 		r := t.nextRune()
 		parsedToken, err = t.ReadOpenOperatorToken(r, pos)
 		if err != nil {
-			return token.ParenToken{}, NewInternalError(err)
+			return token.ParenToken{}, err
 		}
 	}
 
 	parenToken, wasParenToken := parsedToken.(token.ParenToken)
 	if !wasParenToken {
-		return token.ParenToken{}, NewInternalError(err)
+		return token.ParenToken{}, NewNotAParenToken(pos, parsedToken)
 	}
 
 	return parenToken, nil

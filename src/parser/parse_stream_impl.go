@@ -31,6 +31,7 @@ type ParseStreamImpl struct {
 	disableEnforceStyle bool
 	nodes               []ast.Node
 	warnings            []parerr.ParseError
+	errors              []parerr.ParseError
 }
 
 func NewParseStreamImpl(parser ParserInterface, tokenizer *tokenize.Tokenizer, enforceStyle bool) *ParseStreamImpl {
@@ -122,8 +123,20 @@ func (p *ParseStreamImpl) AddWarning(parseError parerr.ParseError) {
 	p.warnings = append(p.warnings, parseError)
 }
 
+func (p *ParseStreamImpl) AddError(parseError parerr.ParseError) {
+	pos := parseError.FetchPositionLength()
+	s := color.YellowString("%v:%d:%d: %v: %v", p.tokenizer.RelativeFilename(), pos.Range.Position().Line()+1,
+		pos.Range.Position().Column()+1, "Error", parseError.Error())
+	log.Print(s)
+	p.errors = append(p.errors, parseError)
+}
+
 func (p *ParseStreamImpl) Warnings() []parerr.ParseError {
 	return p.warnings
+}
+
+func (p *ParseStreamImpl) Errors() []parerr.ParseError {
+	return p.errors
 }
 
 func (p *ParseStreamImpl) readVariableIdentifierInternal() (*ast.VariableIdentifier, parerr.ParseError) {
@@ -742,7 +755,7 @@ func (p *ParseStreamImpl) eatContinuationReturnIndentation(indentation int) (int
 		}
 	} else {
 		if report.SpacesUntilMaybeNewline == 1 {
-			return -1, report, nil
+			return report.ExactIndentation, report, nil
 		}
 
 		if report.NewLineCount == 1 && report.ExactIndentation == indentation+1 {
@@ -1052,6 +1065,9 @@ func (p *ParseStreamImpl) eatIn() parerr.ParseError {
 func (p *ParseStreamImpl) parseExpression(precedence Precedence, startIndentation int) (ast.Expression, parerr.ParseError) {
 	p.descent++
 	r, rErr := p.parser.parseExpression(precedence, startIndentation)
+	if rErr != nil {
+		p.AddError(rErr)
+	}
 	p.descent--
 	return r, rErr
 }
@@ -1064,7 +1080,12 @@ func (p *ParseStreamImpl) parseExpressionNormal(startIndentation int) (ast.Expre
 }
 
 func (p *ParseStreamImpl) parseTerm(startIndentation int) (ast.Expression, parerr.ParseError) {
-	return p.parser.parseTerm(startIndentation)
+	expr, err := p.parser.parseTerm(startIndentation)
+	if err != nil {
+		p.AddError(err)
+	}
+
+	return expr, err
 }
 
 func (p *ParseStreamImpl) parseLiteral(startIndentation int) (ast.Literal, parerr.ParseError) {

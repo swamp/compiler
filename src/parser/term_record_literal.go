@@ -62,7 +62,7 @@ func parseRecordLiteral(p ParseStream, indentation int, t token.ParenToken) (ast
 			return nil, newAssignErr
 		}
 
-		newIndentation, _, spaceAfterAssignErr := p.eatContinuationReturnIndentation(subIndentation)
+		newIndentation, _, spaceAfterAssignErr := p.eatContinuationReturnIndentation(indentation)
 		if spaceAfterAssignErr != nil {
 			return nil, parerr.NewExpectedOneSpaceAfterAssign(spaceAfterAssignErr)
 		}

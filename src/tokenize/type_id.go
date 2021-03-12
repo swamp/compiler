@@ -9,6 +9,6 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func (t *Tokenizer) parseTypeId(startPos token.PositionToken) (token.Token, error) {
+func (t *Tokenizer) parseTypeId(startPos token.PositionToken) (token.Token, TokenError) {
 	return token.NewTypeId("$", t.MakeSourceFileReference(startPos), startPos.Indentation()), nil
 }
