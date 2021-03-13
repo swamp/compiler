@@ -17,12 +17,17 @@ func parseTupleTypeReference(p ParseStream, keywordIndentation int,
 	var types []ast.Type
 	types = append(types, term)
 	for {
-		term, err := parseTypeReference(p, keywordIndentation, typeParameterContext, precedingComments)
+		term, err := parseTypeTermReference(p, keywordIndentation, typeParameterContext, precedingComments)
 		if err != nil {
 			return nil, err
 		}
 		types = append(types, term)
-		if p.maybeRightParen() {
+		if _, wasComma := p.maybeComma(); wasComma {
+			p.eatOneSpace("after comma")
+		} else {
+			if _, err := p.readRightParen(); err != nil {
+				return nil, err
+			}
 			break
 		}
 	}

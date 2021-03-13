@@ -234,14 +234,14 @@ type alias Cool =
     }
 
 
-a : Bool -> (Cool, Int)
+a : Bool -> (Cool, Int, String)
 a x =
-    ( { name = "hi" }, 42)
+    ( { name = "hi" }, 42, "Hello")
 `, `
-func [function a 6 1 [[constant1 hi #3] [constant2 int:42 #4]]]
+func [function a 6 1 [[constant1 hi #3] [constant2 int:42 #4] [constant3 Hello #5]]]
 00: crs 2 [3]
-04: crs 0 [2 4]
-09: ret
+04: crs 0 [2 4 5]
+0a: ret
 `)
 }
 
