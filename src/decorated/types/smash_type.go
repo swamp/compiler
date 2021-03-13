@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -192,6 +193,43 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 	return NewFunctionAtom(original.astFunctionType, converted), nil
 }
 
+func fillContextFromTuples(context *TypeParameterContextOther, original *TupleTypeAtom, other *TupleTypeAtom) (*TupleTypeAtom, error) {
+	var converted []dtype.Type
+
+	if len(original.parameterTypes) < len(other.parameterTypes) {
+		return nil, fmt.Errorf("too few parameter types")
+	}
+
+	for index, otherParam := range other.parameterTypes {
+		originalParam := original.parameterTypes[index]
+		convertedType, convertErr := smashTypes(context, originalParam, otherParam)
+		if convertErr != nil {
+			return nil, convertErr
+		}
+		if convertedType == nil {
+			panic("converted was nil")
+		}
+
+		converted = append(converted, convertedType)
+	}
+
+	for index := len(other.parameterTypes); index < len(original.parameterTypes); index++ {
+		originalParam := original.parameterTypes[index]
+		convertedType, replaceErr := ReplaceTypeFromContext(originalParam, context)
+		if replaceErr != nil {
+			return nil, replaceErr
+		}
+		if convertedType == nil {
+			panic(fmt.Sprintf("conversion is not working %v %T", originalParam, originalParam))
+		}
+		converted = append(converted, convertedType)
+	}
+
+	log.Printf("converted tuple types %v", converted)
+
+	return NewTupleTypeAtom(original.astTupleType, converted), nil
+}
+
 func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUnchanged dtype.Type) (dtype.Type, error) {
 	if reflect.ValueOf(original).IsNil() {
 		panic("original was nil")
@@ -232,6 +270,11 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 			otherFunc := other.(*FunctionAtom)
 			return fillContextFromFunctions(context, t, otherFunc)
 		}
+	case *TupleTypeAtom:
+		{
+			otherTuple := other.(*TupleTypeAtom)
+			return fillContextFromTuples(context, t, otherTuple)
+		}
 	case *PrimitiveAtom:
 		{
 			if otherIsAny {
@@ -258,15 +301,24 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 			return fillContextFromRecordType(context, t, otherRecordType)
 		}
 	case *InvokerType:
-		resolved, resolveErr := CallType(t.typeToInvoke, t.params)
+		var converted []dtype.Type
+		for _, param := range t.params {
+			localType, wasLocal := param.(*LocalType)
+			if wasLocal {
+				converted = append(converted, context.LookupTypeFromName(localType.identifier.Name()))
+			} else {
+				converted = append(converted, param)
+			}
+		}
+		resolved, resolveErr := CallType(t.typeToInvoke, converted)
 		if resolveErr != nil {
 			return nil, resolveErr
 		}
 
-		fmt.Printf("\n\nafter invoker %v %v\n %T and %T\n", resolved, other, resolved, other)
+		log.Printf("\n\nafter invoker %v %v\n %T and %T\n", resolved, other, resolved, other)
 		return smashTypes(context, resolved, other)
 	default:
-		return nil, fmt.Errorf("Not handled:%T %v\n", t, t)
+		return nil, fmt.Errorf("smash type: Not handled:%T %v\n", t, t)
 	}
 
 	return nil, fmt.Errorf("unhandled type: %T %v\n", original, original)

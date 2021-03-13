@@ -230,7 +230,7 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 func writeVersion(writer io.Writer) error {
 	const major byte = 0
 	const minor byte = 1
-	const patch byte = 3
+	const patch byte = 4
 
 	if err := writeUint8(writer, major); err != nil {
 		return err

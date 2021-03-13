@@ -133,6 +133,12 @@ foldl fn initial lst =
     __asm callexternal 00 coreListFoldl 01 02 03
 
 
+__externalfn coreListUnzip 1
+unzip : List (a, b) -> (List a, List b)
+unzip lst =
+    __asm callexternal 00 coreListUnzip 01
+
+
 foldlstop : (a -> b -> Maybe b) -> b -> List a -> b
 foldlstop pred initial lst =
     __asm callexternal 00 coreListFoldlStop 01 02 03
@@ -358,6 +364,31 @@ withDefault default maybe =
     __asm callexternal 00 coreMaybeWithDefault 01 02
 `
 
+const tupleCode = `
+__externalfn coreTupleFirst 1
+first : (a, b) -> a
+first tuple =
+    __asm callexternal 00 coreTupleFirst 01
+
+
+__externalfn coreTupleSecond 1
+second : (a, b) -> b
+second tuple =
+    __asm callexternal 00 coreTupleSecond 01
+
+
+__externalfn coreTupleThird 1
+third : (a, b, c) -> c
+third tuple =
+    __asm callexternal 00 coreTupleThird 01
+
+
+__externalfn coreTupleFourth 1
+third : (a, b, c, d) -> d
+third tuple =
+    __asm callexternal 00 coreTupleFourth 01
+`
+
 const debugCode = `
 __externalfn coreDebugLog 1
 log : String -> String
@@ -447,6 +478,13 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 		return nil, listModuleErr
 	}
 	importModules = append(importModules, listModule)
+
+	tupleModule, tupleModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Tuple", tupleCode)
+	if tupleModuleErr != nil {
+		return nil, listModuleErr
+	}
+	importModules = append(importModules, tupleModule)
+
 	mathModule, mathModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Math", mathCode)
 	if mathModuleErr != nil {
 		return nil, mathModuleErr

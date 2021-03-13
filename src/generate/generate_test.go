@@ -245,6 +245,43 @@ func [function a 6 1 [[constant1 hi #3] [constant2 int:42 #4] [constant3 Hello #
 `)
 }
 
+func TestTupleLiteralUnzip(t *testing.T) {
+	testGenerate(t,
+		`
+type alias Cool =
+    { name : String
+    }
+
+
+a : Bool -> (List Cool, List Int)
+a x =
+    List.unzip [ ( { name = "hi" }, 42 ), ( { name = "Hello" }, -1 ) ]
+
+`, `
+func [function a 6 1 [[constant1 hi #3] [constant2 int:42 #4] [constant3 Hello #5]]]
+00: crs 2 [3]
+04: crs 0 [2 4 5]
+0a: ret
+`)
+}
+
+func TestTupleLiteralPrimitiveUnzip(t *testing.T) {
+	testGenerate(t,
+		`
+a : Bool -> (List String, List Int)
+a x =
+    List.unzip [ ( "hi", 42 ), ( "Hello", -1 ) ]
+
+`, `
+func [function a 6 1 [[constant1 hi #5] [constant2 int:42 #6] [constant3 Hello #7] [constant4 int:-1 #8] [constant5 func:List.unzip #9]]]
+00: crs 3 [5 6]
+05: crs 4 [7 8]
+0a: crl 2 [3 4]
+0f: call 0 9 ([2])
+14: ret
+`)
+}
+
 func TestArrayLiteral(t *testing.T) {
 	testGenerate(t,
 		`

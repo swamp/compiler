@@ -278,7 +278,7 @@ func NewUnMatchingFunctionReturnTypesInFunctionValue(fn *ast.FunctionValue, expr
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) Error() string {
-	return fmt.Sprintf("%v unmatching function return types %v and %v\n%v", e.FetchPositionLength(), e.HasType, e.ExpectedType, e.err)
+	return fmt.Sprintf("%v unmatching function return types %v and %v\n%v", e.FetchPositionLength(), e.HasType.HumanReadable(), e.ExpectedType.HumanReadable(), e.err)
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) FetchPositionLength() token.SourceFileReference {

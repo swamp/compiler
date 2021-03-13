@@ -67,8 +67,8 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationSta
 	}
 
 	subVariableContext := createVariableContextFromParameters(context, parameters, forcedFunctionType, functionName)
-	expression := potentialFunc.Expression()
-	decoratedExpression, decoratedExpressionErr := DecorateExpression(d, expression, subVariableContext)
+	functionValueExpression := potentialFunc.Expression()
+	decoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
 	if decoratedExpressionErr != nil {
 		return nil, decoratedExpressionErr
 	}
@@ -80,7 +80,7 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationSta
 
 	compatibleErr := dectype.CompatibleTypes(expectedReturnType, decoratedExpressionType)
 	if compatibleErr != nil {
-		return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, expression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
+		return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, functionValueExpression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
 	}
 
 	checkForNoLint := "a" // CheckForNoLint(comments)

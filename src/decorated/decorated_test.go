@@ -1134,6 +1134,28 @@ a = [functionvalue ([[arg $x = typeref $Bool [primitive Bool]]]) -> [TupleLitera
 `)
 }
 
+func TestTupleSecond(t *testing.T) {
+	testDecorate(t,
+		`
+a : Bool -> String
+a x =
+    Tuple.second (2, "Hello")
+`, `
+a = [functionvalue ([[arg $x = typeref $Bool [primitive Bool]]]) -> [fcall [functionref named definition reference [functionvalue ([[arg $tuple = [tupletype [[localtype a] [localtype b]]]]]) -> [asm callexternal 00 coreTupleSecond 01]]] [[TupleLiteral [tupletype [[primitive Int] [primitive String]]] [tuple-literal: [#2 'Hello']] [[integer 2] [str Hello]]]]]]
+`)
+}
+
+func TestTupleFirst(t *testing.T) {
+	testDecorate(t,
+		`
+a : Bool -> Int
+a x =
+    Tuple.first (2, "Hello")
+`, `
+a = [functionvalue ([[arg $x = typeref $Bool [primitive Bool]]]) -> [fcall [functionref named definition reference [functionvalue ([[arg $tuple = [tupletype [[localtype a] [localtype b]]]]]) -> [asm callexternal 00 coreTupleFirst 01]]] [[TupleLiteral [tupletype [[primitive Int] [primitive String]]] [tuple-literal: [#2 'Hello']] [[integer 2] [str Hello]]]]]]
+`)
+}
+
 func TestArrayLiteral2(t *testing.T) {
 	testDecorate(t,
 		`

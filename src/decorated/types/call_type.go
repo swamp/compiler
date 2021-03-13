@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
@@ -40,10 +41,16 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 		return NewPrimitiveType(info.name, convertedTypes), nil
 	case *RecordAtom:
 		return replaceRecordFromContext(info, lookup)
+	case *TupleTypeAtom:
+		return replaceTupleTypeFromContext(info, lookup)
 	case *InvokerType:
 		return replaceInvokerTypeFromContext(info, lookup)
+	case *CustomTypeAtom:
+		// TODO: fix this
+		return target, nil
 	default:
-		// fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
+		log.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
+		return nil, fmt.Errorf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
 	}
 
 	// fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
@@ -111,6 +118,19 @@ func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*C
 	}
 
 	return NewCustomType(customType.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil, replacedVariants), nil
+}
+
+func replaceTupleTypeFromContext(tupleType *TupleTypeAtom, lookup Lookup) (dtype.Type, error) {
+	var convertedTypes []dtype.Type
+	for _, someType := range tupleType.parameterTypes {
+		convertedType, convertedErr := ReplaceTypeFromContext(someType, lookup)
+		if convertedErr != nil {
+			return nil, convertedErr
+		}
+		convertedTypes = append(convertedTypes, convertedType)
+	}
+
+	return NewTupleTypeAtom(tupleType.astTupleType, convertedTypes), nil
 }
 
 func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, error) {
