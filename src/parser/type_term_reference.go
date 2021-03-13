@@ -53,6 +53,12 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 		if tErr != nil {
 			return nil, tErr
 		}
+		if _, wasComma := p.maybeComma(); wasComma {
+			if _, err := p.eatOneSpace("afterComma"); err != nil {
+				return nil, err
+			}
+			return parseTupleTypeReference(p, keywordIndentation, typeParameterContext, precedingComments, t)
+		}
 		if _, rightParenErr := p.readRightParen(); rightParenErr != nil {
 			return nil, rightParenErr
 		}

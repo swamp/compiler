@@ -1123,6 +1123,17 @@ a = [functionvalue ([[arg $x = [primitive Bool]]]) -> [ListLiteral List<Int> [[i
 `)
 }
 
+func TestTuple(t *testing.T) {
+	testDecorate(t,
+		`
+a : Bool -> (Int, String)
+a x =
+    (2, "Hello")
+`, `
+a = [functionvalue ([[arg $x = typeref $Bool [primitive Bool]]]) -> [TupleLiteral [tupletype [[primitive Int] [primitive String]]] [tuple-literal: [#2 'Hello']] [[integer 2] [str Hello]]]]
+`)
+}
+
 func TestArrayLiteral2(t *testing.T) {
 	testDecorate(t,
 		`

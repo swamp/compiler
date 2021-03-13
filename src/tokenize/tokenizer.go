@@ -766,7 +766,7 @@ func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, TokenError) {
 	} else if r == ']' {
 		return token.NewParenToken(string(r), token.RightBracket, singleCharLength, " ] "), nil
 	} else if r == ',' {
-		return token.NewParenToken(string(r), token.Comma, singleCharLength, ","), nil
+		return token.NewOperatorToken(token.Comma, singleCharLength, string(r), ","), nil
 	} else if r == '|' {
 		r := t.nextRune()
 		if r == ']' {

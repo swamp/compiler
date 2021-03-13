@@ -88,6 +88,14 @@ func expandChildNodesFunctionType(fn *dectype.FunctionAtom) []TypeOrToken {
 	return tokens
 }
 
+func expandChildNodesTupleType(fn *dectype.TupleTypeAtom) []TypeOrToken {
+	var tokens []TypeOrToken
+	for _, parameter := range fn.ParameterTypes() {
+		tokens = append(tokens, expandChildNodes(parameter)...)
+	}
+	return tokens
+}
+
 func expandChildNodesCustomType(fn *dectype.CustomTypeAtom) []TypeOrToken {
 	var tokens []TypeOrToken
 	// tokens = append(tokens, expandChildNodes(fn.TypeReference())...) Can not expand type identifiers, need meaning
@@ -155,6 +163,15 @@ func expandChildNodesLetAssignment(assignment *LetAssignment) []TypeOrToken {
 func expandChildNodesListLiteral(listLiteral *ListLiteral) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, expression := range listLiteral.Expressions() {
+		tokens = append(tokens, expandChildNodes(expression)...)
+	}
+
+	return tokens
+}
+
+func expandChildNodesTupleLiteral(tupleLiteral *TupleLiteral) []TypeOrToken {
+	var tokens []TypeOrToken
+	for _, expression := range tupleLiteral.Expressions() {
 		tokens = append(tokens, expandChildNodes(expression)...)
 	}
 
@@ -347,6 +364,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesLetAssignment(t)...)
 	case *ListLiteral:
 		return append(tokens, expandChildNodesListLiteral(t)...)
+	case *TupleLiteral:
+		return append(tokens, expandChildNodesTupleLiteral(t)...)
 	case *ArrayLiteral:
 		return append(tokens, expandChildNodesArrayLiteral(t)...)
 	case *RecordLiteral:
@@ -451,6 +470,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *dectype.RecordAtom:
 		return append(tokens, expandChildNodesRecordType(t)...)
+	case *dectype.TupleTypeAtom:
+		return append(tokens, expandChildNodesTupleType(t)...)
 	case *dectype.RecordFieldName:
 		return tokens
 	case *dectype.FunctionTypeReference:

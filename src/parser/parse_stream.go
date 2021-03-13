@@ -98,6 +98,7 @@ type ParseStream interface {
 	maybeRightParen() bool
 	maybeEmptyParen() bool
 	maybeColon() bool
+	maybeComma() (token.OperatorToken, bool)
 	maybePipeLeft() bool
 	maybeRightArrow() bool
 	maybeOneSpaceAndRightArrow() bool
@@ -113,6 +114,7 @@ type ParseStream interface {
 	detectNewLineOrSpace() (bool, bool)
 	detectOneSpaceAndTermination() bool
 	detectTypeIdentifier() bool
+	detectRightParen() bool
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// parse. parse expressions and terms

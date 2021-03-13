@@ -201,10 +201,5 @@ func (t *Tokenizer) ReadAnyOperator() (token.Token, TokenError) {
 		}
 	}
 
-	parenToken, wasParenToken := parsedToken.(token.ParenToken)
-	if !wasParenToken {
-		return token.ParenToken{}, NewNotAParenToken(pos, parsedToken)
-	}
-
-	return parenToken, nil
+	return parsedToken, nil
 }

@@ -18,8 +18,11 @@ func parseParenExpression(p ParseStream, startIndentation int, parenToken token.
 	if expErr != nil {
 		return nil, expErr
 	}
-	p.maybeOneSpace()
+	if _, wasComma := p.maybeComma(); wasComma {
+		return parseTuple(p, exp, startIndentation, parenToken)
+	}
 
+	p.maybeOneSpace()
 	if _, rightErr := p.readRightParen(); rightErr != nil {
 		return nil, rightErr
 	}

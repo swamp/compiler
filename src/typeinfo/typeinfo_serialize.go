@@ -27,6 +27,7 @@ const (
 	SwtiTypeBlob
 	SwtiTypeResourceName
 	SwtiTypeChar
+	SwtiTypeTuple
 )
 
 func writeUint8(writer io.Writer, v byte) error {
@@ -66,6 +67,23 @@ func writeList(writer io.Writer, list *ListType) error {
 		return err
 	}
 	return writeTypeRef(writer, list.itemType)
+}
+
+func writeTuple(writer io.Writer, tuple *TupleType) error {
+	if err := writeTypeID(writer, SwtiTypeTuple); err != nil {
+		return err
+	}
+	if err := writeCount(writer, len(tuple.parameterTypes)); err != nil {
+		return err
+	}
+
+	for _, parameterType := range tuple.parameterTypes {
+		if err := writeTypeRef(writer, parameterType); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func writeArray(writer io.Writer, array *ArrayType) error {
@@ -201,6 +219,9 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 	case *TypeRefType:
 		// TODO:
 		return writePrimitive(writer, SwtiTypeResourceName)
+	case *TupleType:
+		// TODO:
+		return writeTuple(writer, t)
 	}
 
 	return fmt.Errorf("strange, unknown info type %v %T", entry, entry)

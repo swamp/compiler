@@ -766,6 +766,24 @@ func TestList(t *testing.T) {
 `, "[list-literal: [#2 #4 $b #101]]")
 }
 
+func TestTuple(t *testing.T) {
+	testParseExpression(t,
+		`
+( 2, 4, 4 )
+`, "[tuple-literal: [#2 #4 #4]]")
+}
+
+func TestTupleType(t *testing.T) {
+	testParse(t,
+		`
+someFunc : (Int, String) -> Int
+someFunc =
+    (42, "hi")
+`, `
+[annotation: $someFunc [func-type [tuple-type [[type-reference $Int] [type-reference $String]]] -> [type-reference $Int]]]
+[fndefinition: $someFunc = [func ([]) -> [tuple-literal: [#42 'hi']]]]`)
+}
+
 func TestModuleReferences(t *testing.T) {
 	testParseExpression(t,
 		`

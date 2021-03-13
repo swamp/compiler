@@ -51,6 +51,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateBoolean(d, v)
 	case *ast.ListLiteral:
 		return decorateListLiteral(d, v, context)
+	case *ast.TupleLiteral:
+		return decorateTupleLiteral(d, v, context)
 	case *ast.ArrayLiteral:
 		return decorateArrayLiteral(d, v, context)
 	case *ast.UnaryExpression:

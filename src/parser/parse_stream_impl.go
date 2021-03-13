@@ -247,10 +247,6 @@ func (p *ParseStreamImpl) maybeColon() bool {
 	return p.tokenizer.MaybeRune(':')
 }
 
-func (p *ParseStreamImpl) maybeComma() bool {
-	return p.tokenizer.MaybeRune(',')
-}
-
 func (p *ParseStreamImpl) maybePipeLeft() bool {
 	return p.tokenizer.MaybeString("<|")
 }
@@ -266,6 +262,19 @@ func (p *ParseStreamImpl) readSpecificParenToken(p2 token.Type) (token.ParenToke
 	}
 
 	return parsedToken.(token.ParenToken), nil
+}
+
+func (p *ParseStreamImpl) readSpecificOperatorToken(p2 token.Type) (token.OperatorToken, parerr.ParseError) {
+	parsedToken, err := p.tokenizer.ReadAnyOperator()
+	if err != nil {
+		return token.OperatorToken{}, err
+	}
+
+	if parsedToken.Type() != p2 {
+		return token.OperatorToken{}, parerr.NewUnknownPrefixInExpression(parsedToken)
+	}
+
+	return parsedToken.(token.OperatorToken), nil
 }
 
 func (p *ParseStreamImpl) maybeSpecificKeywordToken(p2 token.Type) (token.Keyword, bool) {
@@ -304,8 +313,24 @@ func (p *ParseStreamImpl) maybeSpecificParenToken(p2 token.Type) (token.ParenTok
 	return parenToken, true
 }
 
+func (p *ParseStreamImpl) maybeSpecificOperatorToken(p2 token.Type) (token.OperatorToken, bool) {
+	pos := p.tokenizer.Tell()
+
+	operatorToken, err := p.readSpecificOperatorToken(p2)
+	if err != nil {
+		p.tokenizer.Seek(pos)
+		return token.OperatorToken{}, false
+	}
+
+	return operatorToken, true
+}
+
 func (p *ParseStreamImpl) maybeRightBracket() (token.ParenToken, bool) {
 	return p.maybeSpecificParenToken(token.RightBracket)
+}
+
+func (p *ParseStreamImpl) maybeComma() (token.OperatorToken, bool) {
+	return p.maybeSpecificOperatorToken(token.Comma)
 }
 
 func (p *ParseStreamImpl) maybeRightArrayBracket() (token.ParenToken, bool) {
@@ -416,7 +441,7 @@ func (p *ParseStreamImpl) detectOneSpaceAndTermination() bool {
 		return true
 	}
 
-	if p.maybeComma() {
+	if _, wasComma := p.maybeComma(); wasComma {
 		p.tokenizer.Seek(pos)
 		return true
 	}
@@ -655,6 +680,10 @@ func (p *ParseStreamImpl) maybeNewLine() bool {
 
 func (p *ParseStreamImpl) maybeRightParen() bool {
 	return p.tokenizer.MaybeRune(')')
+}
+
+func (p *ParseStreamImpl) detectRightParen() bool {
+	return p.tokenizer.DetectRune(')')
 }
 
 func (p *ParseStreamImpl) maybeEmptyParen() bool {

@@ -8,7 +8,27 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
+	"github.com/swamp/compiler/src/token"
 )
+
+func parseTupleTypeReference(p ParseStream, keywordIndentation int,
+	typeParameterContext *ast.TypeParameterIdentifierContext,
+	precedingComments *ast.MultilineComment, term ast.Type) (ast.Type, parerr.ParseError) {
+	var types []ast.Type
+	types = append(types, term)
+	for {
+		term, err := parseTypeReference(p, keywordIndentation, typeParameterContext, precedingComments)
+		if err != nil {
+			return nil, err
+		}
+		types = append(types, term)
+		if p.maybeRightParen() {
+			break
+		}
+	}
+
+	return ast.NewTupleType(token.ParenToken{}, token.ParenToken{}, types), nil
+}
 
 func parseTypeReference(p ParseStream, keywordIndentation int,
 	typeParameterContext *ast.TypeParameterIdentifierContext,

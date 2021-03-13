@@ -48,6 +48,19 @@ func newInvokerType(astTypeReference ast.TypeReferenceScopedOrNormal, foundType 
 	return dectype.NewInvokerType(foundType, convertedParameters)
 }
 
+func DecorateTupleType(tupleType *ast.TupleType, t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
+	var convertedParameters []dtype.Type
+	for _, a := range tupleType.Types() {
+		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
+		if convertedParameterErr != nil {
+			return nil, convertedParameterErr
+		}
+		convertedParameters = append(convertedParameters, convertedParameter)
+	}
+
+	return dectype.NewTupleTypeAtom(tupleType, convertedParameters), nil
+}
+
 func ConvertFromAstToDecorated(astType ast.Type,
 	t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
 	switch info := astType.(type) {
@@ -74,6 +87,9 @@ func ConvertFromAstToDecorated(astType ast.Type,
 
 	case *ast.Record:
 		return DecorateRecordType(info, t)
+
+	case *ast.TupleType:
+		return DecorateTupleType(info, t)
 
 	case *ast.TypeIdentifier:
 		refName := info.Symbol().Name()

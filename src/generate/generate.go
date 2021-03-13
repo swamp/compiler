@@ -885,6 +885,20 @@ func generateList(code *assembler.Code, target assembler.TargetVariable, list *d
 	return nil
 }
 
+func generateTuple(code *assembler.Code, target assembler.TargetVariable, tupleLiteral *decorated.TupleLiteral, genContext *generateContext) error {
+	variables := make([]assembler.SourceVariable, len(tupleLiteral.Expressions()))
+	for index, expr := range tupleLiteral.Expressions() {
+		debugName := fmt.Sprintf("tupleliteral%v", index)
+		exprVar, genErr := generateExpressionWithSourceVar(code, expr, genContext, debugName)
+		if genErr != nil {
+			return genErr
+		}
+		variables[index] = exprVar
+	}
+	code.Constructor(target, variables)
+	return nil
+}
+
 func generateArray(code *assembler.Code, target assembler.TargetVariable, array *decorated.ArrayLiteral, genContext *generateContext) error {
 	variables := make([]assembler.SourceVariable, len(array.Expressions()))
 	for index, expr := range array.Expressions() {
@@ -1048,6 +1062,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.ListLiteral:
 		return generateList(code, target, e, genContext)
+
+	case *decorated.TupleLiteral:
+		return generateTuple(code, target, e, genContext)
 
 	case *decorated.ArrayLiteral:
 		return generateArray(code, target, e, genContext)

@@ -308,6 +308,19 @@ func (t *FunctionType) HumanReadable() string {
 	return fmt.Sprintf("( %v )", typesToHumanReadable(t.parameterTypes, " -> "))
 }
 
+type TupleType struct {
+	Type
+	parameterTypes []InfoType
+}
+
+func (t *TupleType) String() string {
+	return fmt.Sprintf("tuple params:%v", Refs(t.parameterTypes))
+}
+
+func (t *TupleType) HumanReadable() string {
+	return fmt.Sprintf("( %v )", typesToHumanReadable(t.parameterTypes, ", "))
+}
+
 type Chunk struct {
 	infoTypes []InfoType
 }
@@ -411,11 +424,40 @@ func functionsAreSame(fn *FunctionType, other *FunctionType) bool {
 	return true
 }
 
+func tuplesAreSame(fn *TupleType, other *TupleType) bool {
+	if len(other.parameterTypes) != len(fn.parameterTypes) {
+		return false
+	}
+
+	for paramIndex, parameterType := range fn.parameterTypes {
+		otherParamType := other.parameterTypes[paramIndex]
+
+		if parameterType.Index() != otherParamType.Index() {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (c *Chunk) doWeHaveFunction(fn *FunctionType) int {
 	for index, infoType := range c.infoTypes {
 		other, isFunction := infoType.(*FunctionType)
 		if isFunction {
 			if functionsAreSame(fn, other) {
+				return index
+			}
+		}
+	}
+
+	return -1
+}
+
+func (c *Chunk) doWeHaveTuple(fn *TupleType) int {
+	for index, infoType := range c.infoTypes {
+		other, isFunction := infoType.(*TupleType)
+		if isFunction {
+			if tuplesAreSame(fn, other) {
 				return index
 			}
 		}
@@ -641,6 +683,36 @@ func (c *Chunk) consumeFunction(fn *dectype.FunctionAtom) (*FunctionType, error)
 	c.infoTypes = append(c.infoTypes, proposedNewFunction)
 
 	return proposedNewFunction, nil
+}
+
+func (c *Chunk) consumeTuple(fn *dectype.TupleTypeAtom) (*TupleType, error) {
+	var types []InfoType
+
+	for _, paramType := range fn.ParameterTypes() {
+		consumeType, err := c.Consume(paramType)
+		if err != nil {
+			return nil, err
+		}
+		if consumeType == nil {
+			return nil, fmt.Errorf("this should not be needed")
+		}
+		types = append(types, consumeType)
+	}
+
+	proposedNewTuple := &TupleType{
+		Type:           Type{},
+		parameterTypes: types,
+	}
+
+	indexRecord := c.doWeHaveTuple(proposedNewTuple)
+	if indexRecord != -1 {
+		return c.infoTypes[indexRecord].(*TupleType), nil
+	}
+
+	proposedNewTuple.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, proposedNewTuple)
+
+	return proposedNewTuple, nil
 }
 
 func (c *Chunk) consumeArray(genericTypes []dtype.Type) (InfoType, error) {
@@ -888,6 +960,8 @@ func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 		return c.consumePrimitive(t)
 	case *dectype.LocalType:
 		return c.consumeLocalType(t)
+	case *dectype.TupleTypeAtom:
+		return c.consumeTuple(t)
 	}
 
 	return nil, fmt.Errorf("unknown atom %T", a)
