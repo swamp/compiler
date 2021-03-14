@@ -15,7 +15,7 @@ import (
 
 type LetVariableReference struct {
 	ident      ast.ScopedOrNormalVariableIdentifier
-	assignment *LetAssignment
+	assignment *LetVariable
 }
 
 func (g *LetVariableReference) Type() dtype.Type {
@@ -31,14 +31,10 @@ func (g *LetVariableReference) HumanReadable() string {
 }
 
 func (g *LetVariableReference) LetVariable() *LetVariable {
-	return g.assignment.LetVariable()
+	return g.assignment
 }
 
-func (g *LetVariableReference) Expression() Expression {
-	return g.assignment.Expression()
-}
-
-func NewLetVariableReference(ident ast.ScopedOrNormalVariableIdentifier, assignment *LetAssignment) *LetVariableReference {
+func NewLetVariableReference(ident ast.ScopedOrNormalVariableIdentifier, assignment *LetVariable) *LetVariableReference {
 	if assignment == nil {
 		panic("cant be nil")
 	}

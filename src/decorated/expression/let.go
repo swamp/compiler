@@ -62,24 +62,21 @@ func (l *LetVariable) FetchPositionLength() token.SourceFileReference {
 
 type LetAssignment struct {
 	expression       Expression
-	letVariable      *LetVariable
+	letVariables     []*LetVariable
 	inclusive        token.SourceFileReference
-	references       []*LetVariableReference
 	astLetAssignment ast.LetAssignment
 }
 
-func NewLetAssignment(astLetAssignment ast.LetAssignment, name *ast.VariableIdentifier, expression Expression) *LetAssignment {
-	letVar := NewLetVariable(name, expression.Type(), astLetAssignment.CommentBlock())
-	inclusive := token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), expression.FetchPositionLength())
-	return &LetAssignment{letVariable: letVar, expression: expression, inclusive: inclusive, astLetAssignment: astLetAssignment}
+func NewLetAssignment(astLetAssignment ast.LetAssignment, letVariables []*LetVariable, expression Expression) *LetAssignment {
+	return &LetAssignment{letVariables: letVariables, expression: expression, astLetAssignment: astLetAssignment}
 }
 
 func (l *LetAssignment) String() string {
-	return fmt.Sprintf("[letassign %v = %v]", l.letVariable, l.expression)
+	return fmt.Sprintf("[letassign %v = %v]", l.letVariables, l.expression)
 }
 
-func (l *LetAssignment) LetVariable() *LetVariable {
-	return l.letVariable
+func (l *LetAssignment) LetVariables() []*LetVariable {
+	return l.letVariables
 }
 
 func (l *LetAssignment) Expression() Expression {
@@ -91,16 +88,7 @@ func (l *LetAssignment) Type() dtype.Type {
 }
 
 func (l *LetAssignment) FetchPositionLength() token.SourceFileReference {
-	return l.inclusive
-}
-
-func (l *LetAssignment) AddReferee(ref *LetVariableReference) {
-	l.letVariable.AddReferee(ref)
-	l.references = append(l.references, ref)
-}
-
-func (l *LetAssignment) References() []*LetVariableReference {
-	return l.references
+	return l.astLetAssignment.FetchPositionLength()
 }
 
 type Let struct {

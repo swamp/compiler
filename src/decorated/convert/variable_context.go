@@ -40,7 +40,7 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 		return functionReference, nil
 	case *decorated.FunctionParameterDefinition:
 		return decorated.NewFunctionParameterReference(name, t), nil
-	case *decorated.LetAssignment:
+	case *decorated.LetVariable:
 		return decorated.NewLetVariableReference(name, t), nil
 	case *decorated.CaseConsequenceParameterForCustomType:
 		return decorated.NewCaseConsequenceParameterReference(name, t), nil

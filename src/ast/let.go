@@ -12,19 +12,19 @@ import (
 )
 
 type LetAssignment struct {
-	identifier *VariableIdentifier
-	expression Expression
-	inclusive  token.SourceFileReference
-	comment    *MultilineComment
+	identifiers []*VariableIdentifier
+	expression  Expression
+	inclusive   token.SourceFileReference
+	comment     *MultilineComment
 }
 
-func NewLetAssignment(identifier *VariableIdentifier, expression Expression, comment *MultilineComment) LetAssignment {
-	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), expression.FetchPositionLength())
-	return LetAssignment{identifier: identifier, expression: expression, inclusive: inclusive, comment: comment}
+func NewLetAssignment(identifiers []*VariableIdentifier, expression Expression, comment *MultilineComment) LetAssignment {
+	inclusive := token.MakeInclusiveSourceFileReference(identifiers[0].FetchPositionLength(), expression.FetchPositionLength())
+	return LetAssignment{identifiers: identifiers, expression: expression, inclusive: inclusive, comment: comment}
 }
 
-func (l LetAssignment) Identifier() *VariableIdentifier {
-	return l.identifier
+func (l LetAssignment) Identifiers() []*VariableIdentifier {
+	return l.identifiers
 }
 
 func (l LetAssignment) Expression() Expression {
@@ -32,7 +32,7 @@ func (l LetAssignment) Expression() Expression {
 }
 
 func (l LetAssignment) String() string {
-	return fmt.Sprintf("[letassign %v = %v]", l.identifier, l.expression)
+	return fmt.Sprintf("[letassign %v = %v]", l.identifiers, l.expression)
 }
 
 func (l LetAssignment) CommentBlock() *MultilineComment {

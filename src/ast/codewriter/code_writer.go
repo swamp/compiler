@@ -284,7 +284,7 @@ func writeLet(letExpression *ast.Let, colorer coloring.Colorer, indentation int)
 			colorer.NewLine(indentation + 1)
 		}
 
-		colorer.VariableSymbol(assignment.Identifier().Symbol())
+		colorer.VariableSymbol(assignment.Identifiers()[0].Symbol())
 		colorer.OneSpace()
 		colorer.OperatorString("=")
 		colorer.NewLine(indentation + 2)

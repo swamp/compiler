@@ -11,6 +11,28 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+func parseMultipleIdentifiers(p ParseStream) ([]*ast.VariableIdentifier, parerr.ParseError) {
+	var identifiers []*ast.VariableIdentifier
+
+	for {
+		letVariableIdentifier, letVariableIdentifierErr := p.readVariableIdentifier()
+		if letVariableIdentifierErr != nil {
+			return nil, letVariableIdentifierErr
+		}
+		identifiers = append(identifiers, letVariableIdentifier)
+
+		if _, wasComma := p.maybeComma(); !wasComma {
+			break
+		}
+	}
+
+	if _, spaceAfterIdentifierErr := p.eatOneSpace("after variable identifier"); spaceAfterIdentifierErr != nil {
+		return nil, parerr.NewExpectedOneSpaceAfterVariableAndBeforeAssign(spaceAfterIdentifierErr)
+	}
+
+	return identifiers, nil
+}
+
 func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError) {
 	keywordIndentation := t.FetchPositionLength().Range.FetchIndentation()
 
@@ -26,13 +48,9 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 
 	var inKeyword token.Keyword
 	for {
-		letVariableIdentifier, letVariableIdentifierErr := p.readVariableIdentifier()
-		if letVariableIdentifierErr != nil {
-			return nil, letVariableIdentifierErr
-		}
-
-		if _, spaceAfterIdentifierErr := p.eatOneSpace("after variable identifier"); spaceAfterIdentifierErr != nil {
-			return nil, parerr.NewExpectedOneSpaceAfterVariableAndBeforeAssign(spaceAfterIdentifierErr)
+		identifiers, identifiersErr := parseMultipleIdentifiers(p)
+		if identifiersErr != nil {
+			return nil, identifiersErr
 		}
 
 		if expectedAssignErr := p.eatAssign(); expectedAssignErr != nil {
@@ -59,7 +77,7 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 			comment := lastReport.Comments.Comments[len(lastReport.Comments.Comments)-1]
 			astMultilineComment = ast.NewMultilineComment(token.NewMultiLineCommentToken(comment.RawString, comment.CommentString, comment.ForDocumentation, comment.SourceFileReference))
 		}
-		newLetAssignment := ast.NewLetAssignment(letVariableIdentifier, letExpr, astMultilineComment)
+		newLetAssignment := ast.NewLetAssignment(identifiers, letExpr, astMultilineComment)
 		assignments = append(assignments, newLetAssignment)
 
 		expectingNewLetAssignment, nextReport, posLengthErr := p.eatOneOrTwoNewLineContinuationOrDedent(expectedIndentation)

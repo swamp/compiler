@@ -154,7 +154,9 @@ func expandChildNodesInvokerType(fn *dectype.InvokerType) []TypeOrToken {
 
 func expandChildNodesLetAssignment(assignment *LetAssignment) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(assignment.LetVariable())...)
+	for _, param := range assignment.LetVariables() {
+		tokens = append(tokens, expandChildNodes(param)...)
+	}
 	tokens = append(tokens, expandChildNodes(assignment.Expression())...)
 
 	return tokens

@@ -411,11 +411,27 @@ func generateBoolean(code *assembler.Code, target assembler.TargetVariable, oper
 
 func generateLet(code *assembler.Code, target assembler.TargetVariable, let *decorated.Let, genContext *generateContext) error {
 	for _, assignment := range let.Assignments() {
-		varName := assembler.NewVariableName(assignment.LetVariable().Name().Name())
-		targetVar := genContext.context.AllocateVariable(varName)
-		genErr := generateExpression(code, targetVar, assignment.Expression(), genContext)
-		if genErr != nil {
-			return genErr
+		if len(assignment.LetVariables()) == 1 {
+			varName := assembler.NewVariableName(assignment.LetVariables()[0].Name().Name())
+			targetVar := genContext.context.AllocateVariable(varName)
+			genErr := generateExpression(code, targetVar, assignment.Expression(), genContext)
+			if genErr != nil {
+				return genErr
+			}
+		} else {
+			sourceVar, sourceErr := generateExpressionWithSourceVar(code, assignment.Expression(), genContext, "tuple split")
+			if sourceErr != nil {
+				return sourceErr
+			}
+
+			var targetVariables []assembler.TargetVariable
+
+			for _, letVariable := range assignment.LetVariables() {
+				varName := assembler.NewVariableName(letVariable.Name().Name())
+				targetVar := genContext.context.AllocateVariable(varName)
+				targetVariables = append(targetVariables, targetVar)
+			}
+			code.StructSplit(sourceVar, targetVariables)
 		}
 	}
 

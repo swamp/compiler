@@ -286,10 +286,6 @@ func findReferences(uri lsp.DocumentURI, position lsp.Position, scanner Decorate
 		for _, ref := range t.References() {
 			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
 		}
-	case *decorated.LetAssignment:
-		for _, ref := range t.References() {
-			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
-		}
 	case *decorated.FunctionValue:
 		for _, ref := range t.References() {
 			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
@@ -491,12 +487,6 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 	case *decorated.LetVariableReference:
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
 			sourceFileReferences = append(sourceFileReferences, t.LetVariable().FetchPositionLength())
-		}
-	case *decorated.LetAssignment:
-		for _, ref := range t.References() {
-			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
-				sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
-			}
 		}
 	case *decorated.FunctionValue:
 		for _, ref := range t.References() {

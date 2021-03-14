@@ -462,11 +462,14 @@ func addSemanticTokenLet(decoratedLet *decorated.Let, builder *SemanticBuilder) 
 	}
 
 	for _, assignment := range decoratedLet.Assignments() {
-		if assignment.LetVariable().Comment() != nil {
-			encodeComment(builder, assignment.LetVariable().Comment().Token().CommentToken)
-		}
-		if err := builder.EncodeSymbol(assignment.LetVariable().FetchPositionLength().Range, "variable", []string{"readonly"}); err != nil {
-			return err
+		for _, letVariable := range assignment.LetVariables() {
+			if letVariable.Comment() != nil {
+				encodeComment(builder, letVariable.Comment().Token().CommentToken)
+			}
+			if err := builder.EncodeSymbol(letVariable.FetchPositionLength().Range, "variable", []string{"readonly"}); err != nil {
+				return err
+			}
+
 		}
 
 		addSemanticToken(assignment.Expression(), builder)
