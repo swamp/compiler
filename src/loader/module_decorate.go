@@ -19,7 +19,7 @@ type WorldDecorator struct {
 	forceStyle    bool
 }
 
-func NewWorldDecorator(forceStyle bool, verbose bool) (*WorldDecorator, error) {
+func NewWorldDecorator(forceStyle bool, verbose bool) (*WorldDecorator, decshared.DecoratedError) {
 	rootModules, importModules, rootModuleErr := deccy.CreateDefaultRootModule(true)
 	if rootModuleErr != nil {
 		return nil, rootModuleErr

@@ -225,8 +225,6 @@ func fillContextFromTuples(context *TypeParameterContextOther, original *TupleTy
 		converted = append(converted, convertedType)
 	}
 
-	log.Printf("converted tuple types %v", converted)
-
 	return NewTupleTypeAtom(original.astTupleType, converted), nil
 }
 

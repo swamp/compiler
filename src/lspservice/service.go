@@ -134,6 +134,10 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 				if t.FunctionValue().CommentBlock() != nil {
 					documentation = t.FunctionValue().CommentBlock().Value()
 				}
+			case *decorated.LetVariableReference:
+				if t.LetVariable().Comment() != nil {
+					documentation = t.LetVariable().Comment().Value()
+				}
 			}
 		}
 	}

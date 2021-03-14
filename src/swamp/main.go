@@ -16,6 +16,8 @@ import (
 	"github.com/piot/lsp-server/lspserv"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
+	"github.com/swamp/compiler/src/decorated/decshared"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/lspservice"
@@ -132,7 +134,19 @@ func main() {
 
 	err := ctx.Run()
 	if err != nil {
-		fmt.Printf("ERROR:%v\n", err)
+		decErr := err.(decshared.DecoratedError)
+		moduleErr, wasModuleErr := decErr.(*decorated.ModuleError)
+		if wasModuleErr {
+			decErr = moduleErr.WrappedError()
+		}
+		multiErr := decErr.(*decorated.MultiErrors)
+		if multiErr != nil {
+			for _, subErr := range multiErr.Errors() {
+				fmt.Printf("%v ERROR:%v\n", subErr.FetchPositionLength(), subErr)
+			}
+		} else {
+			fmt.Printf("%v ERROR:%v\n", decErr.FetchPositionLength(), err)
+		}
 		os.Exit(-1)
 	}
 

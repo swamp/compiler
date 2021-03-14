@@ -13,6 +13,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
+	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/file"
@@ -39,7 +40,7 @@ func CheckUnused(world *loader.Package) {
 	}
 }
 
-func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.Package, *decorated.Module, error) {
+func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
 	} else {
@@ -88,7 +89,7 @@ type CoreFunctionInfo struct {
 	ParamCount uint
 }
 
-func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag bool) error {
+func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag bool) decshared.DecoratedError {
 	gen := generate.NewGenerator()
 	var allFunctions []*generate.Function
 	var allExternalFunctions []*generate.ExternalFunction
@@ -96,7 +97,7 @@ func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag b
 
 	typeInformationChunk, err := typeinfo.Generate(world)
 	if err != nil {
-		return err
+		return decorated.NewInternalError(err)
 	}
 
 	for _, module := range world.AllModules() {
@@ -112,7 +113,7 @@ func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag b
 		context := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
 		functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, verboseFlag)
 		if genErr != nil {
-			return genErr
+			return decorated.NewInternalError(genErr)
 		}
 		allFunctions = append(allFunctions, functions...)
 		externalFunctions := module.ExternalFunctions()
@@ -134,23 +135,23 @@ func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag b
 
 	typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(typeInformationChunk)
 	if typeInformationErr != nil {
-		return typeInformationErr
+		return decorated.NewInternalError(typeInformationErr)
 	}
 
 	packed, packedErr := generate.Pack(allFunctions, allExternalFunctions, typeInformationOctets, typeInformationChunk)
 	if packedErr != nil {
-		return packedErr
+		return decorated.NewInternalError(packedErr)
 	}
 
 	if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
-		return err
+		return decorated.NewInternalError(err)
 	}
 
 	// color.Cyan("wrote output file '%v'\n", outputFilename)
 	return nil
 }
 
-func CompileAndLink(filename string, outputFilename string, enforceStyle bool, verboseFlag bool) error {
+func CompileAndLink(filename string, outputFilename string, enforceStyle bool, verboseFlag bool) decshared.DecoratedError {
 	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
 	world, _, moduleErr := CompileMain(filename, defaultDocumentProvider, enforceStyle, verboseFlag)
 	if moduleErr != nil {

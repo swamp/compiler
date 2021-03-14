@@ -45,11 +45,11 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 
 			for index, ident := range assignment.Identifiers() {
 				variableType := tuple.ParameterTypes()[index]
-				letVar := decorated.NewLetVariable(ident, variableType, nil)
+				letVar := decorated.NewLetVariable(ident, variableType, assignment.CommentBlock())
 				letVariables = append(letVariables, letVar)
 			}
 		} else {
-			letVar := decorated.NewLetVariable(assignment.Identifiers()[0], decoratedExpression.Type(), nil)
+			letVar := decorated.NewLetVariable(assignment.Identifiers()[0], decoratedExpression.Type(), assignment.CommentBlock())
 			letVariables = []*decorated.LetVariable{letVar}
 		}
 
