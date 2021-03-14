@@ -217,7 +217,7 @@ func NewCaseCouldNotFindCustomVariantType(caseExpression *ast.CaseForCustomType,
 }
 
 func (e *CaseCouldNotFindCustomVariantType) Error() string {
-	return fmt.Sprintf("couldn't find custom variant in case consequence %v (%v)", e.consequence, e.caseExpression)
+	return fmt.Sprintf("couldn't find custom variant in case consequence %v (%v) %v", e.consequence, e.caseExpression, e.FetchPositionLength())
 }
 
 func (e *CaseCouldNotFindCustomVariantType) FetchPositionLength() token.SourceFileReference {
@@ -615,7 +615,7 @@ func (e *WrongNumberOfArgumentsInFunctionValue) EncounteredArgumentTypes() []dty
 }
 
 func (e *WrongNumberOfArgumentsInFunctionValue) Error() string {
-	return fmt.Sprintf("wrong number of arguments in functionvalue %v", e.encounteredFunction)
+	return fmt.Sprintf("wrong number of arguments in functionvalue %v (%v)", e.encounteredFunction, e.FetchPositionLength())
 }
 
 func (e *WrongNumberOfArgumentsInFunctionValue) FetchPositionLength() token.SourceFileReference {
@@ -721,7 +721,7 @@ func NewCouldNotFindIdentifierInLookups(lookups *ast.Lookups) *CouldNotFindIdent
 }
 
 func (e *CouldNotFindIdentifierInLookups) Error() string {
-	return fmt.Sprintf("could not find %v", e.lookups)
+	return fmt.Sprintf("could not find %v %v", e.lookups, e.FetchPositionLength())
 }
 
 func (e *CouldNotFindIdentifierInLookups) FetchPositionLength() token.SourceFileReference {
@@ -739,7 +739,7 @@ func NewCouldNotFindFieldInLookup(lookups *ast.Lookups, variable *ast.VariableId
 }
 
 func (e *CouldNotFindFieldInLookup) Error() string {
-	return fmt.Sprintf("could not find %v", e.lookups)
+	return fmt.Sprintf("could not find %v %v", e.lookups, e.FetchPositionLength())
 }
 
 func (e *CouldNotFindFieldInLookup) FetchPositionLength() token.SourceFileReference {
@@ -805,7 +805,7 @@ func NewUnknownVariable(ident *ast.VariableIdentifier) *UnknownVariable {
 }
 
 func (e *UnknownVariable) Error() string {
-	return fmt.Sprintf("unknown variable '%v'", e.ident)
+	return fmt.Sprintf("unknown variable '%v' %v", e.ident, e.FetchPositionLength())
 }
 
 func (e *UnknownVariable) FetchPositionLength() token.SourceFileReference {

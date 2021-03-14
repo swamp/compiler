@@ -30,7 +30,7 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *CustomTypeVaria
 	}
 
 	if customTypeVariant.ParameterCount() != len(arguments) {
-		panic(fmt.Sprintf("custom type variant constructor. wrong number of arguments %v %v", customTypeVariant.ParameterCount(), arguments))
+		panic(fmt.Sprintf("custom type variant constructor. wrong number of arguments %v %v %v", customTypeVariantReference, customTypeVariant.ParameterCount(), arguments))
 	}
 
 	return &CustomTypeVariantConstructor{

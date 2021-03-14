@@ -2,6 +2,7 @@ package lspservice
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/token"
 )
@@ -130,7 +131,8 @@ func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string,
 
 	tokenLength := tokenRange.SingleLineLength()
 	if tokenLength == -1 {
-		return fmt.Errorf("token spans multiple lines %v", tokenType)
+		log.Printf(fmt.Errorf("token spans multiple lines %v", tokenType).Error())
+		return nil
 	}
 
 	encodedIntegers := [5]uint{deltaLine, deltaColumnFromLastStartColumn, uint(tokenLength), uint(tokenTypeId), modifierBitMask}

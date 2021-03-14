@@ -90,6 +90,16 @@ func addSemanticTokenRecordType(f *dectype.RecordAtom, builder *SemanticBuilder)
 	return nil
 }
 
+func addSemanticTokenTupleType(f *dectype.TupleTypeAtom, builder *SemanticBuilder) error {
+	for _, paramType := range f.ParameterTypes() {
+		if err := addSemanticToken(paramType, builder); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuilder) error {
 	if err := encodeKeyword(builder, f.AstCustomType().KeywordType()); err != nil {
 		return err
@@ -540,6 +550,16 @@ func addSemanticTokenRecordLiteral(recordLiteral *decorated.RecordLiteral, build
 	return nil
 }
 
+func addSemanticTokenTupleLiteral(recordLiteral *decorated.TupleLiteral, builder *SemanticBuilder) error {
+	for _, expression := range recordLiteral.Expressions() {
+		if err := addSemanticToken(expression, builder); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func addSemanticTokenLetVariableReference(letVarReference *decorated.LetVariableReference, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(letVarReference.FetchPositionLength().Range, "variable", []string{"readonly"}); err != nil {
 		return err
@@ -745,6 +765,8 @@ func typeReferenceParamHelper(param dtype.Type, builder *SemanticBuilder) error 
 		return addSemanticToken(t, builder)
 	case *dectype.LocalType:
 		return addSemanticToken(t, builder)
+	case *dectype.TupleTypeAtom:
+		return addSemanticToken(t, builder)
 	}
 	log.Printf("unknown param %T", param)
 	return fmt.Errorf("unknown param %T", param)
@@ -798,6 +820,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenUnaryOperator(t, builder)
 	case *decorated.RecordLiteral:
 		return addSemanticTokenRecordLiteral(t, builder)
+	case *decorated.TupleLiteral:
+		return addSemanticTokenTupleLiteral(t, builder)
 	case *decorated.ResourceNameLiteral:
 		return addSemanticTokenResourceNameLiteral(t, builder)
 	case *decorated.LetVariableReference:
@@ -886,6 +910,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenTypeAlias(t, builder)
 	case *dectype.RecordAtom:
 		return addSemanticTokenRecordType(t, builder)
+	case *dectype.TupleTypeAtom:
+		return addSemanticTokenTupleType(t, builder)
 	case *dectype.CustomTypeAtom:
 		return addSemanticTokenCustomType(t, builder)
 	case *dectype.LocalType:
