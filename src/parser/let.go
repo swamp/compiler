@@ -24,6 +24,9 @@ func parseMultipleIdentifiers(p ParseStream) ([]*ast.VariableIdentifier, parerr.
 		if _, wasComma := p.maybeComma(); !wasComma {
 			break
 		}
+		if _, err := p.eatOneSpace("afterComma"); err != nil {
+			return nil, err
+		}
 	}
 
 	if _, spaceAfterIdentifierErr := p.eatOneSpace("after variable identifier"); spaceAfterIdentifierErr != nil {
