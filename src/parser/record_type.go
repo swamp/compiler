@@ -14,8 +14,8 @@ import (
 
 func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 	parameterIdentifierContext *ast.TypeParameterIdentifierContext,
-	precedingComments *ast.MultilineComment) ([]*ast.RecordField, parerr.ParseError) {
-	var fields []*ast.RecordField
+	precedingComments *ast.MultilineComment) ([]*ast.RecordTypeField, parerr.ParseError) {
+	var fields []*ast.RecordTypeField
 	index := 0
 	for {
 		symbolToken, symbolTokenErr := p.readVariableIdentifier()
@@ -44,11 +44,14 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 		var wasErr parerr.ParseError
 		var wasComma bool
 
-		if wasComma, report, wasErr = p.eatCommaSeparatorOrTermination(expectedIndentation, tokenize.SameLine); wasErr != nil {
+		if wasComma, report, wasErr = p.eatCommaSeparatorOrTermination(expectedIndentation, tokenize.OwnLine); wasErr != nil {
 			return nil, wasErr
 		}
-		precedingComments := report.Comments
 		field := ast.NewRecordTypeField(index, symbolToken, userType, precedingComments)
+		foundComments := ast.CommentBlockToAst(report.Comments)
+		if len(foundComments) > 0 {
+			precedingComments = foundComments[len(foundComments)-1]
+		}
 		index++
 		fields = append(fields, field)
 

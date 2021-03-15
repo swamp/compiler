@@ -86,14 +86,20 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 		if (report.SpacesUntilMaybeNewline > 0 || linesToPad == -1) && report.IndentationSpaces > 0 {
 			return nil, parerr.NewExtraSpacing(p.stream.sourceFileReference())
 		}
-		var previousComment *ast.MultilineComment
-		for _, comment := range report.Comments.Comments {
-			astMultilineComment := ast.NewMultilineComment(token.NewMultiLineCommentToken(comment.RawString, comment.CommentString, comment.ForDocumentation, comment.SourceFileReference))
-			statements = append(statements, astMultilineComment)
-			previousComment = astMultilineComment
+
+		astMultilineComments := ast.CommentBlockToAst(report.Comments)
+		if len(astMultilineComments) > 1 {
+			for _, comment := range astMultilineComments[:len(astMultilineComments)-1] {
+				statements = append(statements, comment)
+			}
 		}
 
-		expression, expressionErr := p.parseExpressionStatement(previousComment)
+		var lastComment *ast.MultilineComment
+		if len(astMultilineComments) > 0 {
+			lastComment = astMultilineComments[len(astMultilineComments)-1]
+		}
+
+		expression, expressionErr := p.parseExpressionStatement(lastComment)
 		if expressionErr != nil {
 			return nil, expressionErr
 		}

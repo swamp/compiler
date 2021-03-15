@@ -13,14 +13,14 @@ import (
 
 type Record struct {
 	typeParameters []*TypeParameter
-	fields         []*RecordField
+	fields         []*RecordTypeField
 	startParen     token.ParenToken
 	endParen       token.ParenToken
 
 	inclusive token.SourceFileReference
 }
 
-func NewRecordType(startParen token.ParenToken, endParen token.ParenToken, fields []*RecordField, typeParameters []*TypeParameter) *Record {
+func NewRecordType(startParen token.ParenToken, endParen token.ParenToken, fields []*RecordTypeField, typeParameters []*TypeParameter) *Record {
 	inclusive := token.MakeInclusiveSourceFileReference(startParen.SourceFileReference, endParen.SourceFileReference)
 	return &Record{fields: fields, typeParameters: typeParameters, inclusive: inclusive}
 }
@@ -37,11 +37,11 @@ func (i *Record) String() string {
 	return fmt.Sprintf("[record-type %v %v]", i.fields, i.typeParameters)
 }
 
-func (i *Record) Fields() []*RecordField {
+func (i *Record) Fields() []*RecordTypeField {
 	return i.fields
 }
 
-func (i *Record) FindField(name string) *RecordField {
+func (i *Record) FindField(name string) *RecordTypeField {
 	for _, f := range i.fields {
 		if f.Name() == name {
 			return f

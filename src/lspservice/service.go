@@ -116,6 +116,21 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 	if isItAType {
 		codeSignature = tokenType.HumanReadable()
 		name = "type"
+		pureType := tokenType
+		typeRef, wasTypeRef := tokenType.(*dectype.TypeReference)
+		if wasTypeRef {
+			pureType = typeRef.Next()
+		}
+		scopedTypeRef, wasScopedTypeRef := tokenType.(*dectype.TypeReferenceScoped)
+		if wasScopedTypeRef {
+			pureType = scopedTypeRef.Next()
+		}
+		switch t := pureType.(type) {
+		case *dectype.Alias:
+			documentation = t.AstAlias().Comment().Value()
+		default:
+			log.Printf("unhandled for documentation %T", pureType)
+		}
 	} else {
 		normalToken, _ := decoratedToken.(decorated.Token)
 		if normalToken == nil {
@@ -137,6 +152,10 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 			case *decorated.LetVariableReference:
 				if t.LetVariable().Comment() != nil {
 					documentation = t.LetVariable().Comment().Value()
+				}
+			case *decorated.RecordTypeFieldReference:
+				if t.RecordTypeField().AstRecordTypeField().Comment() != nil {
+					documentation = t.RecordTypeField().AstRecordTypeField().Comment().Value()
 				}
 			}
 		}
@@ -169,7 +188,7 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.FunctionValue().FetchPositionLength(), nil
 	case *decorated.ModuleReference:
 		return t.Module().FetchPositionLength(), nil
-	case *decorated.RecordFieldReference:
+	case *decorated.RecordTypeFieldReference:
 		return t.RecordTypeField().VariableIdentifier().FetchPositionLength(), nil
 	case *decorated.CustomTypeVariantReference:
 		return t.CustomTypeVariant().FetchPositionLength(), nil

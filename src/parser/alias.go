@@ -24,5 +24,5 @@ func parseTypeAlias(p ParseStream, keywordType token.Keyword, keywordAlias token
 		return nil, referencedTypeErr
 	}
 
-	return ast.NewAlias(keywordType, keywordAlias, nameOfAlias, referencedType), nil
+	return ast.NewAlias(keywordType, keywordAlias, nameOfAlias, referencedType, precedingComments), nil
 }

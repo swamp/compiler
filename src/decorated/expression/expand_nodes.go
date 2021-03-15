@@ -416,7 +416,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *LetVariable: // Should not be expanded
 		return tokens
-	case *RecordFieldReference: // Should not be expanded
+	case *RecordTypeFieldReference: // Should not be expanded
 		return tokens
 	case *FunctionParameterReference: // Should not be expanded
 		return tokens

@@ -11,6 +11,15 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+func CommentBlockToAst(comments token.CommentBlock) []*MultilineComment {
+	var previousComment []*MultilineComment
+	for _, comment := range comments.Comments {
+		astMultilineComment := NewMultilineComment(token.NewMultiLineCommentToken(comment.RawString, comment.CommentString, comment.ForDocumentation, comment.SourceFileReference))
+		previousComment = append(previousComment, astMultilineComment)
+	}
+	return previousComment
+}
+
 type LocalComment struct {
 	Singleline *SingleLineComment
 	Multiline  *MultilineComment

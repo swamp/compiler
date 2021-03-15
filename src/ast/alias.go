@@ -16,6 +16,7 @@ type Alias struct {
 	xreferencedType Type
 	keywordType     token.Keyword
 	keywordAlias    token.Keyword
+	comment         *MultilineComment
 }
 
 func (i *Alias) String() string {
@@ -54,12 +55,17 @@ func (i *Alias) KeywordAlias() token.Keyword {
 	return i.keywordAlias
 }
 
+func (i *Alias) Comment() *MultilineComment {
+	return i.comment
+}
+
 func NewAlias(keywordType token.Keyword, keywordAlias token.Keyword, aliasName *TypeIdentifier,
-	referenced Type) *Alias {
+	referenced Type, comment *MultilineComment) *Alias {
 	return &Alias{
 		keywordType:     keywordType,
 		keywordAlias:    keywordAlias,
 		aliasName:       aliasName,
+		comment:         comment,
 		xreferencedType: referenced,
 	}
 }

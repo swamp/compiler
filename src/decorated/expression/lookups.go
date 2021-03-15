@@ -13,7 +13,7 @@ import (
 )
 
 type LookupField struct {
-	reference *RecordFieldReference
+	reference *RecordTypeFieldReference
 }
 
 func (l LookupField) String() string {
@@ -28,7 +28,7 @@ func (l LookupField) Identifier() *ast.VariableIdentifier {
 	return l.reference.ident
 }
 
-func NewLookupField(reference *RecordFieldReference) LookupField {
+func NewLookupField(reference *RecordTypeFieldReference) LookupField {
 	return LookupField{reference: reference}
 }
 

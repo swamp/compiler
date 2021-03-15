@@ -7,37 +7,39 @@ package ast
 
 import (
 	"fmt"
-
-	"github.com/swamp/compiler/src/token"
 )
 
-type RecordField struct {
+type RecordTypeField struct {
 	symbol            *VariableIdentifier
 	userType          Type
 	index             int
-	precedingComments token.CommentBlock
+	precedingComments *MultilineComment
 }
 
-func NewRecordTypeField(index int, variable *VariableIdentifier, userType Type, precedingComments token.CommentBlock) *RecordField {
-	return &RecordField{index: index, symbol: variable, userType: userType, precedingComments: precedingComments}
+func NewRecordTypeField(index int, variable *VariableIdentifier, userType Type, precedingComments *MultilineComment) *RecordTypeField {
+	return &RecordTypeField{index: index, symbol: variable, userType: userType, precedingComments: precedingComments}
 }
 
-func (i *RecordField) Name() string {
+func (i *RecordTypeField) Name() string {
 	return i.symbol.Name()
 }
 
-func (i *RecordField) VariableIdentifier() *VariableIdentifier {
+func (i *RecordTypeField) VariableIdentifier() *VariableIdentifier {
 	return i.symbol
 }
 
-func (i *RecordField) Type() Type {
+func (i *RecordTypeField) Type() Type {
 	return i.userType
 }
 
-func (i *RecordField) FieldIndex() int {
+func (i *RecordTypeField) FieldIndex() int {
 	return i.index
 }
 
-func (i *RecordField) String() string {
+func (i *RecordTypeField) Comment() *MultilineComment {
+	return i.precedingComments
+}
+
+func (i *RecordTypeField) String() string {
 	return fmt.Sprintf("[field: %v %v]", i.symbol, i.userType)
 }

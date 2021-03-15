@@ -38,13 +38,14 @@ func (r *RecordFieldName) HumanReadable() string {
 }
 
 type RecordField struct {
-	index     int
-	name      *RecordFieldName
-	fieldType dtype.Type
+	index           int
+	name            *RecordFieldName
+	fieldType       dtype.Type
+	recordTypeField *ast.RecordTypeField
 }
 
-func NewRecordField(fieldName *RecordFieldName, fieldType dtype.Type) *RecordField {
-	return &RecordField{index: -1, name: fieldName, fieldType: fieldType}
+func NewRecordField(fieldName *RecordFieldName, recordTypeField *ast.RecordTypeField, fieldType dtype.Type) *RecordField {
+	return &RecordField{index: -1, name: fieldName, fieldType: fieldType, recordTypeField: recordTypeField}
 }
 
 func (s *RecordField) SetIndexBySorter(index int) {
@@ -64,6 +65,10 @@ func (s *RecordField) Name() string {
 
 func (s *RecordField) VariableIdentifier() *ast.VariableIdentifier {
 	return s.name.Name()
+}
+
+func (s *RecordField) AstRecordTypeField() *ast.RecordTypeField {
+	return s.recordTypeField
 }
 
 func (s *RecordField) FieldName() *RecordFieldName {

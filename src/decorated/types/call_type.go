@@ -73,7 +73,7 @@ func replaceRecordFromContext(record *RecordAtom, lookup Lookup) (*RecordAtom, e
 			panic("converted is nil")
 		}
 
-		newField := NewRecordField(field.name, converted)
+		newField := NewRecordField(field.name, field.AstRecordTypeField(), converted)
 
 		replacedFields = append(replacedFields, newField)
 	}

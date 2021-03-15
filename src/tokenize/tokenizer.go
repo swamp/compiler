@@ -467,7 +467,9 @@ func (t *Tokenizer) SkipWhitespaceToNextIndentationHelper(allowComments CommentA
 					hasTrailingSpaces = false
 					closeIndentation = t.lastReport.CloseIndentation
 					exactIndentation = t.lastReport.ExactIndentation
-					newLineCount-- // discard newline after comment
+					if newLineCount > 0 {
+						newLineCount-- // discard newline after a comment that was preceded with a new line
+					}
 
 					continue
 				}
