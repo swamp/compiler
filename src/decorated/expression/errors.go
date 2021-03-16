@@ -26,7 +26,7 @@ func NewUnMatchingBinaryOperatorTypes(operator *ast.BinaryOperator, typeA dtype.
 }
 
 func (e *UnMatchingBinaryOperatorTypes) Error() string {
-	return fmt.Sprintf("binary operator \n%v resolves to %v\n and \n %v resolves to %v", e.operator.Left(), e.typeA.HumanReadable(), e.operator.Right(), e.typeB.HumanReadable())
+	return fmt.Sprintf("%v: binary operator \n%v resolves to %v\n and \n %v resolves to %v", e.FetchPositionLength(), e.operator.Left(), e.typeA.HumanReadable(), e.operator.Right(), e.typeB.HumanReadable())
 }
 
 func (e *UnMatchingBinaryOperatorTypes) FetchPositionLength() token.SourceFileReference {

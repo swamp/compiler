@@ -151,6 +151,10 @@ func ImportModuleToModule(target *decorated.Module, source *decorated.Module, so
 	if exposeAll {
 		target.ImportedTypes().AddTypes(exposedTypes)
 		target.ImportedDefinitions().AddDefinitions(exposedDefinitions)
+
+		// HACK
+		target.ExposedTypes().AddTypes(exposedTypes)
+		target.ExposedDefinitions().AddDefinitions(exposedDefinitions)
 	}
 
 	return nil

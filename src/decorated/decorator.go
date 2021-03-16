@@ -6,6 +6,8 @@
 package deccy
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -65,7 +67,7 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 func (d *Decorator) ImportModule(importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) (*decorated.ImportStatement, decshared.DecoratedError) {
 	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(relativeModuleName, verboseFlag)
 	if importErr != nil {
-		return nil, importErr
+		return nil, decorated.NewInternalError(fmt.Errorf("%v: couldn't do an import %w", importAst.FetchPositionLength(), importErr))
 	}
 
 	if moduleToImport == nil {
