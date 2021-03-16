@@ -11,34 +11,35 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func isConstant(expression decorated.Expression) (*decorated.FunctionValue, bool) {
-	functionValue, isFunctionValue := expression.(*decorated.FunctionValue)
-	if isFunctionValue {
-		hasParameters := len(functionValue.Parameters()) != 0
-		if hasParameters {
-			return nil, false
-		}
+func isConstant(someReference decorated.Expression) (*decorated.FunctionReference, bool) {
+	functionReference, isFunctionReference := someReference.(*decorated.FunctionReference)
+	if !isFunctionReference {
+		return nil, false
+	}
 
-		switch functionValue.Expression().(type) {
-		case *decorated.IntegerLiteral:
-			return functionValue, true
-		case *decorated.StringLiteral:
-			return functionValue, true
-		case *decorated.CharacterLiteral:
-			return functionValue, true
-		case *decorated.TypeIdLiteral:
-			return functionValue, true
-		case *decorated.ResourceNameLiteral:
-			return functionValue, true
-		case *decorated.RecordLiteral:
-			return functionValue, true
-		case *decorated.ListLiteral:
-			return functionValue, true
-		case *decorated.FixedLiteral:
-			return functionValue, true
-		}
+	functionValue := functionReference.FunctionValue()
+	hasParameters := len(functionValue.Parameters()) != 0
+	if hasParameters {
+		return nil, false
+	}
 
-		return functionValue, false
+	switch functionValue.Expression().(type) {
+	case *decorated.IntegerLiteral:
+		return functionReference, true
+	case *decorated.StringLiteral:
+		return functionReference, true
+	case *decorated.CharacterLiteral:
+		return functionReference, true
+	case *decorated.TypeIdLiteral:
+		return functionReference, true
+	case *decorated.ResourceNameLiteral:
+		return functionReference, true
+	case *decorated.RecordLiteral:
+		return functionReference, true
+	case *decorated.ListLiteral:
+		return functionReference, true
+	case *decorated.FixedLiteral:
+		return functionReference, true
 	}
 
 	return nil, false

@@ -49,29 +49,29 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 	}
 }
 
-func createConstantHelper(identifier ast.ScopedOrNormalVariableIdentifier, expression *decorated.FunctionValue) (*decorated.Constant, decshared.DecoratedError) {
-	return decorated.NewConstant(identifier, expression), nil
+func createConstantHelper(identifier ast.ScopedOrNormalVariableIdentifier, functionReference *decorated.FunctionReference) (*decorated.Constant, decshared.DecoratedError) {
+	return decorated.NewConstant(identifier, functionReference), nil
 }
 
-func createConstant(identifier ast.ScopedOrNormalVariableIdentifier, functionValue *decorated.FunctionValue) (*decorated.Constant, decshared.DecoratedError) {
-	perhapsConstantExpression := functionValue.Expression()
+func createConstant(identifier ast.ScopedOrNormalVariableIdentifier, functionReference *decorated.FunctionReference) (*decorated.Constant, decshared.DecoratedError) {
+	perhapsConstantExpression := functionReference.FunctionValue().Expression()
 	switch perhapsConstantExpression.(type) {
 	case *decorated.IntegerLiteral:
-		return createConstantHelper(identifier, functionValue)
+		return createConstantHelper(identifier, functionReference)
 	case *decorated.StringLiteral:
-		return createConstantHelper(identifier, functionValue)
+		return createConstantHelper(identifier, functionReference)
 	case *decorated.CharacterLiteral:
-		return createConstantHelper(identifier, functionValue)
+		return createConstantHelper(identifier, functionReference)
 	case *decorated.TypeIdLiteral:
-		return createConstantHelper(identifier, functionValue)
+		return createConstantHelper(identifier, functionReference)
 	case *decorated.ResourceNameLiteral:
-		return createConstantHelper(identifier, functionValue)
+		return createConstantHelper(identifier, functionReference)
 	case *decorated.RecordLiteral:
-		return createConstantHelper(identifier, functionValue)
+		return createConstantHelper(identifier, functionReference)
 	case *decorated.ListLiteral:
-		return createConstantHelper(identifier, functionValue)
+		return createConstantHelper(identifier, functionReference)
 	case *decorated.FixedLiteral:
-		return createConstantHelper(identifier, functionValue)
+		return createConstantHelper(identifier, functionReference)
 	}
 
 	return nil, decorated.NewInternalError(fmt.Errorf("not a constant %T", perhapsConstantExpression))
@@ -85,10 +85,14 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 
 	def.SetReferenced()
 
-	if functionValue, wasConstant := isConstant(def.Expression()); wasConstant {
-		return createConstant(name, functionValue)
+	someReference, err := ReferenceFromVariable(name, def.Expression(), nil)
+	if err != nil {
+		return nil, err
 	}
-	return ReferenceFromVariable(name, def.Expression(), nil)
+	if functionReference, wasConstant := isConstant(someReference); wasConstant {
+		return createConstant(name, functionReference)
+	}
+	return someReference, nil
 }
 
 func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecoratedExpression {

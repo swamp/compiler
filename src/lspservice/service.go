@@ -127,7 +127,9 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 		}
 		switch t := pureType.(type) {
 		case *dectype.Alias:
-			documentation = t.AstAlias().Comment().Value()
+			if t.AstAlias().Comment() != nil {
+				documentation = t.AstAlias().Comment().Value()
+			}
 		default:
 			log.Printf("unhandled for documentation %T", pureType)
 		}
@@ -209,7 +211,7 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 	case *decorated.CurryFunction:
 		return tokenToDefinition(t.FunctionValue())
 	case *decorated.Constant:
-		return t.FunctionValue().AstFunctionValue().DebugFunctionIdentifier().FetchPositionLength(), nil
+		return t.FunctionReference().FunctionValue().AstFunctionValue().DebugFunctionIdentifier().FetchPositionLength(), nil
 	// TYPES
 	case *dectype.FunctionTypeReference:
 		return t.FunctionAtom().FetchPositionLength(), nil

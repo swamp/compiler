@@ -7,24 +7,24 @@ import (
 )
 
 type Constant struct {
-	functionValue *FunctionValue
-	identifier    ast.ScopedOrNormalVariableIdentifier
+	functionReference *FunctionReference
+	identifier        ast.ScopedOrNormalVariableIdentifier
 }
 
-func NewConstant(identifier ast.ScopedOrNormalVariableIdentifier, functionValue *FunctionValue) *Constant {
-	return &Constant{functionValue: functionValue, identifier: identifier}
+func NewConstant(identifier ast.ScopedOrNormalVariableIdentifier, functionReference *FunctionReference) *Constant {
+	return &Constant{functionReference: functionReference, identifier: identifier}
 }
 
 func (c *Constant) String() string {
 	return "constant"
 }
 
-func (c *Constant) FunctionValue() *FunctionValue {
-	return c.functionValue
+func (c *Constant) FunctionReference() *FunctionReference {
+	return c.functionReference
 }
 
 func (c *Constant) Expression() Expression {
-	return c.functionValue.Expression()
+	return c.functionReference.FunctionValue().Expression()
 }
 
 func (c *Constant) FetchPositionLength() token.SourceFileReference {
@@ -36,5 +36,5 @@ func (c *Constant) HumanReadable() string {
 }
 
 func (c *Constant) Type() dtype.Type {
-	return c.functionValue.ForcedFunctionType().ReturnType()
+	return c.functionReference.FunctionValue().ForcedFunctionType().ReturnType()
 }

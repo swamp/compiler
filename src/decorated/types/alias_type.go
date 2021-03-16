@@ -81,5 +81,6 @@ func NewAliasType(name *ast.Alias, artifactTypeName ArtifactFullyQualifiedTypeNa
 	if wasAlias {
 		panic("we cant have alias inside alias")
 	}
+
 	return &Alias{name: name, artifactTypeName: artifactTypeName, referencedType: referencedType}
 }
