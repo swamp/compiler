@@ -566,7 +566,7 @@ func (p *ParseStreamImpl) detectEndOfCallOperator() bool {
 			if t == token.OperatorUnaryMinus || t == token.OperatorUnaryNot {
 				isBinaryOperator = false
 			}
-			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isBinaryOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma || t == token.OperatorPipeRight
+			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isBinaryOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma || t == token.OperatorPipeRight || t == token.OperatorArrowRight
 		}
 	}
 	p.tokenizer.Seek(save)

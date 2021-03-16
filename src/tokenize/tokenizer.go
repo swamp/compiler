@@ -785,6 +785,12 @@ func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, TokenError) {
 		} else {
 			t.unreadRune()
 		}
+	} else if r == '-' {
+		n := t.nextRune()
+		if n == '>' {
+			return token.NewOperatorToken(token.OperatorArrowRight, singleCharLength, "", "->"), nil
+		}
+		t.unreadRune()
 	}
 	t.unreadRune()
 	return nil, NewNotEndToken(singleCharLength, r)

@@ -38,10 +38,11 @@ func parseGuard(p ParseStream, guardToken token.GuardToken, startIndentation int
 		if err := p.eatRightArrow(); err != nil {
 			return nil, err
 		}
-		if _, err := p.eatOneSpace("space after ->"); err != nil {
+		subIndentation, _, err := p.eatContinuationReturnIndentation(startIndentation)
+		if err != nil {
 			return nil, err
 		}
-		consequence, consequenceErr := p.parseExpressionNormal(startIndentation)
+		consequence, consequenceErr := p.parseExpressionNormal(subIndentation)
 		if consequenceErr != nil {
 			return nil, consequenceErr
 		}
