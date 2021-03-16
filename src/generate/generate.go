@@ -392,13 +392,11 @@ func generateBoolean(code *assembler.Code, target assembler.TargetVariable, oper
 		return rightErr
 	}
 
-	foundPrimitive, _ := dectype.UnaliasWithResolveInvoker(operator.Left().Type()).(*dectype.PrimitiveAtom)
-	if foundPrimitive == nil {
-		return fmt.Errorf("could not find the left argument in the binary boolean operator to be a primitive. can not continue %v", operator)
-	}
+	unaliasedTypeLeft := dectype.UnaliasWithResolveInvoker(operator.Left().Type())
+	foundPrimitive, _ := unaliasedTypeLeft.(*dectype.PrimitiveAtom)
 
 	opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
-	if foundPrimitive.AtomName() != "Int" {
+	if foundPrimitive == nil || foundPrimitive.AtomName() != "Int" {
 		opcodeBinaryOperator = booleanToBinaryValueOperatorType(operator.OperatorType())
 	}
 

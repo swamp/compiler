@@ -139,7 +139,7 @@ func main() {
 		if wasModuleErr {
 			decErr = moduleErr.WrappedError()
 		}
-		multiErr := decErr.(*decorated.MultiErrors)
+		multiErr, _ := decErr.(*decorated.MultiErrors)
 		if multiErr != nil {
 			for _, subErr := range multiErr.Errors() {
 				fmt.Printf("%v ERROR:%v\n", subErr.FetchPositionLength(), subErr)
