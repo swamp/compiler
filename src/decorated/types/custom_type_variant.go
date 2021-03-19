@@ -14,20 +14,20 @@ import (
 )
 
 type CustomTypeVariant struct {
-	index          int
-	name           *ast.TypeIdentifier
-	parameterTypes []dtype.Type
-	parent         dtype.Type
-	inCustomType   *CustomTypeAtom
+	index                int
+	astCustomTypeVariant *ast.CustomTypeVariant
+	parameterTypes       []dtype.Type
+	parent               dtype.Type
+	inCustomType         *CustomTypeAtom
 }
 
-func NewCustomTypeVariant(index int, name *ast.TypeIdentifier, parameterTypes []dtype.Type) *CustomTypeVariant {
+func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant, parameterTypes []dtype.Type) *CustomTypeVariant {
 	for _, paramType := range parameterTypes {
 		if paramType == nil {
 			panic("paramtype is nil")
 		}
 	}
-	return &CustomTypeVariant{index: index, name: name, parameterTypes: parameterTypes}
+	return &CustomTypeVariant{index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes}
 }
 
 func (s *CustomTypeVariant) AttachToCustomType(c *CustomTypeAtom) {
@@ -39,8 +39,12 @@ func (s *CustomTypeVariant) AttachToCustomType(c *CustomTypeAtom) {
 	s.inCustomType = c
 }
 
+func (s *CustomTypeVariant) AstCustomTypeVariant() *ast.CustomTypeVariant {
+	return s.astCustomTypeVariant
+}
+
 func (s *CustomTypeVariant) FetchPositionLength() token.SourceFileReference {
-	return s.name.FetchPositionLength()
+	return s.astCustomTypeVariant.FetchPositionLength()
 }
 
 func (s *CustomTypeVariant) InCustomType() *CustomTypeAtom {
@@ -71,7 +75,7 @@ func (s *CustomTypeVariant) Next() dtype.Type {
 }
 
 func (s *CustomTypeVariant) Name() *ast.TypeIdentifier {
-	return s.name
+	return s.astCustomTypeVariant.TypeIdentifier()
 }
 
 func (s *CustomTypeVariant) ParameterTypes() []dtype.Type {
@@ -83,15 +87,15 @@ func (s *CustomTypeVariant) ParameterCount() int {
 }
 
 func (s *CustomTypeVariant) String() string {
-	return fmt.Sprintf("[variant %v%v]", s.name, TypesToStringSuffix(s.parameterTypes))
+	return fmt.Sprintf("[variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), TypesToStringSuffix(s.parameterTypes))
 }
 
 func (s *CustomTypeVariant) ShortString() string {
-	return fmt.Sprintf("[variant %v%v]", s.name, TypesToShortStringSuffix(s.parameterTypes))
+	return fmt.Sprintf("[variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), TypesToShortStringSuffix(s.parameterTypes))
 }
 
 func (s *CustomTypeVariant) HumanReadable() string {
-	str := fmt.Sprintf("%v", s.name)
+	str := fmt.Sprintf("%v", s.astCustomTypeVariant.TypeIdentifier())
 	for _, parameterType := range s.parameterTypes {
 		str += " "
 		str += parameterType.HumanReadable()

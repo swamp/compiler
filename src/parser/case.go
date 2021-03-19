@@ -11,7 +11,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func parseCase(p ParseStream, keyword token.Keyword, startIndentation int) (ast.Expression, parerr.ParseError) {
+func parseCase(p ParseStream, keyword token.Keyword, startIndentation int, previousComment token.Comment) (ast.Expression, parerr.ParseError) {
 	_, firstSpaceErr := p.eatOneSpace("space after CASE")
 	if firstSpaceErr != nil {
 		return nil, firstSpaceErr
@@ -29,14 +29,16 @@ func parseCase(p ParseStream, keyword token.Keyword, startIndentation int) (ast.
 		return nil, ofErr
 	}
 	consequenceIndentation := startIndentation + 1
-	_, secondSpaceErr := p.eatNewLineContinuationAllowComment(startIndentation)
+	report, secondSpaceErr := p.eatNewLineContinuationAllowComment(startIndentation)
 	if secondSpaceErr != nil {
 		return nil, secondSpaceErr
 	}
 
+	subPreviousComent := report.Comments.LastComment()
+
 	if p.detectTypeIdentifier() {
-		return parseCaseForCustomType(p, test, keyword, ofToken, startIndentation, consequenceIndentation)
+		return parseCaseForCustomType(p, test, keyword, ofToken, startIndentation, consequenceIndentation, subPreviousComent)
 	}
 
-	return parseCasePatternMatching(p, test, keyword, ofToken, startIndentation, consequenceIndentation)
+	return parseCasePatternMatching(p, test, keyword, ofToken, startIndentation, consequenceIndentation, subPreviousComent)
 }

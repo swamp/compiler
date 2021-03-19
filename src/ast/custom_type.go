@@ -47,12 +47,16 @@ func (i *CustomType) KeywordType() token.Keyword {
 	return i.keywordType
 }
 
+func (i *CustomType) Comment() *MultilineComment {
+	return i.precedingComments
+}
+
 func (i *CustomType) DebugString() string {
 	return fmt.Sprintf("[custom-type-statement %v]", i.name)
 }
 
-func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter) *CustomType {
-	c := &CustomType{keywordType: keywordType, name: customTypeName, variants: variants, typeParameters: typeParameterIdentifiers}
+func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter, comment *MultilineComment) *CustomType {
+	c := &CustomType{keywordType: keywordType, name: customTypeName, variants: variants, typeParameters: typeParameterIdentifiers, precedingComments: comment}
 	for _, variant := range variants {
 		variant.SetParent(c)
 	}

@@ -26,7 +26,6 @@ func (w *Workspace) AddProject(root LocalFileSystemRoot, project Project) {
 }
 
 func (w *Workspace) AddPackage(p *Package) {
-	log.Printf("adding package %v", p.root)
 	w.AddProject(p.Root(), p)
 }
 

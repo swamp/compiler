@@ -38,6 +38,10 @@ func (c *CaseConsequenceForPatternMatching) Literal() Expression {
 	return c.literal
 }
 
+func (c *CaseConsequenceForPatternMatching) AstConsequence() *ast.CaseConsequencePatternMatching {
+	return c.astConsequence
+}
+
 func (c *CaseConsequenceForPatternMatching) String() string {
 	return fmt.Sprintf("[dpmcasecons %v => %v]", c.literal, c.expression)
 }

@@ -132,7 +132,7 @@ func (s *CustomTypeAtom) Next() dtype.Type {
 
 func (s *CustomTypeAtom) IsVariantEqual(otherVariant *CustomTypeVariant) error {
 	for _, variant := range s.variants {
-		if variant.index == otherVariant.index && variant.name.Name() == otherVariant.name.Name() &&
+		if variant.index == otherVariant.index && variant.astCustomTypeVariant.Name() == otherVariant.astCustomTypeVariant.Name() &&
 			len(variant.parameterTypes) == len(otherVariant.parameterTypes) {
 			for index, variantParam := range variant.parameterTypes {
 				otherParam := otherVariant.parameterTypes[index]

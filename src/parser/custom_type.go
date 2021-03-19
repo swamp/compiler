@@ -35,8 +35,6 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		return nil, spaceAfterTypeIdentifierErr
 	}
 
-	wasNewLineBeforeAssign := false
-
 	var typeParameterIdentifiers []*ast.TypeParameter
 
 	for !p.maybeAssign() {
@@ -58,12 +56,12 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		return parseTypeAlias(p, keywordType, tokenAlias, keywordIndentation, nameOfType, typeParameterContext, precedingComments)
 	}
 
-	if !wasNewLineBeforeAssign {
-		_, afterAssignSpacingErr := p.eatNewLineContinuation(keywordIndentation)
-		if afterAssignSpacingErr != nil {
-			return nil, afterAssignSpacingErr
-		}
+	report, afterAssignSpacingErr := p.eatNewLineContinuationAllowComment(keywordIndentation)
+	if afterAssignSpacingErr != nil {
+		return nil, afterAssignSpacingErr
 	}
+
+	previousComment := report.Comments.LastComment()
 
 	expectedIndentation := keywordIndentation + 1
 
@@ -82,10 +80,12 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 			return nil, variantTypesErr
 		}
 
-		field := ast.NewCustomTypeVariant(index, variantIdentifier, variantTypes)
+		field := ast.NewCustomTypeVariant(index, variantIdentifier, variantTypes, previousComment)
 		fields = append(fields, field)
 
-		continuedOneColumnBelow, _, foundPosLengthErr := p.eatNewLineContinuationOrDedent(expectedIndentation)
+		continuedOneColumnBelow, report, foundPosLengthErr := p.eatNewLineContinuationOrDedent(expectedIndentation)
+		previousComment = report.Comments.LastComment()
+
 		if foundPosLengthErr != nil {
 			return nil, foundPosLengthErr
 		}
@@ -106,7 +106,7 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		index++
 	}
 
-	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, typeParameterIdentifiers)
+	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, typeParameterIdentifiers, precedingComments)
 
 	return newCustomType, nil
 }

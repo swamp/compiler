@@ -147,7 +147,7 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 			convertedParams = append(convertedParams, convertedParam)
 		}
 
-		convertedVariant := NewCustomTypeVariant(originalVariant.index, originalVariant.name, convertedParams)
+		convertedVariant := NewCustomTypeVariant(originalVariant.index, originalVariant.astCustomTypeVariant, convertedParams)
 		convertedVariants = append(convertedVariants, convertedVariant)
 	}
 

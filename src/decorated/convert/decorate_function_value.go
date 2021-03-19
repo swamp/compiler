@@ -7,7 +7,6 @@ package decorator
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -16,7 +15,8 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func CheckForNoLint(commentBlock token.CommentBlock) string {
+/*
+func CheckForNoLint(commentBlock token.Comment) string {
 	for _, comment := range commentBlock.Comments {
 		if strings.HasPrefix(comment.CommentString, "nolint:") {
 			return strings.TrimSpace(strings.TrimPrefix(comment.CommentString, "nolint:"))
@@ -24,6 +24,7 @@ func CheckForNoLint(commentBlock token.CommentBlock) string {
 	}
 	return ""
 }
+*/
 
 func createVariableContextFromParameters(context *VariableContext, parameters []*decorated.FunctionParameterDefinition, forcedFunctionType *dectype.FunctionAtom, functionName *ast.VariableIdentifier) *VariableContext {
 	newVariableContext := context.MakeVariableContext()

@@ -16,10 +16,11 @@ type CaseConsequencePatternMatching struct {
 	literal    Literal
 	expression Expression
 	index      int
+	comment    token.Comment
 }
 
-func NewCaseConsequenceForPatternMatching(index int, literal Literal, expression Expression) *CaseConsequencePatternMatching {
-	return &CaseConsequencePatternMatching{index: index, literal: literal, expression: expression}
+func NewCaseConsequenceForPatternMatching(index int, literal Literal, expression Expression, comment token.Comment) *CaseConsequencePatternMatching {
+	return &CaseConsequencePatternMatching{index: index, literal: literal, expression: expression, comment: comment}
 }
 
 func (c *CaseConsequencePatternMatching) Literal() Literal {
@@ -32,6 +33,10 @@ func (c *CaseConsequencePatternMatching) Index() int {
 
 func (c *CaseConsequencePatternMatching) Expression() Expression {
 	return c.expression
+}
+
+func (c *CaseConsequencePatternMatching) Comment() token.Comment {
+	return c.comment
 }
 
 func (c *CaseConsequencePatternMatching) String() string {

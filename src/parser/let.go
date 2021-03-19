@@ -36,9 +36,7 @@ func parseMultipleIdentifiers(p ParseStream) ([]*ast.VariableIdentifier, parerr.
 	return identifiers, nil
 }
 
-func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError) {
-	keywordIndentation := t.FetchPositionLength().Range.FetchIndentation()
-
+func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expression, parerr.ParseError) {
 	var assignments []ast.LetAssignment
 
 	expectedIndentation := keywordIndentation + 1
@@ -78,7 +76,10 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 		var astMultilineComment *ast.MultilineComment
 		if len(lastReport.Comments.Comments) > 0 {
 			comment := lastReport.Comments.Comments[len(lastReport.Comments.Comments)-1]
-			astMultilineComment = ast.NewMultilineComment(token.NewMultiLineCommentToken(comment.RawString, comment.CommentString, comment.ForDocumentation, comment.SourceFileReference))
+			multiline, wasMultiline := comment.(token.MultiLineCommentToken)
+			if wasMultiline {
+				astMultilineComment = ast.NewMultilineComment(multiline)
+			}
 		}
 		newLetAssignment := ast.NewLetAssignment(identifiers, letExpr, astMultilineComment)
 		assignments = append(assignments, newLetAssignment)
@@ -102,12 +103,12 @@ func parseLet(p ParseStream, t token.Keyword) (ast.Expression, parerr.ParseError
 		}
 	}
 	expectedInConsequencesIndentation := keywordIndentation
-	_, spaceBeforeConsequenceErr := p.eatNewLineContinuationAllowComment(expectedInConsequencesIndentation - 1)
+	report, spaceBeforeConsequenceErr := p.eatNewLineContinuationAllowComment(expectedInConsequencesIndentation - 1)
 	if spaceBeforeConsequenceErr != nil {
 		return nil, parerr.NewLetInConsequenceOnSameColumn(spaceBeforeConsequenceErr)
 	}
 
-	consequence, consequenceErr := p.parseExpressionNormal(keywordIndentation)
+	consequence, consequenceErr := p.parseExpressionNormalWithComment(keywordIndentation, report.Comments.LastComment())
 	if consequenceErr != nil {
 		return nil, consequenceErr
 	}

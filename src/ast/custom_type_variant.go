@@ -7,6 +7,8 @@ package ast
 
 import (
 	"fmt"
+
+	"github.com/swamp/compiler/src/token"
 )
 
 type CustomTypeVariant struct {
@@ -14,14 +16,19 @@ type CustomTypeVariant struct {
 	userTypes      []Type
 	parent         *CustomType
 	index          int
+	comment        token.Comment
 }
 
-func NewCustomTypeVariant(index int, typeIdentifier *TypeIdentifier, userTypes []Type) *CustomTypeVariant {
-	return &CustomTypeVariant{index: index, typeIdentifier: typeIdentifier, userTypes: userTypes}
+func NewCustomTypeVariant(index int, typeIdentifier *TypeIdentifier, userTypes []Type, comment token.Comment) *CustomTypeVariant {
+	return &CustomTypeVariant{index: index, typeIdentifier: typeIdentifier, userTypes: userTypes, comment: comment}
 }
 
 func (i *CustomTypeVariant) TypeIdentifier() *TypeIdentifier {
 	return i.typeIdentifier
+}
+
+func (i *CustomTypeVariant) Comment() token.Comment {
+	return i.comment
 }
 
 func (i *CustomTypeVariant) Name() string {
@@ -46,4 +53,8 @@ func (i *CustomTypeVariant) Index() int {
 
 func (i *CustomTypeVariant) String() string {
 	return fmt.Sprintf("[variant %v%v]", i.typeIdentifier, i.userTypes)
+}
+
+func (i *CustomTypeVariant) FetchPositionLength() token.SourceFileReference {
+	return i.typeIdentifier.FetchPositionLength()
 }

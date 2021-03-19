@@ -40,8 +40,9 @@ var precedences = map[token.Type]Precedence{
 }
 
 type Parser struct {
-	stream *ParseStreamImpl
-	errors []parerr.ParseError
+	stream          *ParseStreamImpl
+	errors          []parerr.ParseError
+	previousComment token.Comment
 }
 
 func NewParser(tokenizer *tokenize.Tokenizer, enforceStyle bool) *Parser {
@@ -279,6 +280,17 @@ func (p *Parser) AddError(parseError parerr.ParseError) {
 
 func (p *Parser) parseExpressionNormal(startIndentation int) (ast.Expression, parerr.ParseError) {
 	expr, err := p.parseExpression(LOWEST, startIndentation)
+	if err != nil {
+		return nil, err
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) parseExpressionNormalWithComment(startIndentation int, comment token.Comment) (ast.Expression, parerr.ParseError) {
+	p.previousComment = comment
+	expr, err := p.parseExpressionNormal(startIndentation)
+	p.previousComment = nil
 	if err != nil {
 		return nil, err
 	}

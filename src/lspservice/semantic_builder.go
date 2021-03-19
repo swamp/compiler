@@ -81,7 +81,7 @@ func NewSemanticBuilder() *SemanticBuilder {
 			"documentation",
 			"defaultLibrary",
 		},
-		lastRange: token.NewPositionLength(token.MakePosition(0, 0), 0, 0),
+		lastRange: token.NewPositionLength(token.MakePosition(0, 0, 0), 0),
 	}
 	return self
 }
@@ -129,9 +129,9 @@ func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string,
 	}
 	deltaColumnFromLastStartColumn := uint(tokenRange.Position().Column() - lastStartColumn)
 
-	tokenLength := tokenRange.SingleLineLength()
-	if tokenLength == -1 {
-		log.Printf(fmt.Errorf("token spans multiple lines %v", tokenType).Error())
+	tokenLength := tokenRange.OctetCount()
+	if tokenLength <= 0 {
+		log.Printf(fmt.Errorf("problem with token length %v", tokenType).Error())
 		return nil
 	}
 

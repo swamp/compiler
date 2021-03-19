@@ -105,9 +105,9 @@ func (e InternalError) Error() string {
 }
 
 func (e InternalError) FetchPositionLength() token.SourceFileReference {
-	illegalStart := token.MakePosition(-1, -1)
+	illegalStart := token.MakePosition(-1, -1, -1)
 	return token.SourceFileReference{
-		Range:    token.NewPositionLength(illegalStart, 0, -1),
+		Range:    token.NewPositionLength(illegalStart, 0),
 		Document: nil,
 	}
 }

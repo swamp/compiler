@@ -38,6 +38,11 @@ func addSemanticTokenNamedFunctionValue(f *decorated.NamedFunctionValue, builder
 }
 
 func addSemanticTokenAnnotation(f *decorated.AnnotationStatement, builder *SemanticBuilder) error {
+	if f.Annotation().CommentBlock() != nil {
+		if err := encodeComment(builder, f.Annotation().CommentBlock().Token()); err != nil {
+			return err
+		}
+	}
 	if err := builder.EncodeSymbol(f.Identifier().FetchPositionLength().Range, "function", []string{"declaration"}); err != nil {
 		return err
 	}
@@ -58,6 +63,11 @@ func addSemanticTokenFunctionType(f *dectype.FunctionAtom, builder *SemanticBuil
 }
 
 func addSemanticTokenTypeAlias(f *dectype.Alias, builder *SemanticBuilder) error {
+	if f.AstAlias().Comment() != nil {
+		if err := encodeComment(builder, f.AstAlias().Comment().Token()); err != nil {
+			return err
+		}
+	}
 	if err := encodeKeyword(builder, f.AstAlias().KeywordType()); err != nil {
 		return err
 	}
@@ -78,6 +88,11 @@ func addSemanticTokenTypeAlias(f *dectype.Alias, builder *SemanticBuilder) error
 
 func addSemanticTokenRecordType(f *dectype.RecordAtom, builder *SemanticBuilder) error {
 	for _, paramType := range f.ParseOrderedFields() {
+		if paramType.AstRecordTypeField().Comment() != nil {
+			if err := encodeComment(builder, paramType.AstRecordTypeField().Comment().Token()); err != nil {
+				return err
+			}
+		}
 		if err := builder.EncodeSymbol(paramType.VariableIdentifier().FetchPositionLength().Range, "property", []string{"declaration"}); err != nil {
 			return err
 		}
@@ -101,6 +116,11 @@ func addSemanticTokenTupleType(f *dectype.TupleTypeAtom, builder *SemanticBuilde
 }
 
 func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuilder) error {
+	if f.AstCustomType().Comment() != nil {
+		if err := encodeComment(builder, f.AstCustomType().Comment().Token()); err != nil {
+			return err
+		}
+	}
 	if err := encodeKeyword(builder, f.AstCustomType().KeywordType()); err != nil {
 		return err
 	}
@@ -109,6 +129,11 @@ func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuil
 	}
 
 	for _, variant := range f.Variants() {
+		if variant.AstCustomTypeVariant().Comment() != nil {
+			if err := encodeComment(builder, variant.AstCustomTypeVariant().Comment()); err != nil {
+				return err
+			}
+		}
 		if err := encodeEnumMemberTypeIdentifier(builder, variant.Name()); err != nil {
 			return err
 		}
@@ -205,12 +230,22 @@ func encodeTypeDeclaration(builder *SemanticBuilder, identifier *ast.TypeIdentif
 	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "type", []string{"declaration"})
 }
 
-func encodeComment(builder *SemanticBuilder, comment token.CommentToken) error {
-	return builder.EncodeSymbol(comment.FetchPositionLength().Range, "comment", nil)
+func encodeMultilineComment(builder *SemanticBuilder, comment token.MultiLineCommentToken) error {
+	for _, part := range comment.Parts() {
+		if err := builder.EncodeSymbol(part.SourceFileReference.Range, "comment", nil); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func encodeMultilineComment(builder *SemanticBuilder, comment token.MultiLineCommentToken) error {
-	return builder.EncodeSymbol(comment.FetchPositionLength().Range, "comment", nil)
+func encodeComment(builder *SemanticBuilder, comment token.Comment) error {
+	multiline, wasMultiline := comment.(token.MultiLineCommentToken)
+	if wasMultiline {
+		return encodeMultilineComment(builder, multiline)
+	}
+	return nil
 }
 
 func encodeOperator(builder *SemanticBuilder, operator token.OperatorToken) error {
@@ -277,6 +312,11 @@ func addSemanticTokenCaseForCustomType(caseNode *decorated.CaseCustomType, build
 	}
 
 	for _, consequence := range caseNode.Consequences() {
+		if consequence.AstConsequence().Comment() != nil {
+			if err := encodeComment(builder, consequence.AstConsequence().Comment()); err != nil {
+				return err
+			}
+		}
 		if err := encodeEnumMember(builder, consequence.VariantReference().AstIdentifier().SomeTypeIdentifier()); err != nil {
 			return err
 		}
@@ -317,6 +357,11 @@ func addSemanticTokenCaseForPatternMatching(caseNode *decorated.CaseForPatternMa
 	}
 
 	for _, consequence := range caseNode.Consequences() {
+		if consequence.AstConsequence().Comment() != nil {
+			if err := encodeComment(builder, consequence.AstConsequence().Comment()); err != nil {
+				return err
+			}
+		}
 		if err := addSemanticToken(consequence.Literal(), builder); err != nil {
 			return err
 		}
@@ -342,6 +387,12 @@ func addSemanticTokenGuardToken(basic ast.GuardItemBasic, builder *SemanticBuild
 
 func addSemanticTokenGuard(guard *decorated.Guard, builder *SemanticBuilder) error {
 	for _, consequence := range guard.Items() {
+		comment := consequence.AstGuardItem().GuardItemBasic.Comment
+		if comment != nil {
+			if err := encodeComment(builder, comment); err != nil {
+				return err
+			}
+		}
 		addSemanticTokenGuardToken(consequence.AstGuardItem().GuardItemBasic, builder)
 		if err := addSemanticToken(consequence.Condition(), builder); err != nil {
 			return err
@@ -474,7 +525,7 @@ func addSemanticTokenLet(decoratedLet *decorated.Let, builder *SemanticBuilder) 
 	for _, assignment := range decoratedLet.Assignments() {
 		for _, letVariable := range assignment.LetVariables() {
 			if letVariable.Comment() != nil {
-				encodeComment(builder, letVariable.Comment().Token().CommentToken)
+				encodeComment(builder, letVariable.Comment().Token())
 			}
 			if err := builder.EncodeSymbol(letVariable.FetchPositionLength().Range, "variable", []string{"readonly"}); err != nil {
 				return err

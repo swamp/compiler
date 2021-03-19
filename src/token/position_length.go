@@ -114,13 +114,12 @@ func MakeInclusiveSourceFileReferenceSlice(references []SourceFileReferenceProvi
 }
 
 type Range struct {
-	start       Position
-	end         Position
-	indentation int
+	start Position
+	end   Position
 }
 
 func MakeRange(start Position, end Position) Range {
-	return Range{start: start, end: end, indentation: -1}
+	return Range{start: start, end: end}
 }
 
 func (p Range) SmallerThan(other Range) bool {
@@ -140,39 +139,34 @@ func (p Range) SmallerThan(other Range) bool {
 	return true
 }
 
-func (p Range) SingleLineLength() int {
-	if p.start.line != p.end.line {
-		return -1
-	}
-
-	return p.end.column - p.start.column + 1
-}
-
 func (p Range) IsAfter(other Range) bool {
 	return (p.start.line > other.end.line) || ((p.start.line == other.end.line) && p.start.column > other.end.column)
 }
 
 func MakeInclusiveRange(start Range, end Range) Range {
 	return Range{
-		start:       start.Start(),
-		end:         end.End(),
-		indentation: start.FetchIndentation(),
+		start: start.Start(),
+		end:   end.End(),
 	}
 }
 
-func NewPositionLength(start Position, runeCount int, indentation int) Range {
+func NewPositionLength(start Position, octetCountIncludingWhitespace int) Range {
 	return Range{start: start, end: Position{
-		line:   start.line,
-		column: start.column + runeCount - 1,
-	}, indentation: indentation}
+		line:        start.line,
+		column:      start.column + octetCountIncludingWhitespace - 1,
+		octetOffset: start.octetOffset + octetCountIncludingWhitespace,
+	}}
 }
 
-func NewPositionLengthFromEndPosition(start Position, endPosition Position, indentation int) Range {
-	return Range{start: start, end: Position{line: endPosition.line, column: endPosition.column - 1}, indentation: indentation}
+func NewPositionLengthFromEndPosition(start Position, endPosition Position) Range {
+	if endPosition.octetOffset < 0 {
+		panic("octet offset is wrong")
+	}
+	return Range{start: start, end: endPosition}
 }
 
 func (p Range) RuneWidth() int {
-	return p.end.column - p.start.column + 1
+	return p.end.octetOffset - p.start.octetOffset + 1
 }
 
 func (p Range) Contains(pos Position) bool {
@@ -209,10 +203,10 @@ func (p Range) End() Position {
 	return p.end
 }
 
-func (p Range) FetchIndentation() int {
-	return p.indentation
+func (p Range) OctetCount() int {
+	return p.end.octetOffset - p.start.octetOffset + 1
 }
 
 func (p Range) String() string {
-	return fmt.Sprintf("[%v to %v (%v)] ", p.start, p.end, p.indentation)
+	return fmt.Sprintf("[%v to %v (%v)] ", p.start, p.end, p.OctetCount())
 }

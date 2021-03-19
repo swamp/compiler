@@ -121,6 +121,7 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	parseExpression(precedence Precedence, startIndentation int) (ast.Expression, parerr.ParseError)
 	parseExpressionNormal(startIndentation int) (ast.Expression, parerr.ParseError)
+	parseExpressionNormalWithComment(startIndentation int, comment token.Comment) (ast.Expression, parerr.ParseError)
 	parseTerm(startIndentation int) (ast.Expression, parerr.ParseError)
 	parseLiteral(startIndentation int) (ast.Literal, parerr.ParseError)
 

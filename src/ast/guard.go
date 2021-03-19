@@ -12,8 +12,17 @@ import (
 )
 
 type GuardItemBasic struct {
+	Comment     token.Comment
 	Consequence Expression
 	GuardToken  token.GuardToken
+}
+
+func NewGuardItemBasic(comment token.Comment, guardToken token.GuardToken, consequence Expression) GuardItemBasic {
+	return GuardItemBasic{
+		Comment:     comment,
+		Consequence: consequence,
+		GuardToken:  guardToken,
+	}
 }
 
 type GuardItem struct {

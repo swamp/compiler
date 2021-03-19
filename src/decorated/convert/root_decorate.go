@@ -31,13 +31,13 @@ func NewDefiner(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndRef
 	return g
 }
 
-func (g *Definer) AnnotateConstant(identifier *ast.VariableIdentifier, realType dtype.Type) decshared.DecoratedError {
-	g.localAnnotation = decorated.NewAnnotation(identifier, realType)
+func (g *Definer) AnnotateConstant(annotation *ast.Annotation, realType dtype.Type) decshared.DecoratedError {
+	g.localAnnotation = decorated.NewAnnotation(annotation, realType)
 	return nil
 }
 
-func (g *Definer) AnnotateFunc(identifier *ast.VariableIdentifier, funcType dtype.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
-	g.localAnnotation = decorated.NewAnnotation(identifier, funcType)
+func (g *Definer) AnnotateFunc(annotation *ast.Annotation, funcType dtype.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
+	g.localAnnotation = decorated.NewAnnotation(annotation, funcType)
 
 	return g.localAnnotation, nil
 }
@@ -54,16 +54,16 @@ func (g *Definer) convertAnnotation(identifier *ast.VariableIdentifier, constant
 	return convertedType, nil
 }
 
-func (g *Definer) functionAnnotation(identifier *ast.VariableIdentifier, constantType ast.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
-	convertedType, decErr := g.convertAnnotation(identifier, constantType)
+func (g *Definer) functionAnnotation(annotation *ast.Annotation, constantType ast.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
+	convertedType, decErr := g.convertAnnotation(annotation.Identifier(), constantType)
 	if decErr != nil {
 		return nil, decErr
 	}
 	checkedType, _ := convertedType.(dtype.Type)
 	if checkedType != nil {
-		g.decorateStream.AddDeclaration(identifier, checkedType)
+		g.decorateStream.AddDeclaration(annotation.Identifier(), checkedType)
 	}
-	return g.AnnotateFunc(identifier, convertedType)
+	return g.AnnotateFunc(annotation, convertedType)
 }
 
 func (g *Definer) handleAliasStatement(astAlias *ast.Alias) (*dectype.Alias, decshared.DecoratedError) {
@@ -166,7 +166,7 @@ func (g *Definer) handleAnnotation(d DecorateStream, declaration *ast.Annotation
 	annotatedType := declaration.AnnotatedType()
 	g.localCommentBlock = declaration.CommentBlock()
 
-	return g.functionAnnotation(declaration.Identifier(), annotatedType)
+	return g.functionAnnotation(declaration, annotatedType)
 }
 
 func (g *Definer) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {

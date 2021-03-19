@@ -15,29 +15,33 @@ import (
 )
 
 type AnnotationStatement struct {
-	name      *ast.VariableIdentifier
-	t         dtype.Type
-	inclusive token.SourceFileReference
+	astAnnotation *ast.Annotation
+	t             dtype.Type
+	comment       token.Comment
 }
 
-func NewAnnotation(identifier *ast.VariableIdentifier, t dtype.Type) *AnnotationStatement {
+func NewAnnotation(astAnnotation *ast.Annotation, t dtype.Type) *AnnotationStatement {
 	if reflect.ValueOf(t).IsNil() {
 		panic("not great")
 	}
-	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), t.FetchPositionLength())
-	return &AnnotationStatement{name: identifier, t: t, inclusive: inclusive}
+	// inclusive := token.MakeInclusiveSourceFileReference(astAnnotationidentifier.FetchPositionLength(), t.FetchPositionLength())
+	return &AnnotationStatement{astAnnotation: astAnnotation, t: t}
 }
 
 func (d *AnnotationStatement) Identifier() *ast.VariableIdentifier {
-	return d.name
+	return d.astAnnotation.Identifier()
+}
+
+func (d *AnnotationStatement) Annotation() *ast.Annotation {
+	return d.astAnnotation
 }
 
 func (d *AnnotationStatement) String() string {
-	return fmt.Sprintf("[annotation %v=%v]", d.name, d.t)
+	return fmt.Sprintf("[annotation %v=%v]", d.astAnnotation.Identifier(), d.t)
 }
 
 func (d *AnnotationStatement) StatementString() string {
-	return fmt.Sprintf("[annotation %v=%v]", d.name, d.t)
+	return fmt.Sprintf("[annotation %v=%v]", d.astAnnotation.Identifier(), d.t)
 }
 
 func (d *AnnotationStatement) Type() dtype.Type {
@@ -45,5 +49,5 @@ func (d *AnnotationStatement) Type() dtype.Type {
 }
 
 func (d *AnnotationStatement) FetchPositionLength() token.SourceFileReference {
-	return d.inclusive
+	return d.astAnnotation.FetchPositionLength()
 }

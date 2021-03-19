@@ -7,7 +7,7 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-func parseCaseForCustomType(p ParseStream, test ast.Expression, keywordCase token.Keyword, keywordOf token.Keyword, startIndentation int, consequenceIndentation int) (*ast.CaseForCustomType, parerr.ParseError) {
+func parseCaseForCustomType(p ParseStream, test ast.Expression, keywordCase token.Keyword, keywordOf token.Keyword, startIndentation int, consequenceIndentation int, previousComment token.Comment) (*ast.CaseForCustomType, parerr.ParseError) {
 	var consequences []*ast.CaseConsequenceForCustomType
 	for {
 		var prefix *ast.TypeIdentifier
@@ -63,16 +63,17 @@ func parseCaseForCustomType(p ParseStream, test ast.Expression, keywordCase toke
 			return nil, exprErr
 		}
 
-		consequence := ast.NewCaseConsequenceForCustomType(prefix, parameters, expr)
+		consequence := ast.NewCaseConsequenceForCustomType(prefix, parameters, expr, previousComment)
 		consequences = append(consequences, consequence)
 
-		foundTextInColumnBelow, _, posLengthErr := p.eatOneNewLineContinuationOrDedentAllowComment(consequenceIndentation)
+		foundTextInColumnBelow, report, posLengthErr := p.eatOneNewLineContinuationOrDedentAllowComment(consequenceIndentation)
 		if posLengthErr != nil {
 			return nil, posLengthErr
 		}
 		if !foundTextInColumnBelow {
 			break
 		}
+		previousComment = report.Comments.LastComment()
 	}
 
 	a := ast.NewCaseForCustomType(keywordCase, keywordOf, test, consequences)

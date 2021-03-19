@@ -102,8 +102,8 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 	tokens := module.Nodes()
 
 	smallestRange := token.MakeRange(
-		token.MakePosition(0, 0),
-		token.MakePosition(9999999, 0))
+		token.MakePosition(0, 0, -1),
+		token.MakePosition(9999999, 0, -1))
 
 	var bestToken decorated.TypeOrToken
 

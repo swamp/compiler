@@ -18,12 +18,12 @@ func (t *Tokenizer) EatRune(requiredRune rune) TokenError {
 	return nil
 }
 
-func (t *Tokenizer) checkComment(readRune rune, startPos token.PositionToken) (token.CommentToken, bool, TokenError) {
+func (t *Tokenizer) checkComment(readRune rune, startPos token.PositionToken) (token.Comment, bool, TokenError) {
 	if readRune == '-' {
 		nch := t.nextRune()
 		if nch == '-' {
 			comment := t.ReadSingleLineComment(startPos)
-			return comment.CommentToken, true, nil
+			return comment, true, nil
 		} else {
 			t.unreadRune()
 		}
@@ -32,15 +32,15 @@ func (t *Tokenizer) checkComment(readRune rune, startPos token.PositionToken) (t
 		if nch == '-' {
 			comment, commentErr := t.ReadMultilineComment(startPos)
 			if commentErr != nil {
-				return token.CommentToken{}, false, commentErr
+				return nil, false, commentErr
 			}
-			return comment.CommentToken, true, nil
+			return comment, true, nil
 		} else {
 			t.unreadRune()
 		}
 	}
 
-	return token.CommentToken{}, false, nil
+	return nil, false, nil
 }
 
 func (t *Tokenizer) EatString(requiredString string) TokenError {

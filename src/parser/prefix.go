@@ -28,14 +28,14 @@ func (p *Parser) parsePrefix(t token.Token, startIndentation int) (ast.Expressio
 		case token.If:
 			return parseIf(p.stream, keyword, startIndentation)
 		case token.Let:
-			return parseLet(p.stream, keyword)
+			return parseLet(p.stream, keyword, startIndentation)
 		case token.Case:
-			return parseCase(p.stream, keyword, startIndentation)
+			return parseCase(p.stream, keyword, startIndentation, p.previousComment)
 		}
 	}
 
 	if t.Type() == token.Guard {
-		return parseGuard(p.stream, t.(token.GuardToken), startIndentation)
+		return parseGuard(p.stream, t.(token.GuardToken), startIndentation, p.previousComment)
 	}
 
 	return nil, parerr.NewUnknownPrefixInExpression(t)

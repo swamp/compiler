@@ -3,7 +3,6 @@ package lspservice
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/piot/go-lsp"
 	"github.com/piot/lsp-server/lspserv"
@@ -61,7 +60,7 @@ func toDocumentURI(URI lsp.DocumentURI) token.DocumentURI {
 }
 
 func lspToTokenPosition(position lsp.Position) token.Position {
-	return token.MakePosition(position.Line, position.Character)
+	return token.MakePosition(position.Line, position.Character, -1)
 }
 
 func sourceFileReferenceToLocation(reference token.SourceFileReference) *lsp.Location {
@@ -92,8 +91,8 @@ func tokenToLspRange(rangeToken token.Range) *lsp.Range {
 
 func lspToTokenRange(lspRange lsp.Range) token.Range {
 	return token.MakeRange(
-		token.MakePosition(lspRange.Start.Line, lspRange.Start.Character),
-		token.MakePosition(lspRange.End.Line, lspRange.End.Character))
+		token.MakePosition(lspRange.Start.Line, lspRange.Start.Character, -1),
+		token.MakePosition(lspRange.End.Line, lspRange.End.Character, -1))
 }
 
 func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Hover, error) {
@@ -130,6 +129,10 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 			if t.AstAlias().Comment() != nil {
 				documentation = t.AstAlias().Comment().Value()
 			}
+		case *dectype.CustomTypeAtom:
+			if t.AstCustomType().Comment() != nil {
+				documentation = t.AstCustomType().Comment().Value()
+			}
 		default:
 			log.Printf("unhandled for documentation %T", pureType)
 		}
@@ -158,6 +161,14 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 			case *decorated.RecordTypeFieldReference:
 				if t.RecordTypeField().AstRecordTypeField().Comment() != nil {
 					documentation = t.RecordTypeField().AstRecordTypeField().Comment().Value()
+				}
+			case *decorated.CustomTypeVariantConstructor:
+				if t.CustomTypeVariant().AstCustomTypeVariant().Comment() != nil {
+					documentation = t.CustomTypeVariant().AstCustomTypeVariant().Comment().Value()
+				}
+			case *decorated.CustomTypeVariantReference:
+				if t.CustomTypeVariant().AstCustomTypeVariant().Comment() != nil {
+					documentation = t.CustomTypeVariant().AstCustomTypeVariant().Comment().Value()
 				}
 			}
 		}
@@ -302,7 +313,7 @@ func findReferences(uri lsp.DocumentURI, position lsp.Position, scanner Decorate
 
 	switch t := decoratedToken.(type) {
 	case *decorated.ImportStatement:
-		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
+		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRangeMinusOne(token.MakePosition(0, 0), token.MakePosition(0, 0)))
 	case *decorated.FunctionParameterDefinition:
 		for _, ref := range t.References() {
 			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
@@ -412,7 +423,7 @@ func findAllLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filter
 
 	switch t := decoratedToken.(type) {
 	case *decorated.ImportStatement:
-		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
+		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRangeMinusOne(token.MakePosition(0, 0), token.MakePosition(0, 0)))
 	case *decorated.FunctionParameterDefinition:
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
 			sourceFileReferences = append(sourceFileReferences, t.FetchPositionLength())
@@ -482,7 +493,7 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 
 	switch t := decoratedToken.(type) {
 	case *decorated.ImportStatement:
-		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRange(token.MakePosition(0, 0), token.MakePosition(0, 0)))
+		// sourceFileReference = token.MakeSourceFileReference(token.MakeSourceFileDocumentFromURI(t.Module().DocumentURI()), token.MakeRangeMinusOne(token.MakePosition(0, 0), token.MakePosition(0, 0)))
 	case *decorated.FunctionParameterDefinition:
 		for _, ref := range t.References() {
 			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
@@ -572,9 +583,7 @@ func (s *Service) HandleRename(params lsp.RenameParams) (*lsp.WorkspaceEdit, err
 
 func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (*lsp.SemanticTokens, error) {
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
-	fmt.Fprintf(os.Stderr, "get root tokens\n")
 	allTokens := s.scanner.RootTokens(sourceFileURI)
-	fmt.Fprintf(os.Stderr, "root tokens done %v\n", len(allTokens))
 	builder := NewSemanticBuilder()
 	for _, foundToken := range allTokens {
 		if err := addSemanticToken(foundToken, builder); err != nil {
@@ -582,7 +591,6 @@ func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn
 			return nil, err
 		}
 	}
-	fmt.Fprintf(os.Stderr, "added all tokens done\n")
 	return &lsp.SemanticTokens{
 		ResultId: "",
 		Data:     builder.EncodedValues(),

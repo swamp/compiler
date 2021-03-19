@@ -11,7 +11,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func parseGuard(p ParseStream, guardToken token.GuardToken, startIndentation int) (ast.Expression, parerr.ParseError) {
+func parseGuard(p ParseStream, guardToken token.GuardToken, startIndentation int, previousComments token.Comment) (ast.Expression, parerr.ParseError) {
 	var items []ast.GuardItem
 	var defaultConsequence *ast.GuardDefault
 
@@ -48,21 +48,23 @@ func parseGuard(p ParseStream, guardToken token.GuardToken, startIndentation int
 		}
 
 		if condition == nil {
-			defaultConsequence = &ast.GuardDefault{GuardItemBasic: ast.GuardItemBasic{
-				Consequence: consequence,
-				GuardToken:  latestGuardToken,
-			}}
+			defaultConsequence = &ast.GuardDefault{GuardItemBasic: ast.NewGuardItemBasic(
+				previousComments,
+				latestGuardToken,
+				consequence,
+			)}
 		}
 
 		if condition != nil {
-			item := ast.GuardItem{Condition: condition, GuardItemBasic: ast.GuardItemBasic{GuardToken: latestGuardToken, Consequence: consequence}}
+			item := ast.GuardItem{Condition: condition, GuardItemBasic: ast.NewGuardItemBasic(previousComments, latestGuardToken, consequence)}
 			items = append(items, item)
 		}
 
-		wasContinuation, _, continuationErr := p.eatOneNewLineContinuationOrDedentAllowComment(startIndentation)
+		wasContinuation, report, continuationErr := p.eatOneNewLineContinuationOrDedentAllowComment(startIndentation)
 		if continuationErr != nil {
 			return nil, continuationErr
 		}
+		previousComments = report.Comments.LastComment()
 		if wasContinuation {
 			if defaultConsequence != nil {
 				return nil, parerr.NewExpectedDefaultLastError(consequence)
@@ -71,6 +73,7 @@ func parseGuard(p ParseStream, guardToken token.GuardToken, startIndentation int
 			if latestGuardToken, guardErr = p.readGuardPipe(); guardErr != nil {
 				return nil, guardErr
 			}
+
 		} else {
 			if defaultConsequence == nil {
 				return nil, parerr.NewMustHaveDefaultInConditionsError(consequence)

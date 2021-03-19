@@ -14,8 +14,13 @@ import (
 func CommentBlockToAst(comments token.CommentBlock) []*MultilineComment {
 	var previousComment []*MultilineComment
 	for _, comment := range comments.Comments {
-		astMultilineComment := NewMultilineComment(token.NewMultiLineCommentToken(comment.RawString, comment.CommentString, comment.ForDocumentation, comment.SourceFileReference))
-		previousComment = append(previousComment, astMultilineComment)
+		multiLine, wasMultiLine := comment.(token.MultiLineCommentToken)
+		if wasMultiLine {
+			astMultilineComment := NewMultilineComment(multiLine)
+			previousComment = append(previousComment, astMultilineComment)
+		} else {
+			panic("not sure")
+		}
 	}
 	return previousComment
 }
@@ -34,15 +39,15 @@ func NewMultilineComment(commentToken token.MultiLineCommentToken) *MultilineCom
 }
 
 func (i *MultilineComment) Value() string {
-	return i.commentToken.Text()
+	return i.commentToken.Value()
 }
 
 func (i *MultilineComment) String() string {
-	return fmt.Sprintf("[multilinecomment '%v']", i.commentToken.Text())
+	return fmt.Sprintf("[multilinecomment '%v']", i.commentToken.Value())
 }
 
 func (i *MultilineComment) PositionLength() token.Range {
-	return i.commentToken.Range
+	return i.commentToken.FetchPositionLength().Range
 }
 
 func (i *MultilineComment) DebugString() string {
@@ -54,5 +59,5 @@ func (i *MultilineComment) Token() token.MultiLineCommentToken {
 }
 
 func (i *MultilineComment) FetchPositionLength() token.SourceFileReference {
-	return i.commentToken.SourceFileReference
+	return i.commentToken.FetchPositionLength()
 }

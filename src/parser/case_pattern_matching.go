@@ -7,7 +7,7 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-func parseCasePatternMatching(p ParseStream, test ast.Expression, keywordCase token.Keyword, keywordOf token.Keyword, startIndentation int, consequenceIndentation int) (*ast.CaseForPatternMatching, parerr.ParseError) {
+func parseCasePatternMatching(p ParseStream, test ast.Expression, keywordCase token.Keyword, keywordOf token.Keyword, startIndentation int, consequenceIndentation int, previousComment token.Comment) (*ast.CaseForPatternMatching, parerr.ParseError) {
 	var consequences []*ast.CaseConsequencePatternMatching
 	for {
 		var prefix ast.Literal
@@ -51,16 +51,17 @@ func parseCasePatternMatching(p ParseStream, test ast.Expression, keywordCase to
 			return nil, exprErr
 		}
 
-		consequence := ast.NewCaseConsequenceForPatternMatching(len(consequences), prefix, expr)
+		consequence := ast.NewCaseConsequenceForPatternMatching(len(consequences), prefix, expr, previousComment)
 		consequences = append(consequences, consequence)
 
-		foundTextInColumnBelow, _, posLengthErr := p.eatOneNewLineContinuationOrDedentAllowComment(consequenceIndentation)
+		foundTextInColumnBelow, report, posLengthErr := p.eatOneNewLineContinuationOrDedentAllowComment(consequenceIndentation)
 		if posLengthErr != nil {
 			return nil, posLengthErr
 		}
 		if !foundTextInColumnBelow {
 			break
 		}
+		previousComment = report.Comments.LastComment()
 	}
 
 	a := ast.NewCaseForPatternMatching(keywordCase, keywordOf, test, consequences)

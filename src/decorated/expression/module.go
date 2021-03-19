@@ -113,7 +113,7 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 }
 
 func (m *Module) FetchPositionLength() token.SourceFileReference {
-	return token.MakeSourceFileReference(m.sourceFileUri, token.NewPositionLength(token.NewPositionTopLeft(), 0, 0))
+	return token.MakeSourceFileReference(m.sourceFileUri, token.NewPositionLength(token.NewPositionTopLeft(), 0))
 }
 
 func (m *Module) AddReference(ref *ModuleReference) {

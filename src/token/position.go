@@ -8,16 +8,17 @@ package token
 import "fmt"
 
 type Position struct {
-	line   int
-	column int
+	line        int
+	column      int
+	octetOffset int
 }
 
 func NewPositionTopLeft() Position {
-	return Position{line: 0, column: 0}
+	return Position{line: 0, column: 0, octetOffset: 0}
 }
 
-func MakePosition(line int, column int) Position {
-	return Position{line: line, column: column}
+func MakePosition(line int, column int, octetOffset int) Position {
+	return Position{line: line, column: column, octetOffset: octetOffset}
 }
 
 func (p Position) Line() int {
@@ -28,22 +29,34 @@ func (p Position) Column() int {
 	return p.column
 }
 
-func (p Position) NextLine() Position {
-	return Position{line: p.line + 1, column: p.column}
+func (p Position) NextLine(octetOffset int) Position {
+	return Position{line: p.line + 1, column: p.column, octetOffset: octetOffset}
 }
 
-func (p Position) FirstColumn() Position {
-	return Position{line: p.line, column: 0}
+func (p Position) FirstColumn(octetOffset int) Position {
+	return Position{line: p.line, column: 0, octetOffset: octetOffset}
+}
+
+func (p Position) NewLine() Position {
+	return Position{line: p.line + 1, column: 0, octetOffset: p.octetOffset + 1}
 }
 
 func (p Position) NextColumn() Position {
-	return Position{line: p.line, column: p.column + 1}
+	return Position{line: p.line, column: p.column + 1, octetOffset: p.octetOffset + 1}
 }
 
 func (p Position) PreviousColumn() Position {
-	return Position{line: p.line, column: p.column - 1}
+	return Position{line: p.line, column: p.column - 1, octetOffset: p.octetOffset - 1}
+}
+
+func (p Position) OctetOffset() int {
+	return p.octetOffset
 }
 
 func (p Position) String() string {
 	return fmt.Sprintf("[%d:%d]", p.line+1, p.column+1)
+}
+
+func (p Position) DebugString() string {
+	return fmt.Sprintf("[%d:%d](%d)", p.line+1, p.column+1, p.octetOffset)
 }

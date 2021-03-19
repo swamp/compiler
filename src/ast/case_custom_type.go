@@ -16,10 +16,11 @@ type CaseConsequenceForCustomType struct {
 	variantName *TypeIdentifier
 	arguments   []*VariableIdentifier
 	expression  Expression
+	comment     token.Comment
 }
 
-func NewCaseConsequenceForCustomType(variantName *TypeIdentifier, arguments []*VariableIdentifier, expression Expression) *CaseConsequenceForCustomType {
-	return &CaseConsequenceForCustomType{variantName: variantName, arguments: arguments, expression: expression}
+func NewCaseConsequenceForCustomType(variantName *TypeIdentifier, arguments []*VariableIdentifier, expression Expression, comment token.Comment) *CaseConsequenceForCustomType {
+	return &CaseConsequenceForCustomType{variantName: variantName, arguments: arguments, expression: expression, comment: comment}
 }
 
 func (c *CaseConsequenceForCustomType) Identifier() *TypeIdentifier {
@@ -32,6 +33,10 @@ func (c *CaseConsequenceForCustomType) Arguments() []*VariableIdentifier {
 
 func (c *CaseConsequenceForCustomType) Expression() Expression {
 	return c.expression
+}
+
+func (c *CaseConsequenceForCustomType) Comment() token.Comment {
+	return c.comment
 }
 
 func (c *CaseConsequenceForCustomType) String() string {

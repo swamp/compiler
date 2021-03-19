@@ -51,6 +51,8 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 		foundComments := ast.CommentBlockToAst(report.Comments)
 		if len(foundComments) > 0 {
 			precedingComments = foundComments[len(foundComments)-1]
+		} else {
+			precedingComments = nil
 		}
 		index++
 		fields = append(fields, field)

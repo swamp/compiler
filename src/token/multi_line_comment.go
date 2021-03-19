@@ -5,14 +5,36 @@
 
 package token
 
-import "fmt"
+import (
+	"fmt"
+)
 
-type CommentBlock struct {
-	Comments []CommentToken
+type Comment interface {
+	Raw() string
+	Value() string
+	FetchPositionLength() SourceFileReference
 }
 
-func MakeCommentBlock(comments []CommentToken) CommentBlock {
+type CommentBlock struct {
+	Comments []Comment
+}
+
+func (c CommentBlock) LastComment() Comment {
+	if len(c.Comments) == 0 {
+		return nil
+	}
+
+	return c.Comments[len(c.Comments)-1]
+}
+
+func MakeCommentBlock(comments []Comment) CommentBlock {
 	return CommentBlock{Comments: comments}
+}
+
+type MultiLineCommentPart struct {
+	SourceFileReference
+	RawString     string
+	CommentString string
 }
 
 type CommentToken struct {
@@ -38,15 +60,44 @@ func (s CommentToken) FetchPositionLength() SourceFileReference {
 	return s.SourceFileReference
 }
 
-// CommentToken :
+// MultiLineCommentToken :
 type MultiLineCommentToken struct {
-	CommentToken
+	parts            []MultiLineCommentPart
+	ForDocumentation bool
 }
 
-func NewMultiLineCommentToken(raw string, text string, forDocumentation bool, sourceFileReference SourceFileReference) MultiLineCommentToken {
-	return MultiLineCommentToken{CommentToken: CommentToken{RawString: raw, CommentString: text, SourceFileReference: sourceFileReference, ForDocumentation: forDocumentation}}
+func NewMultiLineCommentToken(parts []MultiLineCommentPart, forDocumentation bool) MultiLineCommentToken {
+	return MultiLineCommentToken{parts: parts, ForDocumentation: forDocumentation}
 }
 
 func (s MultiLineCommentToken) String() string {
-	return fmt.Sprintf("[comment:%s]", s.CommentString)
+	return fmt.Sprintf("[comment:%s]", s.parts)
+}
+
+func (s MultiLineCommentToken) Raw() string {
+	return fmt.Sprintf("[comment:%s]", s.parts)
+}
+
+func (s MultiLineCommentToken) Type() Type {
+	return CommentConstant
+}
+
+func (s MultiLineCommentToken) Parts() []MultiLineCommentPart {
+	return s.parts
+}
+
+func (s MultiLineCommentToken) Value() string {
+	str := ""
+	for index, part := range s.parts {
+		if index > 0 {
+			str += "\n"
+		}
+		str += part.CommentString
+	}
+
+	return str
+}
+
+func (s MultiLineCommentToken) FetchPositionLength() SourceFileReference {
+	return MakeInclusiveSourceFileReference(s.parts[0].SourceFileReference, s.parts[len(s.parts)-1].SourceFileReference)
 }

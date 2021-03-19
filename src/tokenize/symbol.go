@@ -27,13 +27,7 @@ func (t *Tokenizer) parseAnySymbol(startPosition token.PositionToken) (token.Tok
 	if variableSymbolErr != nil {
 		return nil, variableSymbolErr
 	}
-	if variableSymbol.Name() == "module" {
-		t.MaybeOneNewLine()
-		t.MaybeOneNewLine()
-		t.MaybeOneNewLine()
 
-		return token.NewMultiLineCommentToken("ignore", "ignore", false, t.MakeSourceFileReference(startPosition)), nil
-	}
 	if variableSymbol.Name() == "not" {
 		t.EatOneSpace()
 		return token.NewOperatorToken(token.OperatorUnaryNot, variableSymbol.FetchPositionLength(), variableSymbol.Raw(), "NOT"), nil

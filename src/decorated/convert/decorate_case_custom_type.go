@@ -114,7 +114,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 			named := decorated.NewNamedDefinitionTypeReference(nil, fieldTypeRef)
 			variantReference := decorated.NewCustomTypeVariantReference(named, foundVariant)
 			decoratedConsequence := decorated.NewCaseConsequenceForCustomType(foundVariant.Index(), variantReference,
-				parameters, decoratedExpression)
+				parameters, decoratedExpression, consequenceField)
 			decoratedConsequences = append(decoratedConsequences, decoratedConsequence)
 		}
 	}

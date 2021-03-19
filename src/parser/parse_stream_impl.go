@@ -21,6 +21,7 @@ import (
 type ParserInterface interface {
 	parseExpression(precedence Precedence, startIndentation int) (ast.Expression, parerr.ParseError)
 	parseExpressionNormal(startIndentation int) (ast.Expression, parerr.ParseError)
+	parseExpressionNormalWithComment(startIndentation int, comment token.Comment) (ast.Expression, parerr.ParseError)
 	parseTerm(startIndentation int) (ast.Expression, parerr.ParseError)
 }
 
@@ -409,7 +410,7 @@ func (p *ParseStreamImpl) readVariableIdentifierAssignOrUpdate(indentation int) 
 	if spaceAfterUpdateErr != nil {
 		return nil, false, 0, spaceAfterUpdateErr
 	}
-	return ident, false, ident.FetchPositionLength().Range.FetchIndentation(), nil
+	return ident, false, indentation, nil
 }
 
 func (p *ParseStreamImpl) readTermToken() (token.Token, parerr.ParseError) {
@@ -519,7 +520,7 @@ func (p *ParseStreamImpl) maybeNewLineContinuationHelper(expectedIndentation int
 }
 
 func (p *ParseStreamImpl) eatNewLineContinuationOrDedent(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
-	return p.maybeNewLineContinuationHelper(expectedIndentation, tokenize.NotAllowedAtAll)
+	return p.maybeNewLineContinuationHelper(expectedIndentation, tokenize.OwnLine)
 }
 
 func (p *ParseStreamImpl) eatOneNewLineContinuationOrDedentAllowComment(expectedIndentation int) (bool, token.IndentationReport, parerr.ParseError) {
@@ -1104,6 +1105,13 @@ func (p *ParseStreamImpl) parseExpression(precedence Precedence, startIndentatio
 func (p *ParseStreamImpl) parseExpressionNormal(startIndentation int) (ast.Expression, parerr.ParseError) {
 	p.descent++
 	r, rErr := p.parser.parseExpressionNormal(startIndentation)
+	p.descent--
+	return r, rErr
+}
+
+func (p *ParseStreamImpl) parseExpressionNormalWithComment(startIndentation int, comment token.Comment) (ast.Expression, parerr.ParseError) {
+	p.descent++
+	r, rErr := p.parser.parseExpressionNormalWithComment(startIndentation, comment)
 	p.descent--
 	return r, rErr
 }
