@@ -7,6 +7,7 @@ package token
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Comment interface {
@@ -92,7 +93,7 @@ func (s MultiLineCommentToken) Value() string {
 		if index > 0 {
 			str += "\n"
 		}
-		str += part.CommentString
+		str += strings.TrimSpace(part.CommentString)
 	}
 
 	return str
