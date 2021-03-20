@@ -7,6 +7,7 @@ package typeinfo
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -1005,13 +1006,17 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 			return nil, fmt.Errorf("wrong atom invoke")
 		}
 		return c.ConsumeAtom(invokerAtom)
-	case *dectype.TypeReference:
+	case *dectype.PrimitiveTypeReference:
 		return c.Consume(t.Next())
-	case *dectype.TypeReferenceScoped:
+	case *dectype.AliasReference:
+		return c.Consume(t.Next())
+	case *dectype.CustomTypeReference:
 		return c.Consume(t.Next())
 	}
 
-	return nil, fmt.Errorf("chunk: consume: unknown thing %T", p)
+	err := fmt.Errorf("chunk: consume: unknown thing %T", p)
+	log.Printf(err.Error())
+	return nil, err
 }
 
 func (c *Chunk) ConsumeTypes(types []dtype.Type) ([]InfoType, error) {

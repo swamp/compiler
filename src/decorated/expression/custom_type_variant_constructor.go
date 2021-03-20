@@ -15,10 +15,10 @@ import (
 
 type CustomTypeVariantConstructor struct {
 	arguments                  []Expression
-	customTypeVariantReference *CustomTypeVariantReference
+	customTypeVariantReference *dectype.CustomTypeVariantReference
 }
 
-func NewCustomTypeVariantConstructor(customTypeVariantReference *CustomTypeVariantReference,
+func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomTypeVariantReference,
 	arguments []Expression) *CustomTypeVariantConstructor {
 	if customTypeVariantReference == nil {
 		panic("custom customTypeVariant is nil")
@@ -39,16 +39,16 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *CustomTypeVaria
 	}
 }
 
-func (c *CustomTypeVariantConstructor) Reference() *CustomTypeVariantReference {
+func (c *CustomTypeVariantConstructor) Reference() *dectype.CustomTypeVariantReference {
 	return c.customTypeVariantReference
 }
 
 func (c *CustomTypeVariantConstructor) CustomTypeVariantIndex() int {
-	return c.customTypeVariantReference.customTypeVariant.Index()
+	return c.customTypeVariantReference.CustomTypeVariant().Index()
 }
 
 func (c *CustomTypeVariantConstructor) CustomTypeVariant() *dectype.CustomTypeVariant {
-	return c.customTypeVariantReference.customTypeVariant
+	return c.customTypeVariantReference.CustomTypeVariant()
 }
 
 func (c *CustomTypeVariantConstructor) Arguments() []Expression {
@@ -61,7 +61,7 @@ func (c *CustomTypeVariantConstructor) Type() dtype.Type {
 		resolvedTypes = append(resolvedTypes, resolved.Type())
 	}
 
-	resolvedType, callErr := dectype.CallType(c.customTypeVariantReference.customTypeVariant, resolvedTypes)
+	resolvedType, callErr := dectype.CallType(c.customTypeVariantReference.CustomTypeVariant(), resolvedTypes)
 	if callErr != nil {
 		panic(callErr)
 	}
@@ -69,11 +69,11 @@ func (c *CustomTypeVariantConstructor) Type() dtype.Type {
 }
 
 func (c *CustomTypeVariantConstructor) String() string {
-	return fmt.Sprintf("[variant-constructor %v %v]", c.customTypeVariantReference.customTypeVariant, c.arguments)
+	return fmt.Sprintf("[variant-constructor %v %v]", c.customTypeVariantReference.CustomTypeVariant(), c.arguments)
 }
 
 func (c *CustomTypeVariantConstructor) HumanReadable() string {
-	return fmt.Sprintf("Custom Type Variant Constructor %v", c.customTypeVariantReference.customTypeVariant)
+	return fmt.Sprintf("Custom Type Variant Constructor %v", c.customTypeVariantReference.CustomTypeVariant())
 }
 
 func (c *CustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {

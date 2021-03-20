@@ -123,18 +123,6 @@ func expandChildNodesFunctionTypeReference(fn *dectype.FunctionTypeReference) []
 	return tokens
 }
 
-func expandChildNodesTypeReference(fn *dectype.TypeReference) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.Next())...)
-	return tokens
-}
-
-func expandChildNodesTypeReferenceScoped(fn *dectype.TypeReferenceScoped) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.Next())...)
-	return tokens
-}
-
 func expandChildNodesPrimitive(fn *dectype.PrimitiveAtom) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, parameter := range fn.GenericTypes() {
@@ -252,7 +240,7 @@ func expandChildNodesGuard(guard *Guard) []TypeOrToken {
 	return tokens
 }
 
-func expandChildNodesCustomTypeVariantReference(constructor *CustomTypeVariantReference) []TypeOrToken {
+func expandChildNodesCustomTypeVariantReference(constructor *dectype.CustomTypeVariantReference) []TypeOrToken {
 	var tokens []TypeOrToken
 	// tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...) // TODO: Need meaning
 	return tokens
@@ -382,7 +370,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesRecordConstructor(t)...)
 	case *Guard:
 		return append(tokens, expandChildNodesGuard(t)...)
-	case *CustomTypeVariantReference:
+	case *dectype.CustomTypeVariantReference:
 		return append(tokens, expandChildNodesCustomTypeVariantReference(t)...)
 	case *CaseCustomType:
 		return append(tokens, expandChildNodesCaseForCustomType(t)...)
@@ -460,14 +448,20 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *dectype.Alias:
 		return append(tokens, expandChildNodes(t.Next())...)
+	case *dectype.AliasReference:
+		return append(tokens, expandChildNodes(t.Next())...)
 	case *dectype.PrimitiveAtom:
 		return append(tokens, expandChildNodesPrimitive(t)...)
+	case *dectype.PrimitiveTypeReference:
+		return append(tokens, expandChildNodesPrimitive(t.PrimitiveAtom())...)
 	case *dectype.InvokerType:
 		return append(tokens, expandChildNodesInvokerType(t)...)
 	case *dectype.FunctionAtom:
 		return append(tokens, expandChildNodesFunctionType(t)...)
 	case *dectype.CustomTypeAtom:
 		return append(tokens, expandChildNodesCustomType(t)...)
+	case *dectype.CustomTypeReference:
+		return append(tokens, expandChildNodesCustomType(t.CustomTypeAtom())...)
 	case *dectype.CustomTypeVariant:
 		return tokens
 	case *dectype.RecordAtom:
@@ -478,10 +472,6 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *dectype.FunctionTypeReference:
 		return append(tokens, expandChildNodesFunctionTypeReference(t)...)
-	case *dectype.TypeReference:
-		return append(tokens, expandChildNodesTypeReference(t)...)
-	case *dectype.TypeReferenceScoped:
-		return append(tokens, expandChildNodesTypeReferenceScoped(t)...)
 	default:
 		log.Printf("expand_nodes: could not expand: %T\n", t)
 		return tokens

@@ -27,19 +27,20 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
 	}
 
-	variantConstructor, namedTypeReference, err := d.TypeRepo().CreateSomeTypeReference(call.TypeReference().SomeTypeIdentifier())
+	variantConstructor, err := d.TypeRepo().CreateSomeTypeReference(call.TypeReference().SomeTypeIdentifier())
 	if err != nil {
 		return nil, err
 	}
 
 	unaliasedConstructor := dectype.Unalias(variantConstructor)
 
-	switch e := unaliasedConstructor.(type) {
-	case *dectype.CustomTypeVariantConstructorType:
-		ref := decorated.NewCustomTypeVariantReference(namedTypeReference, e.Variant())
-		return decorated.NewCustomTypeVariantConstructor(ref, decoratedExpressions), nil
-	case *dectype.RecordAtom:
+	switch t := variantConstructor.(type) {
+	case *dectype.AliasReference:
 		{
+			e, wasRecordType := unaliasedConstructor.(*dectype.RecordAtom)
+			if !wasRecordType {
+				return nil, decorated.NewInternalError(fmt.Errorf("was not a record atom %T", unaliasedConstructor))
+			}
 			argumentCount := len(decoratedExpressions)
 			if argumentCount == 1 {
 				first := decoratedExpressions[0]
@@ -76,10 +77,19 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				}
 			}
 
-			return decorated.NewRecordConstructor(namedTypeReference, e, alphaOrderedAssignments, decoratedExpressions), nil
+			return decorated.NewRecordConstructor(t, e, alphaOrderedAssignments, decoratedExpressions), nil
 		}
+	}
+
+	switch e := unaliasedConstructor.(type) {
+	case *dectype.CustomTypeVariantReference:
+		return decorated.NewCustomTypeVariantConstructor(e, decoratedExpressions), nil
+	case *dectype.RecordAtom:
+
 	default:
 		log.Printf("expected a constructor here %T", unaliasedConstructor)
 		return nil, decorated.NewExpectedCustomTypeVariantConstructor(call)
 	}
+
+	return nil, decorated.NewInternalError(fmt.Errorf("was not a record atom %T", unaliasedConstructor))
 }

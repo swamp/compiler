@@ -19,6 +19,7 @@ type CustomTypeVariant struct {
 	parameterTypes       []dtype.Type
 	parent               dtype.Type
 	inCustomType         *CustomTypeAtom
+	references           []*CustomTypeVariantReference
 }
 
 func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant, parameterTypes []dtype.Type) *CustomTypeVariant {
@@ -110,4 +111,12 @@ func (s *CustomTypeVariant) DecoratedName() string {
 
 func (s *CustomTypeVariant) ShortName() string {
 	return s.DecoratedName()
+}
+
+func (s *CustomTypeVariant) AddReferee(reference *CustomTypeVariantReference) {
+	s.references = append(s.references, reference)
+}
+
+func (s *CustomTypeVariant) References() []*CustomTypeVariantReference {
+	return s.references
 }

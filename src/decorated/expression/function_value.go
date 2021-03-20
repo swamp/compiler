@@ -114,7 +114,7 @@ func (f *FunctionValue) DebugString() string {
 }
 
 func (f *FunctionValue) Type() dtype.Type {
-	return f.forcedFunctionType
+	return f.annotation.Type()
 }
 
 func (f *FunctionValue) Next() dtype.Type {

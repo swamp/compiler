@@ -1,23 +1,24 @@
-package decorated
+package dectype
 
 import (
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/modref"
 	"github.com/swamp/compiler/src/token"
 )
 
 type NamedDefinitionTypeReference struct {
-	optionalModuleReference *ModuleReference
+	optionalModuleReference modref.ModuleReferencer
 	ident                   ast.TypeReferenceScopedOrNormal
 }
 
-func NewNamedDefinitionTypeReference(optionalModuleReference *ModuleReference, ident ast.TypeReferenceScopedOrNormal) *NamedDefinitionTypeReference {
+func NewNamedDefinitionTypeReference(optionalModuleReference modref.ModuleReferencer, ident ast.TypeReferenceScopedOrNormal) *NamedDefinitionTypeReference {
 	return &NamedDefinitionTypeReference{
 		optionalModuleReference: optionalModuleReference,
 		ident:                   ident,
 	}
 }
 
-func (r *NamedDefinitionTypeReference) ModuleReference() *ModuleReference {
+func (r *NamedDefinitionTypeReference) ModuleReference() modref.ModuleReferencer {
 	return r.optionalModuleReference
 }
 

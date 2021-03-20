@@ -82,6 +82,6 @@ func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters 
 		return nil, rightCurlyErr
 	}
 
-	recordType := ast.NewRecordType(startCurly, rightCurly, fields, typeParameters)
+	recordType := ast.NewRecordType(startCurly, rightCurly, fields, typeParameters, precedingComments)
 	return recordType, nil
 }

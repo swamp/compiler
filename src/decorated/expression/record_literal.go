@@ -102,6 +102,9 @@ func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate Expression,
 }
 
 func (c *RecordLiteral) Type() dtype.Type {
+	if c.recordTemplate != nil {
+		return c.recordTemplate.Type()
+	}
 	return c.t
 }
 

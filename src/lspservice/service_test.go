@@ -176,7 +176,7 @@ func TestDocumentSemanticSymbols2(t *testing.T) {
 
 func TestDocumentSemanticHover(t *testing.T) {
 	testHelperWithTestingStringDoc(t, "file:///home/peter/own/hackman/swamp/gameplay/Main.swamp",
-		`{"jsonrpc":"2.0","id":2,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///home/peter/own/hackman/swamp/gameplay/Main.swamp"},"position":{"line":89,"character":32}}}`, ``)
+		`{"jsonrpc":"2.0","id":2,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///home/peter/own/hackman/swamp/gameplay/Main.swamp"},"position":{"line":13,"character":42}}}`, ``)
 }
 
 func TestDocumentSemanticSymbols4(t *testing.T) {

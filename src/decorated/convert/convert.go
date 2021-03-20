@@ -93,7 +93,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 
 	case *ast.TypeIdentifier:
 		refName := info.Symbol().Name()
-		foundType, _, err := t.CreateTypeReference(info)
+		foundType, err := t.CreateSomeTypeReference(info)
 		if err != nil {
 			return nil, err
 		}
@@ -105,7 +105,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 	case *ast.LocalType:
 		return dectype.NewLocalType(info.TypeParameter()), nil
 	case *ast.TypeReferenceScoped:
-		foundType, _, err := t.CreateTypeScopedReference(info.TypeResolver())
+		foundType, err := t.CreateSomeTypeReference(info.TypeResolver())
 		if err != nil {
 			return nil, err
 		}
@@ -115,7 +115,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		return newInvokerType(info, foundType, t)
 	case *ast.TypeReference:
 		refName := info.TypeIdentifier()
-		foundType, _, err := t.CreateTypeReference(refName)
+		foundType, err := t.CreateSomeTypeReference(refName)
 		if err != nil {
 			return nil, err
 		}

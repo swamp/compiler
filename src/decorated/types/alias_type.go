@@ -17,6 +17,7 @@ type Alias struct {
 	name             *ast.Alias
 	referencedType   dtype.Type
 	artifactTypeName ArtifactFullyQualifiedTypeName
+	references       []*AliasReference
 }
 
 func (u *Alias) String() string {
@@ -71,8 +72,12 @@ func (u *Alias) Next() dtype.Type {
 	return u.referencedType
 }
 
-func (u *Alias) Generate(params []dtype.Type) (dtype.Type, error) {
-	return u.referencedType.Generate(params)
+func (c *Alias) AddReferee(ref *AliasReference) {
+	c.references = append(c.references, ref)
+}
+
+func (c *Alias) References() []*AliasReference {
+	return c.references
 }
 
 func NewAliasType(name *ast.Alias, artifactTypeName ArtifactFullyQualifiedTypeName,

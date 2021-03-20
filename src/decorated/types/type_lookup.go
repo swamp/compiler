@@ -11,6 +11,10 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
+type TypeReferenceScopedOrNormal interface {
+	dtype.Type
+}
+
 func compareAtoms(pureExpected dtype.Atom, pureActual dtype.Atom) error {
 	_, expectedIsAny := pureExpected.(*Any)
 	_, actualIsAny := pureExpected.(*Any)

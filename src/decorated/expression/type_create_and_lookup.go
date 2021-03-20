@@ -24,15 +24,7 @@ func (l *TypeCreateAndLookup) AddCustomType(customType *dectype.CustomTypeAtom) 
 	return l.localTypes.AddCustomType(customType)
 }
 
-func (l *TypeCreateAndLookup) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, *NamedDefinitionTypeReference, decshared.DecoratedError) {
-	return l.lookup.CreateTypeReference(typeIdentifier)
-}
-
-func (l *TypeCreateAndLookup) CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, *NamedDefinitionTypeReference, decshared.DecoratedError) {
-	return l.lookup.CreateTypeScopedReference(typeIdentifier)
-}
-
-func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, *NamedDefinitionTypeReference, decshared.DecoratedError) {
+func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
 	return l.lookup.CreateSomeTypeReference(someTypeIdentifier)
 }
 

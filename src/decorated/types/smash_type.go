@@ -13,47 +13,55 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
-func Unalias(t dtype.Type) dtype.Type {
-	alias, wasAlias := t.(*Alias)
-	if wasAlias {
-		return Unalias(alias.referencedType)
-	}
-
-	typeRef, wasTypeRef := t.(*TypeReference)
-	if wasTypeRef {
-		return Unalias(typeRef.Next())
-	}
-
-	scopedTypeRef, wasScopedTypeRef := t.(*TypeReferenceScoped)
-	if wasScopedTypeRef {
-		return Unalias(scopedTypeRef.Next())
-	}
-
-	return t
-}
-
-func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
-	alias, wasAlias := t.(*Alias)
-	if wasAlias {
-		return Unalias(alias.referencedType)
-	}
-
-	typeRef, wasTypeRef := t.(*TypeReference)
-	if wasTypeRef {
-		return Unalias(typeRef.Next())
-	}
-
-	scopedTypeRef, wasScopedTypeRef := t.(*TypeReferenceScoped)
-	if wasScopedTypeRef {
-		return Unalias(scopedTypeRef.Next())
-	}
-
+func UnReference(t dtype.Type) dtype.Type {
 	fnTypeRef, wasFnTypeRef := t.(*FunctionTypeReference)
 	if wasFnTypeRef {
 		return Unalias(fnTypeRef.Next())
 	}
 
-	call, wasCall := t.(*InvokerType)
+	switch info := t.(type) {
+	case *AliasReference:
+		return UnReference(info.reference)
+	case *PrimitiveTypeReference:
+		return UnReference(info.primitiveType)
+	case *CustomTypeReference:
+		return UnReference(info.customType)
+	}
+
+	return t
+}
+
+func Unalias(t dtype.Type) dtype.Type {
+	unref := UnReference(t)
+	alias, wasAlias := unref.(*Alias)
+	if wasAlias {
+		return Unalias(alias.referencedType)
+	}
+
+	return unref
+}
+
+func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
+	/*
+		alias, wasAlias := t.(*Alias)
+		if wasAlias {
+			return Unalias(alias.referencedType)
+		}
+
+		typeRef, wasTypeRef := t.(*TypeReference)
+		if wasTypeRef {
+			return Unalias(typeRef.Next())
+		}
+
+		scopedTypeRef, wasScopedTypeRef := t.(*TypeReferenceScoped)
+		if wasScopedTypeRef {
+			return Unalias(scopedTypeRef.Next())
+		}
+
+	*/
+	unaliased := Unalias(t)
+
+	call, wasCall := unaliased.(*InvokerType)
 	if wasCall {
 		resolved, resolveErr := CallType(call.typeToInvoke, call.params)
 		if resolveErr != nil {
@@ -62,7 +70,7 @@ func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 		return Unalias(resolved)
 	}
 
-	return t
+	return unaliased
 }
 
 func fillContextFromPrimitive(context *TypeParameterContextOther, original *PrimitiveAtom, other *PrimitiveAtom) (*PrimitiveAtom, error) {

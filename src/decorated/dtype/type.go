@@ -18,6 +18,5 @@ type Type interface {
 	Next() Type
 	DecoratedName() string
 	ParameterCount() int
-	Generate(params []Type) (Type, error)
 	FetchPositionLength() token.SourceFileReference
 }

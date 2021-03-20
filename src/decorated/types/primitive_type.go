@@ -16,6 +16,7 @@ import (
 type PrimitiveAtom struct {
 	name         *ast.TypeIdentifier
 	genericTypes []dtype.Type
+	references   []*PrimitiveTypeReference
 }
 
 func NewPrimitiveType(name *ast.TypeIdentifier, genericTypes []dtype.Type) *PrimitiveAtom {
@@ -109,4 +110,12 @@ func (u *PrimitiveAtom) ParameterCount() int {
 
 func (u *PrimitiveAtom) Resolve() (dtype.Atom, error) {
 	return u, nil
+}
+
+func (u *PrimitiveAtom) AddReferee(reference *PrimitiveTypeReference) {
+	u.references = append(u.references, reference)
+}
+
+func (u *PrimitiveAtom) References() []*PrimitiveTypeReference {
+	return u.references
 }

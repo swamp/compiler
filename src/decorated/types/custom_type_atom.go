@@ -21,6 +21,7 @@ type CustomTypeAtom struct {
 	astCustomType         *ast.CustomType
 	artifactTypeName      ArtifactFullyQualifiedTypeName
 	genericLocalTypeNames []*dtype.TypeArgumentName
+	references            []*CustomTypeReference
 }
 
 func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
@@ -197,4 +198,12 @@ func (s *CustomTypeAtom) VariantCount() int {
 
 func (s *CustomTypeAtom) FindVariant(name string) *CustomTypeVariant {
 	return s.nameToField[name]
+}
+
+func (s *CustomTypeAtom) AddReferee(reference *CustomTypeReference) {
+	s.references = append(s.references, reference)
+}
+
+func (s *CustomTypeAtom) References() []*CustomTypeReference {
+	return s.references
 }

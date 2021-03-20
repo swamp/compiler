@@ -116,14 +116,8 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 		codeSignature = tokenType.HumanReadable()
 		name = "type"
 		pureType := tokenType
-		typeRef, wasTypeRef := tokenType.(*dectype.TypeReference)
-		if wasTypeRef {
-			pureType = typeRef.Next()
-		}
-		scopedTypeRef, wasScopedTypeRef := tokenType.(*dectype.TypeReferenceScoped)
-		if wasScopedTypeRef {
-			pureType = scopedTypeRef.Next()
-		}
+		pureType = dectype.UnReference(pureType)
+
 		switch t := pureType.(type) {
 		case *dectype.Alias:
 			if t.AstAlias().Comment() != nil {
@@ -166,7 +160,11 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 				if t.CustomTypeVariant().AstCustomTypeVariant().Comment() != nil {
 					documentation = t.CustomTypeVariant().AstCustomTypeVariant().Comment().Value()
 				}
-			case *decorated.CustomTypeVariantReference:
+			case *decorated.RecordConstructor:
+				if t.RecordType().AstRecord().Comment() != nil {
+					documentation = t.RecordType().AstRecord().Comment().Value()
+				}
+			case *dectype.CustomTypeVariantReference:
 				if t.CustomTypeVariant().AstCustomTypeVariant().Comment() != nil {
 					documentation = t.CustomTypeVariant().AstCustomTypeVariant().Comment().Value()
 				}
@@ -203,7 +201,7 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.Module().FetchPositionLength(), nil
 	case *decorated.RecordTypeFieldReference:
 		return t.RecordTypeField().VariableIdentifier().FetchPositionLength(), nil
-	case *decorated.CustomTypeVariantReference:
+	case *dectype.CustomTypeVariantReference:
 		return t.CustomTypeVariant().FetchPositionLength(), nil
 	case *decorated.RecordConstructor:
 		return t.Type().FetchPositionLength(), nil
@@ -226,10 +224,10 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 	// TYPES
 	case *dectype.FunctionTypeReference:
 		return t.FunctionAtom().FetchPositionLength(), nil
-	case *dectype.TypeReference:
-		return t.Next().FetchPositionLength(), nil
-	case *dectype.TypeReferenceScoped:
-		return t.Next().FetchPositionLength(), nil
+	case *dectype.AliasReference:
+		return t.Alias().FetchPositionLength(), nil
+	case *dectype.CustomTypeReference:
+		return t.CustomTypeAtom().FetchPositionLength(), nil
 	}
 
 	return token.SourceFileReference{}, fmt.Errorf("couldn't find anything for %T", decoratedToken)
@@ -328,6 +326,14 @@ func findReferences(uri lsp.DocumentURI, position lsp.Position, scanner Decorate
 		}
 	case *decorated.FunctionName:
 		for _, ref := range t.FunctionValue().References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *dectype.Alias:
+		for _, ref := range t.References() {
+			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
+		}
+	case *dectype.CustomTypeAtom:
+		for _, ref := range t.References() {
 			sourceFileReferences = append(sourceFileReferences, ref.FetchPositionLength())
 		}
 	}
@@ -601,29 +607,43 @@ func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connect
 	var codeLenses []*lsp.CodeLens
 
 	for _, rootToken := range s.scanner.RootTokens(toDocumentURI(params.TextDocument.URI)) {
+		count := -1
+		var foundRange token.Range
+
 		switch t := rootToken.(type) {
 		case *decorated.NamedFunctionValue:
 			value := t.Value()
-			count := len(value.References())
-			var textToDisplay string
-			if count == 0 {
-				textToDisplay = "no references"
-			} else if count == 1 {
-				textToDisplay = "one reference"
-			} else {
-				textToDisplay = fmt.Sprintf("%d references", count)
-			}
-			codeLens := &lsp.CodeLens{
-				Range: *tokenToLspRange(value.Annotation().FetchPositionLength().Range),
-				Command: lsp.Command{
-					Title:     textToDisplay,
-					Command:   "",
-					Arguments: nil,
-				},
-				Data: nil,
-			}
-			codeLenses = append(codeLenses, codeLens)
+			foundRange = value.Annotation().FetchPositionLength().Range
+			count = len(value.References())
+		case *dectype.Alias:
+			count = len(t.References())
+			foundRange = t.FetchPositionLength().Range
+		case *dectype.CustomTypeAtom:
+			count = len(t.References())
+			foundRange = t.FetchPositionLength().Range
+		default:
+			continue
 		}
+
+		var textToDisplay string
+		if count == 0 {
+			textToDisplay = "no references"
+		} else if count == 1 {
+			textToDisplay = "one reference"
+		} else {
+			textToDisplay = fmt.Sprintf("%d references", count)
+		}
+		codeLens := &lsp.CodeLens{
+			Range: *tokenToLspRange(foundRange),
+			Command: lsp.Command{
+				Title:     textToDisplay,
+				Command:   "",
+				Arguments: nil,
+			},
+			Data: nil,
+		}
+		codeLenses = append(codeLenses, codeLens)
+
 	}
 
 	return codeLenses, nil

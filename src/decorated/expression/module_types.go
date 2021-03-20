@@ -48,16 +48,6 @@ func (t *ModuleTypes) FindBuiltInType(name string) dtype.Type {
 	return found
 }
 
-func (t *ModuleTypes) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) dtype.Type {
-	foundType := t.FindType(typeIdentifier)
-	if foundType == nil {
-		return nil
-	}
-	ref := dectype.NewTypeReference(typeIdentifier, foundType)
-
-	return ref
-}
-
 // -----------------------------------------------------
 //                    Declare
 // -----------------------------------------------------

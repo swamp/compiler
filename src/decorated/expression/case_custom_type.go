@@ -12,6 +12,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -54,14 +55,14 @@ func NewCaseConsequenceParameterForCustomType(name *ast.VariableIdentifier, para
 }
 
 type CaseConsequenceForCustomType struct {
-	variantName    *CustomTypeVariantReference
+	variantName    *dectype.CustomTypeVariantReference
 	parameters     []*CaseConsequenceParameterForCustomType
 	expression     Expression
 	internalIndex  int
 	astConsequence *ast.CaseConsequenceForCustomType
 }
 
-func NewCaseConsequenceForCustomType(internalIndex int, variantName *CustomTypeVariantReference, parameters []*CaseConsequenceParameterForCustomType,
+func NewCaseConsequenceForCustomType(internalIndex int, variantName *dectype.CustomTypeVariantReference, parameters []*CaseConsequenceParameterForCustomType,
 	expression Expression, astConsequence *ast.CaseConsequenceForCustomType) *CaseConsequenceForCustomType {
 	return &CaseConsequenceForCustomType{
 		internalIndex: internalIndex, variantName: variantName, parameters: parameters,
@@ -81,7 +82,7 @@ func (c *CaseConsequenceForCustomType) InternalIndex() int {
 	return c.internalIndex
 }
 
-func (c *CaseConsequenceForCustomType) VariantReference() *CustomTypeVariantReference {
+func (c *CaseConsequenceForCustomType) VariantReference() *dectype.CustomTypeVariantReference {
 	return c.variantName
 }
 

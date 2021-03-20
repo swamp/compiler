@@ -17,9 +17,9 @@ import (
 )
 
 type TypeReferenceMaker interface {
-	CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, *NamedDefinitionTypeReference, decshared.DecoratedError)
-	CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, *NamedDefinitionTypeReference, decshared.DecoratedError)
-	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, *NamedDefinitionTypeReference, decshared.DecoratedError)
+	// CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError)
+	// CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError)
+	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError)
 }
 
 type TypeAddAndReferenceMaker interface {

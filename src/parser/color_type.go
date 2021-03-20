@@ -146,8 +146,6 @@ func ColorType(dType dtype.Type, indentation int, inside bool, colorer coloring.
 	switch t := dType.(type) {
 	case *dectype.Alias:
 		colorAlias(t, colorer)
-	case *dectype.TypeReference:
-		ColorType(t.Next(), indentation, inside, colorer)
 	case *dectype.InvokerType:
 		colorTypeEmbed(t, colorer)
 	case *dectype.CustomTypeVariantConstructorType:

@@ -73,8 +73,9 @@ func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.Fu
 }
 
 func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, functionValueExpression decorated.Expression, decoratedEncounteredArgumentExpressions []decorated.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
-	functionValueExpressionType := functionValueExpression.Type()
-	functionValueExpressionFunctionType, wasFunction := functionValueExpressionType.(*dectype.FunctionAtom)
+	originalFunctionValueType := functionValueExpression.Type()
+	unaliasedType := dectype.UnaliasWithResolveInvoker(originalFunctionValueType)
+	functionValueExpressionFunctionType, wasFunction := unaliasedType.(*dectype.FunctionAtom)
 	if !wasFunction {
 		return nil, decorated.NewExpectedFunctionTypeForCall(functionValueExpression)
 	}
