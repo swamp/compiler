@@ -3,20 +3,19 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-package decorated
+package dectype
 
 import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
-	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
 type CustomTypeVariantReference struct {
 	named             *NamedDefinitionTypeReference
-	customTypeVariant *dectype.CustomTypeVariant
+	customTypeVariant *CustomTypeVariant
 }
 
 func (g *CustomTypeVariantReference) Type() dtype.Type {
@@ -27,11 +26,27 @@ func (g *CustomTypeVariantReference) String() string {
 	return fmt.Sprintf("[customtypevariantref %v %v]", g.named, g.customTypeVariant)
 }
 
+func (g *CustomTypeVariantReference) Next() dtype.Type {
+	return g.customTypeVariant
+}
+
 func (g *CustomTypeVariantReference) HumanReadable() string {
 	return "Variant Reference"
 }
 
-func (g *CustomTypeVariantReference) CustomTypeVariant() *dectype.CustomTypeVariant {
+func (g *CustomTypeVariantReference) DecoratedName() string {
+	return g.customTypeVariant.DecoratedName()
+}
+
+func (g *CustomTypeVariantReference) ShortName() string {
+	return g.customTypeVariant.ShortName()
+}
+
+func (g *CustomTypeVariantReference) ShortString() string {
+	return g.customTypeVariant.ShortString()
+}
+
+func (g *CustomTypeVariantReference) CustomTypeVariant() *CustomTypeVariant {
 	return g.customTypeVariant
 }
 
@@ -39,8 +54,18 @@ func (g *CustomTypeVariantReference) AstIdentifier() ast.TypeReferenceScopedOrNo
 	return g.named.ident
 }
 
-func NewCustomTypeVariantReference(named *NamedDefinitionTypeReference, customTypeVariant *dectype.CustomTypeVariant) *CustomTypeVariantReference {
+func (g *CustomTypeVariantReference) ParameterCount() int {
+	return g.customTypeVariant.ParameterCount()
+}
+
+func (g *CustomTypeVariantReference) Resolve() (dtype.Atom, error) {
+	return g.customTypeVariant.Resolve()
+}
+
+func NewCustomTypeVariantReference(named *NamedDefinitionTypeReference, customTypeVariant *CustomTypeVariant) *CustomTypeVariantReference {
 	ref := &CustomTypeVariantReference{named: named, customTypeVariant: customTypeVariant}
+
+	customTypeVariant.AddReferee(ref)
 
 	return ref
 }
