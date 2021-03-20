@@ -250,7 +250,8 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 			return nil, decorated.NewUnMatchingArithmeticOperatorTypes(infix, leftExpression, rightExpression)
 		}
 		opType := leftExpression.Type()
-		primitive, _ := opType.(*dectype.PrimitiveAtom)
+		opTypeUnreferenced := dectype.UnReference(opType)
+		primitive, _ := opTypeUnreferenced.(*dectype.PrimitiveAtom)
 		if primitive != nil {
 			if primitive.AtomName() == "Fixed" {
 				if arithmeticOperatorType == decorated.ArithmeticMultiply {
