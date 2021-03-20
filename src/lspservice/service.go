@@ -172,7 +172,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 		}
 	}
 
-	showString := fmt.Sprintf("`%v`\n\n%v\n\n ```swamp\n%v\n```\n", name, documentation, codeSignature)
+	showString := fmt.Sprintf("```swamp\n%v\n```\n%v\n___\n%v\n", codeSignature, name, documentation)
 
 	hover := &lsp.Hover{
 		Contents: lsp.MarkupContent{
