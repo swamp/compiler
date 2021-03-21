@@ -204,6 +204,8 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.RecordTypeField().VariableIdentifier().FetchPositionLength(), nil
 	case *dectype.CustomTypeVariantReference:
 		return t.CustomTypeVariant().FetchPositionLength(), nil
+	case *dectype.CustomTypeVariantConstructorType:
+		return t.Variant().FetchPositionLength(), nil
 	case *decorated.RecordConstructor:
 		return t.Type().FetchPositionLength(), nil
 	case *decorated.CustomTypeVariantConstructor:
@@ -231,7 +233,11 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.CustomTypeAtom().FetchPositionLength(), nil
 	}
 
-	return token.SourceFileReference{}, fmt.Errorf("couldn't find anything for %T", decoratedToken)
+	err := fmt.Errorf("couldn't find anything for %T", decoratedToken)
+
+	log.Printf(err.Error())
+
+	return token.SourceFileReference{}, err
 }
 
 func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {

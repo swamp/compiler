@@ -186,6 +186,9 @@ func addSemanticTokenCustomTypeVariantConstructor(constructor *decorated.CustomT
 }
 
 func addSemanticTokenCustomTypeVariantReference(ref *dectype.CustomTypeVariantReference, builder *SemanticBuilder) error {
+	if err := addSemanticTokenNamedTypeReference(ref.NameReference(), builder); err != nil {
+		return err
+	}
 	encodeEnumMember(builder, ref.AstIdentifier().SomeTypeIdentifier())
 
 	return nil
@@ -936,16 +939,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenCurryFunction(t, builder)
 	case *decorated.FunctionName:
 		return addSemanticTokenFunctionName(t, builder)
-	case *decorated.FunctionReference:
-		return addSemanticTokenFunctionReference(t, builder)
-	case *decorated.FunctionParameterReference:
-		return addSemanticTokenFunctionParameterReference(t, builder)
-	case *decorated.CaseConsequenceParameterReference:
-		return addSemanticTokenCustomTypeVariantParameterExpandReference(t, builder)
 	case *decorated.CustomTypeVariantConstructor:
 		return addSemanticTokenCustomTypeVariantConstructor(t, builder)
-	case *dectype.CustomTypeVariantReference:
-		return addSemanticTokenCustomTypeVariantReference(t, builder)
 	case *decorated.RecordConstructor:
 		return addSemanticTokenRecordConstructor(t, builder)
 	case *decorated.RecordLookups:
@@ -978,6 +973,15 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return nil // TODO: decorate external
 	case *decorated.AsmConstant:
 		return nil // TODO: decorate asm constant
+
+	case *decorated.FunctionReference:
+		return addSemanticTokenFunctionReference(t, builder)
+	case *decorated.FunctionParameterReference:
+		return addSemanticTokenFunctionParameterReference(t, builder)
+	case *decorated.CaseConsequenceParameterReference:
+		return addSemanticTokenCustomTypeVariantParameterExpandReference(t, builder)
+	case *dectype.CustomTypeVariantReference:
+		return addSemanticTokenCustomTypeVariantReference(t, builder)
 
 		// TYPES
 		//
