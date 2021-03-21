@@ -28,14 +28,6 @@ func (t *FunctionTypeReference) HumanReadable() string {
 	return t.referencedType.HumanReadable()
 }
 
-func (t *FunctionTypeReference) ShortString() string {
-	return fmt.Sprintf("fntyperef %v %v", t.astFunctionType, t.referencedType)
-}
-
-func (t *FunctionTypeReference) ShortName() string {
-	return fmt.Sprintf("fntyperef %v %v", t.astFunctionType, t.referencedType)
-}
-
 func (t *FunctionTypeReference) String() string {
 	return fmt.Sprintf("fntyperef %v %v", t.astFunctionType, t.referencedType)
 }
@@ -66,8 +58,4 @@ func (t *FunctionTypeReference) DecoratedName() string {
 
 func (t *FunctionTypeReference) ParameterCount() int {
 	return t.referencedType.ParameterCount()
-}
-
-func (t *FunctionTypeReference) Generate(params []dtype.Type) (dtype.Type, error) {
-	return t.referencedType.Generate(params)
 }

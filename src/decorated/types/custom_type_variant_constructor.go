@@ -28,28 +28,12 @@ func (s *CustomTypeVariantConstructorType) String() string {
 	return fmt.Sprintf("[variantconstr %v]", s.variant)
 }
 
-func (s *CustomTypeVariantConstructorType) ShortString() string {
-	return fmt.Sprintf("[variantconstr %v]", s.variant)
-}
-
 func (s *CustomTypeVariantConstructorType) HumanReadable() string {
 	return fmt.Sprintf("%v", s.variant.HumanReadable())
 }
 
-func (s *CustomTypeVariantConstructorType) DecoratedName() string {
-	return s.variant.Name().Name()
-}
-
-func (s *CustomTypeVariantConstructorType) ShortName() string {
-	return s.DecoratedName()
-}
-
 func (s *CustomTypeVariantConstructorType) ParameterCount() int {
 	return s.variant.ParameterCount()
-}
-
-func (s *CustomTypeVariantConstructorType) Generate(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("could not generate")
 }
 
 func (s *CustomTypeVariantConstructorType) Resolve() (dtype.Atom, error) {

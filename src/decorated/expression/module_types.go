@@ -105,7 +105,7 @@ func (t *ModuleTypes) DebugOutput() {
 }
 
 func TraverseToString(t dtype.Type) string {
-	s := t.DecoratedName()
+	s := t.String()
 	concreteType, isConcreteType := t.(dtype.Type)
 	if isConcreteType {
 		next := concreteType.Next()
@@ -143,23 +143,10 @@ func isTypeToIgnoreForDebugOutput(repoType dtype.Type) bool {
 		return true
 	}
 
-	if stringInSlice(repoType.DecoratedName(), []string{"Nothing", "Just", "Maybe(a)", "Maybe", "List", "Array", "TypeRef", "{test:", "{atest:"}) {
+	if stringInSlice(repoType.String(), []string{"Nothing", "Just", "Maybe(a)", "Maybe", "List", "Array", "TypeRef", "{test:", "{atest:"}) {
 		return true
 	}
 	return false
-}
-
-func (t *ModuleTypes) ShortString() string {
-	s := ""
-	for _, repoType := range t.identifierToType {
-		if isTypeToIgnoreForDebugOutput(repoType) {
-			continue
-		}
-
-		s += fmt.Sprintf("%v : %v\n", repoType.DecoratedName(), repoType.ShortString())
-	}
-
-	return s
 }
 
 func (t *ModuleTypes) internalAdd(identifier *ast.TypeIdentifier, realType dtype.Type) {

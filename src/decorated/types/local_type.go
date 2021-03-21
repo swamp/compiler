@@ -33,20 +33,8 @@ func (u *LocalType) Identifier() *ast.TypeParameter {
 	return u.identifier
 }
 
-func (u *LocalType) ShortString() string {
-	return fmt.Sprintf("[localtype %v]", u.identifier.Name())
-}
-
-func (u *LocalType) DecoratedName() string {
-	return u.identifier.Name()
-}
-
-func (u *LocalType) ShortName() string {
-	return u.DecoratedName()
-}
-
 func (u *LocalType) AtomName() string {
-	return u.DecoratedName()
+	return u.identifier.Name()
 }
 
 func (u *LocalType) IsEqual(_ dtype.Atom) error {
@@ -55,14 +43,6 @@ func (u *LocalType) IsEqual(_ dtype.Atom) error {
 
 func (u *LocalType) ParameterCount() int {
 	return 0
-}
-
-func (u *LocalType) Apply(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("LocalType can not be applied")
-}
-
-func (u *LocalType) Generate(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("LocalType can not be applied")
 }
 
 func (u *LocalType) Resolve() (dtype.Atom, error) {

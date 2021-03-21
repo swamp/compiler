@@ -140,7 +140,7 @@ func (t *ModuleReferenceDefinitions) ShortString() string {
 	keys := sortedTypeAtomKeys(t.referencedExpressions)
 	for _, key := range keys {
 		definition := t.referencedExpressions[key]
-		s += fmt.Sprintf(".. %v => %v\n", key, definition.ShortString())
+		s += fmt.Sprintf(".. %v => %v\n", key, definition.String())
 	}
 	return s
 }

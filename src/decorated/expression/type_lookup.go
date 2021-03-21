@@ -58,33 +58,6 @@ func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (d
 	return foundExposedType, namedTypeRef, nil
 }
 
-/*
-func (l *TypeLookup) CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError) {
-	foundType, namedRef, err := l.FindType(typeIdentifier)
-	if err != nil {
-		return nil, namedRef, err
-	}
-
-	switch t := foundType.(type) {
-	case *dectype.Alias:
-		dectype.NewAliasReference(typeIdentifier, t)
-	}
-	typeRef := dectype.NewTypeReference(typeIdentifier, foundType)
-
-	return typeRef, namedRef, nil
-}
-
-func (l *TypeLookup) CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError) {
-	foundType, module, err := l.FindTypeScoped(typeIdentifier)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return dectype.NewTypeReferenceScoped(typeIdentifier, foundType), module, nil
-}
-
-*/
-
 func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
 	var lookedUpType dtype.Type
 	var named *dectype.NamedDefinitionTypeReference

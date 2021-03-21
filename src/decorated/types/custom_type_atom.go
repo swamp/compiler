@@ -36,16 +36,6 @@ func (s *CustomTypeAtom) HumanReadable() string {
 	return s.astCustomType.Identifier().Name()
 }
 
-func (s *CustomTypeAtom) ShortString() string {
-	str := "[custom-type "
-	for _, variant := range s.variants {
-		str += " " + variant.ShortString()
-	}
-
-	str += "]"
-	return str
-}
-
 func (s *CustomTypeAtom) FetchPositionLength() token.SourceFileReference {
 	return s.astCustomType.FetchPositionLength()
 }
@@ -62,10 +52,6 @@ func (s *CustomTypeAtom) AtomName() string {
 	return s.DecoratedName()
 }
 
-func (s *CustomTypeAtom) ShortName() string {
-	return s.DecoratedName()
-}
-
 func (s *CustomTypeAtom) StatementString() string {
 	return s.DecoratedName()
 }
@@ -76,10 +62,6 @@ func (s *CustomTypeAtom) Name() string {
 
 func (s *CustomTypeAtom) ArtifactTypeName() ArtifactFullyQualifiedTypeName {
 	return s.artifactTypeName
-}
-
-func (s *CustomTypeAtom) ConcretizedName() string {
-	return s.DecoratedName()
 }
 
 func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName,
@@ -113,14 +95,6 @@ func (s *CustomTypeAtom) HasVariant(variantToLookFor *CustomTypeVariant) bool {
 
 func (s *CustomTypeAtom) ParameterCount() int {
 	return len(s.genericLocalTypeNames)
-}
-
-func (s *CustomTypeAtom) Generate(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("sorry")
-}
-
-func (u *CustomTypeAtom) Apply(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("custom type does not have apply")
 }
 
 func (s *CustomTypeAtom) Resolve() (dtype.Atom, error) {

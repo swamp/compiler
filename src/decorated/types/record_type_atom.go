@@ -50,42 +50,6 @@ func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
 	return s.record.FetchPositionLength()
 }
 
-func (s *RecordAtom) ShortString() string {
-	/*
-		str := "[record-type "
-		for _, field := range s.sortedFields {
-			str += " " + field.ShortString()
-		}
-		str += "]"
-
-		return str
-
-	*/
-
-	return s.DecoratedName()
-}
-
-func (s *RecordAtom) DecoratedName() string {
-	str := "{"
-	for index, field := range s.sortedFields {
-		if index > 0 {
-			str += ";"
-		}
-		str += field.DecoratedName()
-	}
-	str += "}"
-
-	return str
-}
-
-func (s *RecordAtom) ShortName() string {
-	return s.DecoratedName()
-}
-
-func (s *RecordAtom) ConcretizedName() string {
-	return s.DecoratedName()
-}
-
 type ByFieldName []*RecordField
 
 func (a ByFieldName) Len() int           { return len(a) }
@@ -135,14 +99,6 @@ func (s *RecordAtom) FindField(name string) *RecordField {
 
 func (s *RecordAtom) ParameterCount() int {
 	return len(s.genericTypes)
-}
-
-func (u *RecordAtom) Apply(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("record type does not have apply")
-}
-
-func (u *RecordAtom) Generate(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("record type does not have apply")
 }
 
 func (u *RecordAtom) Resolve() (dtype.Atom, error) {

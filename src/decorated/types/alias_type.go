@@ -48,18 +48,6 @@ func (u *Alias) ArtifactTypeName() ArtifactFullyQualifiedTypeName {
 	return u.artifactTypeName
 }
 
-func (u *Alias) ShortString() string {
-	return fmt.Sprintf("[alias %v %v]", u.name.Name(), u.referencedType.ShortString())
-}
-
-func (u *Alias) DecoratedName() string {
-	return u.name.Name()
-}
-
-func (u *Alias) ShortName() string {
-	return u.DecoratedName()
-}
-
 func (u *Alias) ParameterCount() int {
 	return u.referencedType.ParameterCount()
 }

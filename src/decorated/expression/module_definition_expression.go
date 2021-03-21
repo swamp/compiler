@@ -40,10 +40,6 @@ func (d *ModuleDefinition) String() string {
 	return fmt.Sprintf("[mdefx %v = %v]", d.localIdentifier, d.expr)
 }
 
-func (d *ModuleDefinition) ShortString() string {
-	return fmt.Sprintf("%v = %v", d.localIdentifier.Name(), d.expr)
-}
-
 func (d *ModuleDefinition) Expression() Expression {
 	return d.expr
 }

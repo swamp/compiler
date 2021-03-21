@@ -34,18 +34,6 @@ func (g *PrimitiveTypeReference) HumanReadable() string {
 	return "Primitive Type Reference"
 }
 
-func (g *PrimitiveTypeReference) DecoratedName() string {
-	return g.primitiveType.DecoratedName()
-}
-
-func (g *PrimitiveTypeReference) ShortName() string {
-	return g.primitiveType.ShortName()
-}
-
-func (g *PrimitiveTypeReference) ShortString() string {
-	return g.primitiveType.ShortString()
-}
-
 func (g *PrimitiveTypeReference) PrimitiveAtom() *PrimitiveAtom {
 	return g.primitiveType
 }

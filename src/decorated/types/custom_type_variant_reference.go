@@ -38,14 +38,6 @@ func (g *CustomTypeVariantReference) DecoratedName() string {
 	return g.customTypeVariant.DecoratedName()
 }
 
-func (g *CustomTypeVariantReference) ShortName() string {
-	return g.customTypeVariant.ShortName()
-}
-
-func (g *CustomTypeVariantReference) ShortString() string {
-	return g.customTypeVariant.ShortString()
-}
-
 func (g *CustomTypeVariantReference) CustomTypeVariant() *CustomTypeVariant {
 	return g.customTypeVariant
 }

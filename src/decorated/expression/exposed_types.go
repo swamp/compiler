@@ -58,19 +58,10 @@ func (e *ExposedTypes) AllTypes() map[string]dtype.Type {
 	return e.identifierToType
 }
 
-func (e *ExposedTypes) ShortString() string {
-	s := ""
-	for _, exposedType := range e.identifierToType {
-		s += fmt.Sprintf("%v : %v\n", exposedType.DecoratedName(), exposedType.DecoratedName())
-	}
-
-	return s
-}
-
 func (e *ExposedTypes) DebugString() string {
 	s := ""
 	for _, exposedType := range e.identifierToType {
-		s += fmt.Sprintf("%p %v : %v\n", exposedType, exposedType.DecoratedName(), exposedType.DecoratedName())
+		s += fmt.Sprintf("%p %v : %v\n", exposedType, exposedType.String(), exposedType.String())
 	}
 
 	return s

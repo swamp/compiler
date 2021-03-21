@@ -21,7 +21,7 @@ func generateModuleToChunk(module *decorated.Module, chunk *Chunk, verboseFlag b
 	for _, exposedDef := range module.Definitions().Definitions() {
 		exposedType := exposedDef.Expression().Type()
 		if verboseFlag {
-			fmt.Printf("generateModuleToChunkTypeInfo definition: %s\n", exposedType.DecoratedName())
+			fmt.Printf("generateModuleToChunkTypeInfo definition: %s\n", exposedType.String())
 		}
 		convertedType, err := chunk.ConsumeType(exposedType)
 		if err != nil {

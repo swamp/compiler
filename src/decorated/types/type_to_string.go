@@ -11,18 +11,6 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
-func TypesToShortString(types []dtype.Type) string {
-	s := ""
-	for index, t := range types {
-		if index > 0 {
-			s += ","
-		}
-		s += t.ShortString()
-	}
-
-	return s
-}
-
 func TypesToHumanReadable(types []dtype.Type) string {
 	s := ""
 	for index, t := range types {
@@ -63,14 +51,6 @@ func TypesToStringSuffix(types []dtype.Type) string {
 	return s
 }
 
-func TypesToShortStringSuffix(types []dtype.Type) string {
-	if len(types) == 0 {
-		return ""
-	}
-
-	return " " + TypesToShortString(types)
-}
-
 func TypeArgumentsToString(types []*dtype.TypeArgumentName) string {
 	s := ""
 	for index, t := range types {
@@ -91,38 +71,10 @@ func TypeParametersSuffix(types []dtype.Type) string {
 	return fmt.Sprintf("<%s>", TypesToString(types))
 }
 
-func TypeParametersShortSuffix(types []dtype.Type) string {
-	if len(types) == 0 {
-		return ""
-	}
-
-	return fmt.Sprintf("<%s>", TypesToShortString(types))
-}
-
 func TypeParametersHumanReadableSuffix(types []dtype.Type) string {
 	if len(types) == 0 {
 		return ""
 	}
 
 	return fmt.Sprintf(" %s", TypesToHumanReadable(types))
-}
-
-func TypeArgumentNamesSuffix(types []*dtype.TypeArgumentName) string {
-	if len(types) == 0 {
-		return ""
-	}
-
-	return fmt.Sprintf("<%s>", TypeArgumentsToString(types))
-}
-
-func TypesToDecoratedNames(types []dtype.Type) string {
-	s := ""
-	for index, t := range types {
-		if index > 0 {
-			s += ","
-		}
-		s += fmt.Sprintf("%v", t.DecoratedName())
-	}
-
-	return s
 }

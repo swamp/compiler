@@ -11,12 +11,9 @@ import (
 
 type Type interface {
 	HumanReadable() string
-	ShortString() string
-	ShortName() string
 	String() string
 	Resolve() (Atom, error)
 	Next() Type
-	DecoratedName() string
 	ParameterCount() int
 	FetchPositionLength() token.SourceFileReference
 }

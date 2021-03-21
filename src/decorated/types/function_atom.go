@@ -62,25 +62,8 @@ func (u *FunctionAtom) ParameterCount() int {
 	return len(u.parameterTypes)
 }
 
-func (u *FunctionAtom) Apply(params []dtype.Type) (dtype.Type, error) {
-	return u, nil
-}
-
-func (u *FunctionAtom) Generate(params []dtype.Type) (dtype.Type, error) {
-	return u, nil
-}
-
 func (u *FunctionAtom) String() string {
 	return fmt.Sprintf("[functype %v]", u.parameterTypes)
-}
-
-func (u *FunctionAtom) ShortString() string {
-	s := "[func "
-	for _, param := range u.parameterTypes {
-		s += " " + param.ShortString()
-	}
-	s += "]"
-	return s
 }
 
 func (u *FunctionAtom) HumanReadable() string {
@@ -96,37 +79,13 @@ func (u *FunctionAtom) HumanReadable() string {
 	return str
 }
 
-func (u *FunctionAtom) DecoratedName() string {
-	s := "func("
-	for index, param := range u.parameterTypes {
-		if index > 0 {
-			s += " -> "
-		}
-		s += param.DecoratedName()
-	}
-	s += ")"
-	return s
-}
-
 func (u *FunctionAtom) AtomName() string {
 	s := "func("
 	for index, param := range u.parameterTypes {
 		if index > 0 {
 			s += " -> "
 		}
-		s += param.ShortName()
-	}
-	s += ")"
-	return s
-}
-
-func (u *FunctionAtom) ShortName() string {
-	s := "func("
-	for index, param := range u.parameterTypes {
-		if index > 0 {
-			s += " -> "
-		}
-		s += param.ShortName()
+		s += param.String()
 	}
 	s += ")"
 	return s

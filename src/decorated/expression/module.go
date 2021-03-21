@@ -265,12 +265,12 @@ func (m *Module) DebugOutput(debug string) {
 }
 
 func (m *Module) ShortString() string {
-	return m.localTypes.ShortString() + "\n" + m.localDefinitions.ShortString()
+	return m.localTypes.String() + "\n" + m.localDefinitions.ShortString()
 }
 
 func (m *Module) String() string {
 	s := "------------ " + m.fullyQualifiedModuleName.String() + " ----------- \nexposed:\n"
-	s += m.exposedTypes.ShortString()
+	s += m.exposedTypes.DebugString()
 	s += "\n"
 	s += m.exposedDefinitions.ShortString()
 	s += "\nmodule:\n"

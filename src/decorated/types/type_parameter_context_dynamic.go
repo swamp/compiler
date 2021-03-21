@@ -43,22 +43,6 @@ func (t *TypeParameterContextDynamic) DebugString() string {
 	return s
 }
 
-func (t *TypeParameterContextDynamic) DecoratedName() string {
-	s := ""
-	for index, arg := range t.resolvedArguments {
-		if index > 0 {
-			s += ","
-		}
-
-		if arg == nil {
-			panic("illegal state in " + t.String())
-		}
-
-		s += arg.DecoratedName()
-	}
-	return s
-}
-
 func (t *TypeParameterContextDynamic) ArgumentNamesCount() int {
 	return len(t.argumentNames)
 }

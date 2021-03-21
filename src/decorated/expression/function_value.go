@@ -93,24 +93,8 @@ func (f *FunctionValue) String() string {
 	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
 }
 
-func (f *FunctionValue) DecoratedName() string {
-	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
-}
-
 func (f *FunctionValue) HumanReadable() string {
 	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
-}
-
-func (f *FunctionValue) ShortName() string {
-	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
-}
-
-func (f *FunctionValue) ShortString() string {
-	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
-}
-
-func (f *FunctionValue) DebugString() string {
-	return fmt.Sprintf("[functionval]")
 }
 
 func (f *FunctionValue) Type() dtype.Type {

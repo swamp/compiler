@@ -95,7 +95,7 @@ func colorCustomType(recordType *dectype.CustomTypeAtom, indentation int, inside
 }
 
 func colorTypeEmbed(recordType *dectype.InvokerType, colorer coloring.Colorer) {
-	shortName := recordType.TypeGenerator().ShortName()
+	shortName := recordType.TypeGenerator().String()
 	typeSymbolToken := token.NewTypeSymbolToken(shortName, token.SourceFileReference{}, 0)
 	colorer.TypeGeneratorName(typeSymbolToken)
 	colorer.OperatorString("(")

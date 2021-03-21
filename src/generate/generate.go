@@ -1000,9 +1000,10 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 
 	case *decorated.ArithmeticOperator:
 		{
+			leftPrimitive, _ := dectype.UnReference(e.Left().Type()).(*dectype.PrimitiveAtom)
 			if isListLike(e.Left().Type()) && e.OperatorType() == decorated.ArithmeticAppend {
 				return generateListAppend(code, target, e, genContext)
-			} else if e.Left().Type().DecoratedName() == "String" && e.OperatorType() == decorated.ArithmeticAppend {
+			} else if leftPrimitive != nil && leftPrimitive.AtomName() == "String" && e.OperatorType() == decorated.ArithmeticAppend {
 				return generateStringAppend(code, target, e, genContext)
 			} else if isIntLike(e.Left().Type()) {
 				return generateArithmetic(code, target, e, genContext)

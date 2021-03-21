@@ -22,10 +22,6 @@ func (u *InvokerType) HumanReadable() string {
 	return fmt.Sprintf("%v %v", u.typeToInvoke.HumanReadable(), TypesToHumanReadable(u.params))
 }
 
-func (u *InvokerType) ShortString() string {
-	return fmt.Sprintf("%v<%v>", u.typeToInvoke.DecoratedName(), TypesToDecoratedNames(u.params))
-}
-
 func (u *InvokerType) TypeGenerator() dtype.Type {
 	return u.typeToInvoke
 }
@@ -39,15 +35,7 @@ func (u *InvokerType) FetchPositionLength() token.SourceFileReference {
 }
 
 func (u *InvokerType) String() string {
-	return fmt.Sprintf("%v<%v>", u.typeToInvoke.DecoratedName(), TypesToDecoratedNames(u.params))
-}
-
-func (u *InvokerType) ShortName() string {
-	return fmt.Sprintf("%v<%v>", u.typeToInvoke.DecoratedName(), TypesToDecoratedNames(u.params))
-}
-
-func (u *InvokerType) DecoratedName() string {
-	return fmt.Sprintf("%v<%v>", u.typeToInvoke.DecoratedName(), TypesToDecoratedNames(u.params))
+	return fmt.Sprintf("%v<%v>", u.typeToInvoke.String(), TypesToString(u.params))
 }
 
 func (u *InvokerType) Resolve() (dtype.Atom, error) {
@@ -61,14 +49,6 @@ func (u *InvokerType) Resolve() (dtype.Atom, error) {
 
 func (u *InvokerType) ParameterCount() int {
 	return 0
-}
-
-func (u *InvokerType) Apply(types []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("type embed can not be applied")
-}
-
-func (u *InvokerType) Generate(types []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("type embed can not be generated")
 }
 
 func (u *InvokerType) Next() dtype.Type {

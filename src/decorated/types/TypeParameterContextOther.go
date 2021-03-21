@@ -34,17 +34,6 @@ func (t *TypeParameterContextOther) DebugString() string {
 	return s
 }
 
-func (t *TypeParameterContextOther) DecoratedName() string {
-	s := ""
-	for _, arg := range t.resolvedArguments {
-		if arg == nil {
-			panic("illegal state in " + t.String())
-		}
-		s += arg.DecoratedName()
-	}
-	return s
-}
-
 func NewTypeParameterContextOther() *TypeParameterContextOther {
 	t := &TypeParameterContextOther{resolvedArguments: make(map[string]dtype.Type)}
 

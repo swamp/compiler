@@ -80,7 +80,7 @@ func (t *ModuleDefinitions) ShortString() string {
 	definitionKeys := sortedExpressionKeys(t.definitions)
 	for _, expressionKey := range definitionKeys {
 		expression := t.definitions[expressionKey]
-		s += fmt.Sprintf("%s\n", expression.ShortString())
+		s += fmt.Sprintf("%s\n", expression.String())
 	}
 	return s
 }

@@ -51,25 +51,8 @@ func (u *TupleTypeAtom) ParameterCount() int {
 	return len(u.parameterTypes)
 }
 
-func (u *TupleTypeAtom) Apply(params []dtype.Type) (dtype.Type, error) {
-	return u, nil
-}
-
-func (u *TupleTypeAtom) Generate(params []dtype.Type) (dtype.Type, error) {
-	return u, nil
-}
-
 func (u *TupleTypeAtom) String() string {
 	return fmt.Sprintf("[tupletype %v]", u.parameterTypes)
-}
-
-func (u *TupleTypeAtom) ShortString() string {
-	s := "[tuple type "
-	for _, param := range u.parameterTypes {
-		s += " " + param.ShortString()
-	}
-	s += "]"
-	return s
 }
 
 func (u *TupleTypeAtom) HumanReadable() string {
@@ -85,37 +68,13 @@ func (u *TupleTypeAtom) HumanReadable() string {
 	return str
 }
 
-func (u *TupleTypeAtom) DecoratedName() string {
-	s := "tuple("
-	for index, param := range u.parameterTypes {
-		if index > 0 {
-			s += ", "
-		}
-		s += param.DecoratedName()
-	}
-	s += ")"
-	return s
-}
-
 func (u *TupleTypeAtom) AtomName() string {
 	s := "tuple("
 	for index, param := range u.parameterTypes {
 		if index > 0 {
 			s += ", "
 		}
-		s += param.ShortName()
-	}
-	s += ")"
-	return s
-}
-
-func (u *TupleTypeAtom) ShortName() string {
-	s := "tuple("
-	for index, param := range u.parameterTypes {
-		if index > 0 {
-			s += ", "
-		}
-		s += param.ShortName()
+		s += param.String()
 	}
 	s += ")"
 	return s

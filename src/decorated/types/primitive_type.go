@@ -68,36 +68,16 @@ func (u *PrimitiveAtom) String() string {
 	return fmt.Sprintf("[primitive %v%v]", u.name.Name(), TypeParametersSuffix(u.genericTypes))
 }
 
-func (u *PrimitiveAtom) ShortString() string {
-	return fmt.Sprintf("[primitive %v%v]", u.name.Name(), TypeParametersShortSuffix(u.genericTypes))
-}
-
 func (u *PrimitiveAtom) HumanReadable() string {
 	return fmt.Sprintf("%v%v", u.name.Name(), TypeParametersHumanReadableSuffix(u.genericTypes))
 }
 
-func (u *PrimitiveAtom) DecoratedName() string {
-	return fmt.Sprintf("%v%v", u.name.Name(), TypeParametersShortSuffix(u.genericTypes))
-}
-
 func (u *PrimitiveAtom) AtomName() string {
-	return u.DecoratedName()
-}
-
-func (u *PrimitiveAtom) ShortName() string {
-	return u.DecoratedName()
+	return u.name.Name()
 }
 
 func (u *PrimitiveAtom) GenericTypes() []dtype.Type {
 	return u.genericTypes
-}
-
-func (u *PrimitiveAtom) Apply(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("can not apply primitive %v", u.name)
-}
-
-func (u *PrimitiveAtom) Generate(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("can not generate primitive %v", u.name)
 }
 
 func (u *PrimitiveAtom) Next() dtype.Type {

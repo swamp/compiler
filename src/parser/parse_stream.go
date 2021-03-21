@@ -53,7 +53,6 @@ type ParseStream interface {
 	eatBlockSpacingOneExtraLine(isBlock bool, keywordIndentation int) (token.IndentationReport, parerr.ParseError)
 
 	// eatNewLine is when we require that there should be a new line continuation with exact same indentation.
-	eatNewLineContinuation(indentation int) (token.IndentationReport, parerr.ParseError)
 	eatNewLineContinuationAllowComment(indentation int) (token.IndentationReport, parerr.ParseError)
 
 	// eatNewLineContinuationOrDedent This is used when the blocks that does not allow empty lines. Like the custom type statement.
@@ -114,7 +113,6 @@ type ParseStream interface {
 	detectNewLineOrSpace() (bool, bool)
 	detectOneSpaceAndTermination() bool
 	detectTypeIdentifier() bool
-	detectRightParen() bool
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// parse. parse expressions and terms

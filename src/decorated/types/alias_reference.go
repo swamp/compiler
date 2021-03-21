@@ -45,24 +45,12 @@ func NewAliasReference(ident *NamedDefinitionTypeReference, reference *Alias) *A
 	return ref
 }
 
-func (g *AliasReference) ShortString() string {
-	return g.reference.ShortString()
-}
-
-func (g *AliasReference) ShortName() string {
-	return g.reference.ShortName()
-}
-
 func (g *AliasReference) Resolve() (dtype.Atom, error) {
 	return g.reference.Resolve()
 }
 
 func (g *AliasReference) Next() dtype.Type {
 	return g.reference.Next()
-}
-
-func (g *AliasReference) DecoratedName() string {
-	return g.reference.DecoratedName()
 }
 
 func (g *AliasReference) ParameterCount() int {

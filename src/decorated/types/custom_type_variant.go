@@ -63,10 +63,6 @@ func (s *CustomTypeVariant) Index() int {
 	return s.index
 }
 
-func (s *CustomTypeVariant) Generate(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("can not generate")
-}
-
 func (s *CustomTypeVariant) Resolve() (dtype.Atom, error) {
 	return nil, nil
 }
@@ -91,10 +87,6 @@ func (s *CustomTypeVariant) String() string {
 	return fmt.Sprintf("[variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), TypesToStringSuffix(s.parameterTypes))
 }
 
-func (s *CustomTypeVariant) ShortString() string {
-	return fmt.Sprintf("[variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), TypesToShortStringSuffix(s.parameterTypes))
-}
-
 func (s *CustomTypeVariant) HumanReadable() string {
 	str := fmt.Sprintf("%v", s.astCustomTypeVariant.TypeIdentifier())
 	for _, parameterType := range s.parameterTypes {
@@ -107,10 +99,6 @@ func (s *CustomTypeVariant) HumanReadable() string {
 
 func (s *CustomTypeVariant) DecoratedName() string {
 	return s.Name().Name()
-}
-
-func (s *CustomTypeVariant) ShortName() string {
-	return s.DecoratedName()
 }
 
 func (s *CustomTypeVariant) AddReferee(reference *CustomTypeVariantReference) {

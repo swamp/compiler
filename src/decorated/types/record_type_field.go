@@ -83,14 +83,6 @@ func (s *RecordField) String() string {
 	return fmt.Sprintf("[record-type-field %v %v (%v)]", s.name.Name(), s.fieldType, s.index)
 }
 
-func (s *RecordField) ShortString() string {
-	return fmt.Sprintf("[record-field %v %v]", s.name.Name(), s.fieldType.ShortString())
-}
-
 func (s *RecordField) HumanReadable() string {
 	return fmt.Sprintf("%v:%v", s.name.Name(), s.fieldType.HumanReadable())
-}
-
-func (s *RecordField) DecoratedName() string {
-	return fmt.Sprintf("%v:%v", s.name.Name(), s.fieldType.DecoratedName())
 }

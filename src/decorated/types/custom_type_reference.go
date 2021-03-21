@@ -34,18 +34,6 @@ func (g *CustomTypeReference) HumanReadable() string {
 	return "Custom Type Reference"
 }
 
-func (g *CustomTypeReference) DecoratedName() string {
-	return g.customType.DecoratedName()
-}
-
-func (g *CustomTypeReference) ShortName() string {
-	return g.customType.ShortName()
-}
-
-func (g *CustomTypeReference) ShortString() string {
-	return g.customType.ShortString()
-}
-
 func (g *CustomTypeReference) CustomTypeAtom() *CustomTypeAtom {
 	return g.customType
 }

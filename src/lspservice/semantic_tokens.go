@@ -423,7 +423,11 @@ func IsBuiltInType(typeToCheckUnaliased dtype.Type) bool {
 		if typeRef != nil {
 			typeToInvoke = typeRef.Next()
 		}
-		typeToInvokeName := typeToInvoke.DecoratedName()
+		primitive, _ := typeToInvoke.(*dectype.PrimitiveAtom)
+		if primitive == nil {
+			return false
+		}
+		typeToInvokeName := primitive.AtomName()
 		return typeToInvokeName == "List" || typeToInvokeName == "Array"
 	case *dectype.PrimitiveAtom:
 		typeName := t.AtomName()

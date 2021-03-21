@@ -25,16 +25,8 @@ func (u *Any) HumanReadable() string {
 	return fmt.Sprintf("ANY")
 }
 
-func (u *Any) ShortString() string {
-	return fmt.Sprintf("[any]")
-}
-
 func (u *Any) DecoratedName() string {
 	return "any"
-}
-
-func (u *Any) ShortName() string {
-	return u.DecoratedName()
 }
 
 func (u *Any) AtomName() string {
@@ -47,14 +39,6 @@ func (u *Any) IsEqual(_ dtype.Atom) error {
 
 func (u *Any) ParameterCount() int {
 	return 0
-}
-
-func (u *Any) Apply(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("Any can not be applied")
-}
-
-func (u *Any) Generate(params []dtype.Type) (dtype.Type, error) {
-	return nil, fmt.Errorf("Any can not be applied")
 }
 
 func (u *Any) Resolve() (dtype.Atom, error) {
