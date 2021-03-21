@@ -117,6 +117,7 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 		// log.Printf("checking node:%v '%v'\n", decoratedToken.FetchPositionLength(), decoratedToken.String())
 		foundRange := decoratedToken.FetchPositionLength().Range
 		if foundRange.Contains(position) {
+			// log.Printf("considered %v %T", foundRange, decoratedToken)
 			if foundRange.SmallerThan(smallestRange) {
 				smallestRange = foundRange
 				bestToken = decoratedToken

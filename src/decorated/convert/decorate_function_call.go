@@ -108,7 +108,7 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 		allFunctionTypes := completeCalledFunctionType.FunctionParameterTypes()
 		curryFunctionTypes := allFunctionTypes[providedArgumentCount:]
 		curryFunctionType := dectype.NewFunctionAtom(nil, curryFunctionTypes)
-		return decorated.NewCurryFunction(curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions), nil
+		return decorated.NewCurryFunction(call, curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions), nil
 	}
 
 	returnType := completeCalledFunctionType.ReturnType()
