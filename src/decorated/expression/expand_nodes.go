@@ -96,6 +96,25 @@ func expandChildNodesTupleType(fn *dectype.TupleTypeAtom) []TypeOrToken {
 	return tokens
 }
 
+func expandNamedTypeReferenceModule(name *dectype.NamedDefinitionTypeReference) []TypeOrToken {
+	var tokens []TypeOrToken
+	optionalModuleRef := name.ModuleReference()
+	if optionalModuleRef != nil {
+		tokens = append(tokens, optionalModuleRef)
+	}
+
+	return tokens
+}
+
+func expandChildNodesTypeReference(reference dectype.TypeReferenceScopedOrNormal) []TypeOrToken {
+	named := reference.NameReference()
+	typeOrTokens := expandNamedTypeReferenceModule(named)
+
+	typeOrTokens = append(typeOrTokens, expandChildNodes(reference.Next())...)
+
+	return typeOrTokens
+}
+
 func expandChildNodesCustomType(fn *dectype.CustomTypeAtom) []TypeOrToken {
 	var tokens []TypeOrToken
 	// tokens = append(tokens, expandChildNodes(fn.TypeReference())...) Can not expand type identifiers, need meaning
@@ -219,9 +238,14 @@ func expandChildNodesRecordConstructor(constructor *RecordConstructor) []TypeOrT
 	}
 
 	for _, arg := range constructor.arguments {
-		tokens = append(tokens, expandChildNodes(arg.FieldName())...)
 		tokens = append(tokens, expandChildNodes(arg.Expression())...)
 	}
+
+	return tokens
+}
+
+func expandChildNodesRecordConstructorRecord(constructor *RecordConstructorRecord) []TypeOrToken {
+	var tokens []TypeOrToken
 
 	return tokens
 }
@@ -312,7 +336,8 @@ func expandChildNodesLet(let *Let) []TypeOrToken {
 		tokens = append(tokens, expandChildNodes(assignment)...)
 	}
 
-	tokens = append(tokens, expandChildNodes(let.Consequence())...)
+	inConsequnce := let.Consequence()
+	tokens = append(tokens, expandChildNodes(inConsequnce)...)
 
 	return tokens
 }
@@ -368,10 +393,10 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesCustomTypeVariantConstructor(t)...)
 	case *RecordConstructor:
 		return append(tokens, expandChildNodesRecordConstructor(t)...)
+	case *RecordConstructorRecord:
+		return append(tokens, expandChildNodesRecordConstructorRecord(t)...)
 	case *Guard:
 		return append(tokens, expandChildNodesGuard(t)...)
-	case *dectype.CustomTypeVariantReference:
-		return append(tokens, expandChildNodesCustomTypeVariantReference(t)...)
 	case *CaseCustomType:
 		return append(tokens, expandChildNodesCaseForCustomType(t)...)
 	case *CaseForPatternMatching:
@@ -448,20 +473,14 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *dectype.Alias:
 		return append(tokens, expandChildNodes(t.Next())...)
-	case *dectype.AliasReference:
-		return append(tokens, expandChildNodes(t.Next())...)
 	case *dectype.PrimitiveAtom:
 		return append(tokens, expandChildNodesPrimitive(t)...)
-	case *dectype.PrimitiveTypeReference:
-		return append(tokens, expandChildNodesPrimitive(t.PrimitiveAtom())...)
 	case *dectype.InvokerType:
 		return append(tokens, expandChildNodesInvokerType(t)...)
 	case *dectype.FunctionAtom:
 		return append(tokens, expandChildNodesFunctionType(t)...)
 	case *dectype.CustomTypeAtom:
 		return append(tokens, expandChildNodesCustomType(t)...)
-	case *dectype.CustomTypeReference:
-		return append(tokens, expandChildNodesCustomType(t.CustomTypeAtom())...)
 	case *dectype.CustomTypeVariant:
 		return tokens
 	case *dectype.RecordAtom:
@@ -470,8 +489,16 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesTupleType(t)...)
 	case *dectype.RecordFieldName:
 		return tokens
+	case *dectype.AliasReference:
+		return append(tokens, expandChildNodesTypeReference(t)...)
+	case *dectype.CustomTypeReference:
+		return append(tokens, expandChildNodesTypeReference(t)...)
+	case *dectype.PrimitiveTypeReference:
+		return append(tokens, expandChildNodesTypeReference(t)...)
 	case *dectype.FunctionTypeReference:
 		return append(tokens, expandChildNodesFunctionTypeReference(t)...)
+	case *dectype.CustomTypeVariantReference:
+		return append(tokens, expandChildNodesCustomTypeVariantReference(t)...)
 	default:
 		log.Printf("expand_nodes: could not expand: %T\n", t)
 		return tokens

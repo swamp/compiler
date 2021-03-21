@@ -13,6 +13,7 @@ import (
 
 type TypeReferenceScopedOrNormal interface {
 	dtype.Type
+	NameReference() *NamedDefinitionTypeReference
 }
 
 func compareAtoms(pureExpected dtype.Atom, pureActual dtype.Atom) error {

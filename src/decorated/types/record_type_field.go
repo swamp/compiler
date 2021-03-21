@@ -84,5 +84,5 @@ func (s *RecordField) String() string {
 }
 
 func (s *RecordField) HumanReadable() string {
-	return fmt.Sprintf("%v:%v", s.name.Name(), s.fieldType.HumanReadable())
+	return fmt.Sprintf("%v : %v", s.name.Name().Name(), s.fieldType.HumanReadable())
 }

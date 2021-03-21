@@ -17,7 +17,7 @@ type AliasReference struct {
 	reference *Alias
 }
 
-func (g *AliasReference) NamedTypeRef() *NamedDefinitionTypeReference {
+func (g *AliasReference) NameReference() *NamedDefinitionTypeReference {
 	return g.ident
 }
 
@@ -26,7 +26,7 @@ func (g *AliasReference) String() string {
 }
 
 func (g *AliasReference) HumanReadable() string {
-	return "Alias reference"
+	return g.reference.HumanReadable()
 }
 
 func (g *AliasReference) Alias() *Alias {

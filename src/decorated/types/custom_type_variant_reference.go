@@ -34,8 +34,8 @@ func (g *CustomTypeVariantReference) HumanReadable() string {
 	return "Variant Reference"
 }
 
-func (g *CustomTypeVariantReference) DecoratedName() string {
-	return g.customTypeVariant.DecoratedName()
+func (g *CustomTypeVariantReference) NameReference() *NamedDefinitionTypeReference {
+	return g.named
 }
 
 func (g *CustomTypeVariantReference) CustomTypeVariant() *CustomTypeVariant {

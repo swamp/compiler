@@ -9,15 +9,21 @@ import (
 )
 
 type FunctionTypeReference struct {
+	named           *NamedDefinitionTypeReference
 	referencedType  *FunctionAtom
 	astFunctionType *ast.FunctionType
 }
 
-func NewFunctionTypeReference(astFunctionType *ast.FunctionType, referencedType *FunctionAtom) *FunctionTypeReference {
+func NewFunctionTypeReference(astFunctionType *ast.FunctionType, referencedType *FunctionAtom, named *NamedDefinitionTypeReference) *FunctionTypeReference {
 	return &FunctionTypeReference{
 		referencedType:  referencedType,
 		astFunctionType: astFunctionType,
+		named:           named,
 	}
+}
+
+func (t *FunctionTypeReference) NameReference() *NamedDefinitionTypeReference {
+	return t.named
 }
 
 func (t *FunctionTypeReference) FetchPositionLength() token.SourceFileReference {

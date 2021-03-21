@@ -24,11 +24,16 @@ func (a ByAssignmentName) Less(i, j int) bool {
 }
 
 type RecordLiteralField struct {
-	fieldName *ast.VariableIdentifier
+	fieldName    *ast.VariableIdentifier
+	inAssignment *RecordLiteralAssignment
 }
 
 func NewRecordLiteralField(fieldName *ast.VariableIdentifier) *RecordLiteralField {
 	return &RecordLiteralField{fieldName: fieldName}
+}
+
+func (n *RecordLiteralField) SetInAssignment(assignment *RecordLiteralAssignment) {
+	n.inAssignment = assignment
 }
 
 func (n *RecordLiteralField) Ident() *ast.VariableIdentifier {
@@ -47,6 +52,14 @@ func (n *RecordLiteralField) HumanReadable() string {
 	return "Record field identifier"
 }
 
+func (n *RecordLiteralField) InAssignment() *RecordLiteralAssignment {
+	return n.inAssignment
+}
+
+func (n *RecordLiteralField) Type() dtype.Type {
+	return n.inAssignment.expression.Type()
+}
+
 type RecordLiteralAssignment struct {
 	expression Expression
 	index      int
@@ -54,7 +67,10 @@ type RecordLiteralAssignment struct {
 }
 
 func NewRecordLiteralAssignment(index int, fieldName *RecordLiteralField, expression Expression) *RecordLiteralAssignment {
-	return &RecordLiteralAssignment{index: index, fieldName: fieldName, expression: expression}
+	assignment := &RecordLiteralAssignment{index: index, fieldName: fieldName, expression: expression}
+	fieldName.SetInAssignment(assignment)
+
+	return assignment
 }
 
 func (a *RecordLiteralAssignment) String() string {

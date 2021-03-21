@@ -14,10 +14,15 @@ import (
 type ConstructorCall struct {
 	arguments     []Expression
 	functionValue TypeReferenceScopedOrNormal
+	inclusive     token.SourceFileReference
 }
 
 func NewConstructorCall(functionValue TypeReferenceScopedOrNormal, arguments []Expression) *ConstructorCall {
-	return &ConstructorCall{functionValue: functionValue, arguments: arguments}
+	inclusive := functionValue.FetchPositionLength()
+	if len(arguments) > 0 {
+		inclusive = token.MakeInclusiveSourceFileReference(functionValue.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength())
+	}
+	return &ConstructorCall{functionValue: functionValue, arguments: arguments, inclusive: inclusive}
 }
 
 func (i *ConstructorCall) TypeReference() TypeReferenceScopedOrNormal {
@@ -33,7 +38,7 @@ func (i *ConstructorCall) OverwriteArguments(args []Expression) {
 }
 
 func (i *ConstructorCall) FetchPositionLength() token.SourceFileReference {
-	return i.functionValue.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *ConstructorCall) String() string {

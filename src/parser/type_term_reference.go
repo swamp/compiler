@@ -48,7 +48,7 @@ func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParame
 func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 	typeParameterContext *ast.TypeParameterIdentifierContext,
 	checkTypeParam bool, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
-	if p.maybeLeftParen() {
+	if leftParen, wasLeftParen := p.maybeLeftParen(); wasLeftParen {
 		t, tErr := parseTypeReference(p, keywordIndentation, typeParameterContext, precedingComments)
 		if tErr != nil {
 			return nil, tErr
@@ -57,7 +57,7 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 			if _, err := p.eatOneSpace("afterComma"); err != nil {
 				return nil, err
 			}
-			return parseTupleTypeReference(p, keywordIndentation, typeParameterContext, precedingComments, t)
+			return parseTupleTypeReference(p, keywordIndentation, leftParen, typeParameterContext, precedingComments, t)
 		}
 		if _, rightParenErr := p.readRightParen(); rightParenErr != nil {
 			return nil, rightParenErr

@@ -69,7 +69,7 @@ func (u *PrimitiveAtom) String() string {
 }
 
 func (u *PrimitiveAtom) HumanReadable() string {
-	return fmt.Sprintf("%v%v", u.name.Name(), TypeParametersHumanReadableSuffix(u.genericTypes))
+	return fmt.Sprintf("%v", u.name.Name())
 }
 
 func (u *PrimitiveAtom) AtomName() string {

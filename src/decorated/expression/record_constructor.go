@@ -8,6 +8,7 @@ package decorated
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -18,14 +19,15 @@ type RecordConstructor struct {
 	parseOrderArguments  []Expression
 	recordAliasReference *dectype.AliasReference
 	recordType           *dectype.RecordAtom
+	astConstructorCall   *ast.ConstructorCall
 }
 
 // typeIdentifier ast.TypeReferenceScopedOrNormal
-func NewRecordConstructor(recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
+func NewRecordConstructor(astConstructorCall *ast.ConstructorCall, recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
 	if recordAliasReference == nil {
 		panic("can not be nil")
 	}
-	return &RecordConstructor{recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
+	return &RecordConstructor{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
 }
 
 func (c *RecordConstructor) SortedAssignments() []*RecordLiteralAssignment {
@@ -33,7 +35,7 @@ func (c *RecordConstructor) SortedAssignments() []*RecordLiteralAssignment {
 }
 
 func (c *RecordConstructor) NamedTypeReference() *dectype.NamedDefinitionTypeReference {
-	return c.recordAliasReference.NamedTypeRef()
+	return c.recordAliasReference.NameReference()
 }
 
 func (c *RecordConstructor) ParseOrderArguments() []Expression {
@@ -56,6 +58,10 @@ func (c *RecordConstructor) HumanReadable() string {
 	return "Record Constructor"
 }
 
+func (c *RecordConstructor) AstConstructorCall() *ast.ConstructorCall {
+	return c.astConstructorCall
+}
+
 func (c *RecordConstructor) FetchPositionLength() token.SourceFileReference {
-	return c.recordAliasReference.FetchPositionLength()
+	return c.astConstructorCall.FetchPositionLength()
 }

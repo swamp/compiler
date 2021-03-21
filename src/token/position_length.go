@@ -61,7 +61,11 @@ func (s SourceFileReference) ToReferenceString() string {
 }
 
 func (s SourceFileReference) ToCompleteReferenceString() string {
-	return fmt.Sprintf("%v:%d:%d - %d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
+	var uri DocumentURI
+	if s.Document != nil {
+		uri = s.Document.Uri
+	}
+	return fmt.Sprintf("%v:%d:%d - %d:%d:", uri, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
 }
 
 func (s SourceFileReference) String() string {
@@ -124,7 +128,7 @@ func MakeRange(start Position, end Position) Range {
 
 func (p Range) SmallerThan(other Range) bool {
 	diffLineOther := other.end.line - other.start.line
-	diffLine := p.end.line - other.start.line
+	diffLine := p.end.line - p.start.line
 	if diffLine > diffLineOther {
 		return false
 	}

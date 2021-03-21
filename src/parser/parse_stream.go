@@ -101,7 +101,7 @@ type ParseStream interface {
 	maybePipeLeft() bool
 	maybeRightArrow() bool
 	maybeOneSpaceAndRightArrow() bool
-	maybeLeftParen() bool
+	maybeLeftParen() (token.ParenToken, bool)
 	maybeLeftCurly() (token.ParenToken, bool)
 	maybeRightArrayBracket() (token.ParenToken, bool)
 

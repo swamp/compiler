@@ -35,14 +35,14 @@ func (s *RecordAtom) String() string {
 }
 
 func (s *RecordAtom) HumanReadable() string {
-	str := "{"
+	str := "{ "
 	for index, field := range s.sortedFields {
 		if index > 0 {
 			str += ", "
 		}
 		str += field.HumanReadable()
 	}
-	str += "}"
+	str += " }"
 	return str
 }
 

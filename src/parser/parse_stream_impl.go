@@ -367,8 +367,8 @@ func (p *ParseStreamImpl) maybeOneSpaceAndRightArrow() bool {
 	return foundArrow
 }
 
-func (p *ParseStreamImpl) maybeLeftParen() bool {
-	return p.tokenizer.MaybeRune('(')
+func (p *ParseStreamImpl) maybeLeftParen() (token.ParenToken, bool) {
+	return p.maybeSpecificParenToken(token.LeftParen)
 }
 
 func (p *ParseStreamImpl) maybeAccessor() bool {

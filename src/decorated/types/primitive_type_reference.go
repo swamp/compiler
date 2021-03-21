@@ -22,6 +22,10 @@ func (g *PrimitiveTypeReference) Type() dtype.Type {
 	return g.primitiveType
 }
 
+func (g *PrimitiveTypeReference) NameReference() *NamedDefinitionTypeReference {
+	return g.named
+}
+
 func (g *PrimitiveTypeReference) String() string {
 	return fmt.Sprintf("[customtypevariantref %v %v]", g.named, g.primitiveType)
 }
@@ -31,7 +35,7 @@ func (g *PrimitiveTypeReference) Next() dtype.Type {
 }
 
 func (g *PrimitiveTypeReference) HumanReadable() string {
-	return "Primitive Type Reference"
+	return g.primitiveType.HumanReadable()
 }
 
 func (g *PrimitiveTypeReference) PrimitiveAtom() *PrimitiveAtom {

@@ -12,9 +12,10 @@ import (
 )
 
 func parseTupleTypeReference(p ParseStream, keywordIndentation int,
-	typeParameterContext *ast.TypeParameterIdentifierContext,
+	startParen token.ParenToken, typeParameterContext *ast.TypeParameterIdentifierContext,
 	precedingComments *ast.MultilineComment, term ast.Type) (ast.Type, parerr.ParseError) {
 	var types []ast.Type
+	var endParen token.ParenToken
 	types = append(types, term)
 	for {
 		term, err := parseTypeTermReference(p, keywordIndentation, typeParameterContext, precedingComments)
@@ -25,14 +26,16 @@ func parseTupleTypeReference(p ParseStream, keywordIndentation int,
 		if _, wasComma := p.maybeComma(); wasComma {
 			p.eatOneSpace("after comma")
 		} else {
-			if _, err := p.readRightParen(); err != nil {
+			foundParen, endParenErr := p.readRightParen()
+			if endParenErr != nil {
 				return nil, err
 			}
+			endParen = foundParen
 			break
 		}
 	}
 
-	return ast.NewTupleType(token.ParenToken{}, token.ParenToken{}, types), nil
+	return ast.NewTupleType(startParen, endParen, types), nil
 }
 
 func parseTypeReference(p ParseStream, keywordIndentation int,

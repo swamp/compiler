@@ -31,7 +31,7 @@ func (g *CustomTypeReference) Next() dtype.Type {
 }
 
 func (g *CustomTypeReference) HumanReadable() string {
-	return "Custom Type Reference"
+	return g.customType.HumanReadable()
 }
 
 func (g *CustomTypeReference) CustomTypeAtom() *CustomTypeAtom {
@@ -40,6 +40,10 @@ func (g *CustomTypeReference) CustomTypeAtom() *CustomTypeAtom {
 
 func (g *CustomTypeReference) AstIdentifier() ast.TypeReferenceScopedOrNormal {
 	return g.named.ident
+}
+
+func (g *CustomTypeReference) NameReference() *NamedDefinitionTypeReference {
+	return g.named
 }
 
 func (g *CustomTypeReference) ParameterCount() int {

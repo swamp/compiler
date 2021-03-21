@@ -752,10 +752,27 @@ func addSemanticTokenCurryFunction(funcCall *decorated.CurryFunction, builder *S
 	return nil
 }
 
-func addSemanticTokenFunctionReference(functionReference *decorated.FunctionReference, builder *SemanticBuilder) error {
-	isScoped := functionReference.NameReference().ModuleReference() != nil
+func addSemanticTokenNamedTypeReference(named *dectype.NamedDefinitionTypeReference, builder *SemanticBuilder) error {
+	isScoped := named.ModuleReference() != nil
 	if isScoped {
-		encodeModuleReference(builder, functionReference.NameReference().ModuleReference().AstModuleReference())
+		return encodeModuleReference(builder, named.ModuleReference().AstModuleReference())
+	}
+
+	return nil
+}
+
+func addSemanticTokenNamedDefinitionReference(named *decorated.NamedDefinitionReference, builder *SemanticBuilder) error {
+	isScoped := named.ModuleReference() != nil
+	if isScoped {
+		return encodeModuleReference(builder, named.ModuleReference().AstModuleReference())
+	}
+
+	return nil
+}
+
+func addSemanticTokenFunctionReference(functionReference *decorated.FunctionReference, builder *SemanticBuilder) error {
+	if err := addSemanticTokenNamedDefinitionReference(functionReference.NameReference(), builder); err != nil {
+		return err
 	}
 
 	if err := builder.EncodeSymbol(functionReference.Identifier().FetchPositionLength().Range, "function", nil); err != nil {
@@ -806,6 +823,10 @@ func typeReferenceHelper(next dtype.Type, referenceRange token.Range, builder *S
 func addSemanticTokenTypeReference(typeReference dectype.TypeReferenceScopedOrNormal, builder *SemanticBuilder) error {
 	referenceRange := typeReference.FetchPositionLength().Range
 	next := typeReference.Next()
+
+	if err := addSemanticTokenNamedTypeReference(typeReference.NameReference(), builder); err != nil {
+		return err
+	}
 
 	return typeReferenceHelper(next, referenceRange, builder)
 }

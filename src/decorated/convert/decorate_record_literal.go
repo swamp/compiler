@@ -83,7 +83,8 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 		}
 		name := assignment.Identifier().Name()
 		field := recordType.FindField(name)
-		recordAssignment := decorated.NewRecordLiteralAssignment(field.Index(), decorated.NewRecordLiteralField(assignment.Identifier()), decoratedExpression)
+		literalField := decorated.NewRecordLiteralField(assignment.Identifier())
+		recordAssignment := decorated.NewRecordLiteralAssignment(field.Index(), literalField, decoratedExpression)
 		sortedRecordAssignment = append(sortedRecordAssignment, recordAssignment)
 	}
 
