@@ -48,7 +48,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				if wasRecord {
 					compatibleErr := dectype.CompatibleTypes(recordLiteral.Type(), e)
 					if compatibleErr == nil {
-						return decorated.NewRecordConstructorRecord(call, t, e, recordLiteral), nil
+						return decorated.NewRecordConstructorFromRecord(call, t, e, recordLiteral), nil
 					}
 				}
 			}
@@ -78,7 +78,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				}
 			}
 
-			return decorated.NewRecordConstructor(call, t, e, alphaOrderedAssignments, decoratedExpressions), nil
+			return decorated.NewRecordConstructorFromParameters(call, t, e, alphaOrderedAssignments, decoratedExpressions), nil
 		}
 	}
 

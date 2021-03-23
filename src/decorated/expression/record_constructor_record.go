@@ -14,33 +14,33 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type RecordConstructorRecord struct {
+type RecordConstructorFromRecord struct {
 	recordType           *dectype.RecordAtom
 	record               *RecordLiteral
 	recordAliasReference *dectype.AliasReference
 	astConstructorCall   *ast.ConstructorCall
 }
 
-func NewRecordConstructorRecord(astConstructorCall *ast.ConstructorCall, recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, record *RecordLiteral) *RecordConstructorRecord {
-	return &RecordConstructorRecord{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, record: record, recordType: recordType}
+func NewRecordConstructorFromRecord(astConstructorCall *ast.ConstructorCall, recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, record *RecordLiteral) *RecordConstructorFromRecord {
+	return &RecordConstructorFromRecord{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, record: record, recordType: recordType}
 }
 
-func (c *RecordConstructorRecord) Type() dtype.Type {
+func (c *RecordConstructorFromRecord) Type() dtype.Type {
 	return c.recordType
 }
 
-func (c *RecordConstructorRecord) Expression() Expression {
+func (c *RecordConstructorFromRecord) Expression() Expression {
 	return c.record
 }
 
-func (c *RecordConstructorRecord) NamedTypeReference() *dectype.NamedDefinitionTypeReference {
+func (c *RecordConstructorFromRecord) NamedTypeReference() *dectype.NamedDefinitionTypeReference {
 	return c.recordAliasReference.NameReference()
 }
 
-func (c *RecordConstructorRecord) String() string {
+func (c *RecordConstructorFromRecord) String() string {
 	return fmt.Sprintf("[record-constructor-record %v %v]", c.astConstructorCall, c.record)
 }
 
-func (c *RecordConstructorRecord) FetchPositionLength() token.SourceFileReference {
+func (c *RecordConstructorFromRecord) FetchPositionLength() token.SourceFileReference {
 	return c.astConstructorCall.FetchPositionLength()
 }

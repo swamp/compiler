@@ -194,7 +194,7 @@ func addSemanticTokenCustomTypeVariantReference(ref *dectype.CustomTypeVariantRe
 	return nil
 }
 
-func addSemanticTokenRecordConstructor(constructor *decorated.RecordConstructor, builder *SemanticBuilder) error {
+func addSemanticTokenRecordConstructor(constructor *decorated.RecordConstructorFromParameters, builder *SemanticBuilder) error {
 	if err := encodeStructReferenceWithModuleReference(builder, constructor.NamedTypeReference().AstIdentifier().SomeTypeIdentifier()); err != nil {
 		return err
 	}
@@ -207,7 +207,7 @@ func addSemanticTokenRecordConstructor(constructor *decorated.RecordConstructor,
 	return nil
 }
 
-func addSemanticTokenRecordConstructorRecord(constructor *decorated.RecordConstructorRecord, builder *SemanticBuilder) error {
+func addSemanticTokenRecordConstructorRecord(constructor *decorated.RecordConstructorFromRecord, builder *SemanticBuilder) error {
 	if err := encodeStructReferenceWithModuleReference(builder, constructor.NamedTypeReference().AstIdentifier().SomeTypeIdentifier()); err != nil {
 		return err
 	}
@@ -952,9 +952,9 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenFunctionName(t, builder)
 	case *decorated.CustomTypeVariantConstructor:
 		return addSemanticTokenCustomTypeVariantConstructor(t, builder)
-	case *decorated.RecordConstructor:
+	case *decorated.RecordConstructorFromParameters:
 		return addSemanticTokenRecordConstructor(t, builder)
-	case *decorated.RecordConstructorRecord:
+	case *decorated.RecordConstructorFromRecord:
 		return addSemanticTokenRecordConstructorRecord(t, builder)
 	case *decorated.RecordLookups:
 		return addSemanticTokenRecordsLookup(t, builder)

@@ -230,7 +230,7 @@ func expandChildNodesCustomTypeVariantConstructor(constructor *CustomTypeVariant
 	return tokens
 }
 
-func expandChildNodesRecordConstructor(constructor *RecordConstructor) []TypeOrToken {
+func expandChildNodesRecordConstructor(constructor *RecordConstructorFromParameters) []TypeOrToken {
 	var tokens []TypeOrToken
 	optionalModuleRef := constructor.NamedTypeReference().ModuleReference()
 	if optionalModuleRef != nil {
@@ -244,7 +244,7 @@ func expandChildNodesRecordConstructor(constructor *RecordConstructor) []TypeOrT
 	return tokens
 }
 
-func expandChildNodesRecordConstructorRecord(constructor *RecordConstructorRecord) []TypeOrToken {
+func expandChildNodesRecordConstructorRecord(constructor *RecordConstructorFromRecord) []TypeOrToken {
 	var tokens []TypeOrToken
 
 	return tokens
@@ -391,9 +391,9 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesNamedFunctionValue(t)...)
 	case *CustomTypeVariantConstructor:
 		return append(tokens, expandChildNodesCustomTypeVariantConstructor(t)...)
-	case *RecordConstructor:
+	case *RecordConstructorFromParameters:
 		return append(tokens, expandChildNodesRecordConstructor(t)...)
-	case *RecordConstructorRecord:
+	case *RecordConstructorFromRecord:
 		return append(tokens, expandChildNodesRecordConstructorRecord(t)...)
 	case *Guard:
 		return append(tokens, expandChildNodesGuard(t)...)

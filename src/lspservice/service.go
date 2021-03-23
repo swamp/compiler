@@ -161,7 +161,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 				if t.CustomTypeVariant().AstCustomTypeVariant().Comment() != nil {
 					documentation = t.CustomTypeVariant().AstCustomTypeVariant().Comment().Value()
 				}
-			case *decorated.RecordConstructor:
+			case *decorated.RecordConstructorFromParameters:
 				if t.RecordType().AstRecord().Comment() != nil {
 					documentation = t.RecordType().AstRecord().Comment().Value()
 				}
@@ -206,7 +206,7 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.CustomTypeVariant().FetchPositionLength(), nil
 	case *dectype.CustomTypeVariantConstructorType:
 		return t.Variant().FetchPositionLength(), nil
-	case *decorated.RecordConstructor:
+	case *decorated.RecordConstructorFromParameters:
 		return t.Type().FetchPositionLength(), nil
 	case *decorated.CustomTypeVariantConstructor:
 		return tokenToDefinition(t.Reference())

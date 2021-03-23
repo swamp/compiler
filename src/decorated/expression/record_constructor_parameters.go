@@ -14,7 +14,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type RecordConstructor struct {
+type RecordConstructorFromParameters struct {
 	arguments            []*RecordLiteralAssignment
 	parseOrderArguments  []Expression
 	recordAliasReference *dectype.AliasReference
@@ -23,45 +23,45 @@ type RecordConstructor struct {
 }
 
 // typeIdentifier ast.TypeReferenceScopedOrNormal
-func NewRecordConstructor(astConstructorCall *ast.ConstructorCall, recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructor {
+func NewRecordConstructorFromParameters(astConstructorCall *ast.ConstructorCall, recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructorFromParameters {
 	if recordAliasReference == nil {
 		panic("can not be nil")
 	}
-	return &RecordConstructor{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
+	return &RecordConstructorFromParameters{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
 }
 
-func (c *RecordConstructor) SortedAssignments() []*RecordLiteralAssignment {
+func (c *RecordConstructorFromParameters) SortedAssignments() []*RecordLiteralAssignment {
 	return c.arguments
 }
 
-func (c *RecordConstructor) NamedTypeReference() *dectype.NamedDefinitionTypeReference {
+func (c *RecordConstructorFromParameters) NamedTypeReference() *dectype.NamedDefinitionTypeReference {
 	return c.recordAliasReference.NameReference()
 }
 
-func (c *RecordConstructor) ParseOrderArguments() []Expression {
+func (c *RecordConstructorFromParameters) ParseOrderArguments() []Expression {
 	return c.parseOrderArguments
 }
 
-func (c *RecordConstructor) Type() dtype.Type {
+func (c *RecordConstructorFromParameters) Type() dtype.Type {
 	return c.recordType
 }
 
-func (c *RecordConstructor) RecordType() *dectype.RecordAtom {
+func (c *RecordConstructorFromParameters) RecordType() *dectype.RecordAtom {
 	return c.recordType
 }
 
-func (c *RecordConstructor) String() string {
+func (c *RecordConstructorFromParameters) String() string {
 	return fmt.Sprintf("[record-constructor %v %v]", c.recordAliasReference, c.arguments)
 }
 
-func (c *RecordConstructor) HumanReadable() string {
+func (c *RecordConstructorFromParameters) HumanReadable() string {
 	return "Record Constructor"
 }
 
-func (c *RecordConstructor) AstConstructorCall() *ast.ConstructorCall {
+func (c *RecordConstructorFromParameters) AstConstructorCall() *ast.ConstructorCall {
 	return c.astConstructorCall
 }
 
-func (c *RecordConstructor) FetchPositionLength() token.SourceFileReference {
+func (c *RecordConstructorFromParameters) FetchPositionLength() token.SourceFileReference {
 	return c.astConstructorCall.FetchPositionLength()
 }

@@ -1160,10 +1160,10 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	case *decorated.AsmConstant:
 		return generateAsm(code, target, e, genContext.context)
 
-	case *decorated.RecordConstructorRecord:
+	case *decorated.RecordConstructorFromRecord:
 		return generateExpression(code, target, e.Expression(), genContext)
 
-	case *decorated.RecordConstructor:
+	case *decorated.RecordConstructorFromParameters:
 		return generateRecordSortedAssignments(code, target, e.SortedAssignments(), genContext)
 	}
 
