@@ -246,6 +246,12 @@ func expandChildNodesRecordConstructor(constructor *RecordConstructorFromParamet
 
 func expandChildNodesRecordConstructorRecord(constructor *RecordConstructorFromRecord) []TypeOrToken {
 	var tokens []TypeOrToken
+	optionalModuleRef := constructor.NamedTypeReference().ModuleReference()
+	if optionalModuleRef != nil {
+		tokens = append(tokens, optionalModuleRef)
+	}
+
+	tokens = append(tokens, expandChildNodes(constructor.Expression())...)
 
 	return tokens
 }

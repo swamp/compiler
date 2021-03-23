@@ -33,6 +33,10 @@ func (c *RecordConstructorFromRecord) Expression() Expression {
 	return c.record
 }
 
+func (c *RecordConstructorFromRecord) HumanReadable() string {
+	return "Record Constructor"
+}
+
 func (c *RecordConstructorFromRecord) NamedTypeReference() *dectype.NamedDefinitionTypeReference {
 	return c.recordAliasReference.NameReference()
 }
