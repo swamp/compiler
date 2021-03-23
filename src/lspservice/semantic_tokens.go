@@ -207,6 +207,17 @@ func addSemanticTokenRecordConstructor(constructor *decorated.RecordConstructor,
 	return nil
 }
 
+func addSemanticTokenRecordConstructorRecord(constructor *decorated.RecordConstructorRecord, builder *SemanticBuilder) error {
+	if err := encodeStructReferenceWithModuleReference(builder, constructor.NamedTypeReference().AstIdentifier().SomeTypeIdentifier()); err != nil {
+		return err
+	}
+
+	if err := addSemanticToken(constructor.Expression(), builder); err != nil {
+		return err
+	}
+	return nil
+}
+
 func encodeProperty(builder *SemanticBuilder, identifier *ast.VariableIdentifier) error {
 	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "property", nil)
 }
@@ -943,6 +954,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenCustomTypeVariantConstructor(t, builder)
 	case *decorated.RecordConstructor:
 		return addSemanticTokenRecordConstructor(t, builder)
+	case *decorated.RecordConstructorRecord:
+		return addSemanticTokenRecordConstructorRecord(t, builder)
 	case *decorated.RecordLookups:
 		return addSemanticTokenRecordsLookup(t, builder)
 	case *decorated.CaseCustomType:

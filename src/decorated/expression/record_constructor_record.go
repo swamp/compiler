@@ -15,13 +15,14 @@ import (
 )
 
 type RecordConstructorRecord struct {
-	recordType     *dectype.RecordAtom
-	record         *RecordLiteral
-	typeIdentifier ast.TypeReferenceScopedOrNormal
+	recordType           *dectype.RecordAtom
+	record               *RecordLiteral
+	recordAliasReference *dectype.AliasReference
+	astConstructorCall   *ast.ConstructorCall
 }
 
-func NewRecordConstructorRecord(typeIdentifier ast.TypeReferenceScopedOrNormal, recordType *dectype.RecordAtom, record *RecordLiteral) *RecordConstructorRecord {
-	return &RecordConstructorRecord{typeIdentifier: typeIdentifier, record: record, recordType: recordType}
+func NewRecordConstructorRecord(astConstructorCall *ast.ConstructorCall, recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, record *RecordLiteral) *RecordConstructorRecord {
+	return &RecordConstructorRecord{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, record: record, recordType: recordType}
 }
 
 func (c *RecordConstructorRecord) Type() dtype.Type {
@@ -32,10 +33,14 @@ func (c *RecordConstructorRecord) Expression() Expression {
 	return c.record
 }
 
+func (c *RecordConstructorRecord) NamedTypeReference() *dectype.NamedDefinitionTypeReference {
+	return c.recordAliasReference.NameReference()
+}
+
 func (c *RecordConstructorRecord) String() string {
-	return fmt.Sprintf("[record-constructor-record %v %v]", c.typeIdentifier, c.record)
+	return fmt.Sprintf("[record-constructor-record %v %v]", c.astConstructorCall, c.record)
 }
 
 func (c *RecordConstructorRecord) FetchPositionLength() token.SourceFileReference {
-	return c.typeIdentifier.FetchPositionLength()
+	return c.astConstructorCall.FetchPositionLength()
 }
