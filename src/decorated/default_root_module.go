@@ -442,7 +442,6 @@ const typeIdCode = `
 
 const globalCode = `
 
-
 type Maybe a =
     Nothing
     | Just a
@@ -553,6 +552,8 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	rootPrimitiveModule := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), nil)
 	rootPrimitiveModule.MarkAsInternal()
 	globalModuleTypes := rootPrimitiveModule.TypeRepo()
+
+	anyType := dectype.NewAnyType()
 	integerType := dectype.NewPrimitiveType(createTypeIdentifier("Int"), nil)
 	fixedType := dectype.NewPrimitiveType(createTypeIdentifier("Fixed"), nil)
 	resourceNameType := dectype.NewPrimitiveType(createTypeIdentifier("ResourceName"), nil)
@@ -561,6 +562,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	boolType := dectype.NewPrimitiveType(createTypeIdentifier("Bool"), nil)
 	blobType := dectype.NewPrimitiveType(createTypeIdentifier("Blob"), nil)
 
+	addPrimitive(globalModuleTypes, anyType)
 	addPrimitive(globalModuleTypes, integerType)
 	addPrimitive(globalModuleTypes, fixedType)
 	addPrimitive(globalModuleTypes, resourceNameType)

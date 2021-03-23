@@ -28,6 +28,7 @@ const (
 	SwtiTypeResourceName
 	SwtiTypeChar
 	SwtiTypeTuple
+	SwtiTypeAny
 )
 
 func writeUint8(writer io.Writer, v byte) error {
@@ -220,8 +221,10 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		// TODO:
 		return writePrimitive(writer, SwtiTypeResourceName)
 	case *TupleType:
-		// TODO:
 		return writeTuple(writer, t)
+	case *AnyType:
+		// TODO:
+		return writePrimitive(writer, SwtiTypeAny)
 	}
 
 	return fmt.Errorf("strange, unknown info type %v %T", entry, entry)

@@ -132,8 +132,6 @@ func ColorAtom(atomType dtype.Atom, indentation int, inside bool, colorer colori
 		colorCustomType(t, indentation, inside, colorer)
 	case *dectype.PrimitiveAtom:
 		colorPrimitive(t, indentation, inside, colorer)
-	case *dectype.Any:
-		colorAny(indentation, inside, colorer)
 	case *dectype.LocalType:
 		colorLocalType(t, indentation, inside, colorer)
 	default:

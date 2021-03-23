@@ -6,6 +6,8 @@
 package decorator
 
 import (
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -40,7 +42,12 @@ func decorateIf(d DecorateStream, ifExpression *ast.IfExpression,
 	}
 
 	compatibleErr := dectype.CompatibleTypes(consequence.Type(), alternative.Type())
+
 	if compatibleErr != nil {
+		consPureType := dectype.UnaliasWithResolveInvoker(consequence.Type())
+		altPureType := dectype.UnaliasWithResolveInvoker(consequence.Type())
+		log.Printf("ERROR %v", ifExpression.FetchPositionLength().ToCompleteReferenceString())
+		log.Printf("TYPES:\n%v\n%v\n", consPureType, altPureType)
 		return nil, decorated.NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression, consequence,
 			alternative, compatibleErr)
 	}

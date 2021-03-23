@@ -143,18 +143,8 @@ func (u *CustomTypeAtom) IsEqual(other_ dtype.Atom) error {
 		}
 
 		for index, resolveType := range types {
-			otherType, otherErr := otherTypes[index].Resolve()
-			if otherErr != nil {
-				return fmt.Errorf("variant had different type params %v %v", resolveType, otherType)
-			}
-
-			resolveType, resolveErr := resolveType.Resolve()
-			if resolveErr != nil {
-				return fmt.Errorf("variant params resolved to different types %w", resolveErr)
-			}
-			equalErr := resolveType.IsEqual(otherType)
-			if equalErr != nil {
-				return equalErr
+			if err := CompatibleTypes(resolveType, otherTypes[index]); err != nil {
+				return err
 			}
 		}
 	}

@@ -74,6 +74,9 @@ func NewAliasType(name *ast.Alias, artifactTypeName ArtifactFullyQualifiedTypeNa
 	if wasAlias {
 		panic("we cant have alias inside alias")
 	}
+	if artifactTypeName.String() == "" {
+		panic("must have complete alias name")
+	}
 
 	return &Alias{name: name, artifactTypeName: artifactTypeName, referencedType: referencedType}
 }

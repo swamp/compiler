@@ -29,11 +29,11 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 
 		var letVariables []*decorated.LetVariable
 		if isMultiple {
-			unaliased := dectype.UnaliasWithResolveInvoker(decoratedExpression.Type())
-			atom, resolveErr := unaliased.Resolve()
-			if resolveErr != nil {
-				return nil, decorated.NewInternalError(fmt.Errorf("wasn't a tuple"))
-			}
+			atom := dectype.UnaliasWithResolveInvoker(decoratedExpression.Type())
+			//atom, resolveErr := unaliased.Resolve()
+			//if resolveErr != nil {
+			//	return nil, decorated.NewInternalError(fmt.Errorf("wasn't a tuple"))
+			//}
 
 			tuple, wasTuple := atom.(*dectype.TupleTypeAtom)
 			if !wasTuple {

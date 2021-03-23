@@ -44,7 +44,7 @@ func (l *TypeLookup) FindType(typeIdentifier *ast.TypeIdentifier) (dtype.Type, *
 func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (dtype.Type, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError) {
 	moduleFound := l.moduleImports.FindModule(typeIdentifier.ModuleReference())
 	if moduleFound == nil {
-		return nil, nil, NewInternalError(fmt.Errorf("could not find module %v", typeIdentifier.ModuleReference()))
+		return nil, nil, NewInternalError(fmt.Errorf("could not find module %v %v", typeIdentifier.ModuleReference(), typeIdentifier.FetchPositionLength().ToCompleteReferenceString()))
 	}
 
 	moduleReference := NewModuleReference(typeIdentifier.ModuleReference(), moduleFound)

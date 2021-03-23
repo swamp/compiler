@@ -72,6 +72,18 @@ func (t *BlobType) HumanReadable() string {
 	return "Blob"
 }
 
+type AnyType struct {
+	Type
+}
+
+func (t *AnyType) String() string {
+	return "Any"
+}
+
+func (t *AnyType) HumanReadable() string {
+	return "Any"
+}
+
 type IntType struct {
 	Type
 }
@@ -550,6 +562,17 @@ func (c *Chunk) doWeHaveBlob() int {
 	return -1
 }
 
+func (c *Chunk) doWeHaveAny() int {
+	for index, infoType := range c.infoTypes {
+		_, isAny := infoType.(*AnyType)
+		if isAny {
+			return index
+		}
+	}
+
+	return -1
+}
+
 func (c *Chunk) doWeHaveString() int {
 	for index, infoType := range c.infoTypes {
 		_, isInt := infoType.(*StringType)
@@ -886,6 +909,20 @@ func (c *Chunk) consumeBlob() (InfoType, error) {
 	return proposedNewInt, nil
 }
 
+func (c *Chunk) consumeAny() (InfoType, error) {
+	indexArray := c.doWeHaveAny()
+	if indexArray != -1 {
+		return c.infoTypes[indexArray].(*AnyType), nil
+	}
+
+	proposedNewAnyType := &AnyType{}
+
+	proposedNewAnyType.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, proposedNewAnyType)
+
+	return proposedNewAnyType, nil
+}
+
 func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, error) {
 	name := primitive.PrimitiveName().Name()
 	if name == "List" {
@@ -908,6 +945,8 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 		return c.consumeBlob()
 	} else if name == "TypeRef" {
 		return c.consumeTypeRef()
+	} else if name == "Any" {
+		return c.consumeAny()
 	}
 
 	return nil, fmt.Errorf("chunk: consume: unknown primitive %v", primitive)

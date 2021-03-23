@@ -11,7 +11,6 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/token"
 )
 
 func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string) (*dectype.PrimitiveAtom, []decorated.Expression, decshared.DecoratedError) {
@@ -36,7 +35,7 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 		}
 	} else {
 		// Empty list
-		detectedType = dectype.NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.SourceFileReference{}, 0)))
+		detectedType = dectype.NewAnyType()
 	}
 
 	listType := d.TypeRepo().FindBuiltInType(containerName)

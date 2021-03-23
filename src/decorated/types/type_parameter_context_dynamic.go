@@ -8,9 +8,7 @@ package dectype
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
-	"github.com/swamp/compiler/src/token"
 )
 
 type TypeParameterContextDynamic struct {
@@ -62,7 +60,7 @@ func NewTypeParameterContextDynamic(names []*dtype.TypeArgumentName) *TypeParame
 func (t *TypeParameterContextDynamic) FillOutTheRestWithAny() {
 	for index, x := range t.resolvedArguments {
 		if x == nil {
-			t.resolvedArguments[index] = NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.SourceFileReference{}, 0)))
+			t.resolvedArguments[index] = NewAnyType()
 		}
 	}
 }

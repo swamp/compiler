@@ -96,18 +96,10 @@ func (u *TupleTypeAtom) IsEqual(other_ dtype.Atom) error {
 	}
 
 	for index, parameter := range u.parameterTypes {
-		otherParam, otherParamErr := otherParams[index].Resolve()
-		if otherParamErr != nil {
-			return fmt.Errorf("parameter couldn't resolve %v %w", otherParam, otherParamErr)
-		}
-		param, paramErr := parameter.Resolve()
-		if paramErr != nil {
-			return fmt.Errorf("couldn't resolve it %w", paramErr)
-		}
 
-		equalErr := param.IsEqual(otherParam)
+		equalErr := CompatibleTypes(parameter, otherParams[index])
 		if equalErr != nil {
-			return FunctionAtomMismatch{param, otherParam}
+			return FunctionAtomMismatch{parameter, otherParams[index]}
 		}
 	}
 

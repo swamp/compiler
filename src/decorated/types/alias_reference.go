@@ -50,7 +50,7 @@ func (g *AliasReference) Resolve() (dtype.Atom, error) {
 }
 
 func (g *AliasReference) Next() dtype.Type {
-	return g.reference.Next()
+	return g.reference
 }
 
 func (g *AliasReference) ParameterCount() int {

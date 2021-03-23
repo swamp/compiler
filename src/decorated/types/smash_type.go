@@ -26,6 +26,8 @@ func UnReference(t dtype.Type) dtype.Type {
 		return UnReference(info.primitiveType)
 	case *CustomTypeReference:
 		return UnReference(info.customType)
+	case *FunctionTypeReference:
+		return UnReference(info.referencedType)
 	}
 
 	return t
@@ -260,12 +262,17 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 		return context.SpecialSet(localType.identifier.Name(), otherUnchanged)
 	}
 
-	_, otherIsAny := other.(*Any)
+	otherIsAny := IsAny(other)
+	originalIsAny := IsAny(original)
 
-	if !otherIsAny {
+	if originalIsAny {
+		original = other
+	}
+
+	if !otherIsAny && !originalIsAny {
 		sameType := reflect.TypeOf(original) == reflect.TypeOf(other)
 		if !sameType {
-			fmt.Printf("\n\nNOTE SAME TYPE:%T %T\n\n", original, otherUnchanged)
+			fmt.Printf("\n\nNOTE SAME TYPE:%T %T \n%v %v\n\n", original, otherUnchanged, otherUnchanged, original)
 			return nil, fmt.Errorf("not even same reflect type %T vs %T\n%v\n vs\n%v", original, other, original, other)
 		}
 	}

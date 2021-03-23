@@ -18,6 +18,18 @@ type ModuleName struct {
 	precalculated string
 }
 
+func MakeModuleNameFromParts(parts []*ast.ModuleNamePart) ModuleName {
+	for _, p := range parts {
+		if p == nil {
+			panic("nil")
+		}
+	}
+
+	path := ast.NewModuleReference(parts)
+
+	return ModuleName{path: path, precalculated: CalculateString(path)}
+}
+
 func MakeModuleName(path *ast.ModuleReference) ModuleName {
 	if path != nil {
 		for _, p := range path.Parts() {
@@ -162,7 +174,7 @@ func (n ArtifactFullyQualifiedModuleName) JoinTypeIdentifier(relative *ast.TypeI
 
 	newPaths = append(newPaths, ast.NewModuleNamePart(relative))
 
-	return ArtifactFullyQualifiedTypeName{ModuleName{path: ast.NewModuleReference(newPaths)}}
+	return ArtifactFullyQualifiedTypeName{MakeModuleNameFromParts(newPaths)}
 }
 
 func (n ArtifactFullyQualifiedModuleName) JoinTypeIdentifierScoped(relative *ast.TypeIdentifierScoped) ArtifactFullyQualifiedTypeName {
@@ -177,7 +189,7 @@ func (n ArtifactFullyQualifiedModuleName) JoinTypeIdentifierScoped(relative *ast
 	}
 	newPaths = append(newPaths, ast.NewModuleNamePart(relative.Symbol()))
 
-	return ArtifactFullyQualifiedTypeName{ModuleName{path: ast.NewModuleReference(newPaths)}}
+	return ArtifactFullyQualifiedTypeName{MakeModuleNameFromParts(newPaths)}
 }
 
 func MakePackageRelativeModuleName(path *ast.ModuleReference) PackageRelativeModuleName {

@@ -17,12 +17,13 @@ type TypeReferenceScopedOrNormal interface {
 }
 
 func compareAtoms(pureExpected dtype.Atom, pureActual dtype.Atom) error {
-	_, expectedIsAny := pureExpected.(*Any)
-	_, actualIsAny := pureExpected.(*Any)
+	expectedIsAny := IsAtomAny(pureExpected)
+	actualIsAny := IsAtomAny(pureActual)
 
 	if expectedIsAny || actualIsAny {
 		return nil
 	}
+
 	if pureExpected == nil || pureActual == nil {
 		return fmt.Errorf("can not have nil stuff here")
 	}
@@ -55,12 +56,12 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 	pureExpected, expectedErr := expectedType.Resolve()
 	pureActual, actualErr := actualType.Resolve()
 
-	_, isAny := pureActual.(*Any)
+	isAny := IsAtomAny(pureActual)
 	if isAny {
 		return nil
 	}
 
-	_, isExpectedAny := pureExpected.(*Any)
+	isExpectedAny := IsAtomAny(pureExpected)
 	if isExpectedAny {
 		return nil
 	}

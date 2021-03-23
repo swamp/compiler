@@ -712,12 +712,21 @@ func generateCharacterLiteral(code *assembler.Code, target assembler.TargetVaria
 	return nil
 }
 
+func generateTypeIdConstant(typeToAdd dtype.Type, genContext *generateContext) (*assembler.Constant, error) {
+	indexIntoTypeInformationChunk, err := genContext.lookup.Lookup(typeToAdd)
+	if err != nil {
+		return nil, err
+	}
+	constant := genContext.context.Constants().AllocateIntegerConstant(int32(indexIntoTypeInformationChunk))
+
+	return constant, nil
+}
+
 func generateTypeIdLiteral(code *assembler.Code, target assembler.TargetVariable, typeId *decorated.TypeIdLiteral, genContext *generateContext) error {
-	indexIntoTypeInformationChunk, err := genContext.lookup.Lookup(typeId.ContainedType())
+	constant, err := generateTypeIdConstant(typeId.ContainedType(), genContext)
 	if err != nil {
 		return err
 	}
-	constant := genContext.context.Constants().AllocateIntegerConstant(int32(indexIntoTypeInformationChunk))
 	code.CopyVariable(target, constant)
 	return nil
 }
@@ -807,11 +816,38 @@ func generateCurry(code *assembler.Code, target assembler.TargetVariable, call *
 
 func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable, call *decorated.FunctionCall, genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
-	for _, arg := range call.Arguments() {
+
+	functionType := dectype.Unalias(call.FunctionExpression().Type())
+	functionAtom, wasFunctionAtom := functionType.(*dectype.FunctionAtom)
+	if !wasFunctionAtom {
+		return fmt.Errorf("this is not a function atom %T", functionType)
+	}
+
+	var tempVariables []assembler.SourceVariable
+
+	for index, arg := range call.Arguments() {
+		functionArgType := functionAtom.FunctionParameterTypes()[index]
+		functionArgTypeUnalias := dectype.Unalias(functionArgType)
+
 		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "arg")
 		if argRegErr != nil {
 			return argRegErr
 		}
+
+		isAny := dectype.IsAny(functionArgTypeUnalias)
+		if isAny { // arg.NeedsTypeId() {
+			constant, err := generateTypeIdConstant(arg.Type(), genContext)
+			if err != nil {
+				return err
+			}
+			tempAnyConstructor := genContext.context.AllocateTempVariable("anyConstructor")
+			code.Constructor(tempAnyConstructor, []assembler.SourceVariable{constant, argReg})
+
+			argReg = tempAnyConstructor
+
+			tempVariables = append(tempVariables, tempAnyConstructor)
+		}
+
 		arguments = append(arguments, argReg)
 	}
 
@@ -822,6 +858,10 @@ func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable,
 		return functionGenErr
 	}
 	code.Call(target, functionRegister, arguments)
+
+	for _, tempVariable := range tempVariables {
+		genContext.context.FreeTempVariable(tempVariable)
+	}
 
 	return nil
 }

@@ -110,10 +110,10 @@ func (u *RecordAtom) Next() dtype.Type {
 }
 
 func (u *RecordAtom) IsEqual(other_ dtype.Atom) error {
-	_, isAny := other_.(*Any)
-	if isAny {
+	if IsAtomAny(other_) {
 		return nil
 	}
+
 	other, wasFunctionAtom := other_.(*RecordAtom)
 	if !wasFunctionAtom {
 		return fmt.Errorf("wasn't a record even %v", other)

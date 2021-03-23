@@ -13,6 +13,24 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+func IsAny(checkType dtype.Type) bool {
+	primitive, wasPrimitive := checkType.(*PrimitiveAtom)
+	if !wasPrimitive {
+		return false
+	}
+
+	return primitive.AtomName() == "Any"
+}
+
+func IsAtomAny(checkType dtype.Atom) bool {
+	primitive, wasPrimitive := checkType.(*PrimitiveAtom)
+	if !wasPrimitive {
+		return false
+	}
+
+	return primitive.AtomName() == "Any"
+}
+
 type PrimitiveAtom struct {
 	name         *ast.TypeIdentifier
 	genericTypes []dtype.Type
@@ -29,13 +47,14 @@ func NewPrimitiveType(name *ast.TypeIdentifier, genericTypes []dtype.Type) *Prim
 }
 
 func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
-	_, isAny := other_.(*Any)
-	if isAny {
-		return nil
-	}
 	other, wasPrimitive := other_.(*PrimitiveAtom)
 	if !wasPrimitive {
 		return fmt.Errorf("wasn't same primitive %v", other)
+	}
+
+	isAny := other.name.Name() == "Any"
+	if isAny {
+		return nil
 	}
 
 	if other.name.Name() != u.name.Name() {

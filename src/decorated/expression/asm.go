@@ -20,7 +20,7 @@ type AsmConstant struct {
 }
 
 func NewAsmConstant(asm *ast.Asm) *AsmConstant {
-	return &AsmConstant{asm: asm, doNotCheckType: dectype.NewAnyType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.SourceFileReference{}, 0)))}
+	return &AsmConstant{asm: asm, doNotCheckType: dectype.NewAnyType()}
 }
 
 func (i *AsmConstant) Type() dtype.Type {
