@@ -43,7 +43,7 @@ func (c *RecordConstructorFromParameters) ParseOrderArguments() []Expression {
 }
 
 func (c *RecordConstructorFromParameters) Type() dtype.Type {
-	return c.recordType
+	return c.recordAliasReference
 }
 
 func (c *RecordConstructorFromParameters) RecordType() *dectype.RecordAtom {
