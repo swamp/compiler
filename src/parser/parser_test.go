@@ -114,6 +114,20 @@ fn x =
 `)
 }
 
+func TestWildcardType(t *testing.T) {
+	testParse(t,
+		`
+fn : * -> Int
+fn a b x =
+    23	
+`,
+
+		`
+[annotation: $fn [func-type [anymatching-type: *] -> [type-reference $Int]]]
+[fndefinition: $fn = [func ([$a $b $x]) -> #23]]
+`)
+}
+
 func TestResourceName(t *testing.T) {
 	testParseExpression(t,
 		`

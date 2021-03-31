@@ -44,6 +44,23 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	return newVariableContext
 }
 
+func checkParameterCount(forcedFunctionType *dectype.FunctionAtom, potentialFunc *ast.FunctionValue) decshared.DecoratedError {
+	foundAnyMatching, minimalCount := dectype.HasAnyMatchingTypes(forcedFunctionType.FunctionParameterTypes())
+	if foundAnyMatching {
+		if (len(potentialFunc.Parameters()) + 1) < minimalCount {
+			return decorated.NewWrongNumberOfArgumentsInFunctionValue(potentialFunc, forcedFunctionType, forcedFunctionType.FunctionParameterTypes())
+		}
+		return nil
+	}
+
+	parameterTypes, _ := forcedFunctionType.ParameterAndReturn()
+	if len(parameterTypes) != len(potentialFunc.Parameters()) {
+		return decorated.NewWrongNumberOfArgumentsInFunctionValue(potentialFunc, forcedFunctionType, parameterTypes)
+	}
+
+	return nil
+}
+
 func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationStatement, potentialFunc *ast.FunctionValue, forcedFunctionTypeLike dectype.FunctionTypeLike,
 	functionName *ast.VariableIdentifier, context *VariableContext, comments *ast.MultilineComment) (*decorated.FunctionValue, decshared.DecoratedError) {
 	forcedFunctionType := DerefFunctionTypeLike(forcedFunctionTypeLike)
@@ -51,10 +68,11 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationSta
 		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", potentialFunc))
 	}
 
-	parameterTypes, expectedReturnType := forcedFunctionType.ParameterAndReturn()
-	if len(parameterTypes) != len(potentialFunc.Parameters()) {
-		return nil, decorated.NewWrongNumberOfArgumentsInFunctionValue(potentialFunc, forcedFunctionType, parameterTypes)
+	if err := checkParameterCount(forcedFunctionType, potentialFunc); err != nil {
+		return nil, err
 	}
+
+	_, expectedReturnType := forcedFunctionType.ParameterAndReturn()
 
 	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
 	identifiers := potentialFunc.Parameters()

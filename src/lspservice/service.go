@@ -128,6 +128,7 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 				documentation = t.AstCustomType().Comment().Value()
 			}
 		case *dectype.TupleTypeAtom:
+		case *dectype.AnyMatchingTypes:
 		default:
 			log.Printf("unhandled for documentation %T", pureType)
 		}

@@ -265,7 +265,7 @@ func (m *Module) DebugOutput(debug string) {
 }
 
 func (m *Module) ShortString() string {
-	return m.localTypes.String() + "\n" + m.localDefinitions.ShortString()
+	return m.localDefinitions.ShortString()
 }
 
 func (m *Module) String() string {

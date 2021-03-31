@@ -191,10 +191,11 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 }
 
 func (t *Tokenizer) ReadAnyOperator() (token.Token, TokenError) {
-	pos := t.MakeSourceFileReference(t.position)
+	startPosition := t.position
 	parsedToken, err := t.ReadEndOrSeparatorToken()
 	if err != nil {
 		r := t.nextRune()
+		pos := t.MakeSourceFileReference(startPosition)
 		parsedToken, err = t.ReadOpenOperatorToken(r, pos)
 		if err != nil {
 			return token.ParenToken{}, err

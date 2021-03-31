@@ -334,6 +334,10 @@ func (p *ParseStreamImpl) maybeComma() (token.OperatorToken, bool) {
 	return p.maybeSpecificOperatorToken(token.Comma)
 }
 
+func (p *ParseStreamImpl) maybeAsterisk() (token.OperatorToken, bool) {
+	return p.maybeSpecificOperatorToken(token.OperatorMultiply)
+}
+
 func (p *ParseStreamImpl) maybeRightArrayBracket() (token.ParenToken, bool) {
 	return p.maybeSpecificParenToken(token.RightArrayBracket)
 }

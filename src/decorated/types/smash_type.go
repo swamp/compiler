@@ -171,8 +171,33 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 func fillContextFromFunctions(context *TypeParameterContextOther, original *FunctionAtom, other *FunctionAtom) (*FunctionAtom, error) {
 	var converted []dtype.Type
 
-	if len(original.parameterTypes) < len(other.parameterTypes) {
-		return nil, fmt.Errorf("too few parameter types")
+	if hasAnyMatching, startIndex := HasAnyMatchingTypes(original.parameterTypes); hasAnyMatching {
+		originalInitialCount := startIndex
+		originalEndCount := len(original.parameterTypes) - startIndex - 2
+
+		originalFirst := append([]dtype.Type{}, original.parameterTypes[0:startIndex]...)
+
+		if len(other.parameterTypes) >= len(original.parameterTypes) {
+			originalEndCount++
+		}
+
+		otherMiddle := other.parameterTypes[originalInitialCount : len(other.parameterTypes)-originalEndCount]
+		if len(otherMiddle) < 1 {
+			return nil, fmt.Errorf("currently, you must have at least one wildcard parameter")
+		}
+
+		originalEnd := original.parameterTypes[startIndex+1 : len(original.parameterTypes)]
+
+		allConverted := append(originalFirst, otherMiddle...)
+		allConverted = append(allConverted, originalEnd...)
+
+		created := NewFunctionAtom(original.astFunctionType, allConverted)
+
+		return fillContextFromFunctions(context, created, other)
+	} else {
+		if len(original.parameterTypes) < len(other.parameterTypes) {
+			return nil, fmt.Errorf("too few parameter types")
+		}
 	}
 
 	for index, otherParam := range other.parameterTypes {
@@ -310,7 +335,10 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 		}
 	case *RecordAtom:
 		{
-			otherRecordType := other.(*RecordAtom)
+			otherRecordType, _ := other.(*RecordAtom)
+			if otherRecordType == nil {
+				return nil, fmt.Errorf("how can this happen %T and %T", t, other)
+			}
 			return fillContextFromRecordType(context, t, otherRecordType)
 		}
 	case *InvokerType:

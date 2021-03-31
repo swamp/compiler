@@ -86,6 +86,96 @@ main = [functionvalue ([[arg $ignore = [primitive Bool]]]) -> [fcall [getvar $fi
 `)
 }
 
+func TestAnyMatchingType(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+fn : * -> Int
+fn a b x =
+    23
+`,
+		`
+[mdefx $fn = [functionvalue ([[arg $a = [anymatching types AnyMatchingType]]]) -> [integer 23]]]
+`)
+}
+
+func TestAnyMatchingTypeCall(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+fn : * -> Int
+fn a b x =
+    23
+
+
+main : Int
+main =
+    fn 23 "hello" 42.0
+`,
+		`
+[mdefx $fn = [functionvalue ([[arg $a = [anymatching types AnyMatchingType]]]) -> [integer 23]]]
+[mdefx $main = [functionvalue ([]) -> [fcall [functionref named definition reference [functionvalue ([[arg $a = [anymatching types AnyMatchingType]]]) -> [integer 23]]] [[integer 23] [str hello] [integer 42000]]]]]
+`)
+}
+
+func TestAnyMatchingTypeCallMiddle(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+fn : String -> * -> Int
+fn str b x =
+    23
+
+
+main : Int
+main =
+    fn "hello" 42.0
+`,
+		`
+[mdefx $fn = [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $b = [anymatching types AnyMatchingType]]]) -> [integer 23]]]
+[mdefx $main = [functionvalue ([]) -> [fcall [functionref named definition reference [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $b = [anymatching types AnyMatchingType]]]) -> [integer 23]]] [[str hello] [integer 42000]]]]]
+`)
+}
+
+func TestAnyMatchingTypeCallMiddleLocalType(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+fn : String -> * -> a -> List a
+fn str b x =
+    [ 23.0 ]
+
+
+main : List Fixed
+main =
+    fn "hello" -23939 42.0
+`,
+		`
+[mdefx $fn = [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $b = [anymatching types AnyMatchingType]] [arg $x = [localtype a]]]) -> [ListLiteral List [[integer 23000]]]]]
+[mdefx $main = [functionvalue ([]) -> [fcall [functionref named definition reference [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $b = [anymatching types AnyMatchingType]] [arg $x = [localtype a]]]) -> [ListLiteral List [[integer 23000]]]]] [[str hello] [integer -23939] [integer 42000]]]]]
+`)
+}
+
+func TestAnyMatchingTypeCallMiddleLocalTypeFn(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+fn : String -> (* -> a) -> List a
+fn str fn =
+    [ 23.0 ]
+
+
+someOther : Int -> Fixed
+someOther x =
+    3.5
+
+
+main : List Fixed
+main =
+    fn "hello" someOther
+`,
+		`
+[mdefx $fn = [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $fn = fntyperef [func-type [anymatching-type: *] -> [local-type: [type-param $a]]] [functype [[anymatching types AnyMatchingType] [localtype a]]]]]) -> [ListLiteral List [[integer 23000]]]]]
+[mdefx $main = [functionvalue ([]) -> [fcall [functionref named definition reference [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $fn = fntyperef [func-type [anymatching-type: *] -> [local-type: [type-param $a]]] [functype [[anymatching types AnyMatchingType] [localtype a]]]]]) -> [ListLiteral List [[integer 23000]]]]] [[str hello] [functionref named definition reference [functionvalue ([[arg $x = [customtypevariantref named definition reference [primitive Int]]]]) -> [integer 3500]]]]]]]
+[mdefx $someOther = [functionvalue ([[arg $x = [customtypevariantref named definition reference [primitive Int]]]]) -> [integer 3500]]]
+`)
+}
+
 func TestFixed(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`

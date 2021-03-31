@@ -86,6 +86,8 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 	} else if ident, wasVariableIdentifier := p.wasVariableIdentifier(); wasVariableIdentifier {
 		typeParameter := ast.NewTypeParameter(ident)
 		return ast.NewLocalType(typeParameter), nil
+	} else if asterisk, wasAsterisk := p.maybeAsterisk(); wasAsterisk {
+		return ast.NewAnyMatchingType(asterisk), nil
 	}
 
 	parsePosition := p.positionLength()

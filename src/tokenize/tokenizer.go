@@ -524,6 +524,9 @@ func (t *Tokenizer) Seek(pos int) {
 }
 
 func (t *Tokenizer) ExtractStrings(startRow int, rowCount int) []string {
+	if t.r == nil {
+		return []string{"rune reader is nil"}
+	}
 	octets := t.r.Octets()
 	row := 0
 	stringRow := ""
@@ -855,6 +858,8 @@ func (t *Tokenizer) ReadOpenOperatorToken(r rune, singleCharLength token.SourceF
 			t.unreadRune()
 		}
 		return token.NewParenToken(string(r), token.LeftBracket, singleCharLength, " [ "), nil
+	} else if r == '*' {
+		return token.NewOperatorToken(token.OperatorMultiply, singleCharLength, "*", "*"), nil
 	}
 
 	return nil, NewNotAnOpenOperatorError(t.MakeSourceFileReference(posToken), r)

@@ -477,6 +477,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *dectype.LocalType:
 		return tokens
+	case *dectype.AnyMatchingTypes:
+		return tokens
 	case *dectype.Alias:
 		return append(tokens, expandChildNodes(t.Next())...)
 	case *dectype.PrimitiveAtom:

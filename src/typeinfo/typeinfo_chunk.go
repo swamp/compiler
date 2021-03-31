@@ -60,6 +60,18 @@ func (t *LocalType) HumanReadable() string {
 	return t.name
 }
 
+type AnyMatchingTypes struct {
+	Type
+}
+
+func (t *AnyMatchingTypes) String() string {
+	return "AnyMatching"
+}
+
+func (t *AnyMatchingTypes) HumanReadable() string {
+	return "*"
+}
+
 type BlobType struct {
 	Type
 }
@@ -573,6 +585,17 @@ func (c *Chunk) doWeHaveAny() int {
 	return -1
 }
 
+func (c *Chunk) doWeHaveAnyMatchingTypes() int {
+	for index, infoType := range c.infoTypes {
+		_, isAny := infoType.(*AnyMatchingTypes)
+		if isAny {
+			return index
+		}
+	}
+
+	return -1
+}
+
 func (c *Chunk) doWeHaveString() int {
 	for index, infoType := range c.infoTypes {
 		_, isInt := infoType.(*StringType)
@@ -923,6 +946,19 @@ func (c *Chunk) consumeAny() (InfoType, error) {
 	return proposedNewAnyType, nil
 }
 
+func (c *Chunk) consumeAnyMatchingTypes() (InfoType, error) {
+	indexArray := c.doWeHaveAnyMatchingTypes()
+	if indexArray != -1 {
+		return c.infoTypes[indexArray].(*AnyMatchingTypes), nil
+	}
+
+	proposedNewAnyType := &AnyMatchingTypes{}
+	proposedNewAnyType.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, proposedNewAnyType)
+
+	return proposedNewAnyType, nil
+}
+
 func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, error) {
 	name := primitive.PrimitiveName().Name()
 	if name == "List" {
@@ -1002,6 +1038,8 @@ func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 		return c.consumeLocalType(t)
 	case *dectype.TupleTypeAtom:
 		return c.consumeTuple(t)
+	case *dectype.AnyMatchingTypes:
+		return c.consumeAnyMatchingTypes()
 	}
 
 	return nil, fmt.Errorf("unknown atom %T", a)

@@ -32,6 +32,10 @@ func ShowSourceCode(tokenizer *tokenize.Tokenizer, highlightLine int,
 	endRow := highlightLine + beforeAndAfterCount
 	rowCount := endRow - startRow + 1
 
+	if tokenizer == nil {
+		return fmt.Errorf("we need a tokenizer to show this error %w")
+	}
+
 	rows := tokenizer.ExtractStrings(startRow, rowCount)
 	const useColor = true
 

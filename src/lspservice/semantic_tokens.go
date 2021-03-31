@@ -156,6 +156,14 @@ func addSemanticTokenGenericType(f *dectype.LocalType, builder *SemanticBuilder)
 	return nil
 }
 
+func addSemanticTokenAnyMatchingTypes(f *dectype.AnyMatchingTypes, builder *SemanticBuilder) error {
+	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "typeParameter", []string{"declaration"}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func addSemanticTokenConstant(f *decorated.Constant, builder *SemanticBuilder) error {
 	if err := encodeConstant(f.FetchPositionLength().Range, builder); err != nil {
 		return err
@@ -865,8 +873,10 @@ func typeReferenceParamHelper(param dtype.Type, builder *SemanticBuilder) error 
 		return addSemanticToken(t, builder)
 	case *dectype.TupleTypeAtom:
 		return addSemanticToken(t, builder)
+	case *dectype.AnyMatchingTypes:
+		return addSemanticToken(t, builder)
 	}
-	log.Printf("unknown param %T", param)
+	log.Printf("semantic token typeReferenceParamHelper: unknown param %T", param)
 	return fmt.Errorf("unknown param %T", param)
 }
 
@@ -1019,6 +1029,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenCustomType(t, builder)
 	case *dectype.LocalType:
 		return addSemanticTokenGenericType(t, builder)
+	case *dectype.AnyMatchingTypes:
+		return addSemanticTokenAnyMatchingTypes(t, builder)
 
 	default:
 		log.Printf("semantic unhandled %T\n", t)
