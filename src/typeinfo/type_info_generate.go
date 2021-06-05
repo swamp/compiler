@@ -61,16 +61,13 @@ func GenerateModule(module *decorated.Module) ([]byte, TypeLookup, error) {
 	return octets, chunk, nil
 }
 
-func Generate(world *loader.Package) (*Chunk, error) {
+func GeneratePackageToChunk(world *loader.Package, chunk *Chunk) error {
 	const verboseFlag = false
-
-	chunk := &Chunk{}
-
 	for _, module := range world.AllModules() {
 		if err := generateModuleToChunk(module, chunk, verboseFlag); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return chunk, nil
+	return nil
 }

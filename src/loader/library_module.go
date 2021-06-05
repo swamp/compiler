@@ -54,14 +54,17 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 	}
 
 	settingsReader := bufio.NewReader(settingsFile)
+
 	foundSettings, loadErr := settings.Load(settingsReader, swampDirectory)
 	if loadErr != nil {
 		return decorated.NewInternalError(loadErr)
 	}
+
 	for _, m := range foundSettings.Module {
 		if verboseFlag {
 			fmt.Printf("  * found mapping %s => %s\n", m.Name, m.Path)
 		}
+
 		mapping[m.Name] = m.Path
 	}
 

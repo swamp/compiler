@@ -8,6 +8,8 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -19,6 +21,7 @@ import (
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/generate"
 	"github.com/swamp/compiler/src/loader"
+	"github.com/swamp/compiler/src/solution"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/typeinfo"
 
@@ -38,6 +41,30 @@ func CheckUnused(world *loader.Package) {
 			}
 		}
 	}
+}
+
+func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, verboseFlag bool) error {
+	statInfo, statErr := os.Stat(mainSourceFile)
+	if statErr != nil {
+		return statErr
+	}
+
+	if statInfo.IsDir() {
+		typeInformationChunk := &typeinfo.Chunk{}
+		if solutionSettings, err := solution.LoadIfExists(mainSourceFile); err == nil {
+			for _, packageSubDirectoryName := range solutionSettings.Packages {
+				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
+				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
+				if err := CompileAndLink(typeInformationChunk, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag); err != nil {
+					return err
+				}
+			}
+		} else {
+			return fmt.Errorf("must have a solution file in this version")
+		}
+	}
+
+	return nil
 }
 
 func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
@@ -76,9 +103,10 @@ func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.Docum
 	if !file.IsDir(mainSource) {
 		mainSource = filepath.Dir(mainSource)
 	}
+
 	libraryDirectory, libraryErr := loader.FindSettingsDirectory(mainSource)
 	if libraryErr != nil {
-		return nil, nil, libraryErr
+		return nil, nil, fmt.Errorf("couldn't find settings directory when compiling %w", libraryErr)
 	}
 
 	return CompileMain(libraryDirectory, documentProvider, enforceStyle, verboseFlag)
@@ -89,36 +117,45 @@ type CoreFunctionInfo struct {
 	ParamCount uint
 }
 
-func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag bool) decshared.DecoratedError {
+func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, verboseFlag bool) decshared.DecoratedError {
 	gen := generate.NewGenerator()
+
 	var allFunctions []*generate.Function
+
 	var allExternalFunctions []*generate.ExternalFunction
+
 	fakeMod := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), nil)
 
-	typeInformationChunk, err := typeinfo.Generate(world)
+	err := typeinfo.GeneratePackageToChunk(compiledPackage, typeInformationChunk)
 	if err != nil {
 		return decorated.NewInternalError(err)
 	}
 
-	for _, module := range world.AllModules() {
+	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag {
 			fmt.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())
 		}
 	}
 
-	for _, module := range world.AllModules() {
+	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag {
 			fmt.Printf("============================================== generating for module %v\n", module)
 		}
+
 		context := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
+
 		functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}
+
 		allFunctions = append(allFunctions, functions...)
 		externalFunctions := module.ExternalFunctions()
+
 		for _, externalFunction := range externalFunctions {
-			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod, ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.AstExternalFunction.FunctionName(), token.SourceFileReference{}, 0)))
+			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod,
+				ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.AstExternalFunction.FunctionName(),
+					token.SourceFileReference{}, 0))) //nolint:exhaustivestruct
 			fakeFunc := generate.NewExternalFunction(fakeName, 0, externalFunction.AstExternalFunction.ParameterCount())
 			allExternalFunctions = append(allExternalFunctions, fakeFunc)
 		}
@@ -126,10 +163,13 @@ func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag b
 
 	if verboseFlag {
 		var assemblerOutput string
+
 		for _, f := range allFunctions {
 			lines := swampdisasm.Disassemble(f.Opcodes())
-			assemblerOutput = assemblerOutput + fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
+
+			assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
 		}
+
 		fmt.Println(assemblerOutput)
 	}
 
@@ -151,12 +191,13 @@ func GenerateAndLink(world *loader.Package, outputFilename string, verboseFlag b
 	return nil
 }
 
-func CompileAndLink(filename string, outputFilename string, enforceStyle bool, verboseFlag bool) decshared.DecoratedError {
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, filename string, outputFilename string, enforceStyle bool, verboseFlag bool) decshared.DecoratedError {
 	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
-	world, _, moduleErr := CompileMain(filename, defaultDocumentProvider, enforceStyle, verboseFlag)
+
+	compiledPackage, _, moduleErr := CompileMain(filename, defaultDocumentProvider, enforceStyle, verboseFlag)
 	if moduleErr != nil {
 		return moduleErr
 	}
 
-	return GenerateAndLink(world, outputFilename, verboseFlag)
+	return GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, verboseFlag)
 }

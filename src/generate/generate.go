@@ -1013,10 +1013,12 @@ func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Expres
 
 func isIntLike(typeToCheck dtype.Type) bool {
 	unaliasType := dectype.UnaliasWithResolveInvoker(typeToCheck)
+
 	primitiveAtom, _ := unaliasType.(*dectype.PrimitiveAtom)
 	if primitiveAtom == nil {
 		return false
 	}
+
 	name := primitiveAtom.AtomName()
 
 	return name == "Int" || name == "Fixed" || name == "Char"
@@ -1024,11 +1026,14 @@ func isIntLike(typeToCheck dtype.Type) bool {
 
 func isListLike(typeToCheck dtype.Type) bool {
 	unaliasType := dectype.UnaliasWithResolveInvoker(typeToCheck)
+
 	primitiveAtom, _ := unaliasType.(*dectype.PrimitiveAtom)
 	if primitiveAtom == nil {
 		return false
 	}
+
 	name := primitiveAtom.PrimitiveName().Name()
+
 	return name == "List"
 }
 
@@ -1041,13 +1046,14 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	case *decorated.ArithmeticOperator:
 		{
 			leftPrimitive, _ := dectype.UnReference(e.Left().Type()).(*dectype.PrimitiveAtom)
-			if isListLike(e.Left().Type()) && e.OperatorType() == decorated.ArithmeticAppend {
+			switch {
+			case isListLike(e.Left().Type()) && e.OperatorType() == decorated.ArithmeticAppend:
 				return generateListAppend(code, target, e, genContext)
-			} else if leftPrimitive != nil && leftPrimitive.AtomName() == "String" && e.OperatorType() == decorated.ArithmeticAppend {
+			case leftPrimitive != nil && leftPrimitive.AtomName() == "String" && e.OperatorType() == decorated.ArithmeticAppend:
 				return generateStringAppend(code, target, e, genContext)
-			} else if isIntLike(e.Left().Type()) {
+			case isIntLike(e.Left().Type()):
 				return generateArithmetic(code, target, e, genContext)
-			} else {
+			default:
 				return fmt.Errorf("Cant generate arithmetic for type:%v <-> %v (%v)", e.Left().Type(), e.Right().Type(), e.OperatorType())
 			}
 		}
@@ -1174,24 +1180,30 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariab
 	code := assembler.NewCode()
 	funcContext := root.ScopeContext()
 	tempVar := root.ReturnVariable()
+
 	for _, parameter := range f.Parameters() {
 		paramVarName := assembler.NewVariableName(parameter.Identifier().Name())
 		funcContext.AllocateKeepParameterVariable(paramVarName)
 	}
+
 	genContext := &generateContext{
 		context:     funcContext,
 		definitions: definitions,
 		lookup:      lookup,
 	}
+
 	genErr := generateExpression(code, tempVar, f.Expression(), genContext)
 	if genErr != nil {
 		return nil, genErr
 	}
+
 	code.Return()
+
 	opcodes, resolveErr := code.Resolve(root, verboseFlag)
 	if resolveErr != nil {
 		return nil, resolveErr
 	}
+
 	if verboseFlag {
 		code.PrintOut()
 	}
@@ -1204,7 +1216,8 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariab
 		return nil, lookupErr
 	}
 
-	functionConstant := NewFunction(fullyQualifiedVariableName, swamppack.TypeRef(signature), parameterCount, uint(root.Layouter().HighestUsedRegisterValue()), root.Constants().Constants(), opcodes)
+	functionConstant := NewFunction(fullyQualifiedVariableName, swamppack.TypeRef(signature),
+		parameterCount, uint(root.Layouter().HighestUsedRegisterValue()), root.Constants().Constants(), opcodes)
 
 	return functionConstant, nil
 }
@@ -1223,9 +1236,11 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 			if verboseFlag {
 				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
+
 			rootContext := assembler.NewFunctionRootContext()
 
-			functionConstant, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction, rootContext, definitions, lookup, verboseFlag)
+			functionConstant, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
+				rootContext, definitions, lookup, verboseFlag)
 			if genFuncErr != nil {
 				return nil, genFuncErr
 			}

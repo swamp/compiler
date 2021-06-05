@@ -16,6 +16,7 @@ import (
 
 	"github.com/fatih/color"
 	swampcompiler "github.com/swamp/compiler/src/compiler"
+	"github.com/swamp/compiler/src/typeinfo"
 )
 
 func Execute(verboseFlag bool, executableName string, arguments ...string) (string, error) {
@@ -41,10 +42,12 @@ func FindProjectDirectory() (string, error) {
 	wd, _ := os.Getwd()
 	for i := 0; !strings.HasSuffix(wd, "swamp-compiler"); i++ {
 		wd = filepath.Dir(wd)
+
 		if i > 4 {
 			return "", fmt.Errorf("could not find project directory")
 		}
 	}
+
 	return wd, nil
 }
 
@@ -55,7 +58,9 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	tempFileName := filepath.Join(tempDir, "Main.swamp")
+
 	tmpFile, tmpFileErr := os.Create(tempFileName)
 	if tmpFileErr != nil {
 		return "", tmpFileErr
@@ -68,10 +73,15 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	if verbose {
 		fmt.Printf("=========== TEMPFILE:%v =============\n", tempSwampFilename)
 	}
-	tmpFile.WriteString(swampCode)
+
+	if _, err := tmpFile.WriteString(swampCode); err != nil {
+		return "", err
+	}
+
 	tmpFile.Close()
 	const enforceStyle = true
-	compileErr := swampcompiler.CompileAndLink(tempSwampFilename, tempOutputFile, enforceStyle, verbose)
+	typeInformationChunk := &typeinfo.Chunk{}
+	compileErr := swampcompiler.CompileAndLink(typeInformationChunk, tempSwampFilename, tempOutputFile, enforceStyle, verbose)
 	if compileErr != nil {
 		return "", compileErr
 	}

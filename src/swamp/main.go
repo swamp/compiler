@@ -25,24 +25,10 @@ import (
 
 var Version string
 
-func compileAndLink(fileOrDirectory string, outputFilename string, enforceStyle bool, verboseFlag bool) error {
+func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, verboseFlag bool) error {
 	filenameToCompile := fileOrDirectory
 
-	statInfo, statErr := os.Stat(fileOrDirectory)
-	if statErr != nil {
-		return statErr
-	}
-
-	if statInfo.IsDir() {
-		swampDirectory := fileOrDirectory
-		filenameToCompile = swampDirectory
-	}
-
-	world, _, compileErr := swampcompiler.CompileMain(filenameToCompile, loader.NewFileSystemDocumentProvider(), enforceStyle, verboseFlag)
-	if compileErr != nil {
-		return compileErr
-	}
-	return swampcompiler.GenerateAndLink(world, outputFilename, verboseFlag)
+	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, verboseFlag)
 }
 
 type FmtCmd struct {
@@ -93,7 +79,7 @@ func (c *LspCmd) Run() error {
 type BuildCmd struct {
 	Path         string `help:"path to file or directory" arg:"" default:"." type:"path"`
 	DisableStyle bool   `help:"disable enforcing of style" default:"false"`
-	Output       string `help:"output file name" short:"o" default:"out.swamp-pack"`
+	Output       string `help:"output directory" type:"existingdir" short:"o" default:"."`
 	IsVerbose    bool   `help:"verbose output"`
 	Modules      string
 }
@@ -103,7 +89,7 @@ func (c *BuildCmd) Run() error {
 		return fmt.Errorf("must specify build directory")
 	}
 
-	err := compileAndLink(c.Path, c.Output, !c.DisableStyle, c.IsVerbose)
+	err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, c.IsVerbose)
 	if err != nil {
 		return err
 	}
@@ -134,18 +120,22 @@ func main() {
 
 	err := ctx.Run()
 	if err != nil {
-		decErr := err.(decshared.DecoratedError)
-		moduleErr, wasModuleErr := decErr.(*decorated.ModuleError)
-		if wasModuleErr {
-			decErr = moduleErr.WrappedError()
+		decErr, wasDecorated := err.(decshared.DecoratedError)
+		if wasDecorated {
+			moduleErr, wasModuleErr := decErr.(*decorated.ModuleError)
+			if wasModuleErr {
+				decErr = moduleErr.WrappedError()
+			}
 		}
 		multiErr, _ := decErr.(*decorated.MultiErrors)
 		if multiErr != nil {
 			for _, subErr := range multiErr.Errors() {
 				fmt.Printf("%v ERROR:%v\n", subErr.FetchPositionLength(), subErr)
 			}
-		} else {
+		} else if decErr != nil {
 			fmt.Printf("%v ERROR:%v\n", decErr.FetchPositionLength(), err)
+		} else {
+			fmt.Printf("Unknown ERROR: '%v'\n", err)
 		}
 		os.Exit(-1)
 	}

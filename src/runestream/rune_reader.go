@@ -6,6 +6,7 @@
 package runestream
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 )
@@ -34,12 +35,15 @@ func NewRuneReader(r io.Reader, absoluteFilename string) (*RuneReader, error) {
 	if len(absoluteFilename) == 0 {
 		panic("relative filename can not be null")
 	}
+
 	octets, octetsErr := ioutil.ReadAll(r)
 	if octetsErr != nil {
-		return nil, octetsErr
+		return nil, fmt.Errorf("runereader: ReadAll %w", octetsErr)
 	}
+
 	octets = append(octets, 0)
-	return &RuneReader{octets: octets, relativeFilename: absoluteFilename}, nil
+
+	return &RuneReader{octets: octets, relativeFilename: absoluteFilename, index: 0}, nil
 }
 
 func (s *RuneReader) Octets() []byte {
@@ -54,8 +58,11 @@ func (s *RuneReader) Read() rune {
 	if s.index >= len(s.octets) {
 		panic("read too far")
 	}
+
 	ch := s.octets[s.index]
+
 	s.index++
+
 	return rune(ch)
 }
 
@@ -72,15 +79,16 @@ func (s *RuneReader) DetectCurrentLineLength() (int, int) {
 
 	for pos := startPos; pos >= 0; pos-- {
 		ch := rune(s.octets[pos])
-		if ch == '\n' {
+		switch {
+		case ch == '\n':
 			return startPos - pos, indentationSpace
-		} else if isAllowedWhitespace(ch) {
+		case isAllowedWhitespace(ch):
 			if detectedNonWhitespace {
 				if isIndentation(ch) {
 					indentationSpace++
 				}
 			}
-		} else {
+		default:
 			detectedNonWhitespace = true
 			indentationSpace = 0
 		}
