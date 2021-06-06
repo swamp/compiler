@@ -105,9 +105,10 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 	isCurrying := len(decoratedEncounteredArgumentExpressions) < completeCalledFunctionType.ParameterCount()-1
 	if isCurrying {
 		providedArgumentCount := len(decoratedEncounteredArgumentExpressions)
-		allFunctionTypes := completeCalledFunctionType.FunctionParameterTypes()
+		allFunctionTypes := functionValueExpressionFunctionType.FunctionParameterTypes()
 		curryFunctionTypes := allFunctionTypes[providedArgumentCount:]
 		curryFunctionType := dectype.NewFunctionAtom(nil, curryFunctionTypes)
+
 		return decorated.NewCurryFunction(call, curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions), nil
 	}
 
