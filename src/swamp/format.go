@@ -16,9 +16,10 @@ import (
 	"github.com/swamp/compiler/src/parser"
 	"github.com/swamp/compiler/src/runestream"
 	"github.com/swamp/compiler/src/tokenize"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
-func parseToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
+func parseToProgram(moduleName string, x string, enforceStyle bool, verbose verbosity.Verbosity) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
 	ioReader := strings.NewReader(x)
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "")
 	if runeReaderErr != nil {
@@ -42,7 +43,7 @@ func parseToProgram(moduleName string, x string, enforceStyle bool, verbose bool
 
 func beautify(moduleName string, code string) (string, decshared.DecoratedError) {
 	const doNotForceStyle = false
-	const verbose = true
+	const verbose = verbosity.None
 
 	_, program, programErr := parseToProgram(moduleName, code, doNotForceStyle, verbose)
 	if programErr != nil {

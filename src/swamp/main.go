@@ -14,6 +14,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/fatih/color"
 	"github.com/piot/lsp-server/lspserv"
+	"github.com/swamp/compiler/src/verbosity"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -25,10 +26,10 @@ import (
 
 var Version string
 
-func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, verboseFlag bool) error {
+func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) error {
 	filenameToCompile := fileOrDirectory
 
-	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, verboseFlag)
+	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, verbosity)
 }
 
 type FmtCmd struct {
@@ -80,7 +81,7 @@ type BuildCmd struct {
 	Path         string `help:"path to file or directory" arg:"" default:"." type:"path"`
 	DisableStyle bool   `help:"disable enforcing of style" default:"false"`
 	Output       string `help:"output directory" type:"existingdir" short:"o" default:"."`
-	IsVerbose    bool   `help:"verbose output"`
+	Verbosity    int    `help:"verbose output" type:"counter" short:"v"`
 	Modules      string
 }
 
@@ -89,12 +90,12 @@ func (c *BuildCmd) Run() error {
 		return fmt.Errorf("must specify build directory")
 	}
 
-	err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, c.IsVerbose)
+	err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, verbosity.Verbosity(c.Verbosity))
 	if err != nil {
 		return err
 	}
 
-	if c.IsVerbose {
+	if c.Verbosity > 0 {
 		color.Green("done.")
 	}
 

@@ -14,6 +14,7 @@ import (
 	deccy "github.com/swamp/compiler/src/decorated"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/typeinfo"
+	"github.com/swamp/compiler/src/verbosity"
 
 	swampdisasm "github.com/swamp/disassembler/lib"
 )
@@ -28,7 +29,7 @@ func testGenerateInternal(code string) ([]*Function, error) {
 
 	gen := NewGenerator()
 	rootContext := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
-	const verboseFlag = false
+	const verboseFlag = verbosity.None
 	_, lookup, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {
 		return nil, typeInfoErr

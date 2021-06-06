@@ -13,6 +13,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type Loader struct {
@@ -36,7 +37,7 @@ func NewLoader(rootPath string, documentProvider DocumentProvider) *Loader {
 	return &Loader{rootPath: rootPath, documentProvider: documentProvider}
 }
 
-func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verboseFlag bool) (string, string, decshared.DecoratedError) {
+func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (string, string, decshared.DecoratedError) {
 	relativePath := moduleNameToRelativeFilePath(relativeModuleName)
 	if filepath.IsAbs(relativePath) {
 		return "", "", decorated.NewInternalError(fmt.Errorf("loader wants relative paths, can not use absolute ones '%s'", relativeModuleName))
@@ -46,7 +47,7 @@ func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verb
 	if completeFilenameErr != nil {
 		return "", "", decorated.NewInternalError(completeFilenameErr)
 	}
-	if verboseFlag {
+	if verboseFlag >= verbosity.Low {
 		fmt.Printf("* loading file %v\n", completeFilename)
 	}
 

@@ -15,6 +15,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 const listContent = `
@@ -448,7 +449,7 @@ type Maybe a =
 `
 
 func compileToGlobal(targetModule *decorated.Module, globalModule *decorated.Module, name string, code string) (*decorated.Module, decshared.DecoratedError) {
-	const verbose = true
+	const verbose = verbosity.Low
 	const enforceStyle = true
 	const errorAsWarning = false
 
@@ -590,7 +591,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 
 	addPrimitive(globalModuleTypes, typeRefType)
 
-	const verbose = true
+	const verbose = verbosity.Mid
 
 	const enforceStyle = true
 

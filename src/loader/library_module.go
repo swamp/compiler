@@ -18,6 +18,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/settings"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type LibraryReaderAndDecorator struct{}
@@ -43,7 +44,7 @@ func FindSettingsDirectory(swampDirectory string) (string, error) {
 	return "", fmt.Errorf("sorry, couldn't find settings file from %v and up. Not a library", swampDirectory)
 }
 
-func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, documentProvider DocumentProvider, verboseFlag bool) decshared.DecoratedError {
+func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, documentProvider DocumentProvider, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	settingsFilename := filepath.Join(swampDirectory, ".swamp.toml")
 
 	mapping := make(map[string]string)
@@ -61,7 +62,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 	}
 
 	for _, m := range foundSettings.Module {
-		if verboseFlag {
+		if verboseFlag >= verbosity.Mid {
 			fmt.Printf("  * found mapping %s => %s\n", m.Name, m.Path)
 		}
 
@@ -89,11 +90,11 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 }
 
 func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName, documentProvider DocumentProvider) (*decorated.Module, decshared.DecoratedError) {
-	const verboseFlag = false
+	const verboseFlag = verbosity.Low
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
 	}
-	if verboseFlag {
+	if verboseFlag >= verbosity.Mid {
 		fmt.Printf("* read library %v -> %v  \n", namespacePrefix, absoluteDirectory)
 	}
 	const enforceStyle = true
@@ -119,11 +120,11 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository
 }
 
 func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName) (*Package, decshared.DecoratedError) {
-	const verboseFlag = false
+	const verboseFlag = verbosity.None
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
 	}
-	if verboseFlag {
+	if verboseFlag >= verbosity.Mid {
 		fmt.Printf("* read library %v -> %v  \n", namespacePrefix, absoluteDirectory)
 	}
 	const enforceStyle = true

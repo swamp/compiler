@@ -10,6 +10,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type LspImpl struct {
@@ -27,7 +28,7 @@ func NewLspImpl(fallbackProvider loader.DocumentProvider) *LspImpl {
 func (l *LspImpl) Compile(filename string) (*decorated.Module, error) {
 	const enforceStyle = true
 
-	const verboseFlag = false
+	const verboseFlag = verbosity.None
 
 	world, module, err := swampcompiler.CompileMainFindLibraryRoot(filename, l.documentCache, enforceStyle, verboseFlag)
 	if err != nil {

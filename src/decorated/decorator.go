@@ -14,10 +14,11 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type ModuleRepository interface {
-	FetchModuleInPackage(moduleName dectype.PackageRelativeModuleName, verboseFlag bool) (*decorated.Module, decshared.DecoratedError)
+	FetchModuleInPackage(moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError)
 }
 
 type Decorator struct {
@@ -64,7 +65,7 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 	return decorator.NewVariableContext(d.module.LocalAndImportedDefinitions())
 }
 
-func (d *Decorator) ImportModule(importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag bool) (*decorated.ImportStatement, decshared.DecoratedError) {
+func (d *Decorator) ImportModule(importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag verbosity.Verbosity) (*decorated.ImportStatement, decshared.DecoratedError) {
 	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(relativeModuleName, verboseFlag)
 	if importErr != nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("%v: couldn't do an import %w", importAst.FetchPositionLength(), importErr))

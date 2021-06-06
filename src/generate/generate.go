@@ -10,14 +10,14 @@ import (
 
 	asmcompile "github.com/swamp/assembler/compiler"
 	assembler "github.com/swamp/assembler/lib"
-	swampopcodeinst "github.com/swamp/opcodes/instruction"
-	swamppack "github.com/swamp/pack/lib"
-
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/typeinfo"
+	"github.com/swamp/compiler/src/verbosity"
+	swampopcodeinst "github.com/swamp/opcodes/instruction"
+	swamppack "github.com/swamp/pack/lib"
 )
 
 type generateContext struct {
@@ -41,7 +41,8 @@ type ExternalFunction struct {
 	parameterCount uint
 }
 
-func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfoPayload []byte, lookup typeinfo.TypeLookup) ([]byte, error) {
+func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfoPayload []byte,
+	lookup typeinfo.TypeLookup) ([]byte, error) {
 	constantRepo := swamppack.NewConstantRepo()
 
 	for _, externalFunction := range externalFunctions {
@@ -49,13 +50,16 @@ func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfo
 	}
 
 	for _, declareFunction := range functions {
-		constantRepo.AddFunctionDeclaration(declareFunction.name.ResolveToString(), declareFunction.signature, declareFunction.parameterCount)
+		constantRepo.AddFunctionDeclaration(declareFunction.name.ResolveToString(),
+			declareFunction.signature, declareFunction.parameterCount)
 	}
 
 	for _, function := range functions {
 		var packConstants []*swamppack.Constant
+
 		for _, subConstant := range function.constants {
 			var packConstant *swamppack.Constant
+
 			switch subConstant.ConstantType() {
 			case assembler.ConstantTypeInteger:
 				packConstant = constantRepo.AddInteger(subConstant.IntegerValue())
@@ -66,14 +70,15 @@ func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfo
 			case assembler.ConstantTypeBoolean:
 				packConstant = constantRepo.AddBoolean(subConstant.BooleanValue())
 			case assembler.ConstantTypeFunction:
-				refConstant, functionRefErr := constantRepo.AddFunctionReference(subConstant.FunctionReferenceFullyQualifiedName())
+				refConstant, functionRefErr := constantRepo.AddFunctionReference(
+					subConstant.FunctionReferenceFullyQualifiedName())
 				if functionRefErr != nil {
 					return nil, functionRefErr
 				}
-
 				packConstant = refConstant
 			case assembler.ConstantTypeFunctionExternal:
-				refConstant, functionRefErr := constantRepo.AddExternalFunctionReference(subConstant.FunctionReferenceFullyQualifiedName())
+				refConstant, functionRefErr := constantRepo.AddExternalFunctionReference(
+					subConstant.FunctionReferenceFullyQualifiedName())
 				if functionRefErr != nil {
 					return nil, functionRefErr
 				}
@@ -82,28 +87,40 @@ func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfo
 			default:
 				return nil, fmt.Errorf("not handled constanttype %v", subConstant)
 			}
+
 			if packConstant == nil {
 				return nil, fmt.Errorf("internal error: not handled constanttype %v", subConstant)
 			}
 
 			packConstants = append(packConstants, packConstant)
 		}
-		constantRepo.AddFunction(function.name.ResolveToString(), function.signature, function.parameterCount, function.variableCount, packConstants, function.opcodes)
+
+		constantRepo.AddFunction(function.name.ResolveToString(), function.signature, function.parameterCount,
+			function.variableCount, packConstants, function.opcodes)
 	}
+
 	octets, packErr := swamppack.Pack(constantRepo, typeInfoPayload)
 	if packErr != nil {
 		return nil, packErr
 	}
+
 	return octets, nil
 }
 
-func NewFunction(fullyQualifiedName *decorated.FullyQualifiedVariableName, signature swamppack.TypeRef, parameterCount uint, variableCount uint, constants []*assembler.Constant, opcodes []byte) *Function {
-	f := &Function{name: fullyQualifiedName, signature: signature, parameterCount: parameterCount, variableCount: variableCount, constants: constants, opcodes: opcodes}
+func NewFunction(fullyQualifiedName *decorated.FullyQualifiedVariableName, signature swamppack.TypeRef,
+	parameterCount uint, variableCount uint, constants []*assembler.Constant, opcodes []byte) *Function {
+	f := &Function{
+		name: fullyQualifiedName, signature: signature, parameterCount: parameterCount,
+		variableCount: variableCount, constants: constants, opcodes: opcodes,
+	}
+
 	return f
 }
 
-func NewExternalFunction(fullyQualifiedName *decorated.FullyQualifiedVariableName, signature swamppack.TypeRef, parameterCount uint) *ExternalFunction {
+func NewExternalFunction(fullyQualifiedName *decorated.FullyQualifiedVariableName,
+	signature swamppack.TypeRef, parameterCount uint) *ExternalFunction {
 	f := &ExternalFunction{name: fullyQualifiedName, signature: signature, parameterCount: parameterCount}
+
 	return f
 }
 
@@ -127,6 +144,8 @@ func arithmeticToBinaryOperatorType(operatorType decorated.ArithmeticOperatorTyp
 	switch operatorType {
 	case decorated.ArithmeticPlus:
 		return swampopcodeinst.BinaryOperatorArithmeticIntPlus
+	case decorated.ArithmeticCons:
+		panic("cons not handled here")
 	case decorated.ArithmeticMinus:
 		return swampopcodeinst.BinaryOperatorArithmeticIntMinus
 	case decorated.ArithmeticMultiply:
@@ -149,6 +168,7 @@ func bitwiseToUnaryOperatorType(operatorType decorated.BitwiseUnaryOperatorType)
 	case decorated.BitwiseUnaryNot:
 		return swampopcodeinst.UnaryOperatorBitwiseNot
 	}
+
 	panic("illegal unaryoperator")
 }
 
@@ -157,6 +177,7 @@ func logicalToUnaryOperatorType(operatorType decorated.LogicalUnaryOperatorType)
 	case decorated.LogicalUnaryNot:
 		return swampopcodeinst.UnaryOperatorNot
 	}
+
 	panic("illegal unaryoperator")
 }
 
@@ -165,6 +186,7 @@ func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperato
 	case decorated.ArithmeticUnaryMinus:
 		return swampopcodeinst.UnaryOperatorNegate
 	}
+
 	panic("illegal unaryoperator")
 }
 
@@ -176,6 +198,9 @@ func bitwiseToBinaryOperatorType(operatorType decorated.BitwiseOperatorType) swa
 		return swampopcodeinst.BinaryOperatorBitwiseIntOr
 	case decorated.BitwiseXor:
 		return swampopcodeinst.BinaryOperatorBitwiseIntXor
+	case decorated.BitwiseNot:
+		return 0
+		// return swampopcodeinst.BinaryOperatorBitwiseIntNot
 	}
 
 	return 0
@@ -412,6 +437,7 @@ func generateLet(code *assembler.Code, target assembler.TargetVariable, let *dec
 		if len(assignment.LetVariables()) == 1 {
 			varName := assembler.NewVariableName(assignment.LetVariables()[0].Name().Name())
 			targetVar := genContext.context.AllocateVariable(varName)
+
 			genErr := generateExpression(code, targetVar, assignment.Expression(), genContext)
 			if genErr != nil {
 				return genErr
@@ -448,9 +474,11 @@ func generateLookups(code *assembler.Code, target assembler.TargetVariable, look
 	}
 
 	var structLookups []uint8
+
 	for _, indexLookups := range lookups.LookupFields() {
 		structLookups = append(structLookups, uint8(indexLookups.Index()))
 	}
+
 	code.Lookups(target, sourceVariable, structLookups)
 
 	return nil
@@ -465,21 +493,26 @@ func generateIf(code *assembler.Code, target assembler.TargetVariable, ifExpr *d
 	consequenceCode := assembler.NewCode()
 	consequenceContext2 := *genContext
 	consequenceContext2.context = genContext.context.MakeScopeContext()
+
 	consErr := generateExpression(consequenceCode, target, ifExpr.Consequence(), &consequenceContext2)
 	if consErr != nil {
 		return consErr
 	}
+
 	consequenceContext2.context.Free()
 
 	alternativeCode := assembler.NewCode()
 	alternativeLabel := alternativeCode.Label(nil, "if-alternative")
 	alternativeContext2 := *genContext
 	alternativeContext2.context = genContext.context.MakeScopeContext()
+
 	altErr := generateExpression(alternativeCode, target, ifExpr.Alternative(), &alternativeContext2)
 	if altErr != nil {
 		return altErr
 	}
+
 	endLabel := alternativeCode.Label(nil, "if-end")
+
 	alternativeContext2.context.Free()
 
 	code.BranchFalse(conditionVar, alternativeLabel)
@@ -508,14 +541,18 @@ func generateGuard(code *assembler.Code, target assembler.TargetVariable, guardE
 	if altErr != nil {
 		return altErr
 	}
+
 	endLabel := defaultCode.Label(nil, "guard-end")
 
 	var codeItems []codeItem
+
 	for _, item := range guardExpr.Items() {
 		conditionCode := assembler.NewCode()
 		conditionCodeContext := *genContext
 		conditionCodeContext.context = genContext.context.MakeScopeContext()
-		conditionVar, testErr := generateExpressionWithSourceVar(conditionCode, item.Condition(), &conditionCodeContext, "guard-condition")
+
+		conditionVar, testErr := generateExpressionWithSourceVar(conditionCode,
+			item.Condition(), &conditionCodeContext, "guard-condition")
 		if testErr != nil {
 			return testErr
 		}
@@ -523,17 +560,22 @@ func generateGuard(code *assembler.Code, target assembler.TargetVariable, guardE
 		consequenceCode := assembler.NewCode()
 		consequenceContext := *genContext
 		consequenceContext.context = genContext.context.MakeScopeContext()
+
 		consErr := generateExpression(consequenceCode, target, item.Expression(), &consequenceContext)
 		if consErr != nil {
 			return consErr
 		}
+
 		consequenceCode.Jump(endLabel)
 		endOfConsequenceLabel := consequenceCode.Label(nil, "guard-end")
+
 		consequenceContext.context.Free()
+
 		codeItem := codeItem{
 			ConditionCode: conditionCode, ConditionVariable: conditionVar, ConsequenceCode: consequenceCode,
 			EndOfConsequenceLabel: endOfConsequenceLabel,
 		}
+
 		codeItems = append(codeItems, codeItem)
 	}
 
@@ -556,6 +598,7 @@ func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariabl
 	}
 
 	var consequences []*assembler.CaseConsequence
+
 	var consequencesCodes []*assembler.Code
 
 	for _, consequence := range caseExpr.Consequences() {
@@ -565,18 +608,25 @@ func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariabl
 		consequencesCode := assembler.NewCode()
 
 		var parameters []assembler.SourceVariable
+
 		for _, param := range consequence.Parameters() {
 			consequenceLabelVariableName := assembler.NewVariableName(param.Identifier().Name())
 			paramVariable := consequenceContext.context.AllocateVariable(consequenceLabelVariableName)
 			parameters = append(parameters, paramVariable)
 		}
-		labelVariableName := assembler.NewVariableName(consequence.VariantReference().AstIdentifier().SomeTypeIdentifier().Name())
+
+		labelVariableName := assembler.NewVariableName(
+			consequence.VariantReference().AstIdentifier().SomeTypeIdentifier().Name())
+
 		caseLabel := consequencesCode.Label(labelVariableName, "case")
+
 		caseExprErr := generateExpression(consequencesCode, target, consequence.Expression(), &consequenceContext)
 		if caseExprErr != nil {
 			return caseExprErr
 		}
+
 		asmConsequence := assembler.NewCaseConsequence(uint8(consequence.InternalIndex()), parameters, caseLabel)
+
 		consequences = append(consequences, asmConsequence)
 
 		consequencesCodes = append(consequencesCodes, consequencesCode)
@@ -585,6 +635,7 @@ func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariabl
 	}
 
 	var defaultCase *assembler.CaseConsequence
+
 	if caseExpr.DefaultCase() != nil {
 		consequencesCode := assembler.NewCode()
 		defaultContext := *genContext
@@ -608,6 +659,7 @@ func generateCaseCustomType(code *assembler.Code, target assembler.TargetVariabl
 
 	labelVariableEndName := assembler.NewVariableName("case end")
 	endLabel := lastConsequnce.Label(labelVariableEndName, "caseend")
+
 	for index, consequenceCode := range consequencesCodes {
 		if index != len(consequencesCodes)-1 {
 			consequenceCode.Jump(endLabel)
@@ -632,6 +684,7 @@ func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVa
 	}
 
 	var consequences []*assembler.CaseConsequencePatternMatching
+
 	var consequencesCodes []*assembler.Code
 
 	for _, consequence := range caseExpr.Consequences() {
@@ -640,17 +693,20 @@ func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVa
 
 		consequencesCode := assembler.NewCode()
 
-		literalVariable, literalVariableErr := generateExpressionWithSourceVar(consequencesCode, consequence.Literal(), genContext, "literal")
+		literalVariable, literalVariableErr := generateExpressionWithSourceVar(consequencesCode,
+			consequence.Literal(), genContext, "literal")
 		if literalVariableErr != nil {
 			return literalVariableErr
 		}
 
 		labelVariableName := assembler.NewVariableName("a1")
 		caseLabel := consequencesCode.Label(labelVariableName, "case")
+
 		caseExprErr := generateExpression(consequencesCode, target, consequence.Expression(), &consequenceContext)
 		if caseExprErr != nil {
 			return caseExprErr
 		}
+
 		asmConsequence := assembler.NewCaseConsequencePatternMatching(literalVariable, caseLabel)
 		consequences = append(consequences, asmConsequence)
 
@@ -660,6 +716,7 @@ func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVa
 	}
 
 	var defaultCase *assembler.CaseConsequencePatternMatching
+
 	if caseExpr.DefaultCase() != nil {
 		consequencesCode := assembler.NewCode()
 		defaultContext := *genContext
@@ -683,6 +740,7 @@ func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVa
 
 	labelVariableEndName := assembler.NewVariableName("case end")
 	endLabel := lastConsequnce.Label(labelVariableEndName, "caseend")
+
 	for index, consequenceCode := range consequencesCodes {
 		if index != len(consequencesCodes)-1 {
 			consequenceCode.Jump(endLabel)
@@ -700,13 +758,15 @@ func generateCasePatternMatching(code *assembler.Code, target assembler.TargetVa
 	return nil
 }
 
-func generateStringLiteral(code *assembler.Code, target assembler.TargetVariable, str *decorated.StringLiteral, context *assembler.Context) error {
+func generateStringLiteral(code *assembler.Code, target assembler.TargetVariable, str *decorated.StringLiteral,
+	context *assembler.Context) error {
 	constant := context.Constants().AllocateStringConstant(str.Value())
 	code.CopyVariable(target, constant)
 	return nil
 }
 
-func generateCharacterLiteral(code *assembler.Code, target assembler.TargetVariable, str *decorated.CharacterLiteral, context *assembler.Context) error {
+func generateCharacterLiteral(code *assembler.Code, target assembler.TargetVariable, str *decorated.CharacterLiteral,
+	context *assembler.Context) error {
 	constant := context.Constants().AllocateIntegerConstant(str.Value())
 	code.CopyVariable(target, constant)
 	return nil
@@ -722,7 +782,8 @@ func generateTypeIdConstant(typeToAdd dtype.Type, genContext *generateContext) (
 	return constant, nil
 }
 
-func generateTypeIdLiteral(code *assembler.Code, target assembler.TargetVariable, typeId *decorated.TypeIdLiteral, genContext *generateContext) error {
+func generateTypeIdLiteral(code *assembler.Code, target assembler.TargetVariable, typeId *decorated.TypeIdLiteral,
+	genContext *generateContext) error {
 	constant, err := generateTypeIdConstant(typeId.ContainedType(), genContext)
 	if err != nil {
 		return err
@@ -731,57 +792,66 @@ func generateTypeIdLiteral(code *assembler.Code, target assembler.TargetVariable
 	return nil
 }
 
-func generateIntLiteral(code *assembler.Code, target assembler.TargetVariable, integer *decorated.IntegerLiteral, context *assembler.Context) error {
+func generateIntLiteral(code *assembler.Code, target assembler.TargetVariable, integer *decorated.IntegerLiteral,
+	context *assembler.Context) error {
 	constant := context.Constants().AllocateIntegerConstant(integer.Value())
 	code.CopyVariable(target, constant)
 	return nil
 }
 
-func generateFixedLiteral(code *assembler.Code, target assembler.TargetVariable, fixed *decorated.FixedLiteral, context *assembler.Context) error {
+func generateFixedLiteral(code *assembler.Code, target assembler.TargetVariable, fixed *decorated.FixedLiteral,
+	context *assembler.Context) error {
 	constant := context.Constants().AllocateIntegerConstant(fixed.Value())
 	code.CopyVariable(target, constant)
 	return nil
 }
 
-func generateResourceNameLiteral(code *assembler.Code, target assembler.TargetVariable, resourceName *decorated.ResourceNameLiteral, context *assembler.Context) error {
+func generateResourceNameLiteral(code *assembler.Code, target assembler.TargetVariable,
+	resourceName *decorated.ResourceNameLiteral, context *assembler.Context) error {
 	constant := context.Constants().AllocateResourceNameConstant(resourceName.Value())
 	code.CopyVariable(target, constant)
 	return nil
 }
 
-func generateFunctionReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.FunctionReference, context *assembler.Context) error {
+func generateFunctionReference(code *assembler.Code, target assembler.TargetVariable,
+	getVar *decorated.FunctionReference, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.Identifier().Name())
 	variable := context.FindVariable(varName)
 	code.CopyVariable(target, variable)
 	return nil
 }
 
-func generateConstant(code *assembler.Code, target assembler.TargetVariable, constant *decorated.Constant, context *generateContext) error {
+func generateConstant(code *assembler.Code, target assembler.TargetVariable,
+	constant *decorated.Constant, context *generateContext) error {
 	return generateExpression(code, target, constant.Expression(), context)
 }
 
-func generateLocalFunctionParameterReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.FunctionParameterReference, context *assembler.Context) error {
+func generateLocalFunctionParameterReference(code *assembler.Code, target assembler.TargetVariable,
+	getVar *decorated.FunctionParameterReference, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.Identifier().Name())
 	variable := context.FindVariable(varName)
 	code.CopyVariable(target, variable)
 	return nil
 }
 
-func generateLocalConsequenceParameterReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.CaseConsequenceParameterReference, context *assembler.Context) error {
+func generateLocalConsequenceParameterReference(code *assembler.Code, target assembler.TargetVariable,
+	getVar *decorated.CaseConsequenceParameterReference, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.Identifier().Name())
 	variable := context.FindVariable(varName)
 	code.CopyVariable(target, variable)
 	return nil
 }
 
-func generateLetVariableReference(code *assembler.Code, target assembler.TargetVariable, getVar *decorated.LetVariableReference, context *assembler.Context) error {
+func generateLetVariableReference(code *assembler.Code, target assembler.TargetVariable,
+	getVar *decorated.LetVariableReference, context *assembler.Context) error {
 	varName := assembler.NewVariableName(getVar.LetVariable().Name().Name())
 	variable := context.FindVariable(varName)
 	code.CopyVariable(target, variable)
 	return nil
 }
 
-func generateCustomTypeVariantConstructor(code *assembler.Code, target assembler.TargetVariable, constructor *decorated.CustomTypeVariantConstructor, genContext *generateContext) error {
+func generateCustomTypeVariantConstructor(code *assembler.Code, target assembler.TargetVariable,
+	constructor *decorated.CustomTypeVariantConstructor, genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
 	for _, arg := range constructor.Arguments() {
 		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "customTypeVariantArgs")
@@ -796,8 +866,10 @@ func generateCustomTypeVariantConstructor(code *assembler.Code, target assembler
 	return nil
 }
 
-func generateCurry(code *assembler.Code, target assembler.TargetVariable, call *decorated.CurryFunction, genContext *generateContext) error {
+func generateCurry(code *assembler.Code, target assembler.TargetVariable, call *decorated.CurryFunction,
+	genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
+
 	for _, arg := range call.ArgumentsToSave() {
 		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "sourceSave")
 		if argRegErr != nil {
@@ -805,20 +877,30 @@ func generateCurry(code *assembler.Code, target assembler.TargetVariable, call *
 		}
 		arguments = append(arguments, argReg)
 	}
-	functionRegister, functionGenErr := generateExpressionWithSourceVar(code, call.FunctionValue(), genContext, "functioncall")
+
+	functionRegister, functionGenErr := generateExpressionWithSourceVar(code,
+		call.FunctionValue(), genContext, "functioncall")
 	if functionGenErr != nil {
 		return functionGenErr
 	}
-	code.Curry(target, functionRegister, arguments)
+
+	indexIntoTypeInformationChunk, lookupErr := genContext.lookup.Lookup(call.Type())
+	if lookupErr != nil {
+		return lookupErr
+	}
+
+	code.Curry(target, uint16(indexIntoTypeInformationChunk), functionRegister, arguments)
 
 	return nil
 }
 
-func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable, call *decorated.FunctionCall, genContext *generateContext) error {
+func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable, call *decorated.FunctionCall,
+	genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
 
 	functionType := dectype.Unalias(call.FunctionExpression().Type())
 	functionAtom, wasFunctionAtom := functionType.(*dectype.FunctionAtom)
+
 	if !wasFunctionAtom {
 		return fmt.Errorf("this is not a function atom %T", functionType)
 	}
@@ -840,6 +922,7 @@ func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable,
 			if err != nil {
 				return err
 			}
+
 			tempAnyConstructor := genContext.context.AllocateTempVariable("anyConstructor")
 			code.Constructor(tempAnyConstructor, []assembler.SourceVariable{constant, argReg})
 
@@ -857,6 +940,7 @@ func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable,
 	if functionGenErr != nil {
 		return functionGenErr
 	}
+
 	code.Call(target, functionRegister, arguments)
 
 	for _, tempVariable := range tempVariables {
@@ -868,6 +952,7 @@ func generateFunctionCall(code *assembler.Code, target assembler.TargetVariable,
 
 func generateRecurCall(code *assembler.Code, call *decorated.RecurCall, genContext *generateContext) error {
 	var arguments []assembler.SourceVariable
+
 	for _, arg := range call.Arguments() {
 		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "recurarg")
 		if argRegErr != nil {
@@ -881,13 +966,15 @@ func generateRecurCall(code *assembler.Code, call *decorated.RecurCall, genConte
 	return nil
 }
 
-func generateBoolConstant(code *assembler.Code, target assembler.TargetVariable, test *decorated.BooleanLiteral, context *assembler.Context) error {
+func generateBoolConstant(code *assembler.Code, target assembler.TargetVariable,
+	test *decorated.BooleanLiteral, context *assembler.Context) error {
 	constant := context.Constants().AllocateBooleanConstant(test.Value())
 	code.CopyVariable(target, constant)
 	return nil
 }
 
-func generateRecordSortedAssignments(code *assembler.Code, target assembler.TargetVariable, sortedAssignments []*decorated.RecordLiteralAssignment, genContext *generateContext) error {
+func generateRecordSortedAssignments(code *assembler.Code, target assembler.TargetVariable,
+	sortedAssignments []*decorated.RecordLiteralAssignment, genContext *generateContext) error {
 	variables := make([]assembler.SourceVariable, len(sortedAssignments))
 	for index, assignment := range sortedAssignments {
 		debugName := fmt.Sprintf("assign%v", assignment.FieldName())
@@ -902,7 +989,8 @@ func generateRecordSortedAssignments(code *assembler.Code, target assembler.Targ
 	return nil
 }
 
-func generateRecordLiteral(code *assembler.Code, target assembler.TargetVariable, record *decorated.RecordLiteral, genContext *generateContext) error {
+func generateRecordLiteral(code *assembler.Code, target assembler.TargetVariable,
+	record *decorated.RecordLiteral, genContext *generateContext) error {
 	if record.RecordTemplate() != nil {
 		structToCopyVar, genErr := generateExpressionWithSourceVar(code, record.RecordTemplate(), genContext, "gopher")
 		if genErr != nil {
@@ -925,7 +1013,8 @@ func generateRecordLiteral(code *assembler.Code, target assembler.TargetVariable
 	return nil
 }
 
-func generateList(code *assembler.Code, target assembler.TargetVariable, list *decorated.ListLiteral, genContext *generateContext) error {
+func generateList(code *assembler.Code, target assembler.TargetVariable,
+	list *decorated.ListLiteral, genContext *generateContext) error {
 	variables := make([]assembler.SourceVariable, len(list.Expressions()))
 	for index, expr := range list.Expressions() {
 		debugName := fmt.Sprintf("listliteral%v", index)
@@ -939,7 +1028,8 @@ func generateList(code *assembler.Code, target assembler.TargetVariable, list *d
 	return nil
 }
 
-func generateTuple(code *assembler.Code, target assembler.TargetVariable, tupleLiteral *decorated.TupleLiteral, genContext *generateContext) error {
+func generateTuple(code *assembler.Code, target assembler.TargetVariable,
+	tupleLiteral *decorated.TupleLiteral, genContext *generateContext) error {
 	variables := make([]assembler.SourceVariable, len(tupleLiteral.Expressions()))
 	for index, expr := range tupleLiteral.Expressions() {
 		debugName := fmt.Sprintf("tupleliteral%v", index)
@@ -953,7 +1043,8 @@ func generateTuple(code *assembler.Code, target assembler.TargetVariable, tupleL
 	return nil
 }
 
-func generateArray(code *assembler.Code, target assembler.TargetVariable, array *decorated.ArrayLiteral, genContext *generateContext) error {
+func generateArray(code *assembler.Code, target assembler.TargetVariable,
+	array *decorated.ArrayLiteral, genContext *generateContext) error {
 	variables := make([]assembler.SourceVariable, len(array.Expressions()))
 	for index, expr := range array.Expressions() {
 		debugName := fmt.Sprintf("arrayliteral%v", index)
@@ -967,25 +1058,32 @@ func generateArray(code *assembler.Code, target assembler.TargetVariable, array 
 	return nil
 }
 
-func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Expression, genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
+func generateExpressionWithSourceVar(code *assembler.Code, expr decorated.Expression,
+	genContext *generateContext, debugName string) (assembler.SourceVariable, error) {
 	switch t := expr.(type) {
 	case *decorated.StringLiteral:
 		constant := genContext.context.Constants().AllocateStringConstant(t.Value())
+
 		return constant, nil
 	case *decorated.IntegerLiteral:
 		constant := genContext.context.Constants().AllocateIntegerConstant(t.Value())
+
 		return constant, nil
 	case *decorated.CharacterLiteral:
 		constant := genContext.context.Constants().AllocateIntegerConstant(t.Value())
+
 		return constant, nil
 	case *decorated.BooleanLiteral:
 		constant := genContext.context.Constants().AllocateBooleanConstant(t.Value())
+
 		return constant, nil
 	case *decorated.LetVariableReference:
 		parameterReferenceName := assembler.NewVariableName(t.LetVariable().Name().Name())
+
 		return genContext.context.FindVariable(parameterReferenceName), nil
 	case *decorated.FunctionParameterReference:
 		parameterReferenceName := assembler.NewVariableName(t.Identifier().Name())
+
 		return genContext.context.FindVariable(parameterReferenceName), nil
 	case *decorated.FunctionReference:
 		ident := t.Identifier()
@@ -1176,7 +1274,7 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	return fmt.Errorf("generate: unknown node %T %v %v", expr, expr, genContext)
 }
 
-func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariableName, f *decorated.FunctionValue, root *assembler.FunctionRootContext, definitions *decorator.VariableContext, lookup typeinfo.TypeLookup, verboseFlag bool) (*Function, error) {
+func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariableName, f *decorated.FunctionValue, root *assembler.FunctionRootContext, definitions *decorator.VariableContext, lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler.NewCode()
 	funcContext := root.ScopeContext()
 	tempVar := root.ReturnVariable()
@@ -1199,12 +1297,12 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariab
 
 	code.Return()
 
-	opcodes, resolveErr := code.Resolve(root, verboseFlag)
+	opcodes, resolveErr := code.Resolve(root, verboseFlag >= verbosity.Mid)
 	if resolveErr != nil {
 		return nil, resolveErr
 	}
 
-	if verboseFlag {
+	if verboseFlag >= verbosity.Mid {
 		code.PrintOut()
 	}
 
@@ -1223,7 +1321,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariab
 }
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, definitions *decorator.VariableContext,
-	lookup typeinfo.TypeLookup, verboseFlag bool) ([]*Function, error) {
+	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) ([]*Function, error) {
 	var functionConstants []*Function
 
 	for _, named := range module.Definitions().Definitions() {
@@ -1233,7 +1331,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 
 		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 		if maybeFunction != nil {
-			if verboseFlag {
+			if verboseFlag >= verbosity.Mid {
 				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 

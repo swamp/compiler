@@ -12,6 +12,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type RunesToModuleConverter interface {
@@ -19,7 +20,7 @@ type RunesToModuleConverter interface {
 }
 
 type ModuleRunes interface {
-	Load(moduleName dectype.PackageRelativeModuleName, verboseFlag bool) (string, string, decshared.DecoratedError)
+	Load(moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (string, string, decshared.DecoratedError)
 }
 
 type ModuleReaderAndDecorator struct {
@@ -32,8 +33,8 @@ func NewModuleReaderAndDecorator(runesLoader ModuleRunes, runesToModule RunesToM
 }
 
 func (r *ModuleReaderAndDecorator) ReadModule(repository deccy.ModuleRepository, moduleName dectype.PackageRelativeModuleName, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError) {
-	const verboseFlag = false
-	if verboseFlag {
+	const verboseFlag = verbosity.None
+	if verboseFlag > verbosity.None {
 		fmt.Printf("* read module %v\n", moduleName)
 	}
 

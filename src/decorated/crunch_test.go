@@ -8,6 +8,8 @@ package deccy
 import (
 	"fmt"
 	"testing"
+
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 func TestCrunch(t *testing.T) {
@@ -15,8 +17,8 @@ func TestCrunch(t *testing.T) {
 	if mErr != nil {
 		t.Fatal(mErr)
 	}
-	const verboseFlag bool = true
-	if verboseFlag {
+	const verboseFlag = verbosity.None
+	if verboseFlag > verbosity.None {
 		fmt.Printf("module\n%v\n%v\n", aliasModules, importModules)
 	}
 }

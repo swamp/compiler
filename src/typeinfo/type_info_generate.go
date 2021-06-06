@@ -11,23 +11,24 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/loader"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type TypeLookup interface {
 	Lookup(d dtype.Type) (int, error)
 }
 
-func generateModuleToChunk(module *decorated.Module, chunk *Chunk, verboseFlag bool) error {
+func generateModuleToChunk(module *decorated.Module, chunk *Chunk, verboseFlag verbosity.Verbosity) error {
 	for _, exposedDef := range module.Definitions().Definitions() {
 		exposedType := exposedDef.Expression().Type()
-		if verboseFlag {
+		if verboseFlag >= verbosity.Low {
 			fmt.Printf("generateModuleToChunkTypeInfo definition: %s\n", exposedType.String())
 		}
 		convertedType, err := chunk.ConsumeType(exposedType)
 		if err != nil {
 			continue
 		}
-		if verboseFlag {
+		if verboseFlag >= verbosity.Low {
 			fmt.Printf("converted: %v\n", convertedType)
 		}
 	}
@@ -45,7 +46,7 @@ func ChunkToOctets(chunk *Chunk) ([]byte, error) {
 }
 
 func GenerateModule(module *decorated.Module) ([]byte, TypeLookup, error) {
-	const verboseFlag = true
+	const verboseFlag = verbosity.None
 
 	chunk := &Chunk{}
 
@@ -62,7 +63,7 @@ func GenerateModule(module *decorated.Module) ([]byte, TypeLookup, error) {
 }
 
 func GeneratePackageToChunk(world *loader.Package, chunk *Chunk) error {
-	const verboseFlag = false
+	const verboseFlag = verbosity.None
 	for _, module := range world.AllModules() {
 		if err := generateModuleToChunk(module, chunk, verboseFlag); err != nil {
 			return err

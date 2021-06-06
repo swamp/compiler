@@ -15,6 +15,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type Definer struct {
@@ -22,12 +23,12 @@ type Definer struct {
 	localAnnotation   *decorated.AnnotationStatement
 	localComments     []decorated.Comment
 	localCommentBlock *ast.MultilineComment
-	verboseFlag       bool
+	verboseFlag       verbosity.Verbosity
 	decorateStream    DecorateStream
 }
 
 func NewDefiner(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker, debugName string) *Definer {
-	g := &Definer{verboseFlag: false, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo}
+	g := &Definer{verboseFlag: verbosity.None, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo}
 	return g
 }
 

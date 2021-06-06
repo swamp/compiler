@@ -24,6 +24,7 @@ import (
 	"github.com/swamp/compiler/src/solution"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/typeinfo"
+	"github.com/swamp/compiler/src/verbosity"
 
 	swampdisasm "github.com/swamp/disassembler/lib"
 )
@@ -43,7 +44,7 @@ func CheckUnused(world *loader.Package) {
 	}
 }
 
-func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, verboseFlag bool) error {
+func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, verboseFlag verbosity.Verbosity) error {
 	statInfo, statErr := os.Stat(mainSourceFile)
 	if statErr != nil {
 		return statErr
@@ -67,7 +68,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 	return nil
 }
 
-func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
+func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
 	} else {
@@ -99,7 +100,7 @@ func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider
 	return world, libraryModule, nil
 }
 
-func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag bool) (*loader.Package, *decorated.Module, error) {
+func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, error) {
 	if !file.IsDir(mainSource) {
 		mainSource = filepath.Dir(mainSource)
 	}
@@ -117,7 +118,7 @@ type CoreFunctionInfo struct {
 	ParamCount uint
 }
 
-func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, verboseFlag bool) decshared.DecoratedError {
+func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	gen := generate.NewGenerator()
 
 	var allFunctions []*generate.Function
@@ -132,13 +133,13 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	}
 
 	for _, module := range compiledPackage.AllModules() {
-		if verboseFlag {
+		if verboseFlag >= verbosity.Mid {
 			fmt.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())
 		}
 	}
 
 	for _, module := range compiledPackage.AllModules() {
-		if verboseFlag {
+		if verboseFlag >= verbosity.Mid {
 			fmt.Printf("============================================== generating for module %v\n", module)
 		}
 
@@ -161,7 +162,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		}
 	}
 
-	if verboseFlag {
+	if verboseFlag >= verbosity.Mid {
 		var assemblerOutput string
 
 		for _, f := range allFunctions {
@@ -178,6 +179,11 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		return decorated.NewInternalError(typeInformationErr)
 	}
 
+	if verboseFlag >= verbosity.Low {
+		fmt.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
+		typeInformationChunk.DebugOutput()
+	}
+
 	packed, packedErr := generate.Pack(allFunctions, allExternalFunctions, typeInformationOctets, typeInformationChunk)
 	if packedErr != nil {
 		return decorated.NewInternalError(packedErr)
@@ -191,7 +197,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	return nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, filename string, outputFilename string, enforceStyle bool, verboseFlag bool) decshared.DecoratedError {
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
 
 	compiledPackage, _, moduleErr := CompileMain(filename, defaultDocumentProvider, enforceStyle, verboseFlag)

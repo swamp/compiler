@@ -17,9 +17,10 @@ import (
 	"github.com/fatih/color"
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	"github.com/swamp/compiler/src/typeinfo"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
-func Execute(verboseFlag bool, executableName string, arguments ...string) (string, error) {
+func Execute(verboseFlag verbosity.Verbosity, executableName string, arguments ...string) (string, error) {
 	command := exec.Command(executableName, arguments...)
 	color.Magenta("executing swamp %s %s", executableName, strings.Join(arguments, " "))
 	output, err := command.Output()
@@ -27,7 +28,7 @@ func Execute(verboseFlag bool, executableName string, arguments ...string) (stri
 		color.Red("execute failed: '%v'", err)
 		return "", err
 	}
-	if verboseFlag {
+	if verboseFlag > verbosity.None {
 		fmt.Printf("execute returned %s", output)
 	}
 	if !command.ProcessState.Success() {
@@ -69,8 +70,8 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	tempOutputFile := filepath.Join(tempDir, tempOutputFileTemplate)
 
 	tempSwampFilename := tmpFile.Name()
-	const verbose = false
-	if verbose {
+	const verbose = verbosity.None
+	if verbose > verbosity.None {
 		fmt.Printf("=========== TEMPFILE:%v =============\n", tempSwampFilename)
 	}
 

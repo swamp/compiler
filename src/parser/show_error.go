@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/swamp/compiler/src/verbosity"
 
 	"github.com/swamp/compiler/src/coloring"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -120,7 +121,7 @@ func showOneSpaceAfterRecordTypeColon(e *parerr.OneSpaceAfterRecordTypeColon, in
 }
 
 func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parerr.ParseError,
-	verbose bool, errorAsWarning bool) tokenize.TokenError {
+	verbose verbosity.Verbosity, errorAsWarning bool) tokenize.TokenError {
 	if parserError == nil {
 		panic("parserError is nil. internal error.")
 	}

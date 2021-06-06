@@ -14,6 +14,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type ModuleReader interface {
@@ -53,8 +54,8 @@ func remove(s []dectype.PackageRelativeModuleName, r dectype.PackageRelativeModu
 	return s
 }
 
-func (l *ModuleRepository) FetchModuleInPackageEx(artifactFullyModuleName dectype.ArtifactFullyQualifiedModuleName, packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag bool) (*decorated.Module, decshared.DecoratedError) {
-	if verboseFlag {
+func (l *ModuleRepository) FetchModuleInPackageEx(artifactFullyModuleName dectype.ArtifactFullyQualifiedModuleName, packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
+	if verboseFlag >= verbosity.Mid {
 		fmt.Printf("* fetching module %v artifactName:%v\n", packageRelativeModuleName, artifactFullyModuleName)
 	}
 
@@ -70,7 +71,7 @@ func (l *ModuleRepository) FetchModuleInPackageEx(artifactFullyModuleName dectyp
 	}
 	// fmt.Printf("world:%v\n", l.world)
 
-	if verboseFlag {
+	if verboseFlag >= verbosity.Mid {
 		fmt.Printf("* didn't have %v (%v), must load and parse\n", artifactFullyModuleName, packageRelativeModuleName)
 	}
 	if l.isReadingModule(packageRelativeModuleName) {
@@ -92,13 +93,13 @@ func (l *ModuleRepository) FetchModuleInPackageEx(artifactFullyModuleName dectyp
 	return readModule, nil
 }
 
-func (l *ModuleRepository) FetchModuleInPackage(packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag bool) (*decorated.Module, decshared.DecoratedError) {
+func (l *ModuleRepository) FetchModuleInPackage(packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	artifactFullyModuleName := l.moduleNamespace.Join(packageRelativeModuleName)
 
 	return l.FetchModuleInPackageEx(artifactFullyModuleName, packageRelativeModuleName, verboseFlag)
 }
 
-func (l *ModuleRepository) FetchMainModuleInPackage(verboseFlag bool) (*decorated.Module, decshared.DecoratedError) {
+func (l *ModuleRepository) FetchMainModuleInPackage(verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	emptyPackageRelativeModuleName := dectype.NewPackageRelativeModuleName(nil)
 	artifactFullyModuleName := l.moduleNamespace.Join(emptyPackageRelativeModuleName)
 

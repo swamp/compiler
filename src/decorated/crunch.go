@@ -18,11 +18,12 @@ import (
 	"github.com/swamp/compiler/src/parser"
 	"github.com/swamp/compiler/src/runestream"
 	"github.com/swamp/compiler/src/tokenize"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 type NoImportModuleRepository struct{}
 
-func (*NoImportModuleRepository) FetchModuleInPackage(moduleName dectype.PackageRelativeModuleName, verboseFlag bool) (*decorated.Module, decshared.DecoratedError) {
+func (*NoImportModuleRepository) FetchModuleInPackage(moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	return nil, decorated.NewInternalError(fmt.Errorf("this is a no import module. Imports are not allowed"))
 }
 
@@ -34,7 +35,7 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 
 	importRepository := &NoImportModuleRepository{}
 
-	const verbose = true
+	const verbose = verbosity.None
 
 	const enforceStyle = true
 
@@ -42,7 +43,7 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 		enforceStyle, verbose, errorsAsWarnings)
 }
 
-func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
+func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose verbosity.Verbosity) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
 	ioReader := strings.NewReader(code)
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, absoluteFilename)
 	if runeReaderErr != nil {
@@ -68,7 +69,7 @@ func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle
 
 func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*decorated.Module,
 	importModules []*decorated.Module, moduleName dectype.ArtifactFullyQualifiedModuleName, absoluteFilename string, code string,
-	enforceStyle bool, verbose bool, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
+	enforceStyle bool, verbose verbosity.Verbosity, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
 	tokenizer, program, programErr := InternalCompileToProgram(absoluteFilename, code, enforceStyle, verbose)
 	if programErr != nil {
 		parser.ShowError(tokenizer, absoluteFilename, programErr, verbose, errorAsWarning)

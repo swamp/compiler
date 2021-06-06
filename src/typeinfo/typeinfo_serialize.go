@@ -7,6 +7,7 @@ package typeinfo
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"io"
 )
@@ -37,6 +38,16 @@ func writeUint8(writer io.Writer, v byte) error {
 	return err
 }
 
+func writeUint16(writer io.Writer, v int) error {
+	if v > 65535 {
+		panic("not allowed to write bigger than uint16")
+	}
+	buf := []byte{byte(0), byte(0)}
+	binary.BigEndian.PutUint16(buf, uint16(v))
+	_, err := writer.Write(buf)
+	return err
+}
+
 func writeTypeID(writer io.Writer, v SwtiType) error {
 	return writeUint8(writer, byte(v))
 }
@@ -46,8 +57,7 @@ func writePrimitive(writer io.Writer, v SwtiType) error {
 }
 
 func writeTypeRef(writer io.Writer, infoType InfoType) error {
-	_, err := writer.Write([]byte{byte(infoType.Index())})
-	return err
+	return writeUint16(writer, infoType.Index())
 }
 
 func writeTypeRefs(writer io.Writer, infoTypes []InfoType) error {
@@ -93,6 +103,10 @@ func writeArray(writer io.Writer, array *ArrayType) error {
 		return err
 	}
 	return writeTypeRef(writer, array.itemType)
+}
+
+func write16BitCount(writer io.Writer, count int) error {
+	return writeUint16(writer, count)
 }
 
 func writeCount(writer io.Writer, count int) error {
@@ -237,7 +251,7 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 func writeVersion(writer io.Writer) error {
 	const major byte = 0
 	const minor byte = 1
-	const patch byte = 4
+	const patch byte = 5
 
 	if err := writeUint8(writer, major); err != nil {
 		return err
@@ -257,7 +271,7 @@ func Serialize(c *Chunk, writer io.Writer) error {
 		return err
 	}
 
-	if err := writeCount(writer, len(c.infoTypes)); err != nil {
+	if err := write16BitCount(writer, len(c.infoTypes)); err != nil {
 		return err
 	}
 
@@ -266,6 +280,7 @@ func Serialize(c *Chunk, writer io.Writer) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
