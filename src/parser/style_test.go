@@ -18,9 +18,10 @@ import (
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/runestream"
 	"github.com/swamp/compiler/src/tokenize"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
-func compileToProgram(moduleName string, x string, enforceStyle bool, verbose bool) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
+func compileToProgram(moduleName string, x string, enforceStyle bool, verbose verbosity.Verbosity) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
 	ioReader := strings.NewReader(x)
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, "style test")
 	if runeReaderErr != nil {
@@ -47,7 +48,7 @@ func testStyle(code string, useCores bool) (string, string, string, error) {
 	code = strings.TrimSpace(code)
 	fmt.Println(code)
 	fmt.Println("========")
-	const verbose = true
+	const verbose = verbosity.Mid
 
 	const enforceStyle = true
 	const doNotEnforceStyle = false
@@ -125,7 +126,7 @@ func testStyleInternalErr(t *testing.T, code string, expectedError error) {
 
 func TestFormatRecordTypeAlias(t *testing.T) {
 	testStyleInternal(t, `
-type alias Sprite = {  y    :   Int  , 
+type alias Sprite = {  y    :   Int  ,
  x : Int }`,
 		`
 type alias Sprite =
@@ -137,7 +138,7 @@ type alias Sprite =
 
 func TestFormatBadContinuation(t *testing.T) {
 	testStyleInternalErr(t, `
-type alias Sprite = {  x    :   Int  , 
+type alias Sprite = {  x    :   Int  ,
 y : Int }`,
 		parerr.ExpectedContinuationLineOrOneSpace{})
 }
@@ -145,7 +146,7 @@ y : Int }`,
 func TestFormatCase(t *testing.T) {
 	testStyleInternal(t, `
 f a b =
-    case    x   of   
+    case    x   of
         Something ->
             3
         Other ->
@@ -165,14 +166,14 @@ f a b =
 func TestFormatLet(t *testing.T) {
 	testStyleInternal(t, `
 f a b =
-    let   
+    let
          x =
              13
 
          y =
              32
     in
-           someFunc x * 3 
+           someFunc x * 3
 `,
 		`
 f a b =
@@ -310,9 +311,9 @@ test a =
 
 func TestFormatTypeRef(t *testing.T) {
 	testStyleInternal(t, `
-doIt:Int    ->  List  
-    Sprite   
-doIt    a      =  
+doIt:Int    ->  List
+    Sprite
+doIt    a      =
        b
 `, `
 doIt : Int -> List Sprite
@@ -381,8 +382,8 @@ type Direction =
 
 func TestFormatCustomTypeAgain2(t *testing.T) {
 	testStyleInternal(t, `
-type   Status = 
-    Unknown  
+type   Status =
+    Unknown
      | Something Int
 	`, `
 type Status =
@@ -436,7 +437,7 @@ tester b =
 func TestFormatCustomType3(t *testing.T) {
 	testStyleInternal(t,
 		`
-type Maybe    a =  
+type Maybe    a =
     Nothing
      | Just a
 

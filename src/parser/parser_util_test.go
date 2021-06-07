@@ -13,6 +13,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	testutil "github.com/swamp/compiler/src/test"
+	"github.com/swamp/compiler/src/verbosity"
 )
 
 func testParseInternal(code string, errorsAsWarnings bool) (*ast.SourceFile, ParseStream, parerr.ParseError) {
@@ -20,13 +21,13 @@ func testParseInternal(code string, errorsAsWarnings bool) (*ast.SourceFile, Par
 	const enforceStyle = true
 	tokenizer, tokenizerErr := testutil.Setup(code)
 	if tokenizerErr != nil {
-		ShowError(tokenizer, "test.swamp", tokenizerErr, true, errorsAsWarnings)
+		ShowError(tokenizer, "test.swamp", tokenizerErr, verbosity.Mid, errorsAsWarnings)
 		return nil, nil, tokenizerErr
 	}
 	p := NewParser(tokenizer, enforceStyle)
 	program, programErr := p.Parse()
 	if programErr != nil {
-		ShowError(tokenizer, "test.swamp", programErr, true, errorsAsWarnings)
+		ShowError(tokenizer, "test.swamp", programErr, verbosity.Mid, errorsAsWarnings)
 	}
 	return program, p.stream, programErr
 }
@@ -36,14 +37,14 @@ func testParseExpressionInternal(code string, enforceStyle bool) (*ast.SourceFil
 	code = strings.TrimSpace(code)
 	tokenizer, tokenizerErr := testutil.Setup(code)
 	if tokenizerErr != nil {
-		ShowError(tokenizer, "test.swamp", tokenizerErr, true, errorsAsWarnings)
+		ShowError(tokenizer, "test.swamp", tokenizerErr, verbosity.Mid, errorsAsWarnings)
 		return nil, nil, tokenizerErr
 	}
 
 	p := NewParser(tokenizer, enforceStyle)
 	program, programErr := p.ParseExpression()
 	if programErr != nil {
-		ShowError(tokenizer, "test.swamp", programErr, true, errorsAsWarnings)
+		ShowError(tokenizer, "test.swamp", programErr, verbosity.Mid, errorsAsWarnings)
 	}
 	return program, p.stream, programErr
 }
