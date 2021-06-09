@@ -438,17 +438,19 @@ type Status =
     | Something Int
 
 
+receiveStatus : Status -> Status
+receiveStatus status =
+    status
+
+
 someFunc : String -> Status
 someFunc name =
-    Unknown
+    receiveStatus Unknown
 `,
 		`
-Unknown : [variantconstr [variant $Unknown]]
-Something : [variantconstr [variant $Something [[primitive Int]]]]
-Status : [custom-type  [variant $Unknown] [variant $Something [primitive Int]]]
-func(String -> Status) : [func  [primitive String] [custom-type  [variant $Unknown] [variant $Something [primitive Int]]]]
+[mdefx $receiveStatus = [functionvalue ([[arg $status = [customtypevariantref named definition reference [custom-type [[variant $Unknown] [variant $Something [[customtypevariantref named definition reference [primitive Int]]]]]]]]]) -> [functionparamref $status [arg $status = [customtypevariantref named definition reference [custom-type [[variant $Unknown] [variant $Something [[customtypevariantref named definition reference [primitive Int]]]]]]]]]]]
+[mdefx $someFunc = [functionvalue ([[arg $name = [customtypevariantref named definition reference [primitive String]]]]) -> [fcall [functionref named definition reference [functionvalue ([[arg $status = [customtypevariantref named definition reference [custom-type [[variant $Unknown] [variant $Something [[customtypevariantref named definition reference [primitive Int]]]]]]]]]) -> [functionparamref $status [arg $status = [customtypevariantref named definition reference [custom-type [[variant $Unknown] [variant $Something [[customtypevariantref named definition reference [primitive Int]]]]]]]]]]] [[variant-constructor [variant $Unknown] []]]]]]
 
-someFunc = [functionvalue ([[arg $name = [primitive String]]]) -> [variant-constructor [variant $Unknown] []]]
 `)
 }
 
