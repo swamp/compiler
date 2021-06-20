@@ -183,6 +183,9 @@ func writeCustom(writer io.Writer, custom *CustomType) error {
 		return err
 	}
 
+	if len(custom.name) == 0 {
+		panic("Name must be set")
+	}
 	if err := writeName(writer, custom.name); err != nil {
 		return err
 	}

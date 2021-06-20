@@ -642,6 +642,7 @@ func (c *Chunk) doWeHaveTypeRef() int {
 
 func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, error) {
 	var consumedVariants []Variant
+
 	for _, variant := range custom.Variants() {
 		consumedTypes, consumeErr := c.ConsumeTypes(variant.ParameterTypes())
 		if consumeErr != nil {
@@ -654,9 +655,14 @@ func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, erro
 		})
 	}
 
+	customName := custom.ArtifactTypeName().String()
+	if len(customName) == 0 {
+		panic("custom name must be set here")
+	}
+
 	proposedNewCustom := &CustomType{
 		Type:     Type{},
-		name:     custom.ArtifactTypeName().String(),
+		name:     customName,
 		variants: consumedVariants,
 	}
 

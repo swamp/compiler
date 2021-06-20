@@ -117,7 +117,7 @@ func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*C
 		replacedVariants = append(replacedVariants, newField)
 	}
 
-	return NewCustomType(customType.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil, replacedVariants), nil
+	return NewCustomType(customType.astCustomType, customType.artifactTypeName, nil, replacedVariants), nil
 }
 
 func replaceTupleTypeFromContext(tupleType *TupleTypeAtom, lookup Lookup) (dtype.Type, error) {
