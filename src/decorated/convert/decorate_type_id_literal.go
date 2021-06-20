@@ -19,7 +19,7 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 		panic("internal error. TypeRef is an unknown type")
 	}
 
-	decoratedType, err := ConvertFromAstToDecorated(typeId.TypeRef(), d.TypeRepo())
+	decoratedType, err := d.TypeRepo().CreateSomeTypeReference(typeId.TypeIdentifier())
 	if err != nil {
 		return nil, decorated.NewInternalError(err)
 	}

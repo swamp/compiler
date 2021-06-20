@@ -12,17 +12,17 @@ import (
 )
 
 type TypeId struct {
-	typeRef     Type
+	typeRef     TypeIdentifierNormalOrScoped
 	typeIdToken token.TypeId
 	inclusive   token.SourceFileReference
 }
 
-func NewTypeId(typeIdToken token.TypeId, typeRef Type) *TypeId {
-	inclusive := token.MakeInclusiveSourceFileReference(typeIdToken.SourceFileReference, typeRef.FetchPositionLength())
-	return &TypeId{typeRef: typeRef, typeIdToken: typeIdToken, inclusive: inclusive}
+func NewTypeId(typeIdToken token.TypeId, typeIdentifier TypeIdentifierNormalOrScoped) *TypeId {
+	inclusive := token.MakeInclusiveSourceFileReference(typeIdToken.SourceFileReference, typeIdentifier.FetchPositionLength())
+	return &TypeId{typeRef: typeIdentifier, typeIdToken: typeIdToken, inclusive: inclusive}
 }
 
-func (i *TypeId) TypeRef() Type {
+func (i *TypeId) TypeIdentifier() TypeIdentifierNormalOrScoped {
 	return i.typeRef
 }
 

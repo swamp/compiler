@@ -12,9 +12,9 @@ import (
 )
 
 func parseTypeId(p ParseStream, typeIdToken token.TypeId, startIndentation int) (ast.Expression, parerr.ParseError) {
-	typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
+	initialTypeIdentifier, _ := p.readTypeIdentifier()
 
-	userType, userTypeErr := parseTypeTermReference(p, startIndentation, typeParameterContext, nil)
+	userType, userTypeErr := parseTypeSymbolWithOptionalModules(p, initialTypeIdentifier)
 	if userTypeErr != nil {
 		return nil, userTypeErr
 	}

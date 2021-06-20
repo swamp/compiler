@@ -8,14 +8,9 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
-	"github.com/swamp/compiler/src/token"
 )
 
-type TypeIdentifierNormalOrScoped interface {
-	FetchPositionLength() token.SourceFileReference
-}
-
-func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (TypeIdentifierNormalOrScoped, parerr.ParseError) {
+func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (ast.TypeIdentifierNormalOrScoped, parerr.ParseError) {
 	var moduleNameParts []*ast.ModuleNamePart
 
 	for p.maybeAccessor() {
