@@ -562,6 +562,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	charType := dectype.NewPrimitiveType(createTypeIdentifier("Char"), nil)
 	boolType := dectype.NewPrimitiveType(createTypeIdentifier("Bool"), nil)
 	blobType := dectype.NewPrimitiveType(createTypeIdentifier("Blob"), nil)
+	unmanagedType := dectype.NewPrimitiveType(createTypeIdentifier("Unmanaged"), nil)
 
 	addPrimitive(globalModuleTypes, anyType)
 	addPrimitive(globalModuleTypes, integerType)
@@ -571,6 +572,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	addPrimitive(globalModuleTypes, charType)
 	addPrimitive(globalModuleTypes, boolType)
 	addPrimitive(globalModuleTypes, blobType)
+	addPrimitive(globalModuleTypes, unmanagedType)
 
 	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.SourceFileReference{}, 0))
 

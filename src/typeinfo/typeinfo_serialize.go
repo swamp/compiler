@@ -31,6 +31,7 @@ const (
 	SwtiTypeTuple
 	SwtiTypeAny
 	SwtiTypeAnyMatchingTypes
+	SwtiTypeUnmanaged
 )
 
 func writeUint8(writer io.Writer, v byte) error {
@@ -243,6 +244,8 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 	case *AnyType:
 		// TODO:
 		return writePrimitive(writer, SwtiTypeAny)
+	case *UnmanagedType:
+		return writePrimitive(writer, SwtiTypeUnmanaged)
 	case *AnyMatchingTypes:
 		// TODO:
 		return writePrimitive(writer, SwtiTypeAnyMatchingTypes)

@@ -96,6 +96,18 @@ func (t *AnyType) HumanReadable() string {
 	return "Any"
 }
 
+type UnmanagedType struct {
+	Type
+}
+
+func (t *UnmanagedType) String() string {
+	return "Unmanaged"
+}
+
+func (t *UnmanagedType) HumanReadable() string {
+	return "Unmanaged"
+}
+
 type IntType struct {
 	Type
 }
@@ -585,6 +597,17 @@ func (c *Chunk) doWeHaveAny() int {
 	return -1
 }
 
+func (c *Chunk) doWeHaveUnmanaged() int {
+	for index, infoType := range c.infoTypes {
+		_, isUnmanaged := infoType.(*UnmanagedType)
+		if isUnmanaged {
+			return index
+		}
+	}
+
+	return -1
+}
+
 func (c *Chunk) doWeHaveAnyMatchingTypes() int {
 	for index, infoType := range c.infoTypes {
 		_, isAny := infoType.(*AnyMatchingTypes)
@@ -952,6 +975,20 @@ func (c *Chunk) consumeAny() (InfoType, error) {
 	return proposedNewAnyType, nil
 }
 
+func (c *Chunk) consumeUnmanaged() (InfoType, error) {
+	indexArray := c.doWeHaveUnmanaged()
+	if indexArray != -1 {
+		return c.infoTypes[indexArray].(*UnmanagedType), nil
+	}
+
+	proposedNewAnyType := &UnmanagedType{} //nolint:exhaustivestruct
+
+	proposedNewAnyType.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, proposedNewAnyType)
+
+	return proposedNewAnyType, nil
+}
+
 func (c *Chunk) consumeAnyMatchingTypes() (InfoType, error) {
 	indexArray := c.doWeHaveAnyMatchingTypes()
 	if indexArray != -1 {
@@ -989,6 +1026,8 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 		return c.consumeTypeRef()
 	} else if name == "Any" {
 		return c.consumeAny()
+	} else if name == "Unmanaged" {
+		return c.consumeUnmanaged()
 	}
 
 	return nil, fmt.Errorf("chunk: consume: unknown primitive %v", primitive)
