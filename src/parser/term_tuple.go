@@ -9,6 +9,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
+	"github.com/swamp/compiler/src/tokenize"
 )
 
 func parseTuple(p ParseStream, startExpression ast.Expression, startIndentation int, start token.ParenToken) (ast.Expression, parerr.ParseError) {
@@ -16,6 +17,8 @@ func parseTuple(p ParseStream, startExpression ast.Expression, startIndentation 
 	expressions = append(expressions, startExpression)
 	var lastParen token.ParenToken
 	for {
+
+		p.debugInfo("check parseExpressionNormal")
 		p.maybeOneSpace()
 
 		exp, expErr := p.parseExpressionNormal(startIndentation)
@@ -25,7 +28,11 @@ func parseTuple(p ParseStream, startExpression ast.Expression, startIndentation 
 
 		expressions = append(expressions, exp)
 
-		if _, wasComma := p.maybeComma(); !wasComma {
+		wasComma, _, separatorErr := p.eatCommaSeparatorOrTermination(startIndentation+1, tokenize.NotAllowedAtAll)
+		if separatorErr != nil {
+			return nil, separatorErr
+		}
+		if !wasComma {
 			p.maybeOneSpace()
 			foundLastParen, rightErr := p.readRightParen()
 			if rightErr != nil {

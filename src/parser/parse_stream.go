@@ -98,6 +98,7 @@ type ParseStream interface {
 	maybeEmptyParen() bool
 	maybeColon() bool
 	maybeComma() (token.OperatorToken, bool)
+	maybeSpacingAndComma(indentation int) (token.OperatorToken, bool)
 	maybePipeLeft() bool
 	maybeRightArrow() bool
 	maybeOneSpaceAndRightArrow() bool

@@ -325,13 +325,15 @@ func LegalSameIndentationOrNoSpace(report token.IndentationReport, indentation i
 }
 
 func LegalSameIndentationOrOptionalOneSpace(report token.IndentationReport, indentation int, enforceStyle bool) bool {
-	if report.NewLineCount == 0 && report.SpacesUntilMaybeNewline == 1 {
+	if report.NewLineCount == 0 && (report.SpacesUntilMaybeNewline == 1 || report.SpacesUntilMaybeNewline == 0) {
 		return true
 	}
 
 	if enforceStyle {
 		if report.NewLineCount == 1 && (report.ExactIndentation == indentation || report.ExactIndentation == indentation+1) {
 			return true
+		} else {
+			return false
 		}
 	} else {
 		if report.NewLineCount == 0 && (report.SpacesUntilMaybeNewline == 1 || report.SpacesUntilMaybeNewline == 0) {

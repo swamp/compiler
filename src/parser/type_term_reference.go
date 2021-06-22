@@ -87,6 +87,5 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 
 	parsePosition := p.positionLength()
 
-	p.debugInfo("no term reference")
 	return nil, parerr.NewExpectedTypeReferenceError(parsePosition)
 }

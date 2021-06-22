@@ -334,6 +334,11 @@ func (p *ParseStreamImpl) maybeComma() (token.OperatorToken, bool) {
 	return p.maybeSpecificOperatorToken(token.Comma)
 }
 
+func (p *ParseStreamImpl) maybeSpacingAndComma(indentation int) (token.OperatorToken, bool) {
+	p.maybeNewLineContinuationHelper(indentation, tokenize.NotAllowedAtAll)
+	return p.maybeSpecificOperatorToken(token.Comma)
+}
+
 func (p *ParseStreamImpl) maybeAsterisk() (token.OperatorToken, bool) {
 	return p.maybeSpecificOperatorToken(token.OperatorMultiply)
 }
