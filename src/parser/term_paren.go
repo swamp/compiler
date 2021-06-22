@@ -12,7 +12,10 @@ import (
 )
 
 func parseParenExpression(p ParseStream, startIndentation int, parenToken token.ParenToken) (ast.Expression, parerr.ParseError) {
-	p.maybeOneSpace()
+	_, _, continuationErr := p.maybeUpToOneLogicalSpaceForContinuation(startIndentation)
+	if continuationErr != nil {
+		return nil, continuationErr
+	}
 
 	exp, expErr := p.parseExpressionNormal(startIndentation)
 	if expErr != nil {

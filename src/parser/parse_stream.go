@@ -106,6 +106,7 @@ type ParseStream interface {
 	maybeAsterisk() (token.OperatorToken, bool)
 	maybeLeftCurly() (token.ParenToken, bool)
 	maybeRightArrayBracket() (token.ParenToken, bool)
+	maybeUpToOneLogicalSpaceForContinuation(currentIndentation int) (bool, token.IndentationReport, parerr.ParseError)
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// detect. similar to maybe, but doesn't advance the token stream, only reports if the symbol is coming up.
