@@ -33,8 +33,8 @@ func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module, t
 	return d
 }
 
-func (d *Decorator) Import(source *decorated.Module, relativeName dectype.PackageRelativeModuleName, exposeAll bool) error {
-	return ImportModuleToModule(d.module, source, relativeName, exposeAll)
+func (d *Decorator) Import(importStatement *decorated.ImportStatement) error {
+	return ImportModuleToModule(d.module, importStatement)
 }
 
 func (d *Decorator) TypeRepo() decorated.TypeAddAndReferenceMaker {
@@ -82,9 +82,9 @@ func (d *Decorator) ImportModule(importAst *ast.Import, relativeModuleName decty
 		moduleAliasRef = decorated.NewModuleReference(alias.Path(), moduleToImport)
 	}
 
-	importStatement := decorated.NewImport(importAst, moduleRef, moduleAliasRef)
+	importStatement := decorated.NewImport(importAst, moduleRef, moduleAliasRef, exposeAll)
 
-	importModuleErr := d.Import(moduleToImport, relativeModuleName, exposeAll)
+	importModuleErr := d.Import(importStatement)
 	if importModuleErr != nil {
 		return nil, decorated.NewInternalError(importModuleErr)
 	}

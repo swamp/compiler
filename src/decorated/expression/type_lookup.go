@@ -33,10 +33,14 @@ func (l *TypeLookup) FindType(typeIdentifier *ast.TypeIdentifier) (dtype.Type, *
 		return foundLocalType, namedTypeRef, nil
 	}
 
-	foundLocalType = l.importedTypes.FindType(typeIdentifier)
-	if foundLocalType == nil {
+	importedType := l.importedTypes.FindType(typeIdentifier)
+	if importedType == nil {
 		return nil, nil, NewInternalError(fmt.Errorf("could not find imported type %v", typeIdentifier))
 	}
+
+	importedType.MarkAsReferenced()
+
+	foundLocalType = importedType.referencedType
 
 	return foundLocalType, namedTypeRef, nil
 }
@@ -47,15 +51,17 @@ func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (d
 		return nil, nil, NewInternalError(fmt.Errorf("could not find module %v %v", typeIdentifier.ModuleReference(), typeIdentifier.FetchPositionLength().ToCompleteReferenceString()))
 	}
 
-	moduleReference := NewModuleReference(typeIdentifier.ModuleReference(), moduleFound)
+	moduleFound.MarkAsReferenced()
+	moduleReference := NewModuleReference(typeIdentifier.ModuleReference(), moduleFound.referencedModule)
 	typeReferenceScoped := ast.NewScopedTypeReference(typeIdentifier, nil)
 	namedTypeRef := dectype.NewNamedDefinitionTypeReference(moduleReference, typeReferenceScoped)
-	foundExposedType := moduleFound.ExposedTypes().FindType(typeIdentifier.Symbol())
+	foundExposedType := moduleFound.referencedModule.ExposedTypes().FindType(typeIdentifier.Symbol())
 	if foundExposedType == nil {
 		return nil, nil, NewInternalError(fmt.Errorf("could not find exposed type %v in module %v", typeIdentifier, moduleFound))
 	}
+	foundExposedType.MarkAsReferenced()
 
-	return foundExposedType, namedTypeRef, nil
+	return foundExposedType.referencedType, namedTypeRef, nil
 }
 
 func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {

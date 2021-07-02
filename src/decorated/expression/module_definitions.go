@@ -30,9 +30,9 @@ func (d *ModuleDefinitions) OwnedByModule() *Module {
 	return d.ownedByModule
 }
 
-func (d *ModuleDefinitions) Definitions() []*ModuleDefinition {
-	var keys []*ModuleDefinition
-	for _, exprKey := range sortedExpressionKeys(d.definitions) {
+func (d *ModuleDefinitions) Definitions() []ModuleDef {
+	var keys []ModuleDef
+	for _, exprKey := range sortedExpressionKeysDefinition(d.definitions) {
 		expr := d.definitions[exprKey]
 		keys = append(keys, expr)
 	}
@@ -77,7 +77,7 @@ func (t *ModuleDefinitions) DebugOutput() {
 func (t *ModuleDefinitions) ShortString() string {
 	s := ""
 
-	definitionKeys := sortedExpressionKeys(t.definitions)
+	definitionKeys := sortedExpressionKeysDefinition(t.definitions)
 	for _, expressionKey := range definitionKeys {
 		expression := t.definitions[expressionKey]
 		s += fmt.Sprintf("%s\n", expression.String())

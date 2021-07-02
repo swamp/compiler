@@ -74,7 +74,7 @@ type Module struct {
 
 	importedTypes       *ExposedTypes
 	importedModules     *ModuleImports
-	importedDefinitions *ModuleReferenceDefinitions
+	importedDefinitions *ModuleImportedDefinitions
 
 	exposedTypes       *ExposedTypes
 	exposedDefinitions *ModuleReferenceDefinitions
@@ -106,7 +106,7 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	m.localDefinitions = NewModuleDefinitions(m)
 	m.localDeclarations = NewModuleDeclarations(m)
 
-	m.importedDefinitions = NewModuleReferenceDefinitions(m)
+	m.importedDefinitions = NewModuleImportedDefinitions(m)
 	m.exposedDefinitions = NewModuleReferenceDefinitions(m)
 
 	return m
@@ -245,7 +245,7 @@ func (m *Module) Declarations() *ModuleDeclarations {
 	return m.localDeclarations
 }
 
-func (m *Module) ImportedDefinitions() *ModuleReferenceDefinitions {
+func (m *Module) ImportedDefinitions() *ModuleImportedDefinitions {
 	return m.importedDefinitions
 }
 

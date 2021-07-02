@@ -13,8 +13,9 @@ import (
 )
 
 type AliasReference struct {
-	ident     *NamedDefinitionTypeReference
-	reference *Alias
+	ident         *NamedDefinitionTypeReference
+	reference     *Alias
+	wasReferenced bool
 }
 
 func (g *AliasReference) NameReference() *NamedDefinitionTypeReference {
@@ -51,6 +52,14 @@ func (g *AliasReference) Resolve() (dtype.Atom, error) {
 
 func (g *AliasReference) Next() dtype.Type {
 	return g.reference
+}
+
+func (g *AliasReference) WasReferenced() bool {
+	return g.wasReferenced
+}
+
+func (g *AliasReference) MarkAsReferenced() {
+	g.wasReferenced = true
 }
 
 func (g *AliasReference) ParameterCount() int {

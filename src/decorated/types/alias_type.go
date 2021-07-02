@@ -18,6 +18,7 @@ type Alias struct {
 	referencedType   dtype.Type
 	artifactTypeName ArtifactFullyQualifiedTypeName
 	references       []*AliasReference
+	wasReferenced    bool
 }
 
 func (u *Alias) String() string {
@@ -66,6 +67,14 @@ func (c *Alias) AddReferee(ref *AliasReference) {
 
 func (c *Alias) References() []*AliasReference {
 	return c.references
+}
+
+func (c *Alias) WasReferenced() bool {
+	return c.wasReferenced
+}
+
+func (c *Alias) MarkAsReferenced() {
+	c.wasReferenced = true
 }
 
 func NewAliasType(name *ast.Alias, artifactTypeName ArtifactFullyQualifiedTypeName,

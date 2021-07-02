@@ -13,16 +13,16 @@ import (
 
 type ModuleDefinitionsCombine struct {
 	internalDefinitions *ModuleDefinitions
-	importDefinitions   *ModuleReferenceDefinitions
+	importDefinitions   *ModuleImportedDefinitions
 	importedModules     *ModuleImports
 }
 
 func NewModuleDefinitionsCombine(internalDefinitions *ModuleDefinitions,
-	importDefinitions *ModuleReferenceDefinitions, importedModules *ModuleImports) *ModuleDefinitionsCombine {
+	importDefinitions *ModuleImportedDefinitions, importedModules *ModuleImports) *ModuleDefinitionsCombine {
 	return &ModuleDefinitionsCombine{internalDefinitions: internalDefinitions, importDefinitions: importDefinitions, importedModules: importedModules}
 }
 
-func (d *ModuleDefinitionsCombine) FindDefinitionExpression(identifier *ast.VariableIdentifier) *ModuleDefinition {
+func (d *ModuleDefinitionsCombine) FindDefinitionExpression(identifier *ast.VariableIdentifier) ModuleDef {
 	foundDef := d.internalDefinitions.FindDefinitionExpression(identifier)
 	if foundDef == nil {
 		return d.importDefinitions.FindDefinition(identifier)
@@ -33,7 +33,7 @@ func (d *ModuleDefinitionsCombine) FindDefinitionExpression(identifier *ast.Vari
 	return foundDef
 }
 
-func (d *ModuleDefinitionsCombine) FindScopedDefinitionExpression(identifier *ast.VariableIdentifierScoped) *ModuleDefinition {
+func (d *ModuleDefinitionsCombine) FindScopedDefinitionExpression(identifier *ast.VariableIdentifierScoped) ModuleDef {
 	if d.importedModules == nil {
 		log.Printf("it was scoped, but I dont have any imported modules %v", identifier)
 	}
@@ -42,12 +42,14 @@ func (d *ModuleDefinitionsCombine) FindScopedDefinitionExpression(identifier *as
 		log.Printf("couldn't find module %v", identifier.ModuleReference())
 		return nil
 	}
-	foundDef := foundModule.exposedDefinitions.FindDefinition(identifier.AstVariableReference())
+	referencedModule := foundModule.referencedModule
+	foundDef := referencedModule.exposedDefinitions.FindDefinition(identifier.AstVariableReference())
 	if foundDef == nil {
 		log.Printf("couldn't find definition in module %v\n%v\n", identifier, foundModule)
 		return nil
 	}
 
+	foundModule.MarkAsReferenced()
 	foundDef.MarkAsReferenced()
 
 	return foundDef

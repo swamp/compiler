@@ -14,7 +14,8 @@ import (
 )
 
 type LocalType struct {
-	identifier *ast.TypeParameter
+	identifier    *ast.TypeParameter
+	wasReferenced bool
 }
 
 func (u *LocalType) String() string {
@@ -51,6 +52,14 @@ func (u *LocalType) Resolve() (dtype.Atom, error) {
 
 func (u *LocalType) Next() dtype.Type {
 	return nil
+}
+
+func (u *LocalType) WasReferenced() bool {
+	return u.wasReferenced
+}
+
+func (u *LocalType) MarkAsReferenced() {
+	u.wasReferenced = true
 }
 
 func NewLocalType(identifier *ast.TypeParameter) *LocalType {

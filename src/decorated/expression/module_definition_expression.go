@@ -11,6 +11,16 @@ import (
 	"github.com/swamp/compiler/src/ast"
 )
 
+type ModuleDef interface {
+	MarkAsReferenced()
+	Expression() Expression
+	Identifier() *ast.VariableIdentifier
+	FullyQualifiedVariableName() *FullyQualifiedVariableName
+	OwnedByModule() *Module
+	WasReferenced() bool
+	IsInternal() bool
+}
+
 type ModuleDefinition struct {
 	localIdentifier *ast.VariableIdentifier
 	createdIn       *ModuleDefinitions
@@ -32,6 +42,10 @@ func (d *ModuleDefinition) ParentDefinitions() *ModuleDefinitions {
 	return d.createdIn
 }
 
+func (d *ModuleDefinition) OwnedByModule() *Module {
+	return d.createdIn.OwnedByModule()
+}
+
 func (d *ModuleDefinition) FullyQualifiedVariableName() *FullyQualifiedVariableName {
 	return d.createdIn.ownedByModule.FullyQualifiedName(d.localIdentifier)
 }
@@ -42,6 +56,10 @@ func (d *ModuleDefinition) String() string {
 
 func (d *ModuleDefinition) Expression() Expression {
 	return d.expr
+}
+
+func (d *ModuleDefinition) IsInternal() bool {
+	return d.OwnedByModule().IsInternal()
 }
 
 func (d *ModuleDefinition) MarkAsReferenced() {

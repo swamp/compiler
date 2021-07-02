@@ -16,10 +16,10 @@ type NamedDecoratedExpression struct {
 	fullyQualifiedName string
 	expression         Expression
 	wasReferenced      bool
-	mDef               *ModuleDefinition
+	mDef               ModuleDef
 }
 
-func NewNamedDecoratedExpression(fullyQualifiedName string, mDef *ModuleDefinition,
+func NewNamedDecoratedExpression(fullyQualifiedName string, mDef ModuleDef,
 	expression Expression) *NamedDecoratedExpression {
 	if fullyQualifiedName == "" {
 		panic("must have qualified name")
@@ -55,7 +55,7 @@ func (n *NamedDecoratedExpression) Expression() Expression {
 	return n.expression
 }
 
-func (n *NamedDecoratedExpression) ModuleDefinition() *ModuleDefinition {
+func (n *NamedDecoratedExpression) ModuleDefinition() ModuleDef {
 	return n.mDef
 }
 

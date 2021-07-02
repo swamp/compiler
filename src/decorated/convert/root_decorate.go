@@ -193,7 +193,7 @@ func (g *Definer) convertStatement(statement ast.Expression) (decorated.Statemen
 	}
 }
 
-func (g *Definer) firstPass(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
+func (g *Definer) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
 	var rootNodes []decorated.TypeOrToken
 
 	for _, statement := range program.Statements() {
@@ -211,7 +211,7 @@ func (g *Definer) firstPass(program *ast.SourceFile) ([]decorated.TypeOrToken, d
 }
 
 func (g *Definer) Define(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
-	rootNodes, err := g.firstPass(program)
+	rootNodes, err := g.convertStatements(program)
 	if err != nil {
 		return nil, err
 	}

@@ -15,7 +15,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func sortedTypeAtomKeys(m map[string]*ModuleDefinition) []string {
+func sortedTypeAtomKeys(m map[string]*ImportedDefinition) []string {
 	keys := make([]string, len(m))
 	i := 0
 	for k := range m {
@@ -39,7 +39,18 @@ func sortedTypes(m map[string]dtype.Type) []string {
 	return keys
 }
 
-func sortedExpressionKeys(m map[string]*ModuleDefinition) []string {
+func sortedExpressionKeys(m map[string]*ImportedDefinition) []string {
+	keys := make([]string, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func sortedExpressionKeysDefinition(m map[string]*ModuleDefinition) []string {
 	keys := make([]string, len(m))
 	i := 0
 	for k := range m {
@@ -51,7 +62,7 @@ func sortedExpressionKeys(m map[string]*ModuleDefinition) []string {
 }
 
 type ModuleReferenceDefinitions struct {
-	referencedExpressions map[string]*ModuleDefinition
+	referencedExpressions map[string]*ImportedDefinition
 
 	ownedByModule *Module
 }
@@ -62,12 +73,12 @@ func NewModuleReferenceDefinitions(ownedByModule *Module) *ModuleReferenceDefini
 	}
 	return &ModuleReferenceDefinitions{
 		ownedByModule:         ownedByModule,
-		referencedExpressions: make(map[string]*ModuleDefinition),
+		referencedExpressions: make(map[string]*ImportedDefinition),
 	}
 }
 
-func (d *ModuleReferenceDefinitions) ReferencedDefinitions() []*ModuleDefinition {
-	var all []*ModuleDefinition
+func (d *ModuleReferenceDefinitions) ReferencedDefinitions() []ModuleDef {
+	var all []ModuleDef
 
 	keys := sortedExpressionKeys(d.referencedExpressions)
 	for _, key := range keys {
@@ -76,7 +87,10 @@ func (d *ModuleReferenceDefinitions) ReferencedDefinitions() []*ModuleDefinition
 	return all
 }
 
-func (d *ModuleReferenceDefinitions) AddDefinitions(definitions []*ModuleDefinition) error {
+func (d *ModuleReferenceDefinitions) AddDefinitions(definitions []ModuleDef) error {
+	if definitions == nil {
+		definitions = nil
+	}
 	for _, def := range definitions {
 		if def == nil {
 			panic("not allowed with empty localDefinitions")
@@ -100,7 +114,7 @@ func (d *ModuleReferenceDefinitions) AddDefinitionsWithModulePrefix(definitions 
 	return nil
 }
 
-func (d *ModuleReferenceDefinitions) FindDefinition(identifier *ast.VariableIdentifier) *ModuleDefinition {
+func (d *ModuleReferenceDefinitions) FindDefinition(identifier *ast.VariableIdentifier) ModuleDef {
 	def, wasFound := d.referencedExpressions[identifier.Name()]
 	if !wasFound {
 		return nil
@@ -111,12 +125,12 @@ func (d *ModuleReferenceDefinitions) FindDefinition(identifier *ast.VariableIden
 	return def
 }
 
-func (d *ModuleReferenceDefinitions) AddDefinition(identifier *ast.VariableIdentifier, definition *ModuleDefinition) error {
+func (d *ModuleReferenceDefinitions) AddDefinition(identifier *ast.VariableIdentifier, definition ModuleDef) error {
 	existingDeclare := d.FindDefinition(identifier)
 	if existingDeclare != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingDeclare)
 	}
-	d.referencedExpressions[identifier.Name()] = definition
+	d.referencedExpressions[identifier.Name()] = NewImportedDefinition(nil, identifier, definition)
 	return nil
 }
 

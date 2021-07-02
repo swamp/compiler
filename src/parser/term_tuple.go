@@ -17,8 +17,6 @@ func parseTuple(p ParseStream, startExpression ast.Expression, startIndentation 
 	expressions = append(expressions, startExpression)
 	var lastParen token.ParenToken
 	for {
-
-		p.debugInfo("check parseExpressionNormal")
 		p.maybeOneSpace()
 
 		exp, expErr := p.parseExpressionNormal(startIndentation)

@@ -16,10 +16,13 @@ type ImportStatement struct {
 	astImport       *ast.Import
 	moduleReference *ModuleReference
 	alias           *ModuleReference
+	exposeAll       bool
 }
 
-func NewImport(astImport *ast.Import, moduleReference *ModuleReference, alias *ModuleReference) *ImportStatement {
-	return &ImportStatement{astImport: astImport, moduleReference: moduleReference, alias: alias}
+// source *decorated.Module, sourceMountedModuleName dectype.PackageRelativeModuleName, exposeAll bool
+
+func NewImport(astImport *ast.Import, moduleReference *ModuleReference, alias *ModuleReference, exposeAll bool) *ImportStatement {
+	return &ImportStatement{astImport: astImport, moduleReference: moduleReference, alias: alias, exposeAll: exposeAll}
 }
 
 func (l *ImportStatement) String() string {
@@ -34,8 +37,20 @@ func (l *ImportStatement) Module() *Module {
 	return l.moduleReference.module
 }
 
+func (l *ImportStatement) ExposeAll() bool {
+	return l.exposeAll
+}
+
 func (l *ImportStatement) Alias() *ModuleReference {
 	return l.alias
+}
+
+func (l *ImportStatement) ImportAsName() *ModuleReference {
+	if l.alias != nil {
+		return l.alias
+	}
+
+	return l.moduleReference
 }
 
 func (l *ImportStatement) ModuleReference() *ModuleReference {

@@ -36,7 +36,7 @@ func CheckUnused(world *loader.Package) {
 		}
 		for _, def := range module.Definitions().Definitions() {
 			if !def.WasReferenced() {
-				module := def.ParentDefinitions().OwnedByModule()
+				module := def.OwnedByModule()
 				warning := decorated.NewUnusedWarning(def)
 				module.AddWarning(warning)
 			}

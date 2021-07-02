@@ -14,21 +14,56 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type ImportedType struct {
+	referencedType dtype.Type
+	createdBy      *ImportedModule
+	wasReferenced  bool
+}
+
+func (i *ImportedType) String() string {
+	return i.referencedType.String()
+}
+
+func (i *ImportedType) MarkAsReferenced() {
+	i.wasReferenced = true
+	if i.createdBy != nil {
+		i.createdBy.MarkAsReferenced()
+	}
+}
+
+func (i *ImportedType) WasReferenced() bool {
+	return i.wasReferenced
+}
+
+func (i *ImportedType) CreatedByModuleImport() *ImportedModule {
+	return i.createdBy
+}
+
+func (i *ImportedType) ReferencedType() dtype.Type {
+	return i.referencedType
+}
+
 type ExposedTypes struct {
-	identifierToType map[string]dtype.Type
+	identifierToType map[string]*ImportedType
 }
 
 func NewExposedTypes(module *Module) *ExposedTypes {
-	return &ExposedTypes{identifierToType: make(map[string]dtype.Type)}
+	return &ExposedTypes{identifierToType: make(map[string]*ImportedType)}
 }
 
-func (e *ExposedTypes) internalAddType(name string, t dtype.Type) {
-	e.identifierToType[name] = t
+func (e *ExposedTypes) internalAddType(name string, t dtype.Type, importedModule *ImportedModule) {
+	e.identifierToType[name] = &ImportedType{referencedType: t, createdBy: importedModule}
 }
 
-func (e *ExposedTypes) AddTypes(allTypes map[string]dtype.Type) {
+func (e *ExposedTypes) AddTypes(allTypes map[string]*ImportedType, importedModule *ImportedModule) {
 	for name, t := range allTypes {
-		e.internalAddType(name, t)
+		e.internalAddType(name, t.referencedType, importedModule)
+	}
+}
+
+func (e *ExposedTypes) AddTypesFromModule(allTypes map[string]dtype.Type, module *Module) {
+	for name, t := range allTypes {
+		e.internalAddType(name, t, nil)
 	}
 }
 
@@ -36,25 +71,25 @@ func (e *ExposedTypes) AddTypesWithModulePrefix(allTypes map[string]dtype.Type, 
 	for name, t := range allTypes {
 		fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(name, token.SourceFileReference{}, 0))
 		fullyQualifiedName := prefix.JoinLocalName(fakeVariable)
-		e.identifierToType[fullyQualifiedName] = t
+		e.identifierToType[fullyQualifiedName] = &ImportedType{referencedType: t}
 	}
 }
 
 func (t *ExposedTypes) AddBuiltInTypes(name *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) TypeError {
-	t.internalAddType(name.Name(), referencedType)
+	t.internalAddType(name.Name(), referencedType, nil)
 
 	return nil
 }
 
-func (e *ExposedTypes) FindType(complete *ast.TypeIdentifier) dtype.Type {
+func (e *ExposedTypes) FindType(complete *ast.TypeIdentifier) *ImportedType {
 	return e.identifierToType[complete.Name()]
 }
 
 func (e *ExposedTypes) FindBuiltInType(s string) dtype.Type {
-	return e.identifierToType[s]
+	return e.identifierToType[s].referencedType
 }
 
-func (e *ExposedTypes) AllTypes() map[string]dtype.Type {
+func (e *ExposedTypes) AllTypes() map[string]*ImportedType {
 	return e.identifierToType
 }
 

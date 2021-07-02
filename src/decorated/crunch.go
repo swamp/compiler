@@ -13,6 +13,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/parser"
@@ -67,6 +68,37 @@ func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle
 	return tokenizer, program, nil
 }
 
+func isInternalType(typeToCheck dtype.Type) bool {
+	_, isPrimitive := typeToCheck.(*dectype.PrimitiveAtom)
+
+	return isPrimitive
+}
+
+func checkUnusedImports(module *decorated.Module, importModules []*decorated.Module) {
+	for _, definition := range module.ImportedModules().AllModules() {
+		if !definition.WasReferenced() && !definition.ReferencedModule().IsInternal() {
+			warning := decorated.NewUnusedImportWarning(definition, "importedModules.All()")
+			module.AddWarning(warning)
+		}
+	}
+
+	for _, definition := range module.ImportedDefinitions().ReferencedDefinitions() {
+		if !definition.WasReferenced() && !definition.IsInternal() {
+			warning := decorated.NewUnusedImportWarning(definition.CreatedBy(), "referenced definitions")
+			module.AddWarning(warning)
+		}
+	}
+	/*
+		for importedTypeName, importedType := range module.ImportedTypes().AllTypes() {
+			if !importedType.WasReferenced() && importedType.CreatedByModuleImport() != nil && !isInternalType(importedType.ReferencedType()) {
+				warning := decorated.NewUnusedImportWarning(importedType.CreatedByModuleImport(), fmt.Sprintf("imported types '%v'", importedTypeName))
+				module.AddWarning(warning)
+			}
+		}
+
+	*/
+}
+
 func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*decorated.Module,
 	importModules []*decorated.Module, moduleName dectype.ArtifactFullyQualifiedModuleName, absoluteFilename string, code string,
 	enforceStyle bool, verbose verbosity.Verbosity, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
@@ -88,8 +120,11 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 		if importModule == nil {
 			panic("importModule is nil")
 		}
-		relativeModuleName := dectype.MakePackageRelativeModuleName(importModule.FullyQualifiedModuleName().Path())
-		importErr := ImportModuleToModule(module, importModule, relativeModuleName, false)
+		// relativeModuleName := dectype.MakePackageRelativeModuleName(importModule.FullyQualifiedModuleName().Path())
+		fakeModuleReference := decorated.NewModuleReference(importModule.FullyQualifiedModuleName().Path(), importModule)
+		fakeImportStatement := decorated.NewImport(nil, fakeModuleReference, fakeModuleReference, false)
+
+		importErr := ImportModuleToModule(module, fakeImportStatement)
 		if importErr != nil {
 			return nil, decorated.NewInternalError(importErr)
 		}
@@ -109,13 +144,15 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	}
 	allErrors = append(allErrors, converter.Errors()...)
 
+	checkUnusedImports(module, importModules)
+
 	var returnErr decshared.DecoratedError
 
 	if len(allErrors) > 0 {
 		returnErr = decorated.NewMultiErrors(allErrors)
 	}
 
-	module.ExposedTypes().AddTypes(module.TypeRepo().AllTypes())
+	module.ExposedTypes().AddTypesFromModule(module.TypeRepo().AllTypes(), module)
 	module.ExposedDefinitions().AddDefinitions(module.Definitions().Definitions())
 	module.SetProgram(program)
 
@@ -135,26 +172,35 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 	return module, returnErr
 }
 
-func ImportModuleToModule(target *decorated.Module, source *decorated.Module, sourceMountedModuleName dectype.PackageRelativeModuleName, exposeAll bool) error {
+func ImportModuleToModule(target *decorated.Module, statement *decorated.ImportStatement) error {
 	if target == nil {
 		panic("no target")
 	}
 
+	source := statement.Module()
 	if source == nil {
 		panic("no source")
 	}
 
+	// sourceMountedModuleName := source.FullyQualifiedModuleName()
+
 	exposedTypes := source.ExposedTypes().AllTypes()
 	exposedDefinitions := source.ExposedDefinitions().ReferencedDefinitions()
 
-	target.ImportedModules().ImportModule(sourceMountedModuleName.Path(), source)
+	importedModule := target.ImportedModules().ImportModule(statement.ImportAsName().AstModuleReference(), source, statement.Module())
 
-	if exposeAll {
-		target.ImportedTypes().AddTypes(exposedTypes)
-		target.ImportedDefinitions().AddDefinitions(exposedDefinitions)
+	if statement.ExposeAll() {
+		target.ImportedTypes().AddTypes(exposedTypes, importedModule)
+		for _, exposedDefinition := range exposedDefinitions {
+			importedModule := decorated.NewImportedModule(target,
+				statement.Module())
+			importedDefinition := decorated.NewImportedDefinition(importedModule, exposedDefinition.Identifier(), exposedDefinition)
+			fmt.Printf("  exposing %v\n", exposedDefinition.Identifier())
+			target.ImportedDefinitions().AddDefinition(exposedDefinition.Identifier(), importedDefinition)
+		}
 
 		// HACK
-		target.ExposedTypes().AddTypes(exposedTypes)
+		target.ExposedTypes().AddTypes(exposedTypes, importedModule)
 		target.ExposedDefinitions().AddDefinitions(exposedDefinitions)
 	}
 
@@ -166,5 +212,5 @@ func CopyModuleToModule(target *decorated.Module, source *decorated.Module) decs
 }
 
 func ExposeEverythingInModule(target *decorated.Module) {
-	target.ExposedTypes().AddTypes(target.TypeRepo().AllTypes())
+	target.ExposedTypes().AddTypesFromModule(target.TypeRepo().AllTypes(), target)
 }
