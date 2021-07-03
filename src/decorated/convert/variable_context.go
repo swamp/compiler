@@ -102,10 +102,10 @@ func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecorated
 func (c *VariableContext) FindNamedDecoratedExpression(name *ast.VariableIdentifier) *decorated.NamedDecoratedExpression {
 	def := c.lookup[name.Name()]
 	if def == nil {
-
 		if c.parent != nil {
 			return c.parent.FindNamedDecoratedExpression(name)
 		}
+
 		mDef := c.parentDefinitions.FindDefinitionExpression(name)
 		if mDef == nil {
 			return nil

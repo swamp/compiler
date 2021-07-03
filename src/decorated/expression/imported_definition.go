@@ -19,6 +19,9 @@ type ImportedDefinition struct {
 }
 
 func NewImportedDefinition(createdBy *ImportedModule, identifier *ast.VariableIdentifier, referencedDefinition ModuleDef) *ImportedDefinition {
+	if referencedDefinition == nil {
+		panic("not allowed")
+	}
 	return &ImportedDefinition{
 		createdBy: createdBy, localIdentifier: identifier, referencedDefinition: referencedDefinition,
 	}

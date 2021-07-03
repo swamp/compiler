@@ -43,6 +43,9 @@ func (d *ModuleDefinition) ParentDefinitions() *ModuleDefinitions {
 }
 
 func (d *ModuleDefinition) OwnedByModule() *Module {
+	if d.createdIn == nil {
+		panic("unknown ownedbymodule")
+	}
 	return d.createdIn.OwnedByModule()
 }
 
