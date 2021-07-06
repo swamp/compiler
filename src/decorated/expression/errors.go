@@ -508,7 +508,7 @@ func NewFunctionCallTypeMismatch(err error, call *ast.FunctionCall, expected *de
 }
 
 func (e *FunctionCallTypeMismatch) Error() string {
-	return fmt.Sprintf("mismatch function type %v\n %v vs %v\n%v\n", e.err, e.expected, e.encountered, e.call)
+	return fmt.Sprintf("mismatch function type %v\n %v vs %v\n%v\n", e.err, e.expected.HumanReadable(), e.encountered.HumanReadable(), e.call)
 }
 
 func (e *FunctionCallTypeMismatch) FetchPositionLength() token.SourceFileReference {
@@ -651,7 +651,7 @@ func NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression *ast.IfExpressi
 }
 
 func (e *IfConsequenceAndAlternativeMustHaveSameType) Error() string {
-	return fmt.Sprintf("if: consequence and alternative must have same type %v\nvs\n%v\n", e.consequence.Type().HumanReadable(), e.alternative.Type().HumanReadable())
+	return fmt.Sprintf("if: consequence and alternative must have same type %v\nvs\n%v\n(%v)\n", e.consequence.Type().HumanReadable(), e.alternative.Type().HumanReadable(), e.compatibleErr)
 }
 
 func (e *IfConsequenceAndAlternativeMustHaveSameType) FetchPositionLength() token.SourceFileReference {

@@ -85,7 +85,7 @@ func (u *FunctionAtom) AtomName() string {
 		if index > 0 {
 			s += " -> "
 		}
-		s += param.String()
+		s += param.HumanReadable()
 	}
 	s += ")"
 	return s

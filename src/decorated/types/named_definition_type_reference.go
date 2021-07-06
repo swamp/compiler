@@ -27,11 +27,11 @@ func (r *NamedDefinitionTypeReference) AstIdentifier() ast.TypeReferenceScopedOr
 }
 
 func (r *NamedDefinitionTypeReference) String() string {
-	return "named definition reference"
+	return "named definition type reference"
 }
 
 func (r *NamedDefinitionTypeReference) DebugString() string {
-	return "named definition reference"
+	return "named definition type reference"
 }
 
 func (r *NamedDefinitionTypeReference) FetchPositionLength() token.SourceFileReference {

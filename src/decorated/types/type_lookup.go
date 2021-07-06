@@ -30,7 +30,7 @@ func compareAtoms(pureExpected dtype.Atom, pureActual dtype.Atom) error {
 
 	equalErr := pureExpected.IsEqual(pureActual)
 	if equalErr != nil {
-		return fmt.Errorf("*** NOT EQUAL: %v vs %v\n \n... %v\n vs \n... %v\n%w", pureExpected.AtomName(), pureActual.AtomName(), pureExpected, pureActual, equalErr)
+		return fmt.Errorf("*** NOT EQUAL:\n %v\nvs\n %v\n %w", pureExpected.AtomName(), pureActual.AtomName(), equalErr)
 	}
 
 	return nil

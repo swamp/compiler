@@ -54,6 +54,7 @@ func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decor
 }
 
 func (d *Decorator) AddDecoratedError(decoratedError decshared.DecoratedError) {
+	fmt.Printf("decorated error %v %v\n", decoratedError.FetchPositionLength().ToCompleteReferenceString(), decoratedError.Error())
 	d.errors = append(d.errors, decoratedError)
 }
 
@@ -68,7 +69,7 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 func (d *Decorator) ImportModule(importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag verbosity.Verbosity) (*decorated.ImportStatement, decshared.DecoratedError) {
 	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(relativeModuleName, verboseFlag)
 	if importErr != nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("%v: couldn't do an import %w", importAst.FetchPositionLength(), importErr))
+		return nil, importErr
 	}
 
 	if moduleToImport == nil {
