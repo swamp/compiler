@@ -69,7 +69,7 @@ func (t *Tokenizer) ParseNumber(a string) (token.NumberToken, TokenError) {
 
 	}
 
-	integerValue, integerValueErr := strconv.ParseInt(total, 0, 32)
+	integerValue, integerValueErr := strconv.ParseInt(total, 0, 64)
 	if integerValueErr != nil {
 		return token.NumberToken{}, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), ' ', ' ')
 	}
