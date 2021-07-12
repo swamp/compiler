@@ -26,7 +26,7 @@ func NewRecordConstructorFromRecord(astConstructorCall *ast.ConstructorCall, rec
 }
 
 func (c *RecordConstructorFromRecord) Type() dtype.Type {
-	return c.recordType
+	return c.recordAliasReference
 }
 
 func (c *RecordConstructorFromRecord) Expression() Expression {
