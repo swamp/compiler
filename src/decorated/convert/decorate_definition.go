@@ -50,10 +50,11 @@ func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, name
 
 	var decoratedExpression decorated.Expression
 
-	foundFunctionType := DerefFunctionType(expectedType)
+	foundFunctionType := DerefFunctionType(annotation.Type())
 	if foundFunctionType == nil {
 		return nil, decorated.NewExpectedFunctionType(expectedType, functionValue)
 	}
+
 	decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, functionValue, foundFunctionType, nameIdent, context, localCommentBlock)
 	if decoratedFunctionErr != nil {
 		return nil, decoratedFunctionErr

@@ -263,15 +263,15 @@ func fillContextFromTuples(context *TypeParameterContextOther, original *TupleTy
 	return NewTupleTypeAtom(original.astTupleType, converted), nil
 }
 
-func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUnchanged dtype.Type) (dtype.Type, error) {
-	if reflect.ValueOf(original).IsNil() {
+func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type, otherUnchanged dtype.Type) (dtype.Type, error) {
+	if reflect.ValueOf(originalUnchanged).IsNil() {
 		panic("original was nil")
 	}
 	if reflect.ValueOf(otherUnchanged).IsNil() {
 		panic("otherUnchanged was nil")
 	}
 
-	original = UnaliasWithResolveInvoker(original)
+	original := UnaliasWithResolveInvoker(originalUnchanged)
 	other := UnaliasWithResolveInvoker(otherUnchanged)
 
 	if reflect.ValueOf(other).IsNil() {
@@ -316,7 +316,7 @@ func smashTypes(context *TypeParameterContextOther, original dtype.Type, otherUn
 	case *PrimitiveAtom:
 		{
 			if otherIsAny {
-				return original, nil
+				return originalUnchanged, nil
 			}
 			otherPrimitive := other.(*PrimitiveAtom)
 			if otherPrimitive.PrimitiveName().Name() != t.PrimitiveName().Name() {

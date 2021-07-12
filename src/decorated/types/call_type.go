@@ -47,7 +47,7 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 		return replaceInvokerTypeFromContext(info, lookup)
 	case *CustomTypeAtom:
 		// TODO: fix this
-		return target, nil
+		return originalTarget, nil
 	default:
 		log.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
 		return nil, fmt.Errorf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
