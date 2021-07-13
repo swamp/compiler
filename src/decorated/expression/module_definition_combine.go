@@ -25,7 +25,11 @@ func NewModuleDefinitionsCombine(internalDefinitions *ModuleDefinitions,
 func (d *ModuleDefinitionsCombine) FindDefinitionExpression(identifier *ast.VariableIdentifier) ModuleDef {
 	foundDef := d.internalDefinitions.FindDefinitionExpression(identifier)
 	if foundDef == nil {
-		return d.importDefinitions.FindDefinition(identifier)
+		importedDef := d.importDefinitions.FindDefinition(identifier)
+		if importedDef == nil {
+			return nil
+		}
+		return importedDef
 	}
 
 	foundDef.MarkAsReferenced()

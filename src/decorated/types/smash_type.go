@@ -297,7 +297,6 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 	if !otherIsAny && !originalIsAny {
 		sameType := reflect.TypeOf(original) == reflect.TypeOf(other)
 		if !sameType {
-			fmt.Printf("\n\nNOTE SAME TYPE:%T %T \n%v %v\n\n", original, otherUnchanged, otherUnchanged, original)
 			return nil, fmt.Errorf("not even same reflect type %T vs %T\n%v\n vs\n%v", original, other, original.HumanReadable(), other.HumanReadable())
 		}
 	}

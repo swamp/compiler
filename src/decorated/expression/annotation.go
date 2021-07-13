@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -21,9 +20,6 @@ type AnnotationStatement struct {
 }
 
 func NewAnnotation(astAnnotation *ast.Annotation, t dtype.Type) *AnnotationStatement {
-	if reflect.ValueOf(t).IsNil() {
-		panic("not great")
-	}
 	// inclusive := token.MakeInclusiveSourceFileReference(astAnnotationidentifier.FetchPositionLength(), t.FetchPositionLength())
 	return &AnnotationStatement{astAnnotation: astAnnotation, t: t}
 }

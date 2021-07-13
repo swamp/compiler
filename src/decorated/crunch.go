@@ -195,7 +195,6 @@ func ImportModuleToModule(target *decorated.Module, statement *decorated.ImportS
 			importedModule := decorated.NewImportedModule(target,
 				statement.Module())
 			importedDefinition := decorated.NewImportedDefinition(importedModule, exposedDefinition.Identifier(), exposedDefinition)
-			fmt.Printf("  exposing %v\n", exposedDefinition.Identifier())
 			target.ImportedDefinitions().AddDefinition(exposedDefinition.Identifier(), importedDefinition)
 		}
 

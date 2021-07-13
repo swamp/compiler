@@ -6,8 +6,6 @@
 package deccy
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -54,7 +52,6 @@ func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decor
 }
 
 func (d *Decorator) AddDecoratedError(decoratedError decshared.DecoratedError) {
-	fmt.Printf("decorated error %v %v\n", decoratedError.FetchPositionLength().ToCompleteReferenceString(), decoratedError.Error())
 	d.errors = append(d.errors, decoratedError)
 }
 

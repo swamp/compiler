@@ -6,8 +6,6 @@
 package decorator
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -30,7 +28,6 @@ func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *Vari
 	for _, lookupIdentifier := range lookups.FieldNames() {
 		recordTypeToCheck, lookupErr := dectype.ResolveToRecordType(typeToLookup)
 		if lookupErr != nil {
-			fmt.Printf("this is not a record!_!!? %T %v\n\n%v\n", typeToLookup, typeToLookup, lookups)
 			return nil, decorated.NewUnMatchingTypes(nil, nil, nil, nil)
 		}
 
