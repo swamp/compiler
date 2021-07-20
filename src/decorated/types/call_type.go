@@ -18,7 +18,7 @@ type Lookup interface {
 
 func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Type, error) {
 	target := Unalias(originalTarget)
-	switch info := target.(type) {
+	switch info := originalTarget.(type) {
 	case *LocalType:
 		newType, newTypeErr := lookup.LookupType(info.identifier.Name())
 		if newTypeErr != nil {
@@ -39,6 +39,10 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 		}
 
 		return NewPrimitiveType(info.name, convertedTypes), nil
+	case *PrimitiveTypeReference:
+		return originalTarget, nil
+	case *AliasReference:
+		return originalTarget, nil
 	case *RecordAtom:
 		return replaceRecordFromContext(info, lookup)
 	case *TupleTypeAtom:
@@ -48,17 +52,20 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 	case *CustomTypeAtom:
 		// TODO: fix this
 		return originalTarget, nil
+	case *CustomTypeReference:
+		// TODO: fix this
+		return originalTarget, nil
 	default:
-		log.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
+		log.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", originalTarget, originalTarget)
 		return nil, fmt.Errorf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
 	}
 
 	// fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
 
-	if target == nil {
+	if originalTarget == nil {
 		panic("not sure how target could be nil")
 	}
-	return target, nil
+	return originalTarget, nil
 }
 
 func replaceRecordFromContext(record *RecordAtom, lookup Lookup) (*RecordAtom, error) {

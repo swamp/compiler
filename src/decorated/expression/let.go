@@ -49,9 +49,6 @@ func (l *LetVariable) Comment() *ast.MultilineComment {
 }
 
 func NewLetVariable(name *ast.VariableIdentifier, variableType dtype.Type, comment *ast.MultilineComment) *LetVariable {
-	if name.Name() == "loadedTilemap" {
-		comment = nil
-	}
 	return &LetVariable{
 		name:         name,
 		variableType: variableType,

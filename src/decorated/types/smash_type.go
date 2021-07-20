@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -287,11 +286,11 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 		return context.SpecialSet(localType.identifier.Name(), otherUnchanged)
 	}
 
-	otherIsAny := IsAny(other)
+	otherIsAny := IsAny(originalUnchanged)
 	originalIsAny := IsAny(original)
 
 	if originalIsAny {
-		original = other
+		original = otherUnchanged
 	}
 
 	if !otherIsAny && !originalIsAny {
@@ -302,6 +301,23 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 	}
 
 	switch t := original.(type) {
+	case *AliasReference:
+		{
+			return originalUnchanged, nil
+		}
+	case *CustomTypeReference:
+		{
+			return originalUnchanged, nil
+		}
+	case *PrimitiveTypeReference:
+		{
+			return originalUnchanged, nil
+		}
+	case *FunctionTypeReference:
+		{
+			return originalUnchanged, nil
+		}
+
 	case *FunctionAtom:
 		{
 			otherFunc := other.(*FunctionAtom)
@@ -345,7 +361,11 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 		for _, param := range t.params {
 			localType, wasLocal := param.(*LocalType)
 			if wasLocal {
-				converted = append(converted, context.LookupTypeFromName(localType.identifier.Name()))
+				foundType := context.LookupTypeFromName(localType.identifier.Name())
+				if foundType == nil {
+					return nil, fmt.Errorf("couldn't find lookup from name %v", localType.identifier)
+				}
+				converted = append(converted, foundType)
 			} else {
 				converted = append(converted, param)
 			}
@@ -355,7 +375,6 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 			return nil, resolveErr
 		}
 
-		log.Printf("\n\nafter invoker %v %v\n %T and %T\n", resolved, other, resolved, other)
 		return smashTypes(context, resolved, other)
 	default:
 		return nil, fmt.Errorf("smash type: Not handled:%T %v\n", t, t)
