@@ -19,7 +19,7 @@ type UnmanagedType struct {
 }
 
 func (u *UnmanagedType) String() string {
-	return fmt.Sprintf("[unmanaged %v]", u.identifier.Name())
+	return fmt.Sprintf("[unmanaged %v]", u.identifier)
 }
 
 func (u *UnmanagedType) FetchPositionLength() token.SourceFileReference {
@@ -27,7 +27,7 @@ func (u *UnmanagedType) FetchPositionLength() token.SourceFileReference {
 }
 
 func (u *UnmanagedType) HumanReadable() string {
-	return fmt.Sprintf("%v", u.identifier.Name())
+	return fmt.Sprintf("%v", u.identifier.NativeLanguageTypeName().Name())
 }
 
 func (u *UnmanagedType) Identifier() *ast.UnmanagedType {
@@ -38,6 +38,14 @@ func (u *UnmanagedType) AtomName() string {
 	return u.identifier.Name()
 }
 
+func (u *UnmanagedType) IsEqualUnmanaged(other *UnmanagedType) error {
+	if other.identifier.NativeLanguageTypeName().Name() == u.identifier.NativeLanguageTypeName().Name() {
+		return nil
+	}
+
+	return fmt.Errorf("not equal unmanaged %v vs %v", other.identifier.NativeLanguageTypeName(), u.identifier.NativeLanguageTypeName())
+}
+
 func (u *UnmanagedType) IsEqual(other_ dtype.Atom) error {
 	if IsAtomAny(other_) {
 		return nil
@@ -45,14 +53,14 @@ func (u *UnmanagedType) IsEqual(other_ dtype.Atom) error {
 
 	other, wasUnmanaged := other_.(*UnmanagedType)
 	if !wasUnmanaged {
-		return fmt.Errorf("wasn't unmanaged even %v", other)
+		return fmt.Errorf("wasn't unmanaged even %T %v", other_, other_)
 	}
 
-	if other.identifier.Name() == u.identifier.Name() {
-		return nil
+	if err := u.IsEqualUnmanaged(other); err != nil {
+		return err
 	}
 
-	return fmt.Errorf("not the same unmanaged %v vs %v", u, other)
+	return nil
 }
 
 func (u *UnmanagedType) ParameterCount() int {

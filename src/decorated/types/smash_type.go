@@ -378,6 +378,13 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 		return smashTypes(context, resolved, other)
 	case *UnmanagedType:
 		{
+			if otherIsAny {
+				return originalUnchanged, nil
+			}
+			otherUnmanaged := other.(*UnmanagedType)
+			if err := t.IsEqualUnmanaged(otherUnmanaged); err != nil {
+				return nil, fmt.Errorf("not same unmanaged type. %v", err)
+			}
 			return originalUnchanged, nil
 		}
 	default:
@@ -396,10 +403,4 @@ func SmashFunctions(original *FunctionAtom, otherFunc *FunctionAtom) (*FunctionA
 	}
 
 	return result, nil
-}
-
-func SmashType(original dtype.Type, otherUnchanged dtype.Type) (dtype.Type, error) {
-	context := NewTypeParameterContextOther()
-
-	return smashTypes(context, original, otherUnchanged)
 }
