@@ -25,6 +25,8 @@ type ParseStream interface {
 	readKeyword() (token.Keyword, parerr.ParseError)
 	readVariableIdentifierAssignOrUpdate(expectedIndentation int) (*ast.VariableIdentifier, bool, int, parerr.ParseError)
 	readRightBracket() (token.ParenToken, parerr.ParseError)
+	readLeftAngleBracket() (token.ParenToken, parerr.ParseError)
+	readRightAngleBracket() (token.ParenToken, parerr.ParseError)
 	readRightParen() (token.ParenToken, parerr.ParseError)
 	readRightArrayBracket() (token.ParenToken, parerr.ParseError)
 	readRightCurly() (token.ParenToken, parerr.ParseError)
@@ -93,7 +95,7 @@ type ParseStream interface {
 	maybeAssign() bool
 	maybeEllipsis() bool
 	maybeAccessor() bool
-	maybeRightBracket() (token.ParenToken, bool)
+	maybeRightSquareBracket() (token.ParenToken, bool)
 	maybeRightParen() bool
 	maybeEmptyParen() bool
 	maybeColon() bool

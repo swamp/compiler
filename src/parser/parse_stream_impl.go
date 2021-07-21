@@ -326,8 +326,8 @@ func (p *ParseStreamImpl) maybeSpecificOperatorToken(p2 token.Type) (token.Opera
 	return operatorToken, true
 }
 
-func (p *ParseStreamImpl) maybeRightBracket() (token.ParenToken, bool) {
-	return p.maybeSpecificParenToken(token.RightBracket)
+func (p *ParseStreamImpl) maybeRightSquareBracket() (token.ParenToken, bool) {
+	return p.maybeSpecificParenToken(token.RightSquareBracket)
 }
 
 func (p *ParseStreamImpl) maybeComma() (token.OperatorToken, bool) {
@@ -576,7 +576,7 @@ func (p *ParseStreamImpl) detectEndOfCallOperator() bool {
 			if t == token.OperatorUnaryMinus || t == token.OperatorUnaryNot {
 				isBinaryOperator = false
 			}
-			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isBinaryOperator || t == token.RightBracket || t == token.RightParen || t == token.Comma || t == token.OperatorPipeRight || t == token.OperatorArrowRight
+			detectedEndOfCallOperator = t == token.Then || t == token.Else || t == token.RightCurlyBrace || isBinaryOperator || t == token.RightSquareBracket || t == token.RightParen || t == token.Comma || t == token.OperatorPipeRight || t == token.OperatorArrowRight
 		}
 	}
 	p.tokenizer.Seek(save)
@@ -1045,7 +1045,15 @@ func (p *ParseStreamImpl) eatLeftParen() parerr.ParseError {
 }
 
 func (p *ParseStreamImpl) readRightBracket() (token.ParenToken, parerr.ParseError) {
-	return p.readSpecificParenToken(token.RightBracket)
+	return p.readSpecificParenToken(token.RightSquareBracket)
+}
+
+func (p *ParseStreamImpl) readLeftAngleBracket() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.LeftAngleBracket)
+}
+
+func (p *ParseStreamImpl) readRightAngleBracket() (token.ParenToken, parerr.ParseError) {
+	return p.readSpecificParenToken(token.RightAngleBracket)
 }
 
 func (p *ParseStreamImpl) readRightCurly() (token.ParenToken, parerr.ParseError) {

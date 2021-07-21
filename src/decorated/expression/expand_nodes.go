@@ -507,6 +507,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesTypeReference(t)...)
 	case *dectype.FunctionTypeReference:
 		return append(tokens, expandChildNodesFunctionTypeReference(t)...)
+	case *dectype.UnmanagedType:
+		return tokens
 	default:
 		log.Printf("expand_nodes: could not expand: %T\n", t)
 		return tokens

@@ -128,7 +128,9 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		return dectype.NewLocalType(info), nil
 	case *ast.AnyMatchingType:
 		return dectype.NewAnyMatchingTypes(info), nil
+	case *ast.UnmanagedType:
+		return dectype.NewUnmanagedType(info), nil
 	default:
-		return nil, decorated.NewInternalError(fmt.Errorf("xcan not convert this ast type %v %T", astType, astType))
+		return nil, decorated.NewInternalError(fmt.Errorf("can't convert this ast type %v %T", astType, astType))
 	}
 }

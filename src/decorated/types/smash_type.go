@@ -376,6 +376,10 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 		}
 
 		return smashTypes(context, resolved, other)
+	case *UnmanagedType:
+		{
+			return originalUnchanged, nil
+		}
 	default:
 		return nil, fmt.Errorf("smash type: Not handled:%T %v\n", t, t)
 	}

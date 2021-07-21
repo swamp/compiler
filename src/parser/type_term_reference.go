@@ -65,6 +65,23 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 		if xErr != nil {
 			return nil, xErr
 		}
+		if foundTypeIdentifier.Name() == "Unmanaged" {
+			leftAngleBracket, leftErr := p.readLeftAngleBracket()
+			if leftErr != nil {
+				return nil, leftErr
+			}
+
+			nativeLanguageTypeName, typeErr := p.readTypeIdentifier()
+			if typeErr != nil {
+				return nil, typeErr
+			}
+
+			rightAngleBracket, rightErr := p.readRightAngleBracket()
+			if rightErr != nil {
+				return nil, leftErr
+			}
+			return ast.NewUnmanagedType(leftAngleBracket, rightAngleBracket, nativeLanguageTypeName, nil), nil
+		}
 		var typeParameters []ast.Type
 		if checkTypeParam {
 			var typeParameterIdentifiersErr parerr.ParseError

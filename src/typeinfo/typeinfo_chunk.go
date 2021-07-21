@@ -98,14 +98,15 @@ func (t *AnyType) HumanReadable() string {
 
 type UnmanagedType struct {
 	Type
+	name string
 }
 
 func (t *UnmanagedType) String() string {
-	return "Unmanaged"
+	return fmt.Sprintf("Unmanaged<%v>", t.name)
 }
 
 func (t *UnmanagedType) HumanReadable() string {
-	return "Unmanaged"
+	return fmt.Sprintf("Unmanaged<%v>", t.name)
 }
 
 type IntType struct {
@@ -597,11 +598,13 @@ func (c *Chunk) doWeHaveAny() int {
 	return -1
 }
 
-func (c *Chunk) doWeHaveUnmanaged() int {
+func (c *Chunk) doWeHaveUnmanaged(unmanaged *UnmanagedType) int {
 	for index, infoType := range c.infoTypes {
-		_, isUnmanaged := infoType.(*UnmanagedType)
+		other, isUnmanaged := infoType.(*UnmanagedType)
 		if isUnmanaged {
-			return index
+			if other.name == unmanaged.name {
+				return index
+			}
 		}
 	}
 
@@ -975,6 +978,7 @@ func (c *Chunk) consumeAny() (InfoType, error) {
 	return proposedNewAnyType, nil
 }
 
+/*
 func (c *Chunk) consumeUnmanaged() (InfoType, error) {
 	indexArray := c.doWeHaveUnmanaged()
 	if indexArray != -1 {
@@ -987,6 +991,28 @@ func (c *Chunk) consumeUnmanaged() (InfoType, error) {
 	c.infoTypes = append(c.infoTypes, proposedNewAnyType)
 
 	return proposedNewAnyType, nil
+}
+*/
+
+func (c *Chunk) consumeUnmanaged(unmanagedType *dectype.UnmanagedType) (InfoType, error) {
+	if len(unmanagedType.Identifier().Name()) == 0 {
+		return nil, fmt.Errorf("must have a nativeLanguageTypeName")
+	}
+
+	propsedNewUnmanaged := &UnmanagedType{
+		Type: Type{},
+		name: unmanagedType.Identifier().Name(),
+	}
+
+	indexArray := c.doWeHaveUnmanaged(propsedNewUnmanaged)
+	if indexArray != -1 {
+		return c.infoTypes[indexArray].(*UnmanagedType), nil
+	}
+
+	propsedNewUnmanaged.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, propsedNewUnmanaged)
+
+	return propsedNewUnmanaged, nil
 }
 
 func (c *Chunk) consumeAnyMatchingTypes() (InfoType, error) {
@@ -1026,8 +1052,6 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 		return c.consumeTypeRef()
 	} else if name == "Any" {
 		return c.consumeAny()
-	} else if name == "Unmanaged" {
-		return c.consumeUnmanaged()
 	}
 
 	return nil, fmt.Errorf("chunk: consume: unknown primitive %v", primitive)
@@ -1083,6 +1107,8 @@ func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 		return c.consumeLocalType(t)
 	case *dectype.TupleTypeAtom:
 		return c.consumeTuple(t)
+	case *dectype.UnmanagedType:
+		return c.consumeUnmanaged(t)
 	case *dectype.AnyMatchingTypes:
 		return c.consumeAnyMatchingTypes()
 	}

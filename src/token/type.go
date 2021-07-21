@@ -40,8 +40,10 @@ const (
 	LeftParen
 	RightCurlyBrace
 	LeftCurlyBrace
-	RightBracket
-	LeftBracket
+	RightSquareBracket
+	LeftSquareBracket
+	LeftAngleBracket
+	RightAngleBracket
 	RightArrayBracket
 	LeftArrayBracket
 	Comma

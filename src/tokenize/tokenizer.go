@@ -803,7 +803,7 @@ func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, TokenError) {
 	} else if r == '}' {
 		return token.NewParenToken(string(r), token.RightCurlyBrace, singleCharLength, " } "), nil
 	} else if r == ']' {
-		return token.NewParenToken(string(r), token.RightBracket, singleCharLength, " ] "), nil
+		return token.NewParenToken(string(r), token.RightSquareBracket, singleCharLength, " ] "), nil
 	} else if r == ',' {
 		return token.NewOperatorToken(token.Comma, singleCharLength, string(r), ","), nil
 	} else if r == '|' {
@@ -821,6 +821,7 @@ func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, TokenError) {
 			return token.NewOperatorToken(token.OperatorPipeLeft, singleCharLength, "", "<|"), nil
 		} else {
 			t.unreadRune()
+			return token.NewParenToken(string(r), token.LeftAngleBracket, singleCharLength, "<"), nil
 		}
 	} else if r == '-' {
 		n := t.nextRune()
@@ -828,6 +829,8 @@ func (t *Tokenizer) ReadEndOrSeparatorToken() (token.Token, TokenError) {
 			return token.NewOperatorToken(token.OperatorArrowRight, singleCharLength, "", "->"), nil
 		}
 		t.unreadRune()
+	} else if r == '>' {
+		return token.NewParenToken(string(r), token.RightAngleBracket, singleCharLength, ">"), nil
 	}
 	t.unreadRune()
 	return nil, NewNotEndToken(singleCharLength, r)
@@ -859,7 +862,7 @@ func (t *Tokenizer) ReadOpenOperatorToken(r rune, singleCharLength token.SourceF
 		} else {
 			t.unreadRune()
 		}
-		return token.NewParenToken(string(r), token.LeftBracket, singleCharLength, " [ "), nil
+		return token.NewParenToken(string(r), token.LeftSquareBracket, singleCharLength, " [ "), nil
 	} else if r == '*' {
 		return token.NewOperatorToken(token.OperatorMultiply, singleCharLength, "*", "*"), nil
 	}

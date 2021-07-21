@@ -18,7 +18,7 @@ func parseListLiteral(p ParseStream, startParen token.ParenToken, startIndentati
 	var wasRight bool
 	var rightBracketToken token.ParenToken
 
-	if rightBracketToken, wasRight = p.maybeRightBracket(); !wasRight {
+	if rightBracketToken, wasRight = p.maybeRightSquareBracket(); !wasRight {
 		newIndentation, _, eatAfterErr := p.eatContinuationReturnIndentation(startIndentation)
 		if eatAfterErr != nil {
 			return nil, eatAfterErr

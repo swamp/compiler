@@ -157,7 +157,7 @@ func tokenIsLeaf(tok token.Token) bool {
 
 func parenIsLeft(parenToken token.ParenToken) bool {
 	t := parenToken.Type()
-	return t == token.LeftParen || t == token.LeftBracket || t == token.LeftCurlyBrace || t == token.LeftArrayBracket
+	return t == token.LeftParen || t == token.LeftSquareBracket || t == token.LeftCurlyBrace || t == token.LeftArrayBracket
 }
 
 func (p *Parser) peekIsCall() bool {

@@ -87,7 +87,7 @@ func (p *Parser) parseTermUsingToken(someToken token.Token, startIndentation int
 		return parseParenExpression(p.stream, startIndentation, someParenToken)
 	case token.LeftCurlyBrace:
 		return parseRecordLiteral(p.stream, startIndentation, someParenToken)
-	case token.LeftBracket:
+	case token.LeftSquareBracket:
 		return parseListLiteral(p.stream, someParenToken, startIndentation)
 	case token.LeftArrayBracket:
 		return parseArrayLiteral(p.stream, someParenToken, startIndentation)
