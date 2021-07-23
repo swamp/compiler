@@ -211,7 +211,15 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 	case *dectype.CustomTypeVariantConstructorType:
 		return t.Variant().FetchPositionLength(), nil
 	case *decorated.RecordConstructorFromParameters:
-		return t.Type().FetchPositionLength(), nil
+		{
+			typeConstructors := t.Type().Next()
+			return typeConstructors.FetchPositionLength(), nil
+		}
+	case *decorated.RecordConstructorFromRecord:
+		{
+			typeConstructors := t.Type().Next()
+			return typeConstructors.FetchPositionLength(), nil
+		}
 	case *decorated.CustomTypeVariantConstructor:
 		return tokenToDefinition(t.Reference())
 	case *decorated.FunctionValue:
@@ -232,7 +240,9 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 	case *dectype.FunctionTypeReference:
 		return t.FunctionAtom().FetchPositionLength(), nil
 	case *dectype.AliasReference:
-		return t.Alias().FetchPositionLength(), nil
+		return tokenToDefinition(t.Alias())
+	case *dectype.Alias:
+		return t.FetchPositionLength(), nil
 	case *dectype.CustomTypeReference:
 		return t.CustomTypeAtom().FetchPositionLength(), nil
 	}

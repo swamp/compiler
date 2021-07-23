@@ -138,7 +138,6 @@ func expandChildNodesRecordType(fn *dectype.RecordAtom) []TypeOrToken {
 
 func expandChildNodesUnmanagedType(fn *dectype.UnmanagedType) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.Identifier())...)
 	return tokens
 }
 
