@@ -136,6 +136,12 @@ func expandChildNodesRecordType(fn *dectype.RecordAtom) []TypeOrToken {
 	return tokens
 }
 
+func expandChildNodesUnmanagedType(fn *dectype.UnmanagedType) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(fn.Identifier())...)
+	return tokens
+}
+
 func expandChildNodesFunctionTypeReference(fn *dectype.FunctionTypeReference) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(fn.FunctionAtom())...)
@@ -508,7 +514,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *dectype.FunctionTypeReference:
 		return append(tokens, expandChildNodesFunctionTypeReference(t)...)
 	case *dectype.UnmanagedType:
-		return tokens
+		return append(tokens, expandChildNodesUnmanagedType(t)...)
 	default:
 		log.Printf("expand_nodes: could not expand: %T\n", t)
 		return tokens

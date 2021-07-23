@@ -164,6 +164,13 @@ func addSemanticTokenAnyMatchingTypes(f *dectype.AnyMatchingTypes, builder *Sema
 	return nil
 }
 
+func addSemanticTokenUnmanagedTypes(f *dectype.UnmanagedType, builder *SemanticBuilder) error {
+	encodeEnum(builder, f.Identifier().Keyword())
+	encodeConstant(f.Identifier().NativeLanguageTypeName().FetchPositionLength().Range, builder)
+
+	return nil
+}
+
 func addSemanticTokenConstant(f *decorated.Constant, builder *SemanticBuilder) error {
 	if err := encodeConstant(f.FetchPositionLength().Range, builder); err != nil {
 		return err
@@ -1031,6 +1038,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenGenericType(t, builder)
 	case *dectype.AnyMatchingTypes:
 		return addSemanticTokenAnyMatchingTypes(t, builder)
+	case *dectype.UnmanagedType:
+		return addSemanticTokenUnmanagedTypes(t, builder)
 
 	default:
 		log.Printf("semantic unhandled %T\n", t)

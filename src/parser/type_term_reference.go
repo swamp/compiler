@@ -80,7 +80,7 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 			if rightErr != nil {
 				return nil, leftErr
 			}
-			return ast.NewUnmanagedType(leftAngleBracket, rightAngleBracket, nativeLanguageTypeName, nil), nil
+			return ast.NewUnmanagedType(leftAngleBracket, rightAngleBracket, nativeLanguageTypeName, foundTypeIdentifier, nil), nil
 		}
 		var typeParameters []ast.Type
 		if checkTypeParam {

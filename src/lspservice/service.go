@@ -129,6 +129,9 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 			}
 		case *dectype.TupleTypeAtom:
 		case *dectype.AnyMatchingTypes:
+		case *dectype.UnmanagedType:
+			name = "NativeLanguageType"
+			documentation = fmt.Sprintf("implemented in native language type '%v'", t.Identifier().NativeLanguageTypeName().Name())
 		default:
 			log.Printf("unhandled for documentation %T", pureType)
 		}
