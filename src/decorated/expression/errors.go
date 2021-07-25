@@ -880,7 +880,7 @@ func (e *ModuleError) WrappedError() decshared.DecoratedError {
 }
 
 func (e *ModuleError) Error() string {
-	return fmt.Sprintf("module error '%v': %v", e.sourceFile, e.err)
+	return fmt.Sprintf("module error '%v': %T %v", e.sourceFile, e.err, e.err)
 }
 
 func (e *ModuleError) FetchPositionLength() token.SourceFileReference {
@@ -921,7 +921,11 @@ func (e *MultiErrors) Errors() []decshared.DecoratedError {
 func (e *MultiErrors) Error() string {
 	s := ""
 	for _, err := range e.errors {
-		s += fmt.Sprintf("%v %T %v\n", err.FetchPositionLength().ToReferenceString(), err, err)
+		if err.FetchPositionLength().Document == nil {
+			s += fmt.Sprintf("error %T must provide a valid document %v", err, err)
+		} else {
+			s += fmt.Sprintf("%v %T %v\n", err.FetchPositionLength().ToReferenceString(), err, err)
+		}
 	}
 	return fmt.Sprintf("decoration multierrors \n %v", s)
 }

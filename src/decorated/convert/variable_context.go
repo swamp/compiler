@@ -80,7 +80,7 @@ func createConstant(identifier ast.ScopedOrNormalVariableIdentifier, functionRef
 func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression, decshared.DecoratedError) {
 	def := c.FindNamedDecoratedExpression(name)
 	if def == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("couldn't find %v", name))
+		return nil, decorated.NewUnknownVariable(name)
 	}
 
 	def.SetReferenced()

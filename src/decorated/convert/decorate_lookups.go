@@ -28,7 +28,7 @@ func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *Vari
 	for _, lookupIdentifier := range lookups.FieldNames() {
 		recordTypeToCheck, lookupErr := dectype.ResolveToRecordType(typeToLookup)
 		if lookupErr != nil {
-			return nil, decorated.NewUnMatchingTypes(nil, nil, nil, nil)
+			return nil, decorated.NewUnMatchingTypes(nil, nil, nil, lookupErr)
 		}
 
 		nameToLookup := lookupIdentifier.Name()
