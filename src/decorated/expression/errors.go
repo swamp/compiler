@@ -647,6 +647,15 @@ type IfConsequenceAndAlternativeMustHaveSameType struct {
 }
 
 func NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression *ast.IfExpression, consequence Expression, alternative Expression, compatibleErr error) *IfConsequenceAndAlternativeMustHaveSameType {
+	if consequence == nil {
+		panic("consequence can not be nil")
+	}
+	if alternative == nil {
+		panic("alternative can not be nil")
+	}
+	if compatibleErr == nil {
+		panic("compatibleErr can not be nil")
+	}
 	return &IfConsequenceAndAlternativeMustHaveSameType{ifExpression: ifExpression, consequence: consequence, alternative: alternative, compatibleErr: compatibleErr}
 }
 
@@ -656,6 +665,34 @@ func (e *IfConsequenceAndAlternativeMustHaveSameType) Error() string {
 
 func (e *IfConsequenceAndAlternativeMustHaveSameType) FetchPositionLength() token.SourceFileReference {
 	return e.consequence.FetchPositionLength()
+}
+
+type GuardConsequenceAndAlternativeMustHaveSameType struct {
+	guardExpression *ast.GuardExpression
+	first           Expression
+	alternative     Expression
+	compatibleErr   error
+}
+
+func NewGuardConsequenceAndAlternativeMustHaveSameType(guardExpression *ast.GuardExpression, first Expression, alternative Expression, compatibleErr error) *GuardConsequenceAndAlternativeMustHaveSameType {
+	if first == nil {
+		panic("first can not be nil")
+	}
+	if alternative == nil {
+		panic("alternative can not be nil")
+	}
+	if compatibleErr == nil {
+		panic("compatibleErr can not be nil")
+	}
+	return &GuardConsequenceAndAlternativeMustHaveSameType{guardExpression: guardExpression, first: first, alternative: alternative, compatibleErr: compatibleErr}
+}
+
+func (e *GuardConsequenceAndAlternativeMustHaveSameType) Error() string {
+	return fmt.Sprintf("guard: consequence first and alternative must have same type\n%v\nvs\n%v\n(%v)\n", e.first.Type().HumanReadable(), e.alternative.Type().HumanReadable(), e.compatibleErr)
+}
+
+func (e *GuardConsequenceAndAlternativeMustHaveSameType) FetchPositionLength() token.SourceFileReference {
+	return e.first.FetchPositionLength()
 }
 
 type EveryItemInThelistMustHaveTheSameType struct {
@@ -882,7 +919,11 @@ func (e *MultiErrors) Errors() []decshared.DecoratedError {
 }
 
 func (e *MultiErrors) Error() string {
-	return fmt.Sprintf("decoration multierrors %v", e.errors)
+	s := ""
+	for _, err := range e.errors {
+		s += fmt.Sprintf("%v %T %v\n", err.FetchPositionLength().ToReferenceString(), err, err)
+	}
+	return fmt.Sprintf("decoration multierrors \n %v", s)
 }
 
 func (e *MultiErrors) FetchPositionLength() token.SourceFileReference {

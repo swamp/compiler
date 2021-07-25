@@ -18,6 +18,7 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 	var items []*decorated.GuardItem
 
 	var detectedType dtype.Type
+	var detectedExpression decorated.Expression
 	for index, item := range guardExpression.Items() {
 		condition, conditionErr := DecorateExpression(d, item.Condition, context)
 		if conditionErr != nil {
@@ -44,23 +45,25 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 		items = append(items, item)
 		if index == 0 {
 			detectedType = consequence.Type()
+			detectedExpression = consequence
 		} else {
 			allSameErr := dectype.CompatibleTypes(detectedType, consequence.Type())
 			if allSameErr != nil {
-				return nil, decorated.NewEveryItemInThelistMustHaveTheSameType(nil, nil, nil, nil, allSameErr)
+				return nil, decorated.NewGuardConsequenceAndAlternativeMustHaveSameType(guardExpression, detectedExpression, consequence, allSameErr)
 			}
 		}
 	}
 
-	defaultDecoratedExpression, defaultExpressionErr := DecorateExpression(d, guardExpression.Default().Consequence, context)
+	defaultDecoratedExpression, defaultExpressionErr := DecorateExpression(d,
+		guardExpression.Default().Consequence, context)
 	if defaultExpressionErr != nil {
 		return nil, defaultExpressionErr
 	}
 
 	compatibleErr := dectype.CompatibleTypes(detectedType, defaultDecoratedExpression.Type())
 	if compatibleErr != nil {
-		return nil, decorated.NewIfConsequenceAndAlternativeMustHaveSameType(nil, nil,
-			nil, compatibleErr)
+		return nil, decorated.NewGuardConsequenceAndAlternativeMustHaveSameType(guardExpression, detectedExpression,
+			defaultDecoratedExpression, compatibleErr)
 	}
 
 	defaultGuard := decorated.NewGuardItemDefault(guardExpression.Default(), len(items), defaultDecoratedExpression)

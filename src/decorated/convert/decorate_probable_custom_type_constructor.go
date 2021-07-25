@@ -1,6 +1,7 @@
 package decorator
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/swamp/compiler/src/ast"
@@ -25,6 +26,6 @@ func decorateProbableConstructorCall(d DecorateStream, call ast.TypeIdentifierNo
 	default:
 		log.Printf("expected a constructor here %T", unaliasedConstructor)
 
-		return nil, decorated.NewExpectedCustomTypeVariantConstructor(nil)
+		return nil, decorated.NewInternalError(fmt.Errorf("expected a constructor here %v", unaliasedConstructor))
 	}
 }
