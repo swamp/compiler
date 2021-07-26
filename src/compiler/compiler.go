@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/config"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -50,13 +51,18 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 		return statErr
 	}
 
+	config, _, configErr := config.LoadFromConfig()
+	if configErr != nil {
+		return configErr
+	}
+
 	if statInfo.IsDir() {
 		typeInformationChunk := &typeinfo.Chunk{}
 		if solutionSettings, err := solution.LoadIfExists(mainSourceFile); err == nil {
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				if err := CompileAndLink(typeInformationChunk, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag); err != nil {
+				if err := CompileAndLink(typeInformationChunk, config, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag); err != nil {
 					return err
 				}
 			}
@@ -68,7 +74,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 	return nil
 }
 
-func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
+func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, configuration config.Config, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
 	} else {
@@ -89,7 +95,7 @@ func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider
 	rootPackage := NewPackageLoader(mainPrefix, documentProvider, mainNamespace, world, worldDecorator)
 
 	libraryReader := loader.NewLibraryReaderAndDecorator()
-	libraryModule, libErr := libraryReader.ReadLibraryModule(world, rootPackage.repository, mainSourceFile, mainNamespace, documentProvider)
+	libraryModule, libErr := libraryReader.ReadLibraryModule(world, rootPackage.repository, mainSourceFile, mainNamespace, documentProvider, configuration)
 	if libErr != nil {
 		return nil, nil, libErr
 	}
@@ -100,7 +106,7 @@ func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider
 	return world, libraryModule, nil
 }
 
-func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, error) {
+func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, configuration config.Config, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, error) {
 	if !file.IsDir(mainSource) {
 		mainSource = filepath.Dir(mainSource)
 	}
@@ -110,7 +116,7 @@ func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.Docum
 		return nil, nil, fmt.Errorf("couldn't find settings directory when compiling %w", libraryErr)
 	}
 
-	return CompileMain(libraryDirectory, documentProvider, enforceStyle, verboseFlag)
+	return CompileMain(libraryDirectory, documentProvider, configuration, enforceStyle, verboseFlag)
 }
 
 type CoreFunctionInfo struct {
@@ -197,10 +203,10 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	return nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration config.Config, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
 
-	compiledPackage, _, moduleErr := CompileMain(filename, defaultDocumentProvider, enforceStyle, verboseFlag)
+	compiledPackage, _, moduleErr := CompileMain(filename, defaultDocumentProvider, configuration, enforceStyle, verboseFlag)
 	if moduleErr != nil {
 		return moduleErr
 	}
