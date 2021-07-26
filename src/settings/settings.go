@@ -26,7 +26,7 @@ type Settings struct {
 	Module []Module
 }
 
-func Load(reader io.Reader, rootDirectory string, configuration config.Config) (Settings, error) {
+func Load(reader io.Reader, rootDirectory string, configuration config.Environment) (Settings, error) {
 	data, dataErr := ioutil.ReadAll(reader)
 	if dataErr != nil {
 		return Settings{}, dataErr

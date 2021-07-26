@@ -17,10 +17,10 @@ import (
 type LspImpl struct {
 	workspace     *loader.Workspace
 	documentCache *DocumentCache
-	configuration config.Config
+	configuration config.Environment
 }
 
-func NewLspImpl(fallbackProvider loader.DocumentProvider, configuration config.Config) *LspImpl {
+func NewLspImpl(fallbackProvider loader.DocumentProvider, configuration config.Environment) *LspImpl {
 	return &LspImpl{
 		workspace:     loader.NewWorkspace(loader.LocalFileSystemRoot("")),
 		documentCache: NewDocumentCache(fallbackProvider),

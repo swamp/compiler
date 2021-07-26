@@ -18,18 +18,18 @@ import (
 	"github.com/swamp/compiler/src/file"
 )
 
-type PackagePath struct {
+type Package struct {
 	Name string
 	Path string
 }
 
-type Config struct {
-	Version     string
-	PackagePath []*PackagePath
+type Environment struct {
+	Version string
+	Package []*Package
 }
 
-func (c Config) Lookup(name string) string {
-	for _, x := range c.PackagePath {
+func (c Environment) Lookup(name string) string {
+	for _, x := range c.Package {
 		if x.Name == name {
 			return x.Path
 		}
@@ -38,28 +38,28 @@ func (c Config) Lookup(name string) string {
 	return ""
 }
 
-func (c *Config) AddOrSet(name string, path string) {
-	for _, x := range c.PackagePath {
+func (c *Environment) AddOrSet(name string, path string) {
+	for _, x := range c.Package {
 		if x.Name == name {
 			x.Path = path
 			return
 		}
 	}
 
-	c.PackagePath = append(c.PackagePath, &PackagePath{Name: name, Path: path})
+	c.Package = append(c.Package, &Package{Name: name, Path: path})
 }
 
-func Load(reader io.Reader) (Config, error) {
+func Load(reader io.Reader) (Environment, error) {
 	data, dataErr := ioutil.ReadAll(reader)
 	if dataErr != nil {
-		return Config{}, dataErr
+		return Environment{}, dataErr
 	}
 
-	config := Config{}
+	config := Environment{}
 
 	unmarshalErr := toml.Unmarshal(data, &config)
 	if unmarshalErr != nil {
-		return Config{}, unmarshalErr
+		return Environment{}, unmarshalErr
 	}
 
 	return config, nil
@@ -91,32 +91,32 @@ func ConfigTomlFilename() (string, error) {
 	return configTomlFile, nil
 }
 
-func LoadFromConfig() (Config, bool, error) {
+func LoadFromConfig() (Environment, bool, error) {
 	configTomlFile, err := getConfigFilename()
 	if err != nil {
-		return Config{}, false, err
+		return Environment{}, false, err
 	}
 
 	if !file.HasFile(configTomlFile) {
-		return Config{}, false, nil
+		return Environment{}, false, nil
 	}
 
 	tomlFile, settingsFileErr := os.Open(configTomlFile)
 	if settingsFileErr != nil {
-		return Config{}, false, fmt.Errorf("couldn't load config file %s %w", configTomlFile, settingsFileErr)
+		return Environment{}, false, fmt.Errorf("couldn't load config file %s %w", configTomlFile, settingsFileErr)
 	}
 
 	configReader := bufio.NewReader(tomlFile)
 
 	config, err := Load(configReader)
 	if err != nil {
-		return Config{}, false, err
+		return Environment{}, false, err
 	}
 
 	return config, true, err
 }
 
-func (c Config) SaveToConfig() error {
+func (c Environment) SaveToConfig() error {
 	configTomlFile, err := getConfigFilename()
 	if err != nil {
 		return err

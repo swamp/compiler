@@ -107,13 +107,13 @@ func (c *BuildCmd) Run() error {
 	return nil
 }
 
-type ConfigSetCmd struct {
+type EnvironmentSetCmd struct {
 	Name string `help:"fmt" arg:""`
 	Path string `help:"fmt" arg:""`
 }
 
-func (c *ConfigSetCmd) Run() error {
-	fmt.Printf("setting '%v' = '%v'\n", c.Name, c.Path)
+func (c *EnvironmentSetCmd) Run() error {
+	fmt.Printf("setting '%v'='%v'\n", c.Name, c.Path)
 
 	configuration, _, err := config.LoadFromConfig()
 	if err != nil {
@@ -121,33 +121,32 @@ func (c *ConfigSetCmd) Run() error {
 	}
 
 	configuration.AddOrSet(c.Name, c.Path)
-	configuration.SaveToConfig()
 
-	return nil
+	return configuration.SaveToConfig()
 }
 
-type ConfigListCmd struct{}
+type EnvironmentListCmd struct{}
 
-func (c *ConfigListCmd) Run() error {
+func (c *EnvironmentListCmd) Run() error {
 	configuration, _, err := config.LoadFromConfig()
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Config:\n")
-	for _, module := range configuration.PackagePath {
-		fmt.Printf("'%v' = '%v'\n", module.Name, module.Path)
+	fmt.Printf("Environment:\n")
+	for _, module := range configuration.Package {
+		fmt.Printf("'%v'='%v'\n", module.Name, module.Path)
 	}
 
 	return nil
 }
 
-type ConfigCmd struct {
-	Set  ConfigSetCmd  `help:"fmt" cmd:""`
-	List ConfigListCmd `help:"fmt" cmd:""`
+type EnvironmentCmd struct {
+	Set  EnvironmentSetCmd  `help:"fmt" cmd:"" help:"set swamp environment package"`
+	List EnvironmentListCmd `help:"fmt" cmd:"" help:"list swamp environment packages"`
 }
 
-func (c *ConfigCmd) Run() error {
+func (c *EnvironmentCmd) Run() error {
 	return nil
 }
 
@@ -159,11 +158,11 @@ func (c *VersionCmd) Run() error {
 }
 
 type Options struct {
-	Lsp     LspCmd     `help:"lsp" cmd:""`
-	Fmt     FmtCmd     `help:"fmt" cmd:""`
-	Build   BuildCmd   `cmd:"" default:"1" help:"builds a swamp application"`
-	Config  ConfigCmd  `cmd:"" default:"1" help:"manage swamp configuration"`
-	Version VersionCmd `cmd:"" help:"shows the version information"`
+	Lsp         LspCmd         `help:"lsp" cmd:""`
+	Fmt         FmtCmd         `help:"fmt" cmd:""`
+	Build       BuildCmd       `cmd:"" default:"1" help:"builds a swamp application"`
+	Environment EnvironmentCmd `cmd:"" default:"1" help:"manage swamp environment"`
+	Version     VersionCmd     `cmd:"" help:"shows the version information"`
 }
 
 func main() {

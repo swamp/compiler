@@ -45,7 +45,7 @@ func FindSettingsDirectory(swampDirectory string) (string, error) {
 	return "", fmt.Errorf("sorry, couldn't find settings file from %v and up. Not a library", swampDirectory)
 }
 
-func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, documentProvider DocumentProvider, configuration config.Config, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, documentProvider DocumentProvider, configuration config.Environment, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	settingsFilename := filepath.Join(swampDirectory, ".swamp.toml")
 
 	mapping := make(map[string]string)
@@ -89,7 +89,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 	return nil
 }
 
-func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName, documentProvider DocumentProvider, configuration config.Config) (*decorated.Module, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName, documentProvider DocumentProvider, configuration config.Environment) (*decorated.Module, decshared.DecoratedError) {
 	const verboseFlag = verbosity.Low
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
@@ -119,7 +119,7 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository
 	return newRepository.FetchMainModuleInPackage(verboseFlag)
 }
 
-func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration config.Config) (*Package, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration config.Environment) (*Package, decshared.DecoratedError) {
 	const verboseFlag = verbosity.None
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
@@ -154,7 +154,7 @@ func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, reposito
 	return world, nil
 }
 
-func (r *LibraryReaderAndDecorator) CompileAllInLibraryFindSettings(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration config.Config) (*Package, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) CompileAllInLibraryFindSettings(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration config.Environment) (*Package, decshared.DecoratedError) {
 	foundSettingsDirectory, err := FindSettingsDirectory(absoluteDirectory)
 	if err != nil {
 		return nil, decorated.NewInternalError(err)
