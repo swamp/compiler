@@ -14,6 +14,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/fatih/color"
 	"github.com/piot/lsp-server/lspserv"
+	"github.com/swamp/compiler/src/config"
 	"github.com/swamp/compiler/src/verbosity"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
@@ -67,7 +68,11 @@ type LspCmd struct{}
 
 func (c *LspCmd) Run() error {
 	fileSystem := loader.NewFileSystemDocumentProvider()
-	lspService := lspservice.NewLspImpl(fileSystem)
+	config, _, configErr := config.LoadFromConfig()
+	if configErr != nil {
+		return configErr
+	}
+	lspService := lspservice.NewLspImpl(fileSystem, config)
 	service := lspservice.NewService(lspService, lspService, lspService, lspService)
 	fmt.Fprintf(os.Stderr, "LSP Server initiated. Will receive commands from stdin and send reply on stdout")
 	lspServ := lspserv.NewService(service)

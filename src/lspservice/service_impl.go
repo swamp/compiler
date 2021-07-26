@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
+	"github.com/swamp/compiler/src/config"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/token"
@@ -16,12 +17,14 @@ import (
 type LspImpl struct {
 	workspace     *loader.Workspace
 	documentCache *DocumentCache
+	configuration config.Config
 }
 
-func NewLspImpl(fallbackProvider loader.DocumentProvider) *LspImpl {
+func NewLspImpl(fallbackProvider loader.DocumentProvider, configuration config.Config) *LspImpl {
 	return &LspImpl{
 		workspace:     loader.NewWorkspace(loader.LocalFileSystemRoot("")),
 		documentCache: NewDocumentCache(fallbackProvider),
+		configuration: configuration,
 	}
 }
 
@@ -30,7 +33,7 @@ func (l *LspImpl) Compile(filename string) (*decorated.Module, error) {
 
 	const verboseFlag = verbosity.None
 
-	world, module, err := swampcompiler.CompileMainFindLibraryRoot(filename, l.documentCache, enforceStyle, verboseFlag)
+	world, module, err := swampcompiler.CompileMainFindLibraryRoot(filename, l.documentCache, l.configuration, enforceStyle, verboseFlag)
 	if err != nil {
 		return nil, err
 	}

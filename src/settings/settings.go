@@ -6,12 +6,14 @@
 package settings
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pelletier/go-toml"
+	"github.com/swamp/compiler/src/config"
 )
 
 type Module struct {
@@ -24,7 +26,7 @@ type Settings struct {
 	Module []Module
 }
 
-func Load(reader io.Reader, rootDirectory string) (Settings, error) {
+func Load(reader io.Reader, rootDirectory string, configuration config.Config) (Settings, error) {
 	data, dataErr := ioutil.ReadAll(reader)
 	if dataErr != nil {
 		return Settings{}, dataErr
@@ -38,10 +40,26 @@ func Load(reader io.Reader, rootDirectory string) (Settings, error) {
 	}
 
 	for index, mod := range settings.Module {
-		convertedPath := os.ExpandEnv(mod.Path)
+		cleanedUpPath := strings.TrimSpace(mod.Path)
+		convertedPath := cleanedUpPath
+		if strings.HasPrefix(cleanedUpPath, "${") {
+			endIndex := strings.Index(cleanedUpPath, "}")
+			if endIndex == -1 {
+				return Settings{}, fmt.Errorf("bad format '%v'", cleanedUpPath)
+			}
+			packageName := cleanedUpPath[2:endIndex]
+			suffix := cleanedUpPath[endIndex+1:]
+			convertedPath = configuration.Lookup(packageName)
+			if convertedPath == "" {
+				fileName, _ := config.ConfigTomlFilename()
+				return Settings{}, fmt.Errorf("could not resolve external package name '%v', please add it to '%v' file", packageName, fileName)
+			}
+			convertedPath = convertedPath + suffix
+		}
 		if !filepath.IsAbs(convertedPath) {
 			convertedPath = filepath.Join(rootDirectory, convertedPath)
 		}
+
 		settings.Module[index].Path = convertedPath
 	}
 
