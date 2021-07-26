@@ -107,6 +107,50 @@ func (c *BuildCmd) Run() error {
 	return nil
 }
 
+type ConfigSetCmd struct {
+	Name string `help:"fmt" arg:""`
+	Path string `help:"fmt" arg:""`
+}
+
+func (c *ConfigSetCmd) Run() error {
+	fmt.Printf("setting '%v' = '%v'\n", c.Name, c.Path)
+
+	configuration, _, err := config.LoadFromConfig()
+	if err != nil {
+		return err
+	}
+
+	configuration.AddOrSet(c.Name, c.Path)
+	configuration.SaveToConfig()
+
+	return nil
+}
+
+type ConfigListCmd struct{}
+
+func (c *ConfigListCmd) Run() error {
+	configuration, _, err := config.LoadFromConfig()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Config:\n")
+	for _, module := range configuration.PackagePath {
+		fmt.Printf("'%v' = '%v'\n", module.Name, module.Path)
+	}
+
+	return nil
+}
+
+type ConfigCmd struct {
+	Set  ConfigSetCmd  `help:"fmt" cmd:""`
+	List ConfigListCmd `help:"fmt" cmd:""`
+}
+
+func (c *ConfigCmd) Run() error {
+	return nil
+}
+
 type VersionCmd struct{}
 
 func (c *VersionCmd) Run() error {
@@ -118,6 +162,7 @@ type Options struct {
 	Lsp     LspCmd     `help:"lsp" cmd:""`
 	Fmt     FmtCmd     `help:"fmt" cmd:""`
 	Build   BuildCmd   `cmd:"" default:"1" help:"builds a swamp application"`
+	Config  ConfigCmd  `cmd:"" default:"1" help:"manage swamp configuration"`
 	Version VersionCmd `cmd:"" help:"shows the version information"`
 }
 

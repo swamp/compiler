@@ -25,7 +25,7 @@ type PackagePath struct {
 
 type Config struct {
 	Version     string
-	PackagePath []PackagePath
+	PackagePath []*PackagePath
 }
 
 func (c Config) Lookup(name string) string {
@@ -36,6 +36,17 @@ func (c Config) Lookup(name string) string {
 	}
 
 	return ""
+}
+
+func (c *Config) AddOrSet(name string, path string) {
+	for _, x := range c.PackagePath {
+		if x.Name == name {
+			x.Path = path
+			return
+		}
+	}
+
+	c.PackagePath = append(c.PackagePath, &PackagePath{Name: name, Path: path})
 }
 
 func Load(reader io.Reader) (Config, error) {
@@ -103,4 +114,18 @@ func LoadFromConfig() (Config, bool, error) {
 	}
 
 	return config, true, err
+}
+
+func (c Config) SaveToConfig() error {
+	configTomlFile, err := getConfigFilename()
+	if err != nil {
+		return err
+	}
+
+	data, marshalErr := toml.Marshal(&c)
+	if marshalErr != nil {
+		return marshalErr
+	}
+
+	return os.WriteFile(configTomlFile, data, 0o755)
 }
