@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/pelletier/go-toml"
-	"github.com/swamp/compiler/src/config"
+	"github.com/swamp/compiler/src/environment"
 )
 
 type Module struct {
@@ -26,7 +26,7 @@ type Settings struct {
 	Module []Module
 }
 
-func Load(reader io.Reader, rootDirectory string, configuration config.Environment) (Settings, error) {
+func Load(reader io.Reader, rootDirectory string, configuration environment.Environment) (Settings, error) {
 	data, dataErr := ioutil.ReadAll(reader)
 	if dataErr != nil {
 		return Settings{}, dataErr
@@ -51,7 +51,7 @@ func Load(reader io.Reader, rootDirectory string, configuration config.Environme
 			suffix := cleanedUpPath[endIndex+1:]
 			convertedPath = configuration.Lookup(packageName)
 			if convertedPath == "" {
-				fileName, _ := config.ConfigTomlFilename()
+				fileName, _ := environment.EnvironmentTomlFilename()
 				return Settings{}, fmt.Errorf("could not resolve external package name '%v', please add it to '%v' file", packageName, fileName)
 			}
 			convertedPath = convertedPath + suffix

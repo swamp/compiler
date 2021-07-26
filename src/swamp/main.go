@@ -14,7 +14,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/fatih/color"
 	"github.com/piot/lsp-server/lspserv"
-	"github.com/swamp/compiler/src/config"
+	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/verbosity"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
@@ -68,7 +68,7 @@ type LspCmd struct{}
 
 func (c *LspCmd) Run() error {
 	fileSystem := loader.NewFileSystemDocumentProvider()
-	config, _, configErr := config.LoadFromConfig()
+	config, _, configErr := environment.LoadFromConfig()
 	if configErr != nil {
 		return configErr
 	}
@@ -115,7 +115,7 @@ type EnvironmentSetCmd struct {
 func (c *EnvironmentSetCmd) Run() error {
 	fmt.Printf("setting '%v'='%v'\n", c.Name, c.Path)
 
-	configuration, _, err := config.LoadFromConfig()
+	configuration, _, err := environment.LoadFromConfig()
 	if err != nil {
 		return err
 	}
@@ -128,7 +128,7 @@ func (c *EnvironmentSetCmd) Run() error {
 type EnvironmentListCmd struct{}
 
 func (c *EnvironmentListCmd) Run() error {
-	configuration, _, err := config.LoadFromConfig()
+	configuration, _, err := environment.LoadFromConfig()
 	if err != nil {
 		return err
 	}

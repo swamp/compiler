@@ -14,11 +14,11 @@ import (
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
-	"github.com/swamp/compiler/src/config"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/generate"
 	"github.com/swamp/compiler/src/loader"
@@ -51,7 +51,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 		return statErr
 	}
 
-	config, _, configErr := config.LoadFromConfig()
+	config, _, configErr := environment.LoadFromConfig()
 	if configErr != nil {
 		return configErr
 	}
@@ -74,7 +74,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 	return nil
 }
 
-func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, configuration config.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
+func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, configuration environment.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
 	} else {
@@ -106,7 +106,7 @@ func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider
 	return world, libraryModule, nil
 }
 
-func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, configuration config.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, error) {
+func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, configuration environment.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, error) {
 	if !file.IsDir(mainSource) {
 		mainSource = filepath.Dir(mainSource)
 	}
@@ -203,7 +203,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	return nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration config.Environment, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
 
 	compiledPackage, _, moduleErr := CompileMain(filename, defaultDocumentProvider, configuration, enforceStyle, verboseFlag)

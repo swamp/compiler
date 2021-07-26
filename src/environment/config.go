@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-package config
+package environment
 
 import (
 	"bufio"
@@ -66,7 +66,7 @@ func Load(reader io.Reader) (Environment, error) {
 }
 
 func getConfigFilename() (string, error) {
-	configTomlFilename, err := ConfigTomlFilename()
+	configTomlFilename, err := EnvironmentTomlFilename()
 	if err != nil {
 		return "", err
 	}
@@ -80,7 +80,7 @@ func getConfigFilename() (string, error) {
 	return configTomlFilename, nil
 }
 
-func ConfigTomlFilename() (string, error) {
+func EnvironmentTomlFilename() (string, error) {
 	configDirectoryName, err := os.UserConfigDir()
 	if err != nil {
 		return "", err

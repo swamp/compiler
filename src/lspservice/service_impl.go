@@ -7,8 +7,8 @@ import (
 	"reflect"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
-	"github.com/swamp/compiler/src/config"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/verbosity"
@@ -17,10 +17,10 @@ import (
 type LspImpl struct {
 	workspace     *loader.Workspace
 	documentCache *DocumentCache
-	configuration config.Environment
+	configuration environment.Environment
 }
 
-func NewLspImpl(fallbackProvider loader.DocumentProvider, configuration config.Environment) *LspImpl {
+func NewLspImpl(fallbackProvider loader.DocumentProvider, configuration environment.Environment) *LspImpl {
 	return &LspImpl{
 		workspace:     loader.NewWorkspace(loader.LocalFileSystemRoot("")),
 		documentCache: NewDocumentCache(fallbackProvider),
