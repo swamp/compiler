@@ -24,10 +24,10 @@ jobs:
         run: go get github.com/mitchellh/gox
 
       - name: debug
-        run: echo "rev ${GITHUB_SHA} version:${{steps.get_version.version}}"
+        run: echo "rev ${GITHUB_SHA} version:0.0.2"
 
       - name: Compile for all platforms
-        uses: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -output="build/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-X main.Version=${{steps.get_version.version}}" -verbose ./...
+        uses: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -output="build/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-X main.Version=0.0.2" -verbose ./...
 
       - name: Upload executables
         uses: actions/upload-artifact@v2
