@@ -143,7 +143,7 @@ func (c *EnvironmentListCmd) Run() error {
 
 type EnvironmentCmd struct {
 	Set  EnvironmentSetCmd  `help:"fmt" cmd:"" help:"set swamp environment package"`
-	List EnvironmentListCmd `help:"fmt" cmd:"" help:"list swamp environment packages"`
+	List EnvironmentListCmd `help:"fmt" cmd:"" default:"1" help:"list swamp environment packages"`
 }
 
 func (c *EnvironmentCmd) Run() error {
@@ -158,11 +158,11 @@ func (c *VersionCmd) Run() error {
 }
 
 type Options struct {
-	Lsp         LspCmd         `help:"lsp" cmd:""`
-	Fmt         FmtCmd         `help:"fmt" cmd:""`
-	Build       BuildCmd       `cmd:"" default:"1" help:"builds a swamp application"`
-	Environment EnvironmentCmd `cmd:"" default:"1" help:"manage swamp environment"`
-	Version     VersionCmd     `cmd:"" help:"shows the version information"`
+	Lsp     LspCmd         `help:"lsp" cmd:""`
+	Fmt     FmtCmd         `help:"fmt" cmd:""`
+	Build   BuildCmd       `cmd:"" default:"1" help:"builds a swamp application"`
+	Env     EnvironmentCmd `cmd:"" default:"1" help:"manage swamp environment"`
+	Version VersionCmd     `cmd:"" help:"shows the version information"`
 }
 
 func main() {
