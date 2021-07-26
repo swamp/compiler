@@ -247,6 +247,12 @@ fromList x =
     __asm callexternal 00 coreBlobFromList 01
 
 
+__externalfn coreBlobToList 1
+toList : Blob -> List Int
+toList x =
+    __asm callexternal 00 coreBlobToList 01
+
+
 __externalfn coreBlobMap 2
 map : (Int -> Int) -> Blob -> Blob
 map fn blob =
