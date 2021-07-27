@@ -24,3 +24,19 @@ jobs:
 #
 #      - name: Test
 #        run: go test -v -count=1 ./...
+
+
+      - name: Fetch Gox
+        run: go get github.com/mitchellh/gox
+
+      - name: Compile for all platforms
+        uses: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -ldflags "-X main.Version=0.0.0" -verbose ./...
+
+      - name: Upload executables
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: |
+            swamp_darwin_amd64
+            swamp_linux_amd64
+            swamp_windows_amd64.exe
