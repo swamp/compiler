@@ -11,7 +11,7 @@ jobs:
       - name: Install target go version
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15.6
+          go-version: 1.16.6
 
       - name: Check out the code
         uses: actions/checkout@v2
@@ -20,20 +20,23 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
+      - name: debug
+        run: echo "rev ${GITHUB_SHA} version:${{steps.get_version.version}}"
+
       - name: Fetch Gox
         run: go get github.com/mitchellh/gox
 
-      - name: debug
-        run: echo "rev ${GITHUB_SHA} version:0.0.2"
-
       - name: Compile for all platforms
-        uses: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -output="build/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-X main.Version=0.0.2" -verbose ./...
+        run: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -output="build/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-X main.Version=${{steps.get_version.version}}" -verbose ./...
+
+      - name: Tar together executables
+        run: tar -cvf build.tar build/
 
       - name: Upload executables
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: build/
+          path: build.tar
 
       - name: Create release
         uses: softprops/action-gh-release@v1

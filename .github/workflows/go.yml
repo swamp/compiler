@@ -8,7 +8,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15.6
+          go-version: 1.16.6
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -30,13 +30,13 @@ jobs:
         run: go get github.com/mitchellh/gox
 
       - name: Compile for all platforms
-        run: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -ldflags "-X main.Version=0.0.0" -verbose ./...
+        run: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -output="build/{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-X main.Version=${{steps.get_version.version}}" -verbose ./...
+
+      - name: Tar together executables
+        run: tar -cvf build.tar build/
 
       - name: Upload executables
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: |
-            swamp_darwin_amd64
-            swamp_linux_amd64
-            swamp_windows_amd64.exe
+          path: build.tar
