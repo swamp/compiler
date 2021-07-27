@@ -30,7 +30,7 @@ jobs:
         run: go get github.com/mitchellh/gox
 
       - name: Compile for all platforms
-        uses: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -ldflags "-X main.Version=0.0.0" -verbose ./...
+        run: $HOME/go/bin/gox -os="linux darwin windows" -arch="amd64" -ldflags "-X main.Version=0.0.0" -verbose ./...
 
       - name: Upload executables
         uses: actions/upload-artifact@v2
