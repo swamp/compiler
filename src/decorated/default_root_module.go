@@ -265,6 +265,12 @@ indexedMap fn blob =
     __asm callexternal 00 coreBlobIndexedMap 01 02
 
 
+__externalfn coreBlobFilterIndexedMap 2
+filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
+filterIndexedMap fn blob =
+    __asm callexternal 00 coreBlobFilterIndexedMap 01 02
+
+
 __externalfn coreBlobLength 1
 length : Blob -> Int
 length blob =
