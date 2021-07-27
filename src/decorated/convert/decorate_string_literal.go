@@ -27,5 +27,5 @@ func decorateStringInterpolation(d DecorateStream, str *ast.StringInterpolation,
 		return nil, err
 	}
 
-	return decorated.NewStringInterpolation(str, decoratedExpression), nil
+	return decoratedExpression, nil
 }

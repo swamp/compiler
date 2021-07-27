@@ -410,7 +410,7 @@ log output =
 
 
 __externalfn coreDebugToString 1
-toString : any -> String
+toString : Any -> String
 toString output =
     __asm callexternal 00 coreDebugToString 01
 
