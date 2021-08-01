@@ -18,13 +18,17 @@ func PackagesToHtmlPage(packages []*loader.Package) string {
 				background: #262626;
 				font-family: 'Roboto', 'Open Sans Pro', 'Source Sans Pro', 'Ubuntu', sans-serif;
 			}
+
+			body {
+				max-width: 40em;
+			}
 			
 			code {
 				font-family: 'Source Code Pro', 'Ubuntu Mono', 'Liberation Mono', Courier, monospace;
 			}
 			
 			div.description p strong {
-				color: #f4f4ba;
+				color: #a3a37a;
 			}
 			
 			div.description p code {
@@ -37,7 +41,7 @@ func PackagesToHtmlPage(packages []*loader.Package) string {
 			}
 			
 			.alias {
-			  color: #fa8efa;
+			  color: #cd99cd;
 			}
 			
 			.arrow {
@@ -45,17 +49,33 @@ func PackagesToHtmlPage(packages []*loader.Package) string {
 			}
 			
 			.primitive {
-				color: green;
+				color: #548554;
 			}
 			
 			.customtype {
-				color: #44e1e1;
+				color: #6babab;
+			}
+
+			.localtype {
+				color: #0893b0;
 			}
 			
-			.invoker {
+			.invokertype {
 				color: #a6abff;
 			}
-			
+
+			.functiontype {
+				color: #a6ab5f;
+			}
+
+			.unmanagedtype {
+				color: #ab4e6a;
+			}
+
+			.recordtype {
+				color: #ab9b75;
+			}
+
 			h3 {
 				color: #fafafa;
 				margin-top: 2em;

@@ -91,7 +91,7 @@ func (s MultiLineCommentToken) Value() string {
 	str := ""
 	for _, part := range s.parts {
 		upcomingString := strings.TrimSpace(part.CommentString)
-		if len(upcomingString) == 0 {
+		if len(str) == 0 && len(upcomingString) == 0 {
 			continue
 		}
 		if len(str) > 0 {

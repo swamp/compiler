@@ -29,10 +29,48 @@ func code(className string, value string) string {
 	return fmt.Sprintf("<code class='%v'>%v</code>", className, value)
 }
 
+func classNameFromType(typeToConvert dtype.Type) string {
+	switch t := typeToConvert.(type) {
+	case *dectype.Alias:
+		return classNameFromType(t.Next())
+	case *dectype.AliasReference:
+		return classNameFromType(t.Next())
+	case *dectype.CustomTypeReference:
+		return classNameFromType(t.Next())
+	case *dectype.CustomTypeAtom:
+		return "customtype"
+	case *dectype.TupleTypeAtom:
+		return "tuple"
+	case *dectype.InvokerType:
+		return "invokertype"
+	case *dectype.FunctionAtom:
+		return "functiontype"
+	case *dectype.FunctionTypeReference:
+		return classNameFromType(t.Next())
+	case *dectype.PrimitiveAtom:
+		return "primitive"
+	case *dectype.PrimitiveTypeReference:
+		return classNameFromType(t.Next())
+	case *dectype.LocalType:
+		return "localtype"
+	case *dectype.UnmanagedType:
+		return "unmanagedtype"
+	case *dectype.RecordAtom:
+		return "recordtype"
+	default:
+		panic(fmt.Sprintf("can not get css class name from %T", typeToConvert))
+	}
+}
+
 func typeToHtml(typeToConvert dtype.Type) string {
 	switch t := typeToConvert.(type) {
 	case *dectype.Alias:
-		return span("alias", t.AstAlias().Name())
+		className := classNameFromType(t.Next())
+		if className == "primitive" {
+			className = "alias"
+		}
+		return span(className, t.AstAlias().Name())
+
 	case *dectype.AliasReference:
 		return typeToHtml(t.Next())
 	case *dectype.CustomTypeReference:
@@ -50,7 +88,7 @@ func typeToHtml(typeToConvert dtype.Type) string {
 		s += span("paren", ")")
 		return s
 	case *dectype.InvokerType:
-		s := span("invoker", t.TypeGenerator().HumanReadable())
+		s := span("invokertype", t.TypeGenerator().HumanReadable())
 		for _, param := range t.Params() {
 			s += " "
 			s += typeToHtml(param)
@@ -60,7 +98,7 @@ func typeToHtml(typeToConvert dtype.Type) string {
 		s := "("
 		for index, parameterType := range t.FunctionParameterTypes() {
 			if index > 0 {
-				s += span("arrow", " -> ")
+				s += span("arrow", " &#8594; ")
 			}
 			s += typeToHtml(parameterType)
 		}
@@ -72,6 +110,8 @@ func typeToHtml(typeToConvert dtype.Type) string {
 		return span("primitive", t.PrimitiveName().Name())
 	case *dectype.PrimitiveTypeReference:
 		return typeToHtml(t.Next())
+	case *dectype.LocalType:
+		return span("localtype", t.Identifier().Name())
 	default:
 		panic(fmt.Sprintf("can not understand %T", typeToConvert))
 	}
