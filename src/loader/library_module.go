@@ -78,7 +78,8 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 
 		rootNamespace := dectype.MakePackageRootModuleNameFromString(packageRootModuleNameString)
 		if !file.IsDir(dependencyFilePrefix) {
-			return decorated.NewInternalError(fmt.Errorf("could not find directory '%v' '%v'", swampDirectory, packagePath))
+			full, _ := filepath.Abs(dependencyFilePrefix)
+			return decorated.NewInternalError(fmt.Errorf("could not find directory '%v' '%v' ('%v' '%v')", full, dependencyFilePrefix, swampDirectory, packagePath))
 		}
 		_, moduleErr := r.ReadLibraryModule(world, repository, dependencyFilePrefix, rootNamespace, documentProvider, configuration)
 		if moduleErr != nil {

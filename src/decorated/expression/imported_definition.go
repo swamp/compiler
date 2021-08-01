@@ -39,7 +39,7 @@ func (d *ImportedDefinition) CreatedBy() *ImportedModule {
 	return d.createdBy
 }
 
-func (d *ImportedDefinition) FullyQualifiedVariableName() *FullyQualifiedVariableName {
+func (d *ImportedDefinition) FullyQualifiedVariableName() *FullyQualifiedPackageVariableName {
 	return d.referencedDefinition.OwnedByModule().FullyQualifiedName(d.localIdentifier)
 }
 

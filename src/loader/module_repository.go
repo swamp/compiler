@@ -108,8 +108,8 @@ func (l *ModuleRepository) FetchMainModuleInPackage(verboseFlag verbosity.Verbos
 		return nil, err
 	}
 
-	x.Definitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("main", token.SourceFileReference{}, 0)))
-	x.Definitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("init", token.SourceFileReference{}, 0)))
+	x.LocalDefinitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("main", token.SourceFileReference{}, 0)))
+	x.LocalDefinitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("init", token.SourceFileReference{}, 0)))
 
 	return x, nil
 }

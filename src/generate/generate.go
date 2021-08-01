@@ -27,7 +27,7 @@ type generateContext struct {
 }
 
 type Function struct {
-	name           *decorated.FullyQualifiedVariableName
+	name           *decorated.FullyQualifiedPackageVariableName
 	signature      swamppack.TypeRef
 	parameterCount uint
 	variableCount  uint
@@ -36,7 +36,7 @@ type Function struct {
 }
 
 type ExternalFunction struct {
-	name           *decorated.FullyQualifiedVariableName
+	name           *decorated.FullyQualifiedPackageVariableName
 	signature      swamppack.TypeRef
 	parameterCount uint
 }
@@ -107,7 +107,7 @@ func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfo
 	return octets, nil
 }
 
-func NewFunction(fullyQualifiedName *decorated.FullyQualifiedVariableName, signature swamppack.TypeRef,
+func NewFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, signature swamppack.TypeRef,
 	parameterCount uint, variableCount uint, constants []*assembler.Constant, opcodes []byte) *Function {
 	f := &Function{
 		name: fullyQualifiedName, signature: signature, parameterCount: parameterCount,
@@ -117,7 +117,7 @@ func NewFunction(fullyQualifiedName *decorated.FullyQualifiedVariableName, signa
 	return f
 }
 
-func NewExternalFunction(fullyQualifiedName *decorated.FullyQualifiedVariableName,
+func NewExternalFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName,
 	signature swamppack.TypeRef, parameterCount uint) *ExternalFunction {
 	f := &ExternalFunction{name: fullyQualifiedName, signature: signature, parameterCount: parameterCount}
 
@@ -1274,7 +1274,7 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	return fmt.Errorf("generate: unknown node %T %v %v", expr, expr, genContext)
 }
 
-func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedVariableName, f *decorated.FunctionValue, root *assembler.FunctionRootContext, definitions *decorator.VariableContext, lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
+func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName, f *decorated.FunctionValue, root *assembler.FunctionRootContext, definitions *decorator.VariableContext, lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler.NewCode()
 	funcContext := root.ScopeContext()
 	tempVar := root.ReturnVariable()
@@ -1324,7 +1324,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) ([]*Function, error) {
 	var functionConstants []*Function
 
-	for _, named := range module.Definitions().Definitions() {
+	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
 
 		fullyQualifiedName := module.FullyQualifiedName(named.Identifier())

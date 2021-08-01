@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/alecthomas/kong v0.2.16
 	github.com/fatih/color v1.12.0
+	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/pelletier/go-toml v1.9.2
 	github.com/piot/go-lsp v0.0.0-20210308100331-e96ace6e5b0d

@@ -15,7 +15,7 @@ type ModuleDef interface {
 	MarkAsReferenced()
 	Expression() Expression
 	Identifier() *ast.VariableIdentifier
-	FullyQualifiedVariableName() *FullyQualifiedVariableName
+	FullyQualifiedVariableName() *FullyQualifiedPackageVariableName
 	OwnedByModule() *Module
 	WasReferenced() bool
 	IsInternal() bool
@@ -49,7 +49,7 @@ func (d *ModuleDefinition) OwnedByModule() *Module {
 	return d.createdIn.OwnedByModule()
 }
 
-func (d *ModuleDefinition) FullyQualifiedVariableName() *FullyQualifiedVariableName {
+func (d *ModuleDefinition) FullyQualifiedVariableName() *FullyQualifiedPackageVariableName {
 	return d.createdIn.ownedByModule.FullyQualifiedName(d.localIdentifier)
 }
 

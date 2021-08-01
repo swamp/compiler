@@ -30,24 +30,24 @@ type TypeAddAndReferenceMaker interface {
 	SourceModule() *Module
 }
 
-type FullyQualifiedVariableName struct {
+type FullyQualifiedPackageVariableName struct {
 	module     *Module
 	identifier *ast.VariableIdentifier
 }
 
-func NewFullyQualifiedVariableName(module *Module, identifier *ast.VariableIdentifier) *FullyQualifiedVariableName {
+func NewFullyQualifiedVariableName(module *Module, identifier *ast.VariableIdentifier) *FullyQualifiedPackageVariableName {
 	if module == nil {
 		panic(fmt.Sprintf("must have module in %v", identifier))
 	}
 
-	return &FullyQualifiedVariableName{module: module, identifier: identifier}
+	return &FullyQualifiedPackageVariableName{module: module, identifier: identifier}
 }
 
-func (q *FullyQualifiedVariableName) ResolveToString() string {
+func (q *FullyQualifiedPackageVariableName) ResolveToString() string {
 	return q.module.fullyQualifiedModuleName.JoinLocalName(q.identifier)
 }
 
-func (q *FullyQualifiedVariableName) String() string {
+func (q *FullyQualifiedPackageVariableName) String() string {
 	return fmt.Sprintf("%v", q.ResolveToString())
 }
 
@@ -210,7 +210,7 @@ func (m *Module) ExternalFunctions() []*ExternalFunctionDeclaration {
 	return m.externalFunctions
 }
 
-func (m *Module) FullyQualifiedName(identifier *ast.VariableIdentifier) *FullyQualifiedVariableName {
+func (m *Module) FullyQualifiedName(identifier *ast.VariableIdentifier) *FullyQualifiedPackageVariableName {
 	if m == nil {
 		panic(fmt.Sprintf("how is this possible %v\n", identifier))
 	}
@@ -221,7 +221,7 @@ func (m *Module) FullyQualifiedModuleName() dectype.ArtifactFullyQualifiedModule
 	return m.fullyQualifiedModuleName
 }
 
-func (m *Module) TypeRepo() *ModuleTypes {
+func (m *Module) LocalTypes() *ModuleTypes {
 	return m.localTypes
 }
 
@@ -237,7 +237,7 @@ func (m *Module) ImportedModules() *ModuleImports {
 	return m.importedModules
 }
 
-func (m *Module) Definitions() *ModuleDefinitions {
+func (m *Module) LocalDefinitions() *ModuleDefinitions {
 	return m.localDefinitions
 }
 
@@ -254,7 +254,7 @@ func (m *Module) ExposedDefinitions() *ModuleReferenceDefinitions {
 }
 
 func (m *Module) LocalAndImportedDefinitions() *ModuleDefinitionsCombine {
-	importAndLocal := NewModuleDefinitionsCombine(m.Definitions(), m.ImportedDefinitions(), m.importedModules)
+	importAndLocal := NewModuleDefinitionsCombine(m.LocalDefinitions(), m.ImportedDefinitions(), m.importedModules)
 
 	return importAndLocal
 }

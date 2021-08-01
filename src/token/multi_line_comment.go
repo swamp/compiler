@@ -89,11 +89,15 @@ func (s MultiLineCommentToken) Parts() []MultiLineCommentPart {
 
 func (s MultiLineCommentToken) Value() string {
 	str := ""
-	for index, part := range s.parts {
-		if index > 0 {
+	for _, part := range s.parts {
+		upcomingString := strings.TrimSpace(part.CommentString)
+		if len(upcomingString) == 0 {
+			continue
+		}
+		if len(str) > 0 {
 			str += "\n"
 		}
-		str += strings.TrimSpace(part.CommentString)
+		str += upcomingString
 	}
 
 	return str

@@ -23,12 +23,12 @@ func testColor(t *testing.T, code string) {
 	}
 
 	colorer := coloring.NewColorerWithColor()
-	defs := module.Definitions()
+	defs := module.LocalDefinitions()
 	for _, expr := range defs.Definitions() {
 		parser.ColorType(expr.Expression().Type(), 0, false, colorer)
 	}
 
-	for _, definedType := range module.TypeRepo().AllTypes() {
+	for _, definedType := range module.LocalTypes().AllTypes() {
 		parser.ColorType(definedType, 0, false, colorer)
 	}
 }

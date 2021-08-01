@@ -84,7 +84,7 @@ func (d *ModuleImportedDefinitions) AddDefinition(identifier *ast.VariableIdenti
 }
 
 func (t *ModuleImportedDefinitions) DebugString() string {
-	s := "Module Definitions:\n"
+	s := "Module LocalDefinitions:\n"
 	keys := sortedTypeAtomKeys(t.importedDefinitions)
 	for _, key := range keys {
 		definition := t.importedDefinitions[key]

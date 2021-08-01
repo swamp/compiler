@@ -35,7 +35,7 @@ func CheckUnused(world *loader.Package) {
 		if module.IsInternal() {
 			continue
 		}
-		for _, def := range module.Definitions().Definitions() {
+		for _, def := range module.LocalDefinitions().Definitions() {
 			if !def.WasReferenced() {
 				module := def.OwnedByModule()
 				warning := decorated.NewUnusedWarning(def)
@@ -45,33 +45,37 @@ func CheckUnused(world *loader.Package) {
 	}
 }
 
-func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, verboseFlag verbosity.Verbosity) error {
+func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
 	statInfo, statErr := os.Stat(mainSourceFile)
 	if statErr != nil {
-		return statErr
+		return nil, statErr
 	}
 
 	config, _, configErr := environment.LoadFromConfig()
 	if configErr != nil {
-		return configErr
+		return nil, configErr
 	}
 
 	if statInfo.IsDir() {
 		typeInformationChunk := &typeinfo.Chunk{}
 		if solutionSettings, err := solution.LoadIfExists(mainSourceFile); err == nil {
+			var packages []*loader.Package
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				if err := CompileAndLink(typeInformationChunk, config, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag); err != nil {
-					return err
+				compiledPackage, err := CompileAndLink(typeInformationChunk, config, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag)
+				if err != nil {
+					return packages, err
 				}
+				packages = append(packages, compiledPackage)
 			}
+			return packages, nil
 		} else {
-			return fmt.Errorf("must have a solution file in this version")
+			return nil, fmt.Errorf("must have a solution file in this version")
 		}
 	}
 
-	return nil
+	return nil, fmt.Errorf("must be directory in this version %v %v", mainSourceFile, absoluteOutputDirectory)
 }
 
 func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, configuration environment.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
@@ -203,13 +207,17 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	return nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
 	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
 
 	compiledPackage, _, moduleErr := CompileMain(filename, defaultDocumentProvider, configuration, enforceStyle, verboseFlag)
 	if moduleErr != nil {
-		return moduleErr
+		return compiledPackage, moduleErr
 	}
 
-	return GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, verboseFlag)
+	if err := GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, verboseFlag); err != nil {
+		return compiledPackage, err
+	}
+
+	return compiledPackage, nil
 }

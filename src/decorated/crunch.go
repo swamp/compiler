@@ -131,8 +131,8 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 
 	}
 
-	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.TypeRepo(), module.ImportedTypes())
-	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.TypeRepo())
+	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.LocalTypes(), module.ImportedTypes())
+	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.LocalTypes())
 
 	converter := NewDecorator(moduleRepository, module, createAndLookup)
 
@@ -152,8 +152,8 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 		returnErr = decorated.NewMultiErrors(allErrors)
 	}
 
-	module.ExposedTypes().AddTypesFromModule(module.TypeRepo().AllTypes(), module)
-	module.ExposedDefinitions().AddDefinitions(module.Definitions().Definitions())
+	module.ExposedTypes().AddTypesFromModule(module.LocalTypes().AllTypes(), module)
+	module.ExposedDefinitions().AddDefinitions(module.LocalDefinitions().Definitions())
 	module.SetProgram(program)
 
 	var rootNodesConverted []decorated.Node
@@ -207,9 +207,9 @@ func ImportModuleToModule(target *decorated.Module, statement *decorated.ImportS
 }
 
 func CopyModuleToModule(target *decorated.Module, source *decorated.Module) decshared.DecoratedError {
-	return target.TypeRepo().CopyTypes(source.TypeRepo().AllTypes())
+	return target.LocalTypes().CopyTypes(source.LocalTypes().AllTypes())
 }
 
 func ExposeEverythingInModule(target *decorated.Module) {
-	target.ExposedTypes().AddTypesFromModule(target.TypeRepo().AllTypes(), target)
+	target.ExposedTypes().AddTypesFromModule(target.LocalTypes().AllTypes(), target)
 }

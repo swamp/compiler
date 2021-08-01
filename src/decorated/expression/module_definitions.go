@@ -62,7 +62,7 @@ func (d *ModuleDefinitions) AddDecoratedExpression(identifier *ast.VariableIdent
 }
 
 func (t *ModuleDefinitions) DebugString() string {
-	s := "Module Definitions:\n"
+	s := "Module LocalDefinitions:\n"
 	for _, definition := range t.definitions {
 		s += fmt.Sprintf(".. %p %v\n", definition, definition)
 	}

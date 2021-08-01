@@ -19,7 +19,7 @@ type TypeLookup interface {
 }
 
 func generateModuleToChunk(module *decorated.Module, chunk *Chunk, verboseFlag verbosity.Verbosity) error {
-	for _, exposedDef := range module.Definitions().Definitions() {
+	for _, exposedDef := range module.LocalDefinitions().Definitions() {
 		exposedType := exposedDef.Expression().Type()
 		if verboseFlag >= verbosity.Low {
 			fmt.Printf("generateModuleToChunkTypeInfo definition: %s\n", exposedType.String())

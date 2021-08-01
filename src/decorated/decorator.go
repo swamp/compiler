@@ -40,7 +40,7 @@ func (d *Decorator) TypeRepo() decorated.TypeAddAndReferenceMaker {
 }
 
 func (d *Decorator) ModuleDefinitions() *decorated.ModuleDefinitions {
-	return d.module.Definitions()
+	return d.module.LocalDefinitions()
 }
 
 func (d *Decorator) AddDeclaration(identifier *ast.VariableIdentifier, ofType dtype.Type) error {
@@ -48,7 +48,7 @@ func (d *Decorator) AddDeclaration(identifier *ast.VariableIdentifier, ofType dt
 }
 
 func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decorated.Expression) error {
-	return d.module.Definitions().AddDecoratedExpression(identifier, expr)
+	return d.module.LocalDefinitions().AddDecoratedExpression(identifier, expr)
 }
 
 func (d *Decorator) AddDecoratedError(decoratedError decshared.DecoratedError) {

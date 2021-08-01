@@ -135,7 +135,7 @@ func (d *ModuleReferenceDefinitions) AddDefinition(identifier *ast.VariableIdent
 }
 
 func (t *ModuleReferenceDefinitions) DebugString() string {
-	s := "Module Definitions:\n"
+	s := "Module LocalDefinitions:\n"
 	keys := sortedTypeAtomKeys(t.referencedExpressions)
 	for _, key := range keys {
 		definition := t.referencedExpressions[key]

@@ -14,6 +14,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/fatih/color"
 	"github.com/piot/lsp-server/lspserv"
+	"github.com/swamp/compiler/src/doc"
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/verbosity"
 
@@ -27,7 +28,7 @@ import (
 
 var Version string
 
-func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) error {
+func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
 	filenameToCompile := fileOrDirectory
 
 	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, verbosity)
@@ -64,6 +65,27 @@ func (c *FmtCmd) Run() error {
 	return nil
 }
 
+type DocCmd struct {
+	Path         string `help:"path to file or directory" arg:"" default:"." type:"path"`
+	Verbosity    int    `help:"verbose output" type:"counter" short:"v"`
+	DisableStyle bool   `help:"disable enforcing of style" default:"false"`
+}
+
+func (c *DocCmd) Run() error {
+	compiledPackages, err := buildCommandLine(c.Path, "", !c.DisableStyle, verbosity.Verbosity(c.Verbosity))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(doc.PackagesToHtmlPage(compiledPackages))
+
+	if c.Verbosity > 0 {
+		color.Green(fmt.Sprintf("done. %v", len(compiledPackages)))
+	}
+
+	return nil
+}
+
 type LspCmd struct{}
 
 func (c *LspCmd) Run() error {
@@ -95,13 +117,13 @@ func (c *BuildCmd) Run() error {
 		return fmt.Errorf("must specify build directory")
 	}
 
-	err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, verbosity.Verbosity(c.Verbosity))
+	compiledPackages, err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, verbosity.Verbosity(c.Verbosity))
 	if err != nil {
 		return err
 	}
 
 	if c.Verbosity > 0 {
-		color.Green("done.")
+		color.Green(fmt.Sprintf("done. %v", len(compiledPackages)))
 	}
 
 	return nil
@@ -160,6 +182,7 @@ func (c *VersionCmd) Run() error {
 type Options struct {
 	Lsp     LspCmd         `help:"lsp" cmd:""`
 	Fmt     FmtCmd         `help:"fmt" cmd:""`
+	Doc     DocCmd         `help:"fmt" cmd:""`
 	Build   BuildCmd       `cmd:"" default:"1" help:"builds a swamp application"`
 	Env     EnvironmentCmd `cmd:"" default:"1" help:"manage swamp environment"`
 	Version VersionCmd     `cmd:"" help:"shows the version information"`
