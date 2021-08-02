@@ -83,7 +83,7 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	tmpFile.Close()
 	const enforceStyle = true
 	typeInformationChunk := &typeinfo.Chunk{}
-	_, compileErr := swampcompiler.CompileAndLink(typeInformationChunk, environment.Environment{}, tempSwampFilename, tempOutputFile, enforceStyle, verbose)
+	_, compileErr := swampcompiler.CompileAndLink(typeInformationChunk, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, enforceStyle, verbose)
 	if compileErr != nil {
 		return "", compileErr
 	}

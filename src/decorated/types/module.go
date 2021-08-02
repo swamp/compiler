@@ -80,6 +80,14 @@ func (m ModuleName) Path() *ast.ModuleReference {
 	return m.path
 }
 
+func (m ModuleName) Last() string {
+	if m.path == nil {
+		return ""
+	}
+	parts := m.path.Parts()
+	return parts[len(parts)-1].String()
+}
+
 type PackageRelativeModuleName struct {
 	ModuleName
 }

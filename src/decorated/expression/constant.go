@@ -19,6 +19,10 @@ func (c *Constant) String() string {
 	return "constant"
 }
 
+func (c *Constant) CommentBlock() *ast.MultilineComment {
+	return c.functionReference.referencedFunctionValue.commentBlock
+}
+
 func (c *Constant) FunctionReference() *FunctionReference {
 	return c.functionReference
 }

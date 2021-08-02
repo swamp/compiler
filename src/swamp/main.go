@@ -77,7 +77,7 @@ func (c *DocCmd) Run() error {
 		return err
 	}
 
-	fmt.Println(doc.PackagesToHtmlPage(compiledPackages))
+	doc.PackagesToHtmlPage(os.Stdout, compiledPackages)
 
 	if c.Verbosity > 0 {
 		color.Green(fmt.Sprintf("done. %v", len(compiledPackages)))

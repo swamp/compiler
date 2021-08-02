@@ -1,10 +1,13 @@
 package doc
 
 import (
+	"fmt"
+	"io"
+
 	"github.com/swamp/compiler/src/loader"
 )
 
-func PackagesToHtmlPage(packages []*loader.Package) string {
+func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 	header := `
 <!DOCTYPE html>
 <html lang="en">
@@ -89,9 +92,21 @@ func PackagesToHtmlPage(packages []*loader.Package) string {
 				color: #ab9b75;
 			}
 
+			h1 {
+				color: #969671;
+				margin-top: 1.1em;
+			}
+
+			h2 {
+				color: #70769a;
+				margin-top: 1.1em;
+				margin-bottom: 0.5em;
+			}
+
 			h3 {
 				color: #fafafa;
 				margin-top: 2em;
+				margin-bottom: 0.5em;
 			}
 		</style>
 	</head>
@@ -103,16 +118,14 @@ func PackagesToHtmlPage(packages []*loader.Package) string {
 </html>
 `
 
-	segments := ""
+	fmt.Fprintf(writer, header)
 
 	for _, compiledPackage := range packages {
+		fmt.Fprintf(writer, "\n\n\n<hr/>\n<h1>Package %v</h1>\n", compiledPackage.Name())
 		for _, module := range compiledPackage.AllModules() {
-			html := ModuleToHtml(module)
-			if len(html) != 0 {
-				segments += html
-			}
+			ModuleToHtml(writer, module)
 		}
 	}
 
-	return header + segments + footer
+	fmt.Fprintf(writer, footer)
 }

@@ -63,7 +63,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				compiledPackage, err := CompileAndLink(typeInformationChunk, config, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag)
+				compiledPackage, err := CompileAndLink(typeInformationChunk, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag)
 				if err != nil {
 					return packages, err
 				}
@@ -78,13 +78,13 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 	return nil, fmt.Errorf("must be directory in this version %v %v", mainSourceFile, absoluteOutputDirectory)
 }
 
-func CompileMain(mainSourceFile string, documentProvider loader.DocumentProvider, configuration environment.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
+func CompileMain(name string, mainSourceFile string, documentProvider loader.DocumentProvider, configuration environment.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
 	} else {
 		mainPrefix = filepath.Dir(mainSourceFile)
 	}
-	world := loader.NewPackage(loader.LocalFileSystemRoot(mainPrefix))
+	world := loader.NewPackage(loader.LocalFileSystemRoot(mainPrefix), name)
 
 	worldDecorator, worldDecoratorErr := loader.NewWorldDecorator(enforceStyle, verboseFlag)
 	if worldDecoratorErr != nil {
@@ -120,7 +120,7 @@ func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.Docum
 		return nil, nil, fmt.Errorf("couldn't find settings directory when compiling %w", libraryErr)
 	}
 
-	return CompileMain(libraryDirectory, documentProvider, configuration, enforceStyle, verboseFlag)
+	return CompileMain(mainSource, libraryDirectory, documentProvider, configuration, enforceStyle, verboseFlag)
 }
 
 type CoreFunctionInfo struct {
@@ -207,10 +207,10 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	return nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, name string, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
 	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
 
-	compiledPackage, _, moduleErr := CompileMain(filename, defaultDocumentProvider, configuration, enforceStyle, verboseFlag)
+	compiledPackage, _, moduleErr := CompileMain(name, filename, defaultDocumentProvider, configuration, enforceStyle, verboseFlag)
 	if moduleErr != nil {
 		return compiledPackage, moduleErr
 	}

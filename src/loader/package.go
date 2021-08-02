@@ -17,14 +17,19 @@ type Package struct {
 	absolutePathLookup map[LocalFileSystemPath]*decorated.Module
 	modules            []*decorated.Module
 	root               LocalFileSystemRoot
+	name               string
 }
 
-func NewPackage(root LocalFileSystemRoot) *Package {
-	return &Package{root: root, moduleLookup: make(map[string]*decorated.Module), absolutePathLookup: make(map[LocalFileSystemPath]*decorated.Module)}
+func NewPackage(root LocalFileSystemRoot, name string) *Package {
+	return &Package{root: root, name: name, moduleLookup: make(map[string]*decorated.Module), absolutePathLookup: make(map[LocalFileSystemPath]*decorated.Module)}
 }
 
 func (w *Package) Root() LocalFileSystemRoot {
 	return w.root
+}
+
+func (w *Package) Name() string {
+	return w.name
 }
 
 func (w *Package) AllModules() []*decorated.Module {

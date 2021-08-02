@@ -51,6 +51,10 @@ func (q *FullyQualifiedPackageVariableName) String() string {
 	return fmt.Sprintf("%v", q.ResolveToString())
 }
 
+func (q *FullyQualifiedPackageVariableName) Identifier() *ast.VariableIdentifier {
+	return q.identifier
+}
+
 type ExternalFunctionDeclaration struct {
 	AstExternalFunction *ast.ExternalFunction
 }
