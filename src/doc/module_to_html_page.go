@@ -34,12 +34,25 @@ func PackagesToHtmlPage(packages []*loader.Package) string {
 			div.description p code {
 				color: #939393;
 			}
+
+			div.prototype {
+				padding-left: 1.5em;
+				text-indent: -1.5em;
+			}
 			
 			code.params {
 				color: #9f9f9f;
 				font-size: small;	
 			}
 			
+			.paren {
+				color: #767676;
+			}
+
+			.comma {
+				color: #c1c1c1;
+			}
+
 			.alias {
 			  color: #cd99cd;
 			}

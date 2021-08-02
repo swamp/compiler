@@ -95,14 +95,14 @@ func typeToHtml(typeToConvert dtype.Type) string {
 		}
 		return s
 	case *dectype.FunctionAtom:
-		s := "("
+		s := span("paren", "(")
 		for index, parameterType := range t.FunctionParameterTypes() {
 			if index > 0 {
 				s += span("arrow", " &#8594; ")
 			}
 			s += typeToHtml(parameterType)
 		}
-		s += ")"
+		s += span("paren", ")")
 		return s
 	case *dectype.FunctionTypeReference:
 		return typeToHtml(t.Next())
