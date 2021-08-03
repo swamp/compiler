@@ -18,7 +18,7 @@ import (
 )
 
 type ModuleReader interface {
-	ReadModule(repository deccy.ModuleRepository, moduleName dectype.PackageRelativeModuleName, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError)
+	ReadModule(moduleType decorated.ModuleType, repository deccy.ModuleRepository, moduleName dectype.PackageRelativeModuleName, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError)
 }
 
 type ModuleRepository struct {
@@ -54,7 +54,7 @@ func remove(s []dectype.PackageRelativeModuleName, r dectype.PackageRelativeModu
 	return s
 }
 
-func (l *ModuleRepository) FetchModuleInPackageEx(artifactFullyModuleName dectype.ArtifactFullyQualifiedModuleName, packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
+func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleType, artifactFullyModuleName dectype.ArtifactFullyQualifiedModuleName, packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	if verboseFlag >= verbosity.Mid {
 		fmt.Printf("* fetching module %v artifactName:%v\n", packageRelativeModuleName, artifactFullyModuleName)
 	}
@@ -78,7 +78,7 @@ func (l *ModuleRepository) FetchModuleInPackageEx(artifactFullyModuleName dectyp
 		return nil, decorated.NewInternalError(NewCircularDependencyDetected(l.resolutionModules, artifactFullyModuleName))
 	}
 	l.resolutionModules = append(l.resolutionModules, packageRelativeModuleName)
-	readModule, readModuleErr := l.moduleReader.ReadModule(l, packageRelativeModuleName, l.moduleNamespace)
+	readModule, readModuleErr := l.moduleReader.ReadModule(moduleType, l, packageRelativeModuleName, l.moduleNamespace)
 	if readModuleErr != nil {
 		_, isModuleErrAlready := readModuleErr.(*decorated.ModuleError)
 		if isModuleErrAlready {
@@ -96,14 +96,14 @@ func (l *ModuleRepository) FetchModuleInPackageEx(artifactFullyModuleName dectyp
 func (l *ModuleRepository) FetchModuleInPackage(packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	artifactFullyModuleName := l.moduleNamespace.Join(packageRelativeModuleName)
 
-	return l.FetchModuleInPackageEx(artifactFullyModuleName, packageRelativeModuleName, verboseFlag)
+	return l.FetchModuleInPackageEx(decorated.ModuleTypeNormal, artifactFullyModuleName, packageRelativeModuleName, verboseFlag)
 }
 
-func (l *ModuleRepository) FetchMainModuleInPackage(verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
+func (l *ModuleRepository) FetchMainModuleInPackage(moduleType decorated.ModuleType, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	emptyPackageRelativeModuleName := dectype.NewPackageRelativeModuleName(nil)
 	artifactFullyModuleName := l.moduleNamespace.Join(emptyPackageRelativeModuleName)
 
-	x, err := l.FetchModuleInPackageEx(artifactFullyModuleName, emptyPackageRelativeModuleName, verboseFlag)
+	x, err := l.FetchModuleInPackageEx(moduleType, artifactFullyModuleName, emptyPackageRelativeModuleName, verboseFlag)
 	if err != nil {
 		return nil, err
 	}

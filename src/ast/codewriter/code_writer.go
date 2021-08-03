@@ -12,7 +12,7 @@ import (
 	"github.com/swamp/compiler/src/coloring"
 )
 
-func writeRecordType(recordType *ast.Record, colorer coloring.Colorer, indentation int) {
+func WriteRecordType(recordType *ast.Record, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("{")
 	colorer.OneSpace()
 	for index, field := range recordType.Fields() {
@@ -59,6 +59,13 @@ func writeCustomType(customType *ast.CustomType, colorer coloring.Colorer, inden
 
 func writeLocalType(localType *ast.LocalType, colorer coloring.Colorer, indentation int) {
 	colorer.LocalType(localType.TypeParameter().Identifier().Symbol())
+}
+
+func writeUnmanagedType(unmanagedType *ast.UnmanagedType, colorer coloring.Colorer, indentation int) {
+	colorer.KeywordString("Unmanaged")
+	colorer.OperatorString("<")
+	colorer.TypeSymbol(unmanagedType.NativeLanguageTypeName().Symbol())
+	colorer.OperatorString(">")
 }
 
 func WriteFunctionParameterTypes(functionParameters []ast.Type, colorer coloring.Colorer, indentation int) {
@@ -137,10 +144,12 @@ func writeScopedTypeReference(typeReference *ast.TypeReferenceScoped, colorer co
 	}
 }
 
-func writeAliasStatement(alias *ast.Alias, colorer coloring.Colorer, indentation int) {
+func WriteAliasStatement(alias *ast.Alias, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("type alias ")
 	colorer.AliasNameSymbol(alias.Identifier().Symbol())
 	colorer.OneSpace()
+	colorer.KeywordString(" = ")
+	writeType(alias.ReferencedType(), colorer, false, 0)
 }
 
 func writeFunctionValue(value *ast.FunctionValue, colorer coloring.Colorer, indentation int) {
@@ -392,16 +401,13 @@ func writeFunctionCall(functionCall *ast.FunctionCall, colorer coloring.Colorer,
 	}
 }
 
-func writeCustomTypeStatement(customTypeStatement *ast.CustomType, colorer coloring.Colorer, indentation int) {
+func WriteCustomTypeStatement(customTypeStatement *ast.CustomType, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("type ")
 	writeTypeIdentifier(customTypeStatement.Identifier(), colorer)
+	colorer.NewLine(indentation + 1)
+	colorer.OperatorString("=")
 	colorer.OneSpace()
-	/*
-		colorer.OperatorString("=")
-		colorer.NewLine(indentation+1)
-		writeType(customTypeStatement.Type(), colorer,true,  indentation+1)
-
-	*/
+	writeCustomType(customTypeStatement, colorer, indentation+1)
 }
 
 func writeFunctionValueParameters(parameters []*ast.VariableIdentifier, colorer coloring.Colorer) {
@@ -458,7 +464,7 @@ func writeType(astType ast.Type, colorer coloring.Colorer, addParen bool, indent
 	switch t := astType.(type) {
 	case *ast.Record:
 		{
-			writeRecordType(t, colorer, indentation)
+			WriteRecordType(t, colorer, indentation)
 		}
 	case *ast.TypeReference:
 		{
@@ -475,6 +481,10 @@ func writeType(astType ast.Type, colorer coloring.Colorer, addParen bool, indent
 	case *ast.LocalType:
 		{
 			writeLocalType(t, colorer, indentation)
+		}
+	case *ast.UnmanagedType:
+		{
+			writeUnmanagedType(t, colorer, indentation)
 		}
 	default:
 		panic(fmt.Errorf(">>> what is this type %T\n", t))
@@ -594,6 +604,11 @@ func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 	} else {
 		colorer = coloring.NewColorerWithoutColor()
 	}
+
+	return WriteCodeUsingColorer(program, colorer)
+}
+
+func WriteCodeUsingColorer(program *ast.SourceFile, colorer coloring.Colorer) (string, error) {
 	var lastStatement ast.Expression
 	for index, expression := range program.Statements() {
 		if index > 0 {
@@ -607,7 +622,7 @@ func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 		}
 		switch t := expression.(type) {
 		case *ast.Alias:
-			writeAliasStatement(t, colorer, 0)
+			WriteAliasStatement(t, colorer, 0)
 		case *ast.FunctionValueNamedDefinition:
 			writeDefinitionAssignment(t, colorer, 0)
 		case *ast.ExternalFunction:
@@ -618,7 +633,7 @@ func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 			writeAnnotation(t, colorer, 0)
 		case *ast.CustomType:
 			{
-				writeCustomTypeStatement(t, colorer, 0)
+				WriteCustomTypeStatement(t, colorer, 0)
 			}
 
 		default:

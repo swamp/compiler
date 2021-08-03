@@ -16,9 +16,17 @@ import (
 	"github.com/swamp/compiler/src/environment"
 )
 
+type ModuleMap = int
+
+const (
+	ModuleFromEnvironment ModuleMap = iota
+	ModuleFromPath
+)
+
 type Module struct {
-	Name string
-	Path string
+	Name   string
+	Path   string
+	Mapped ModuleMap
 }
 
 type Settings struct {
@@ -33,6 +41,7 @@ func Load(reader io.Reader, rootDirectory string, configuration environment.Envi
 	}
 
 	settings := Settings{}
+	mapped := ModuleFromPath
 
 	unmarshalErr := toml.Unmarshal(data, &settings)
 	if unmarshalErr != nil {
@@ -55,12 +64,14 @@ func Load(reader io.Reader, rootDirectory string, configuration environment.Envi
 				return Settings{}, fmt.Errorf("could not resolve external package name '%v', please add it to '%v' file", packageName, fileName)
 			}
 			convertedPath = convertedPath + suffix
+			mapped = ModuleFromEnvironment
 		}
 		if !filepath.IsAbs(convertedPath) {
 			convertedPath = filepath.Join(rootDirectory, convertedPath)
 		}
 
 		settings.Module[index].Path = convertedPath
+		settings.Module[index].Mapped = mapped
 	}
 
 	return settings, nil

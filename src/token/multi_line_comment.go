@@ -97,7 +97,7 @@ func (s MultiLineCommentToken) Value() string {
 		if len(str) > 0 {
 			str += "\n"
 		}
-		str += upcomingString
+		str += part.CommentString
 	}
 
 	return str

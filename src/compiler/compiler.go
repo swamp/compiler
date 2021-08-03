@@ -99,7 +99,7 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	rootPackage := NewPackageLoader(mainPrefix, documentProvider, mainNamespace, world, worldDecorator)
 
 	libraryReader := loader.NewLibraryReaderAndDecorator()
-	libraryModule, libErr := libraryReader.ReadLibraryModule(world, rootPackage.repository, mainSourceFile, mainNamespace, documentProvider, configuration)
+	libraryModule, libErr := libraryReader.ReadLibraryModule(decorated.ModuleTypeNormal, world, rootPackage.repository, mainSourceFile, mainNamespace, documentProvider, configuration)
 	if libErr != nil {
 		return nil, nil, libErr
 	}
@@ -135,7 +135,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 
 	var allExternalFunctions []*generate.ExternalFunction
 
-	fakeMod := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), nil)
+	fakeMod := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(nil), nil)
 
 	err := typeinfo.GeneratePackageToChunk(compiledPackage, typeInformationChunk)
 	if err != nil {

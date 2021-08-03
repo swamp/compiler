@@ -16,7 +16,7 @@ import (
 )
 
 type RunesToModuleConverter interface {
-	RunesToModule(moduleRepository deccy.ModuleRepository, moduleName dectype.ArtifactFullyQualifiedModuleName, relativeFilename string, str string) (*decorated.Module, decshared.DecoratedError)
+	RunesToModule(moduleType decorated.ModuleType, moduleRepository deccy.ModuleRepository, moduleName dectype.ArtifactFullyQualifiedModuleName, relativeFilename string, str string) (*decorated.Module, decshared.DecoratedError)
 }
 
 type ModuleRunes interface {
@@ -32,7 +32,7 @@ func NewModuleReaderAndDecorator(runesLoader ModuleRunes, runesToModule RunesToM
 	return &ModuleReaderAndDecorator{runesLoader: runesLoader, runesToModule: runesToModule}
 }
 
-func (r *ModuleReaderAndDecorator) ReadModule(repository deccy.ModuleRepository, moduleName dectype.PackageRelativeModuleName, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError) {
+func (r *ModuleReaderAndDecorator) ReadModule(moduleType decorated.ModuleType, repository deccy.ModuleRepository, moduleName dectype.PackageRelativeModuleName, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError) {
 	const verboseFlag = verbosity.None
 	if verboseFlag > verbosity.None {
 		fmt.Printf("* read module %v\n", moduleName)
@@ -49,5 +49,5 @@ func (r *ModuleReaderAndDecorator) ReadModule(repository deccy.ModuleRepository,
 	// filepathToShow := pathutil.TryToMakeRelativePath(absoluteFilename)
 	// green.Fprintf(os.Stderr, "* compiling module '%v' %v\n", filepathToShow, fullyQualifiedName)
 
-	return r.runesToModule.RunesToModule(repository, fullyQualifiedName, absoluteFilename, runes)
+	return r.runesToModule.RunesToModule(moduleType, repository, fullyQualifiedName, absoluteFilename, runes)
 }

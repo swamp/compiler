@@ -18,7 +18,7 @@ import (
 	"github.com/swamp/compiler/src/verbosity"
 )
 
-type Definer struct {
+type RootStatementHandler struct {
 	typeRepo          decorated.TypeAddAndReferenceMaker
 	localAnnotation   *decorated.AnnotationStatement
 	localComments     []decorated.Comment
@@ -27,23 +27,23 @@ type Definer struct {
 	decorateStream    DecorateStream
 }
 
-func NewDefiner(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker, debugName string) *Definer {
-	g := &Definer{verboseFlag: verbosity.None, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo}
+func NewRootStatementHandler(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker, debugName string) *RootStatementHandler {
+	g := &RootStatementHandler{verboseFlag: verbosity.None, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo}
 	return g
 }
 
-func (g *Definer) AnnotateConstant(annotation *ast.Annotation, realType dtype.Type) decshared.DecoratedError {
+func (g *RootStatementHandler) AnnotateConstant(annotation *ast.Annotation, realType dtype.Type) decshared.DecoratedError {
 	g.localAnnotation = decorated.NewAnnotation(annotation, realType)
 	return nil
 }
 
-func (g *Definer) AnnotateFunc(annotation *ast.Annotation, funcType dtype.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
+func (g *RootStatementHandler) AnnotateFunc(annotation *ast.Annotation, funcType dtype.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
 	g.localAnnotation = decorated.NewAnnotation(annotation, funcType)
 
 	return g.localAnnotation, nil
 }
 
-func (g *Definer) convertAnnotation(identifier *ast.VariableIdentifier, constantType ast.Type) (dtype.Type, decshared.DecoratedError) {
+func (g *RootStatementHandler) convertAnnotation(identifier *ast.VariableIdentifier, constantType ast.Type) (dtype.Type, decshared.DecoratedError) {
 	if constantType == nil {
 		return nil, decorated.NewUnknownAnnotationTypeReference(identifier, nil)
 	}
@@ -55,7 +55,7 @@ func (g *Definer) convertAnnotation(identifier *ast.VariableIdentifier, constant
 	return convertedType, nil
 }
 
-func (g *Definer) functionAnnotation(annotation *ast.Annotation, constantType ast.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
+func (g *RootStatementHandler) functionAnnotation(annotation *ast.Annotation, constantType ast.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
 	convertedType, decErr := g.convertAnnotation(annotation.Identifier(), constantType)
 	if decErr != nil {
 		return nil, decErr
@@ -67,7 +67,7 @@ func (g *Definer) functionAnnotation(annotation *ast.Annotation, constantType as
 	return g.AnnotateFunc(annotation, convertedType)
 }
 
-func (g *Definer) handleAliasStatement(astAlias *ast.Alias) (*dectype.Alias, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleAliasStatement(astAlias *ast.Alias) (*dectype.Alias, decshared.DecoratedError) {
 	referencedType, referencedTypeErr := g.findTypeFromAstType(astAlias)
 	if referencedTypeErr != nil {
 		return nil, decorated.NewUnknownTypeAliasType(astAlias, referencedTypeErr)
@@ -80,7 +80,7 @@ func (g *Definer) handleAliasStatement(astAlias *ast.Alias) (*dectype.Alias, dec
 	return alias, g.typeRepo.AddTypeAlias(alias)
 }
 
-func (g *Definer) findTypeFromAstType(constantType ast.Type) (dtype.Type, decorated.TypeError) {
+func (g *RootStatementHandler) findTypeFromAstType(constantType ast.Type) (dtype.Type, decorated.TypeError) {
 	t, tErr := ConvertFromAstToDecorated(constantType, g.typeRepo)
 	if tErr != nil {
 		return nil, tErr
@@ -97,7 +97,7 @@ func ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType ast.Type, typ
 	return resultType, nil
 }
 
-func (g *Definer) handleCustomTypeStatement(customTypeStatement *ast.CustomType) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *ast.CustomType) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	customType, convertErr := ConvertWrappedOrNormalCustomTypeStatement(customTypeStatement, g.typeRepo, nil)
 	g.localComments = nil
 	if convertErr != nil {
@@ -110,7 +110,7 @@ func (g *Definer) handleCustomTypeStatement(customTypeStatement *ast.CustomType)
 	return customType, nil
 }
 
-func (g *Definer) handleImport(d DecorateStream, importAst *ast.Import) (*decorated.ImportStatement, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleImport(d DecorateStream, importAst *ast.Import) (*decorated.ImportStatement, decshared.DecoratedError) {
 	alias := dectype.MakeSingleModuleName(nil)
 	if importAst.Alias() != nil {
 		alias = dectype.MakeSingleModuleName(importAst.Alias())
@@ -119,24 +119,24 @@ func (g *Definer) handleImport(d DecorateStream, importAst *ast.Import) (*decora
 	return d.ImportModule(importAst, packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
 }
 
-func (g *Definer) handleExternalFunction(d DecorateStream, externalFunction *ast.ExternalFunction) (*decorated.ExternalFunctionDeclaration, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleExternalFunction(d DecorateStream, externalFunction *ast.ExternalFunction) (*decorated.ExternalFunctionDeclaration, decshared.DecoratedError) {
 	g.localComments = nil
 	return d.AddExternalFunction(externalFunction)
 }
 
-func (g *Definer) handleSinglelineComment(d DecorateStream, singleLineComment *ast.SingleLineComment) (*decorated.SingleLineComment, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleSinglelineComment(d DecorateStream, singleLineComment *ast.SingleLineComment) (*decorated.SingleLineComment, decshared.DecoratedError) {
 	decoratedComment := decorated.NewSingleLineComment(singleLineComment)
 	g.localComments = append(g.localComments, decoratedComment)
 	return decoratedComment, nil
 }
 
-func (g *Definer) handleMultilineComment(d DecorateStream, multilineComment *ast.MultilineComment) (*decorated.MultilineComment, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleMultilineComment(d DecorateStream, multilineComment *ast.MultilineComment) (*decorated.MultilineComment, decshared.DecoratedError) {
 	decoratedComment := decorated.NewMultilineComment(multilineComment)
 	g.localComments = append(g.localComments, decoratedComment)
 	return decoratedComment, nil
 }
 
-func (g *Definer) handleNamedFunctionValue(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleNamedFunctionValue(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 	if g.localAnnotation == nil {
 		return nil, decorated.NewMustHaveAnnotationJustBeforeThisDefinition(assignment)
 	}
@@ -160,7 +160,7 @@ func (g *Definer) handleNamedFunctionValue(d DecorateStream, assignment *ast.Fun
 	return namedFunctionValue, nil
 }
 
-func (g *Definer) handleAnnotation(d DecorateStream, declaration *ast.Annotation) (*decorated.AnnotationStatement, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleAnnotation(d DecorateStream, declaration *ast.Annotation) (*decorated.AnnotationStatement, decshared.DecoratedError) {
 	if g.localAnnotation != nil {
 		return nil, decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
 	}
@@ -170,7 +170,7 @@ func (g *Definer) handleAnnotation(d DecorateStream, declaration *ast.Annotation
 	return g.functionAnnotation(declaration, annotatedType)
 }
 
-func (g *Definer) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {
+func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {
 	switch v := statement.(type) {
 	case *ast.Alias:
 		return g.handleAliasStatement(v)
@@ -193,7 +193,7 @@ func (g *Definer) convertStatement(statement ast.Expression) (decorated.Statemen
 	}
 }
 
-func (g *Definer) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
+func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
 	var rootNodes []decorated.TypeOrToken
 
 	for _, statement := range program.Statements() {
@@ -210,7 +210,7 @@ func (g *Definer) convertStatements(program *ast.SourceFile) ([]decorated.TypeOr
 	return rootNodes, nil
 }
 
-func (g *Definer) Define(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
+func (g *RootStatementHandler) HandleStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
 	rootNodes, err := g.convertStatements(program)
 	if err != nil {
 		return nil, err

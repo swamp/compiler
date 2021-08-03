@@ -467,7 +467,7 @@ func compileToGlobal(targetModule *decorated.Module, globalModule *decorated.Mod
 
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(name, token.SourceFileReference{}, 0))
 
-	newModule, err := InternalCompileToModule(nil, []*decorated.Module{globalModule, targetModule},
+	newModule, err := InternalCompileToModule(decorated.ModuleTypeNormal, nil, []*decorated.Module{globalModule, targetModule},
 		nil, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})),
 		name, strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
 	if err != nil {
@@ -562,7 +562,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	var importModules []*decorated.Module
 	var copyModules []*decorated.Module
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("root-module", token.SourceFileReference{}, 0))
-	rootPrimitiveModule := decorated.NewModule(dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), nil)
+	rootPrimitiveModule := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), nil)
 	rootPrimitiveModule.MarkAsInternal()
 	globalModuleTypes := rootPrimitiveModule.LocalTypes()
 
@@ -611,7 +611,7 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 
 	defaultImportName := ast.NewTypeIdentifier(token.NewTypeSymbolToken("DefaultImport", token.SourceFileReference{}, 0))
 
-	globalModule, globalModuleErr := InternalCompileToModule(nil, nil, nil,
+	globalModule, globalModuleErr := InternalCompileToModule(decorated.ModuleTypeNormal, nil, nil, nil,
 		dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(defaultImportName)})), "(internal root)",
 		strings.TrimSpace(globalCode), enforceStyle, verbose, false)
 	if globalModuleErr != nil {

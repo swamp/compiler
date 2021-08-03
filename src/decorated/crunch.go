@@ -40,7 +40,7 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 
 	const enforceStyle = true
 
-	return InternalCompileToModule(importRepository, rootModules, importModules, dectype.MakeArtifactFullyQualifiedModuleName(nil), "for test", code,
+	return InternalCompileToModule(decorated.ModuleTypeNormal, importRepository, rootModules, importModules, dectype.MakeArtifactFullyQualifiedModuleName(nil), "for test", code,
 		enforceStyle, verbose, errorsAsWarnings)
 }
 
@@ -99,7 +99,7 @@ func checkUnusedImports(module *decorated.Module, importModules []*decorated.Mod
 	*/
 }
 
-func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*decorated.Module,
+func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository ModuleRepository, aliasModules []*decorated.Module,
 	importModules []*decorated.Module, moduleName dectype.ArtifactFullyQualifiedModuleName, absoluteFilename string, code string,
 	enforceStyle bool, verbose verbosity.Verbosity, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
 	tokenizer, program, programErr := InternalCompileToProgram(absoluteFilename, code, enforceStyle, verbose)
@@ -108,7 +108,7 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 		return nil, programErr
 	}
 
-	module := decorated.NewModule(moduleName, tokenizer.Document())
+	module := decorated.NewModule(moduleType, moduleName, tokenizer.Document())
 
 	for _, aliasModule := range aliasModules {
 		if err := CopyModuleToModule(module, aliasModule); err != nil {
@@ -136,9 +136,9 @@ func InternalCompileToModule(moduleRepository ModuleRepository, aliasModules []*
 
 	converter := NewDecorator(moduleRepository, module, createAndLookup)
 
-	definerScan := decorator.NewDefiner(converter, createAndLookup, "compiletomodule")
+	rootStatementHandler := decorator.NewRootStatementHandler(converter, createAndLookup, "compiletomodule")
 	var allErrors []decshared.DecoratedError
-	rootNodes, generateErr := definerScan.Define(program)
+	rootNodes, generateErr := rootStatementHandler.HandleStatements(program)
 	if generateErr != nil {
 		allErrors = append(allErrors, generateErr)
 	}

@@ -7,9 +7,11 @@ import (
 
 	"github.com/gomarkdown/markdown"
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/ast/codewriter"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/token"
 )
 
 func div(className string, value string) string {
@@ -30,6 +32,10 @@ func commentDivWrite(writer io.Writer, markdownString string) {
 
 func span(className string, value string) string {
 	return fmt.Sprintf("<span class='%v'>%v</span>", className, value)
+}
+
+func spanWrite(writer io.Writer, className string, value string) {
+	fmt.Fprintf(writer, span(className, value))
 }
 
 func code(className string, value string) string {
@@ -132,9 +138,11 @@ func typeToHtmlBlock(typeToConvert dtype.Type) string {
 	return typeToHtml(typeToConvert) + "\n"
 }
 
-func markdownToHtml(markdownString string) string {
+func markdownToHtml(rawMarkdownString string) string {
+	markdownString := ConvertSwampMarkdown(rawMarkdownString)
 	raw := []byte(markdownString)
 	outputRaw := markdown.ToHTML(raw, nil, nil)
+
 	return string(outputRaw)
 }
 
@@ -181,11 +189,23 @@ func sortConstantKeys(constants map[*decorated.FullyQualifiedPackageVariableName
 func filterTypes(types map[string]dtype.Type) map[string]dtype.Type {
 	filteredTypes := make(map[string]dtype.Type)
 	for name, localType := range types {
-		alias, isAlias := localType.(*dectype.Alias)
-		if isAlias {
-			comment := alias.AstAlias().Comment()
+		switch t := localType.(type) {
+		case *dectype.Alias:
+			comment := t.AstAlias().Comment()
 			if comment != nil && comment.Token().ForDocumentation {
-				filteredTypes[name] = alias
+				filteredTypes[name] = t
+			}
+		case *dectype.CustomTypeAtom:
+			comment := t.AstCustomType().Comment()
+			if comment != nil && comment.Token().ForDocumentation {
+				filteredTypes[name] = t
+			}
+		case *dectype.RecordAtom:
+			{
+				comment := t.AstRecord().Comment()
+				if comment != nil && comment.Token().ForDocumentation {
+					filteredTypes[name] = t
+				}
 			}
 		}
 	}
@@ -218,13 +238,113 @@ func filterDefinitions(definitions []decorated.ModuleDef) (map[*decorated.FullyQ
 }
 
 func writeHeader(writer io.Writer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, p dtype.Type) {
-	fmt.Fprintf(writer, "\n\n<h3>%v</h3>\n", fullyQualifiedName.Identifier().Name())
+	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName, fullyQualifiedName.Identifier().Name())
 
 	fmt.Fprintf(writer, "<div class='prototype'><code>%v</code></div>\n", typeToHtmlBlock(p))
 }
 
+type HtmlColorer struct {
+	writer io.Writer
+}
+
+func (c *HtmlColorer) Operator(t token.OperatorToken) {
+	spanWrite(c.writer, "operator", t.Raw())
+}
+
+func (c *HtmlColorer) VariableSymbol(t token.VariableSymbolToken) {
+	spanWrite(c.writer, "variable", t.Raw())
+}
+
+func (c *HtmlColorer) Definition(t token.VariableSymbolToken) {
+	spanWrite(c.writer, "definition", t.Raw())
+}
+
+func (c *HtmlColorer) LocalType(t token.VariableSymbolToken) {
+	spanWrite(c.writer, "localtype", t.Raw())
+}
+
+func (c *HtmlColorer) Parameter(t token.VariableSymbolToken) {
+	spanWrite(c.writer, "parameter", t.Raw())
+}
+
+func (c *HtmlColorer) RecordField(t token.VariableSymbolToken) {
+	spanWrite(c.writer, "recordfield", t.Raw())
+}
+
+func (c *HtmlColorer) TypeSymbol(t token.TypeSymbolToken) {
+	spanWrite(c.writer, "typesymbol", t.Raw())
+}
+
+func (c *HtmlColorer) TypeGeneratorName(t token.TypeSymbolToken) {
+	spanWrite(c.writer, "typegenerator", t.Raw())
+}
+
+func (c *HtmlColorer) ModuleReference(t token.TypeSymbolToken) {
+	spanWrite(c.writer, "modulereference", t.Raw())
+}
+
+func (c *HtmlColorer) PrimitiveType(t token.TypeSymbolToken) {
+	spanWrite(c.writer, "primitive", t.Raw())
+}
+
+func (c *HtmlColorer) AliasNameSymbol(t token.TypeSymbolToken) {
+	spanWrite(c.writer, "alias", t.Raw())
+}
+
+func (c *HtmlColorer) NumberLiteral(t token.NumberToken) {
+	spanWrite(c.writer, "number", t.Raw())
+}
+
+func (c *HtmlColorer) BooleanLiteral(t token.BooleanToken) {
+	spanWrite(c.writer, "boolean", t.Raw())
+}
+
+func (c *HtmlColorer) KeywordString(t string) {
+	spanWrite(c.writer, "keyword", t)
+}
+
+func (c *HtmlColorer) NewLine(indentation int) {
+	fmt.Fprintf(c.writer, "\n")
+	for i := 0; i < indentation; i++ {
+		fmt.Fprintf(c.writer, "  ")
+	}
+}
+
+func (c *HtmlColorer) OperatorString(t string) {
+	spanWrite(c.writer, "operator", t)
+}
+
+func (c *HtmlColorer) StringLiteral(s token.StringToken) {
+	spanWrite(c.writer, "string", s.Raw())
+}
+
+func (c *HtmlColorer) OneSpace() {
+	fmt.Fprintf(c.writer, " ")
+}
+
+func (c *HtmlColorer) RightArrow() {
+	fmt.Fprintf(c.writer, "->")
+}
+
+func (c *HtmlColorer) RightPipe() {
+	fmt.Fprintf(c.writer, "|>")
+}
+
+func (c *HtmlColorer) LeftPipe() {
+	fmt.Fprintf(c.writer, "<|")
+}
+
+func (c *HtmlColorer) String() string {
+	return "htmlcolorer"
+}
+
+func (c *HtmlColorer) UserInstruction(t string) {
+}
+
 func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 	var markdownString string
+
+	colorer := &HtmlColorer{writer: writer}
 
 	filteredTypes := filterTypes(module.LocalTypes().AllTypes())
 
@@ -233,7 +353,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 		return
 	}
 
-	fmt.Fprintf(writer, "\n\n<h2>Module %v</h2>\n", module.FullyQualifiedModuleName().Last())
+	fmt.Fprintf(writer, "\n\n<h2>Module %v (%v)</h2>\n", module.FullyQualifiedModuleName().Last(), module.ModuleType())
 
 	sortedConstantKeys := sortConstantKeys(filteredConstants)
 	for _, constantName := range sortedConstantKeys {
@@ -244,13 +364,40 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 	sortedTypeKeys := sortTypeKeys(filteredTypes)
 	for _, localTypeName := range sortedTypeKeys {
 		localType := filteredTypes[localTypeName]
-		alias, isAlias := localType.(*dectype.Alias)
-		if isAlias {
-			comment := alias.AstAlias().Comment()
-			if comment != nil && comment.Token().ForDocumentation {
+		switch t := localType.(type) {
+		case *dectype.Alias:
+			{
+				comment := t.AstAlias().Comment()
 				markdownString = comment.Token().Value()
-				fmt.Fprintf(writer, "\n\n<h3>%v</h3>\n", alias.AstAlias().Name())
+				fmt.Fprintf(writer, "\n\n<h3>%v</h3>\n", t.AstAlias().Name())
+				fmt.Fprintf(writer, "<pre class='swamp'>")
+				codewriter.WriteAliasStatement(t.AstAlias(), colorer, 0)
+				fmt.Fprintf(writer, "</pre>")
 				commentDivWrite(writer, markdownString)
+			}
+		case *dectype.CustomTypeAtom:
+			{
+				comment := t.AstCustomType().Comment()
+				markdownString = comment.Token().Value()
+				fmt.Fprintf(writer, "\n\n<h3>%v</h3>\n", t.AstCustomType().Name())
+				fmt.Fprintf(writer, "<pre class='swamp'>")
+				codewriter.WriteCustomTypeStatement(t.AstCustomType(), colorer, 0)
+				fmt.Fprintf(writer, "</pre>")
+				commentDivWrite(writer, markdownString)
+			}
+		case *dectype.RecordAtom:
+			{
+				comment := t.AstRecord().Comment()
+				markdownString = comment.Token().Value()
+				fmt.Fprintf(writer, "\n\n<h3>%v</h3>\n", t.AstRecord().Name())
+				fmt.Fprintf(writer, "<pre class='swamp'>")
+				codewriter.WriteRecordType(t.AstRecord(), colorer, 0)
+				fmt.Fprintf(writer, "</pre>")
+				commentDivWrite(writer, markdownString)
+			}
+		default:
+			{
+				panic(fmt.Errorf("type %T is not handled", t))
 			}
 		}
 	}

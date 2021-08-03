@@ -71,6 +71,14 @@ func (d *ExternalFunctionDeclaration) String() string {
 	return "external func"
 }
 
+type ModuleType = int
+
+const (
+	ModuleTypeNormal ModuleType = iota
+	ModuleTypeFromPath
+	ModuleTypeFromEnvironment
+)
+
 type Module struct {
 	localTypes        *ModuleTypes
 	localDefinitions  *ModuleDefinitions
@@ -95,12 +103,14 @@ type Module struct {
 	references               []*ModuleReference
 	errors                   []decshared.DecoratedError
 	warnings                 []decshared.DecoratedWarning
+	moduleType               ModuleType
 }
 
-func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri *token.SourceFileDocument) *Module {
+func NewModule(moduleType ModuleType, fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri *token.SourceFileDocument) *Module {
 	m := &Module{
 		fullyQualifiedModuleName: fullyQualifiedModuleName,
 		sourceFileUri:            sourceFileUri,
+		moduleType:               moduleType,
 		importedModules:          NewModuleImports(),
 	}
 
@@ -118,6 +128,10 @@ func NewModule(fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 
 func (m *Module) FetchPositionLength() token.SourceFileReference {
 	return token.MakeSourceFileReference(m.sourceFileUri, token.NewPositionLength(token.NewPositionTopLeft(), 0))
+}
+
+func (m *Module) ModuleType() ModuleType {
+	return m.moduleType
 }
 
 func (m *Module) AddReference(ref *ModuleReference) {

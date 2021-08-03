@@ -81,7 +81,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 			full, _ := filepath.Abs(dependencyFilePrefix)
 			return decorated.NewInternalError(fmt.Errorf("could not find directory '%v' '%v' ('%v' '%v')", full, dependencyFilePrefix, swampDirectory, packagePath))
 		}
-		_, moduleErr := r.ReadLibraryModule(world, repository, dependencyFilePrefix, rootNamespace, documentProvider, configuration)
+		_, moduleErr := r.ReadLibraryModule(decorated.ModuleTypeFromPath, world, repository, dependencyFilePrefix, rootNamespace, documentProvider, configuration)
 		if moduleErr != nil {
 			return moduleErr
 		}
@@ -90,7 +90,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 	return nil
 }
 
-func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName, documentProvider DocumentProvider, configuration environment.Environment) (*decorated.Module, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) ReadLibraryModule(moduleType decorated.ModuleType, world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName, documentProvider DocumentProvider, configuration environment.Environment) (*decorated.Module, decshared.DecoratedError) {
 	const verboseFlag = verbosity.Low
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
@@ -117,10 +117,10 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(world *Package, repository
 	// green := color.New(color.FgHiGreen)
 	// green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
 
-	return newRepository.FetchMainModuleInPackage(verboseFlag)
+	return newRepository.FetchMainModuleInPackage(moduleType, verboseFlag)
 }
 
-func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration environment.Environment) (*Package, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) CompileAllInLibrary(moduleType decorated.ModuleType, world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration environment.Environment) (*Package, decshared.DecoratedError) {
 	const verboseFlag = verbosity.None
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
 		panic("problem")
@@ -147,7 +147,7 @@ func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, reposito
 	// green := color.New(color.FgHiGreen)
 	// green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
 
-	_, err := newRepository.FetchMainModuleInPackage(verboseFlag)
+	_, err := newRepository.FetchMainModuleInPackage(moduleType, verboseFlag)
 	if err != nil {
 		return nil, err
 	}
@@ -155,11 +155,11 @@ func (r *LibraryReaderAndDecorator) CompileAllInLibrary(world *Package, reposito
 	return world, nil
 }
 
-func (r *LibraryReaderAndDecorator) CompileAllInLibraryFindSettings(world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration environment.Environment) (*Package, decshared.DecoratedError) {
+func (r *LibraryReaderAndDecorator) CompileAllInLibraryFindSettings(moduleType decorated.ModuleType, world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration environment.Environment) (*Package, decshared.DecoratedError) {
 	foundSettingsDirectory, err := FindSettingsDirectory(absoluteDirectory)
 	if err != nil {
 		return nil, decorated.NewInternalError(err)
 	}
 
-	return r.CompileAllInLibrary(world, repository, foundSettingsDirectory, documentProvider, namespacePrefix, configuration)
+	return r.CompileAllInLibrary(moduleType, world, repository, foundSettingsDirectory, documentProvider, namespacePrefix, configuration)
 }

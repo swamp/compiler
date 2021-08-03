@@ -29,6 +29,11 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 			code {
 				font-family: 'Source Code Pro', 'Ubuntu Mono', 'Liberation Mono', Courier, monospace;
 			}
+
+			/* 				display: table;
+				white-space: pre-wrap;
+				border-collapse: separate;
+*/
 			
 			div.description p strong {
 				color: #a3a37a;
@@ -90,6 +95,50 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 
 			.recordtype {
 				color: #ab9b75;
+			}
+
+			.operator {
+				color: #eb8ae5;
+			}
+
+			.keyword {
+				color: #ffecec;
+			}
+
+			.typesymbol {
+				color: #d2c19a;
+			}
+
+			.swamp {
+				background-color: #404040;
+				padding: 0.5rem;
+				border-radius: .3rem;
+				display: table;
+			}
+
+			.admonition {
+				border-left: .2rem solid #448aff;
+				background-color: red;
+				padding: 0.6rem;
+				border-radius: 0.1rem
+				margin: 1.5em 0;
+			}
+
+			.admonition-title {
+				background-color: rgba(68,138,255,.1);
+				border-left: .2rem solid #448aff;
+				margin: 0 -.6rem 0 -.8rem;
+				padding: .4rem .6rem .4rem 2rem;
+			}
+
+			.warning {
+ 				background-color:rgba(255,145,0,.1);
+ 				border-color:#ff9100;
+			}
+
+			.admonition-title > .warning  {
+ 				background-color:rgba(255,145,0,.1);
+ 				border-color:#ff9100;
 			}
 
 			h1 {
