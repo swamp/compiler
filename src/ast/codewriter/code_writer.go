@@ -25,7 +25,7 @@ func WriteRecordType(recordType *ast.Record, colorer coloring.Colorer, indentati
 		colorer.OneSpace()
 		colorer.OperatorString(":")
 		colorer.OneSpace()
-		writeType(field.Type(), colorer, true, indentation)
+		WriteType(field.Type(), colorer, true, indentation)
 	}
 
 	colorer.NewLine(indentation)
@@ -52,7 +52,7 @@ func writeCustomType(customType *ast.CustomType, colorer coloring.Colorer, inden
 			if paramIndex > 0 {
 				colorer.OneSpace()
 			}
-			writeType(variantParam, colorer, true, indentation)
+			WriteType(variantParam, colorer, true, indentation)
 		}
 	}
 }
@@ -75,7 +75,7 @@ func WriteFunctionParameterTypes(functionParameters []ast.Type, colorer coloring
 			colorer.RightArrow()
 			colorer.OneSpace()
 		}
-		writeType(partType, colorer, true, indentation)
+		WriteType(partType, colorer, true, indentation)
 	}
 }
 
@@ -128,7 +128,7 @@ func writeTypeReference(typeReference *ast.TypeReference, colorer coloring.Color
 	}
 	colorer.OneSpace()
 	for _, field := range typeReference.Arguments() {
-		writeType(field, colorer, true, 0)
+		WriteType(field, colorer, true, 0)
 	}
 }
 
@@ -140,7 +140,7 @@ func writeScopedTypeReference(typeReference *ast.TypeReferenceScoped, colorer co
 	}
 	colorer.OneSpace()
 	for _, field := range typeReference.Arguments() {
-		writeType(field, colorer, true, 0)
+		WriteType(field, colorer, true, 0)
 	}
 }
 
@@ -148,8 +148,9 @@ func WriteAliasStatement(alias *ast.Alias, colorer coloring.Colorer, indentation
 	colorer.KeywordString("type alias ")
 	colorer.AliasNameSymbol(alias.Identifier().Symbol())
 	colorer.OneSpace()
-	colorer.KeywordString(" = ")
-	writeType(alias.ReferencedType(), colorer, false, 0)
+	colorer.KeywordString("=")
+	colorer.NewLine(indentation + 1)
+	WriteType(alias.ReferencedType(), colorer, false, indentation+1)
 }
 
 func writeFunctionValue(value *ast.FunctionValue, colorer coloring.Colorer, indentation int) {
@@ -457,11 +458,15 @@ func writeAnnotation(annotation *ast.Annotation, colorer coloring.Colorer, inden
 	colorer.OneSpace()
 	colorer.OperatorString(":")
 	colorer.OneSpace()
-	writeType(annotation.AnnotatedType(), colorer, false, indentation)
+	WriteType(annotation.AnnotatedType(), colorer, false, indentation)
 }
 
-func writeType(astType ast.Type, colorer coloring.Colorer, addParen bool, indentation int) {
+func WriteType(astType ast.Type, colorer coloring.Colorer, addParen bool, indentation int) {
 	switch t := astType.(type) {
+	case *ast.Alias:
+		{
+			WriteAliasStatement(t, colorer, indentation)
+		}
 	case *ast.Record:
 		{
 			WriteRecordType(t, colorer, indentation)
@@ -476,7 +481,7 @@ func writeType(astType ast.Type, colorer coloring.Colorer, addParen bool, indent
 		}
 	case *ast.CustomType:
 		{
-			writeCustomType(t, colorer, indentation)
+			WriteCustomTypeStatement(t, colorer, indentation)
 		}
 	case *ast.LocalType:
 		{

@@ -8,6 +8,7 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/ast/codewriter"
+	"github.com/swamp/compiler/src/coloring"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -272,7 +273,9 @@ func (c *HtmlColorer) RecordField(t token.VariableSymbolToken) {
 }
 
 func (c *HtmlColorer) TypeSymbol(t token.TypeSymbolToken) {
+	// fmt.Fprintf(c.writer, "<a href='#%v'>", t.Raw())
 	spanWrite(c.writer, "typesymbol", t.Raw())
+	// fmt.Fprintf(c.writer, "</a>")
 }
 
 func (c *HtmlColorer) TypeGeneratorName(t token.TypeSymbolToken) {
@@ -341,6 +344,15 @@ func (c *HtmlColorer) String() string {
 func (c *HtmlColorer) UserInstruction(t string) {
 }
 
+func documentType(astType ast.Type, comment token.MultiLineCommentToken, colorer coloring.Colorer, writer io.Writer) {
+	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", astType.Name(), astType.Name())
+	fmt.Fprintf(writer, "<pre class='swamp'>")
+	codewriter.WriteType(astType, colorer, false, 0)
+	fmt.Fprintf(writer, "</pre>")
+	markdownString := comment.Value()
+	commentDivWrite(writer, markdownString)
+}
+
 func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 	var markdownString string
 
@@ -368,32 +380,17 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 		case *dectype.Alias:
 			{
 				comment := t.AstAlias().Comment()
-				markdownString = comment.Token().Value()
-				fmt.Fprintf(writer, "\n\n<h3>%v</h3>\n", t.AstAlias().Name())
-				fmt.Fprintf(writer, "<pre class='swamp'>")
-				codewriter.WriteAliasStatement(t.AstAlias(), colorer, 0)
-				fmt.Fprintf(writer, "</pre>")
-				commentDivWrite(writer, markdownString)
+				documentType(t.AstAlias(), comment.Token(), colorer, writer)
 			}
 		case *dectype.CustomTypeAtom:
 			{
 				comment := t.AstCustomType().Comment()
-				markdownString = comment.Token().Value()
-				fmt.Fprintf(writer, "\n\n<h3>%v</h3>\n", t.AstCustomType().Name())
-				fmt.Fprintf(writer, "<pre class='swamp'>")
-				codewriter.WriteCustomTypeStatement(t.AstCustomType(), colorer, 0)
-				fmt.Fprintf(writer, "</pre>")
-				commentDivWrite(writer, markdownString)
+				documentType(t.AstCustomType(), comment.Token(), colorer, writer)
 			}
 		case *dectype.RecordAtom:
 			{
 				comment := t.AstRecord().Comment()
-				markdownString = comment.Token().Value()
-				fmt.Fprintf(writer, "\n\n<h3>%v</h3>\n", t.AstRecord().Name())
-				fmt.Fprintf(writer, "<pre class='swamp'>")
-				codewriter.WriteRecordType(t.AstRecord(), colorer, 0)
-				fmt.Fprintf(writer, "</pre>")
-				commentDivWrite(writer, markdownString)
+				documentType(t.AstRecord(), comment.Token(), colorer, writer)
 			}
 		default:
 			{
