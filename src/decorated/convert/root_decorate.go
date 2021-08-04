@@ -133,17 +133,14 @@ func (g *RootStatementHandler) handleSinglelineComment(d DecorateStream, singleL
 func (g *RootStatementHandler) handleMultilineComment(d DecorateStream, multilineComment *ast.MultilineComment) (*decorated.MultilineComment, decshared.DecoratedError) {
 	decoratedComment := decorated.NewMultilineComment(multilineComment)
 	g.localComments = append(g.localComments, decoratedComment)
+	g.localCommentBlock = multilineComment
 	return decoratedComment, nil
 }
 
 func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream, constant *ast.ConstantDefinition) (*decorated.Constant, decshared.DecoratedError) {
 	name := constant.Identifier()
-	annotatedType := g.localAnnotation.Type()
-	if annotatedType == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
-	}
 	variableContext := d.NewVariableContext()
-	namedConstant, decoratedExpressionErr := decorateConstant(d, name, constant, variableContext, g.localCommentBlock)
+	namedConstant, decoratedExpressionErr := decorateConstant(d, name, constant, variableContext, constant.Comment())
 	d.AddDefinition(name, namedConstant)
 	if decoratedExpressionErr != nil {
 		return nil, decoratedExpressionErr

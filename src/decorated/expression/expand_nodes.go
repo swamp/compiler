@@ -38,6 +38,12 @@ func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
 	return tokens
 }
 
+func expandChildNodesConstant(constant *Constant) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(constant.Expression())...)
+	return tokens
+}
+
 func expandChildNodesFunctionReference(fn *FunctionReference) []TypeOrToken {
 	var tokens []TypeOrToken
 	optionalModuleRef := fn.NameReference().ModuleReference()
@@ -473,7 +479,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *UnaryOperator:
 		return expandChildNodes(t.Left())
 	case *Constant:
-		return tokens
+		return append(tokens, expandChildNodesConstant(t)...)
 	case *BinaryOperator:
 		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:

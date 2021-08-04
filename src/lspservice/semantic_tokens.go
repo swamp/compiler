@@ -172,10 +172,16 @@ func addSemanticTokenUnmanagedTypes(f *dectype.UnmanagedType, builder *SemanticB
 }
 
 func addSemanticTokenConstant(f *decorated.Constant, builder *SemanticBuilder) error {
+	if f.CommentBlock() != nil {
+		if err := encodeComment(builder, f.CommentBlock().Token()); err != nil {
+			return err
+		}
+	}
 	if err := encodeConstant(f.FetchPositionLength().Range, builder); err != nil {
 		return err
 	}
-	return nil
+
+	return addSemanticToken(f.Expression(), builder)
 }
 
 func addTypeReferencePrimitive(referenceRange token.Range, primitive *dectype.PrimitiveAtom, builder *SemanticBuilder) error {
@@ -811,6 +817,18 @@ func addSemanticTokenFunctionReference(functionReference *decorated.FunctionRefe
 	return nil
 }
 
+func addSemanticTokenConstantReference(constantReference *decorated.ConstantReference, builder *SemanticBuilder) error {
+	if err := addSemanticTokenNamedDefinitionReference(constantReference.NameReference(), builder); err != nil {
+		return err
+	}
+
+	if err := builder.EncodeSymbol(constantReference.Identifier().FetchPositionLength().Range, "macro", nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func addSemanticTokenCustomTypeVariantParameterExpandReference(parameter *decorated.CaseConsequenceParameterReference, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(parameter.Identifier().FetchPositionLength().Range, "parameter", nil); err != nil {
 		return err
@@ -1003,6 +1021,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return nil // TODO: decorate external
 	case *decorated.AsmConstant:
 		return nil // TODO: decorate asm constant
+	case *decorated.ConstantReference:
+		return addSemanticTokenConstantReference(t, builder)
 
 	case *decorated.FunctionReference:
 		return addSemanticTokenFunctionReference(t, builder)

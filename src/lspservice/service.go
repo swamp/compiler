@@ -196,6 +196,8 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.Module().FetchPositionLength(), nil
 	case *decorated.FunctionParameterReference:
 		return t.ParameterRef().FetchPositionLength(), nil
+	case *decorated.ConstantReference:
+		return t.Constant().FetchPositionLength(), nil
 	case *decorated.CaseConsequenceParameterReference:
 		return t.ParameterRef().FetchPositionLength(), nil
 	case *decorated.LetVariableReference:
