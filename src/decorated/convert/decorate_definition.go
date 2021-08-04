@@ -36,6 +36,15 @@ func DerefFunctionTypeLike(functionTypeLike dectype.FunctionTypeLike) *dectype.F
 	return nil
 }
 
+func decorateConstant(d DecorateStream, nameIdent *ast.VariableIdentifier, astConstant *ast.ConstantDefinition, context *VariableContext, localCommentBlock *ast.MultilineComment) (*decorated.Constant, decshared.DecoratedError) {
+	decoratedExpression, decoratedExpressionErr := DecorateExpression(d, astConstant.Expression(), context)
+	if decoratedExpressionErr != nil {
+		return nil, decoratedExpressionErr
+	}
+
+	return decorated.NewConstant(nameIdent, astConstant, decoratedExpression, localCommentBlock), nil
+}
+
 func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, functionValue *ast.FunctionValue, expectedType dtype.Type, annotation *decorated.AnnotationStatement, localCommentBlock *ast.MultilineComment) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 	name := nameIdent.Name()
 	localName := name

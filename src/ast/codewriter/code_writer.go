@@ -154,7 +154,7 @@ func WriteAliasStatement(alias *ast.Alias, colorer coloring.Colorer, indentation
 }
 
 func writeFunctionValue(value *ast.FunctionValue, colorer coloring.Colorer, indentation int) {
-	writeExpression(value.Expression(), colorer, indentation)
+	WriteExpression(value.Expression(), colorer, indentation)
 }
 
 func writeSingleLineComment(comment *ast.SingleLineComment, colorer coloring.Colorer, indentation int) {
@@ -173,7 +173,7 @@ func writeMultiLineComment(comment *ast.MultilineComment, colorer coloring.Color
 func writeCase(caseExpression *ast.CaseForCustomType, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("case")
 	colorer.OneSpace()
-	writeExpression(caseExpression.Test(), colorer, 0)
+	WriteExpression(caseExpression.Test(), colorer, 0)
 	colorer.OneSpace()
 	colorer.KeywordString("of")
 	colorer.NewLine(indentation + 1)
@@ -191,7 +191,7 @@ func writeCase(caseExpression *ast.CaseForCustomType, colorer coloring.Colorer, 
 		}
 		colorer.RightArrow()
 		colorer.NewLine(indentation + 2)
-		writeExpression(consequence.Expression(), colorer, 0)
+		WriteExpression(consequence.Expression(), colorer, 0)
 	}
 
 	// colorer.NewLine(indentation)
@@ -205,11 +205,11 @@ func writeGuard(guardExpression *ast.GuardExpression, colorer coloring.Colorer, 
 		colorer.KeywordString("|")
 		colorer.OneSpace()
 
-		writeExpression(item.Condition, colorer, 0)
+		WriteExpression(item.Condition, colorer, 0)
 		colorer.OneSpace()
 		colorer.RightArrow()
 		colorer.OneSpace()
-		writeExpression(item.Consequence, colorer, 0)
+		WriteExpression(item.Consequence, colorer, 0)
 	}
 
 	colorer.NewLine(indentation + 1)
@@ -219,7 +219,7 @@ func writeGuard(guardExpression *ast.GuardExpression, colorer coloring.Colorer, 
 	colorer.OneSpace()
 	colorer.RightArrow()
 	colorer.OneSpace()
-	writeExpression(guardExpression.Default().Consequence, colorer, 0)
+	WriteExpression(guardExpression.Default().Consequence, colorer, 0)
 }
 
 func writeGetVariable(identifier *ast.VariableIdentifier, colorer coloring.Colorer, indentation int) {
@@ -245,7 +245,7 @@ func writeListLiteral(listLiteral *ast.ListLiteral, colorer coloring.Colorer, in
 		if index > 0 {
 			colorer.OperatorString(", ")
 		}
-		writeExpression(expression, colorer, indentation+1)
+		WriteExpression(expression, colorer, indentation+1)
 	}
 	colorer.OneSpace()
 	colorer.KeywordString("]")
@@ -256,7 +256,7 @@ func writeRecordLiteral(recordLiteral *ast.RecordLiteral, colorer coloring.Color
 	colorer.OneSpace()
 
 	if recordLiteral.TemplateExpression() != nil {
-		writeExpression(recordLiteral.TemplateExpression(), colorer, indentation)
+		WriteExpression(recordLiteral.TemplateExpression(), colorer, indentation)
 		colorer.OneSpace()
 		colorer.OperatorString("|")
 		colorer.OneSpace()
@@ -270,7 +270,7 @@ func writeRecordLiteral(recordLiteral *ast.RecordLiteral, colorer coloring.Color
 		colorer.OneSpace()
 		colorer.OperatorString("=")
 		colorer.OneSpace()
-		writeExpression(assignment.Expression(), colorer, indentation+1)
+		WriteExpression(assignment.Expression(), colorer, indentation+1)
 	}
 	colorer.NewLine(indentation)
 	colorer.KeywordString("}")
@@ -298,27 +298,27 @@ func writeLet(letExpression *ast.Let, colorer coloring.Colorer, indentation int)
 		colorer.OneSpace()
 		colorer.OperatorString("=")
 		colorer.NewLine(indentation + 2)
-		writeExpression(assignment.Expression(), colorer, indentation+1)
+		WriteExpression(assignment.Expression(), colorer, indentation+1)
 	}
 
 	colorer.NewLine(indentation)
 	colorer.KeywordString("in")
 	colorer.NewLine(indentation)
-	writeExpression(letExpression.Consequence(), colorer, indentation)
+	WriteExpression(letExpression.Consequence(), colorer, indentation)
 }
 
 func writeIf(letExpression *ast.IfExpression, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("if")
 	colorer.OneSpace()
-	writeExpression(letExpression.Condition(), colorer, 0)
+	WriteExpression(letExpression.Condition(), colorer, 0)
 	colorer.OneSpace()
 	colorer.KeywordString("then")
 	colorer.NewLine(indentation + 1)
-	writeExpression(letExpression.Consequence(), colorer, indentation+1)
+	WriteExpression(letExpression.Consequence(), colorer, indentation+1)
 	colorer.NewLine(indentation)
 	colorer.KeywordString("else")
 	colorer.NewLine(indentation + 1)
-	writeExpression(letExpression.Alternative(), colorer, indentation+1)
+	WriteExpression(letExpression.Alternative(), colorer, indentation+1)
 }
 
 func writeAsm(asm *ast.Asm, colorer coloring.Colorer, indentation int) {
@@ -326,17 +326,17 @@ func writeAsm(asm *ast.Asm, colorer coloring.Colorer, indentation int) {
 }
 
 func writeBinaryOperator(binaryOperator *ast.BinaryOperator, colorer coloring.Colorer, indentation int) {
-	writeExpression(binaryOperator.Left(), colorer, 0)
+	WriteExpression(binaryOperator.Left(), colorer, 0)
 	colorer.OneSpace()
 	colorer.Operator(binaryOperator.OperatorToken())
 	colorer.OneSpace()
-	writeExpression(binaryOperator.Right(), colorer, 0)
+	WriteExpression(binaryOperator.Right(), colorer, 0)
 }
 
 func writeUnaryOperator(unaryOperator *ast.UnaryExpression, colorer coloring.Colorer, indentation int) {
 	colorer.Operator(unaryOperator.OperatorToken())
 	colorer.OneSpace()
-	writeExpression(unaryOperator.Left(), colorer, 0)
+	WriteExpression(unaryOperator.Left(), colorer, 0)
 }
 
 func writeLookups(lookups *ast.Lookups, colorer coloring.Colorer, indentation int) {
@@ -368,7 +368,7 @@ func writeConstructorCall(constructorCall *ast.ConstructorCall, colorer coloring
 		if index > 0 {
 			colorer.OneSpace()
 		}
-		writeExpression(argument, colorer, indentation)
+		WriteExpression(argument, colorer, indentation)
 	}
 }
 
@@ -392,7 +392,7 @@ func writeFunctionCall(functionCall *ast.FunctionCall, colorer coloring.Colorer,
 		colorer.OneSpace()
 	}
 
-	writeExpression(functionCall.FunctionExpression(), colorer, indentation)
+	WriteExpression(functionCall.FunctionExpression(), colorer, indentation)
 	for index, argument := range functionCall.Arguments() {
 		if ignoreIndex == index {
 			continue
@@ -430,7 +430,15 @@ func writeDefinitionAssignment(definition *ast.FunctionValueNamedDefinition, col
 
 	colorer.OperatorString("=")
 	colorer.NewLine(indentation + 1)
-	writeExpression(definition.FunctionValue(), colorer, indentation+1)
+	WriteExpression(definition.FunctionValue(), colorer, indentation+1)
+}
+
+func writeDefinitionAssignmentConstant(definition *ast.ConstantDefinition, colorer coloring.Colorer, indentation int) {
+	colorer.Definition(definition.Identifier().Symbol())
+	colorer.OneSpace()
+	colorer.OperatorString("=")
+	colorer.NewLine(indentation + 1)
+	WriteExpression(definition.Expression(), colorer, indentation+1)
 }
 
 func writeExternalFunction(externalFunction *ast.ExternalFunction, colorer coloring.Colorer, indentation int) {
@@ -515,13 +523,13 @@ func writeExpressionAsTerm(expression ast.Expression, colorer coloring.Colorer, 
 	if !isLeaf {
 		colorer.OperatorString("(")
 	}
-	writeExpression(expression, colorer, indentation)
+	WriteExpression(expression, colorer, indentation)
 	if !isLeaf {
 		colorer.OperatorString(")")
 	}
 }
 
-func writeExpression(expression ast.Expression, colorer coloring.Colorer, indentation int) {
+func WriteExpression(expression ast.Expression, colorer coloring.Colorer, indentation int) {
 	switch t := expression.(type) {
 	case *ast.Asm:
 		{
@@ -613,6 +621,31 @@ func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 	return WriteCodeUsingColorer(program, colorer)
 }
 
+func WriteStatementUsingColorer(expression ast.Expression, colorer coloring.Colorer) error {
+	switch t := expression.(type) {
+	case *ast.Alias:
+		WriteAliasStatement(t, colorer, 0)
+	case *ast.FunctionValueNamedDefinition:
+		writeDefinitionAssignment(t, colorer, 0)
+	case *ast.ExternalFunction:
+		writeExternalFunction(t, colorer, 0)
+	case *ast.Import:
+		writeImport(t, colorer, 0)
+	case *ast.Annotation:
+		writeAnnotation(t, colorer, 0)
+	case *ast.CustomType:
+		{
+			WriteCustomTypeStatement(t, colorer, 0)
+		}
+	case *ast.ConstantDefinition:
+		writeDefinitionAssignmentConstant(t, colorer, 0)
+	default:
+		panic(fmt.Errorf(">>> what is this statement %T\n", t))
+	}
+
+	return nil
+}
+
 func WriteCodeUsingColorer(program *ast.SourceFile, colorer coloring.Colorer) (string, error) {
 	var lastStatement ast.Expression
 	for index, expression := range program.Statements() {
@@ -625,26 +658,10 @@ func WriteCodeUsingColorer(program *ast.SourceFile, colorer coloring.Colorer) (s
 				colorer.NewLine(0)
 			}
 		}
-		switch t := expression.(type) {
-		case *ast.Alias:
-			WriteAliasStatement(t, colorer, 0)
-		case *ast.FunctionValueNamedDefinition:
-			writeDefinitionAssignment(t, colorer, 0)
-		case *ast.ExternalFunction:
-			writeExternalFunction(t, colorer, 0)
-		case *ast.Import:
-			writeImport(t, colorer, 0)
-		case *ast.Annotation:
-			writeAnnotation(t, colorer, 0)
-		case *ast.CustomType:
-			{
-				WriteCustomTypeStatement(t, colorer, 0)
-			}
 
-		default:
-			return "", fmt.Errorf(">>> what is this statement %T\n", t)
+		if err := WriteStatementUsingColorer(expression, colorer); err != nil {
+			return "", err
 		}
-
 		lastStatement = expression
 	}
 

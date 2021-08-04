@@ -235,7 +235,7 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 	case *decorated.CurryFunction:
 		return tokenToDefinition(t.FunctionValue())
 	case *decorated.Constant:
-		return t.FunctionReference().FunctionValue().AstFunctionValue().DebugFunctionIdentifier().FetchPositionLength(), nil
+		return t.AstConstant().FetchPositionLength(), nil
 	// TYPES
 	case *dectype.FunctionTypeReference:
 		return t.FunctionAtom().FetchPositionLength(), nil

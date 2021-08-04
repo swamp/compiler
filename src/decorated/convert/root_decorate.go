@@ -136,6 +136,24 @@ func (g *RootStatementHandler) handleMultilineComment(d DecorateStream, multilin
 	return decoratedComment, nil
 }
 
+func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream, constant *ast.ConstantDefinition) (*decorated.Constant, decshared.DecoratedError) {
+	name := constant.Identifier()
+	annotatedType := g.localAnnotation.Type()
+	if annotatedType == nil {
+		return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
+	}
+	variableContext := d.NewVariableContext()
+	namedConstant, decoratedExpressionErr := decorateConstant(d, name, constant, variableContext, g.localCommentBlock)
+	d.AddDefinition(name, namedConstant)
+	if decoratedExpressionErr != nil {
+		return nil, decoratedExpressionErr
+	}
+	g.localComments = nil
+	g.localAnnotation = nil
+
+	return namedConstant, nil
+}
+
 func (g *RootStatementHandler) handleNamedFunctionValue(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 	if g.localAnnotation == nil {
 		return nil, decorated.NewMustHaveAnnotationJustBeforeThisDefinition(assignment)
@@ -188,6 +206,8 @@ func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decor
 		return g.handleMultilineComment(g.decorateStream, v)
 	case *ast.SingleLineComment:
 		return g.handleSinglelineComment(g.decorateStream, v)
+	case *ast.ConstantDefinition:
+		return g.handleConstantDefinition(g.decorateStream, v)
 	default:
 		return nil, decorated.NewUnknownStatement(token.SourceFileReference{}, statement)
 	}

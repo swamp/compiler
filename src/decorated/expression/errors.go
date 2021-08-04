@@ -826,7 +826,7 @@ func NewUnknownStatement(posLength token.SourceFileReference, statement ast.Expr
 }
 
 func (e *UnknownStatement) Error() string {
-	return fmt.Sprintf("unknown statement %v %T", e.statement, e.statement)
+	return fmt.Sprintf("unknown statementx %v %T", e.statement, e.statement)
 }
 
 func (e *UnknownStatement) FetchPositionLength() token.SourceFileReference {

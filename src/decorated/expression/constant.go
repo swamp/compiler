@@ -1,18 +1,23 @@
 package decorated
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
 type Constant struct {
-	functionReference *FunctionReference
+	astConstant       *ast.ConstantDefinition
 	identifier        ast.ScopedOrNormalVariableIdentifier
+	expression        Expression
+	references        []*ConstantReference
+	localCommentBlock *ast.MultilineComment
 }
 
-func NewConstant(identifier ast.ScopedOrNormalVariableIdentifier, functionReference *FunctionReference) *Constant {
-	return &Constant{functionReference: functionReference, identifier: identifier}
+func NewConstant(identifier ast.ScopedOrNormalVariableIdentifier, astConstant *ast.ConstantDefinition, expression Expression, localCommentBlock *ast.MultilineComment) *Constant {
+	return &Constant{astConstant: astConstant, identifier: identifier, expression: expression, localCommentBlock: localCommentBlock}
 }
 
 func (c *Constant) String() string {
@@ -20,15 +25,19 @@ func (c *Constant) String() string {
 }
 
 func (c *Constant) CommentBlock() *ast.MultilineComment {
-	return c.functionReference.referencedFunctionValue.commentBlock
+	return c.localCommentBlock
 }
 
-func (c *Constant) FunctionReference() *FunctionReference {
-	return c.functionReference
+func (c *Constant) AstConstant() *ast.ConstantDefinition {
+	return c.astConstant
+}
+
+func (a *Constant) AddReferee(ref *ConstantReference) {
+	a.references = append(a.references, ref)
 }
 
 func (c *Constant) Expression() Expression {
-	return c.functionReference.FunctionValue().Expression()
+	return c.expression
 }
 
 func (c *Constant) FetchPositionLength() token.SourceFileReference {
@@ -39,6 +48,10 @@ func (c *Constant) HumanReadable() string {
 	return "Constant"
 }
 
+func (n *Constant) StatementString() string {
+	return fmt.Sprintf("constant value %v = %v", n.identifier, n.expression)
+}
+
 func (c *Constant) Type() dtype.Type {
-	return c.functionReference.FunctionValue().ForcedFunctionType().ReturnType()
+	return c.expression.Type()
 }

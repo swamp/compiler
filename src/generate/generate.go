@@ -1249,6 +1249,9 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 	case *decorated.Constant:
 		return generateConstant(code, target, e, genContext)
 
+	case *decorated.ConstantReference:
+		return generateExpression(code, target, e.Constant(), genContext)
+
 	case *decorated.FunctionParameterReference:
 		return generateLocalFunctionParameterReference(code, target, e, genContext.context)
 
@@ -1349,7 +1352,14 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 
 			functionConstants = append(functionConstants, functionConstant)
 		} else {
-			return nil, fmt.Errorf("generate: unknown type %T", unknownType)
+			maybeConstant, _ := unknownType.(*decorated.Constant)
+			if maybeConstant != nil {
+				if verboseFlag >= verbosity.Mid {
+					fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+				}
+			} else {
+				return nil, fmt.Errorf("generate: unknown type %T", unknownType)
+			}
 		}
 	}
 

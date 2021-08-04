@@ -139,6 +139,10 @@ func typeToHtmlBlock(typeToConvert dtype.Type) string {
 	return typeToHtml(typeToConvert) + "\n"
 }
 
+func expressionToHtmlBlock(expression ast.Expression, colorer coloring.Colorer) {
+	codewriter.WriteExpression(expression, colorer, 0)
+}
+
 func markdownToHtml(rawMarkdownString string) string {
 	markdownString := ConvertSwampMarkdown(rawMarkdownString)
 	raw := []byte(markdownString)
@@ -238,10 +242,18 @@ func filterDefinitions(definitions []decorated.ModuleDef) (map[*decorated.FullyQ
 	return filteredFunctions, filteredConstants
 }
 
-func writeHeader(writer io.Writer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, p dtype.Type) {
+func writeHeaderForType(writer io.Writer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, p dtype.Type) {
 	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName, fullyQualifiedName.Identifier().Name())
 
 	fmt.Fprintf(writer, "<div class='prototype'><code>%v</code></div>\n", typeToHtmlBlock(p))
+}
+
+func writeHeaderForConstant(writer io.Writer, colorer coloring.Colorer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, expression ast.Expression) {
+	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName, fullyQualifiedName.Identifier().Name())
+
+	fmt.Fprintf(writer, "<div class='value'><code>\n")
+	expressionToHtmlBlock(expression, colorer)
+	fmt.Fprintf(writer, "</code></div>\n")
 }
 
 type HtmlColorer struct {
@@ -353,6 +365,14 @@ func documentType(astType ast.Type, comment token.MultiLineCommentToken, colorer
 	commentDivWrite(writer, markdownString)
 }
 
+func documentConstant(name *decorated.FullyQualifiedPackageVariableName, constant *decorated.Constant, colorer coloring.Colorer, writer io.Writer) {
+	expression := constant.AstConstant().Expression()
+	writeHeaderForConstant(writer, colorer, name, expression)
+	comment := constant.CommentBlock()
+	markdownString := comment.Value()
+	commentDivWrite(writer, markdownString)
+}
+
 func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 	var markdownString string
 
@@ -370,7 +390,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 	sortedConstantKeys := sortConstantKeys(filteredConstants)
 	for _, constantName := range sortedConstantKeys {
 		filteredConstant := filteredConstants[constantName]
-		writeHeader(writer, constantName, filteredConstant.Type())
+		documentConstant(constantName, filteredConstant, colorer, writer)
 	}
 
 	sortedTypeKeys := sortTypeKeys(filteredTypes)
@@ -404,7 +424,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 		filteredFunction := filteredFunctions[functionName]
 
 		commentBlock := filteredFunction.CommentBlock()
-		writeHeader(writer, functionName, filteredFunction.Type())
+		writeHeaderForType(writer, functionName, filteredFunction.Type())
 
 		params := ""
 		for index, arg := range filteredFunction.Parameters() {
