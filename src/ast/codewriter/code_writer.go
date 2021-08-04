@@ -107,8 +107,18 @@ func writeScopedTypeIdentifier(typeIdentifier *ast.TypeIdentifierScoped, colorer
 	colorer.TypeSymbol(typeIdentifier.Symbol().Symbol())
 }
 
+func writeScopedTypeResolver(typeIdentifier *ast.TypeIdentifierScoped, colorer coloring.Colorer) {
+	moduleReference := typeIdentifier.ModuleReference()
+	writeModuleReference(moduleReference, colorer)
+	colorer.TypeGeneratorName(typeIdentifier.Symbol().Symbol())
+}
+
 func writeTypeIdentifier(typeIdentifier *ast.TypeIdentifier, colorer coloring.Colorer) {
 	colorer.TypeSymbol(typeIdentifier.Symbol())
+}
+
+func writeTypeResolver(typeIdentifier *ast.TypeIdentifier, colorer coloring.Colorer) {
+	colorer.TypeGeneratorName(typeIdentifier.Symbol())
 }
 
 func writeSomeTypeIdentifier(typeIdentifier ast.TypeIdentifierNormalOrScoped, colorer coloring.Colorer) {
@@ -121,8 +131,12 @@ func writeSomeTypeIdentifier(typeIdentifier ast.TypeIdentifierNormalOrScoped, co
 }
 
 func writeTypeReference(typeReference *ast.TypeReference, colorer coloring.Colorer) {
-	writeTypeIdentifier(typeReference.TypeIdentifier(), colorer)
 	hasArguments := len(typeReference.Arguments()) > 0
+	if hasArguments {
+		writeTypeResolver(typeReference.TypeIdentifier(), colorer)
+	} else {
+		writeTypeIdentifier(typeReference.TypeIdentifier(), colorer)
+	}
 	if !hasArguments {
 		return
 	}
@@ -133,8 +147,12 @@ func writeTypeReference(typeReference *ast.TypeReference, colorer coloring.Color
 }
 
 func writeScopedTypeReference(typeReference *ast.TypeReferenceScoped, colorer coloring.Colorer) {
-	writeSomeTypeIdentifier(typeReference.TypeResolver(), colorer)
 	hasArguments := len(typeReference.Arguments()) > 0
+	if hasArguments {
+		writeScopedTypeResolver(typeReference.TypeResolver(), colorer)
+	} else {
+		writeSomeTypeIdentifier(typeReference.TypeResolver(), colorer)
+	}
 	if !hasArguments {
 		return
 	}
@@ -498,6 +516,10 @@ func WriteType(astType ast.Type, colorer coloring.Colorer, addParen bool, indent
 	case *ast.UnmanagedType:
 		{
 			writeUnmanagedType(t, colorer, indentation)
+		}
+	case *ast.TypeReferenceScoped:
+		{
+			writeScopedTypeReference(t, colorer)
 		}
 	default:
 		panic(fmt.Errorf(">>> what is this type %T\n", t))

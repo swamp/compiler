@@ -109,12 +109,31 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 				color: #d2c19a;
 			}
 
-			.swamp {
+			.number {
+				color: #efe48b;
+			}
+
+			.recordfield {
+				color: #919191;
+			}
+
+			.modulereference {
+				color: #a37df6;
+			}
+
+			.typegenerator {
+				color: #5d96b8;
+			}
+			
+
+			.swamp, .swamp-function-prototype, .swamp-value {
 				background-color: #404040;
 				padding: 0.5rem;
 				border-radius: .3rem;
 				display: table;
 			}
+
+
 
 			.admonition {
 				border-left: .2rem solid #448aff;

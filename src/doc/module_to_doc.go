@@ -245,15 +245,15 @@ func filterDefinitions(definitions []decorated.ModuleDef) (map[*decorated.FullyQ
 func writeHeaderForType(writer io.Writer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, p dtype.Type) {
 	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName, fullyQualifiedName.Identifier().Name())
 
-	fmt.Fprintf(writer, "<div class='prototype'><code>%v</code></div>\n", typeToHtmlBlock(p))
+	fmt.Fprintf(writer, "<div class='swamp-function-prototype'><code>%v</code></div>\n", typeToHtmlBlock(p))
 }
 
 func writeHeaderForConstant(writer io.Writer, colorer coloring.Colorer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, expression ast.Expression) {
 	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName, fullyQualifiedName.Identifier().Name())
 
-	fmt.Fprintf(writer, "<div class='value'><code>\n")
+	fmt.Fprintf(writer, "<pre class='swamp-value'>\n")
 	expressionToHtmlBlock(expression, colorer)
-	fmt.Fprintf(writer, "</code></div>\n")
+	fmt.Fprintf(writer, "</pre>\n")
 }
 
 type HtmlColorer struct {
