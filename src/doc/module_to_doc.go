@@ -9,6 +9,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/ast/codewriter"
 	"github.com/swamp/compiler/src/coloring"
+	"github.com/swamp/compiler/src/decorated/decoratedcodewriter"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -35,12 +36,8 @@ func span(className string, value string) string {
 	return fmt.Sprintf("<span class='%v'>%v</span>", className, value)
 }
 
-func spanWrite(writer io.Writer, className string, value string) {
-	fmt.Fprintf(writer, span(className, value))
-}
-
 func code(className string, value string) string {
-	return fmt.Sprintf("<code class='%v'>%v</code>", className, value)
+	return fmt.Sprintf("<pre><code class='%v'>%v</code></pre>", className, value)
 }
 
 func codeWrite(writer io.Writer, className string, value string) {
@@ -256,111 +253,35 @@ func writeHeaderForConstant(writer io.Writer, colorer coloring.Colorer, fullyQua
 	fmt.Fprintf(writer, "</pre>\n")
 }
 
-type HtmlColorer struct {
-	writer io.Writer
-}
-
-func (c *HtmlColorer) Operator(t token.OperatorToken) {
-	spanWrite(c.writer, "operator", t.Raw())
-}
-
-func (c *HtmlColorer) VariableSymbol(t token.VariableSymbolToken) {
-	spanWrite(c.writer, "variable", t.Raw())
-}
-
-func (c *HtmlColorer) Definition(t token.VariableSymbolToken) {
-	spanWrite(c.writer, "definition", t.Raw())
-}
-
-func (c *HtmlColorer) LocalType(t token.VariableSymbolToken) {
-	spanWrite(c.writer, "localtype", t.Raw())
-}
-
-func (c *HtmlColorer) Parameter(t token.VariableSymbolToken) {
-	spanWrite(c.writer, "parameter", t.Raw())
-}
-
-func (c *HtmlColorer) RecordField(t token.VariableSymbolToken) {
-	spanWrite(c.writer, "recordfield", t.Raw())
-}
-
-func (c *HtmlColorer) TypeSymbol(t token.TypeSymbolToken) {
-	// fmt.Fprintf(c.writer, "<a href='#%v'>", t.Raw())
-	spanWrite(c.writer, "typesymbol", t.Raw())
-	// fmt.Fprintf(c.writer, "</a>")
-}
-
-func (c *HtmlColorer) TypeGeneratorName(t token.TypeSymbolToken) {
-	spanWrite(c.writer, "typegenerator", t.Raw())
-}
-
-func (c *HtmlColorer) ModuleReference(t token.TypeSymbolToken) {
-	spanWrite(c.writer, "modulereference", t.Raw())
-}
-
-func (c *HtmlColorer) PrimitiveType(t token.TypeSymbolToken) {
-	spanWrite(c.writer, "primitive", t.Raw())
-}
-
-func (c *HtmlColorer) AliasNameSymbol(t token.TypeSymbolToken) {
-	spanWrite(c.writer, "alias", t.Raw())
-}
-
-func (c *HtmlColorer) NumberLiteral(t token.NumberToken) {
-	spanWrite(c.writer, "number", t.Raw())
-}
-
-func (c *HtmlColorer) BooleanLiteral(t token.BooleanToken) {
-	spanWrite(c.writer, "boolean", t.Raw())
-}
-
-func (c *HtmlColorer) KeywordString(t string) {
-	spanWrite(c.writer, "keyword", t)
-}
-
-func (c *HtmlColorer) NewLine(indentation int) {
-	fmt.Fprintf(c.writer, "\n")
-	for i := 0; i < indentation; i++ {
-		fmt.Fprintf(c.writer, "  ")
-	}
-}
-
-func (c *HtmlColorer) OperatorString(t string) {
-	spanWrite(c.writer, "operator", t)
-}
-
-func (c *HtmlColorer) StringLiteral(s token.StringToken) {
-	spanWrite(c.writer, "string", s.Raw())
-}
-
-func (c *HtmlColorer) OneSpace() {
-	fmt.Fprintf(c.writer, " ")
-}
-
-func (c *HtmlColorer) RightArrow() {
-	fmt.Fprintf(c.writer, "->")
-}
-
-func (c *HtmlColorer) RightPipe() {
-	fmt.Fprintf(c.writer, "|>")
-}
-
-func (c *HtmlColorer) LeftPipe() {
-	fmt.Fprintf(c.writer, "<|")
-}
-
-func (c *HtmlColorer) String() string {
-	return "htmlcolorer"
-}
-
-func (c *HtmlColorer) UserInstruction(t string) {
-}
-
 func documentType(astType ast.Type, comment token.MultiLineCommentToken, colorer coloring.Colorer, writer io.Writer) {
 	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", astType.Name(), astType.Name())
 	fmt.Fprintf(writer, "<pre class='swamp'>")
 	codewriter.WriteType(astType, colorer, false, 0)
 	fmt.Fprintf(writer, "</pre>")
+	markdownString := comment.Value()
+	commentDivWrite(writer, markdownString)
+}
+
+func findTypeNames(d dtype.Type) (string, dectype.ArtifactFullyQualifiedTypeName) {
+	switch t := d.(type) {
+	case *dectype.CustomTypeAtom:
+		return t.Name(), t.ArtifactTypeName()
+	case *dectype.Alias:
+		return t.TypeIdentifier().Name(), t.ArtifactTypeName()
+	case *dectype.PrimitiveTypeReference:
+		moduleName := dectype.MakeModuleNameFromString(t.PrimitiveAtom().PrimitiveName().Name())
+		return t.AstIdentifier().SomeTypeIdentifier().Name(), dectype.ArtifactFullyQualifiedTypeName{ModuleName: moduleName}
+	default:
+		panic(fmt.Errorf("unknown type to get name from %T", t))
+	}
+}
+
+func documentDecoratedType(decoratedType dtype.Type, comment token.MultiLineCommentToken, colorer coloring.DecoratedColorer, writer io.Writer) {
+	shortName, fullyQualifiedName := findTypeNames(decoratedType)
+	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName.String(), shortName)
+	fmt.Fprintf(writer, "<pre><code class='swamp'>")
+	decoratedcodewriter.WriteType(decoratedType, colorer, 0)
+	fmt.Fprintf(writer, "</code></pre>")
 	markdownString := comment.Value()
 	commentDivWrite(writer, markdownString)
 }
@@ -385,7 +306,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 		return
 	}
 
-	fmt.Fprintf(writer, "\n\n<h2>Module %v (%v)</h2>\n", module.FullyQualifiedModuleName().Last(), module.ModuleType())
+	fmt.Fprintf(writer, "\n\n<h2>Module %v</h2>\n", module.FullyQualifiedModuleName().Last())
 
 	sortedConstantKeys := sortConstantKeys(filteredConstants)
 	for _, constantName := range sortedConstantKeys {
@@ -400,17 +321,17 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 		case *dectype.Alias:
 			{
 				comment := t.AstAlias().Comment()
-				documentType(t.AstAlias(), comment.Token(), colorer, writer)
+				documentDecoratedType(t, comment.Token(), colorer, writer)
 			}
 		case *dectype.CustomTypeAtom:
 			{
 				comment := t.AstCustomType().Comment()
-				documentType(t.AstCustomType(), comment.Token(), colorer, writer)
+				documentDecoratedType(t, comment.Token(), colorer, writer)
 			}
 		case *dectype.RecordAtom:
 			{
 				comment := t.AstRecord().Comment()
-				documentType(t.AstRecord(), comment.Token(), colorer, writer)
+				documentDecoratedType(t, comment.Token(), colorer, writer)
 			}
 		default:
 			{
