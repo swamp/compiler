@@ -98,7 +98,7 @@ func WritePrimitiveType(primitive *dectype.PrimitiveAtom, colorer coloring.Decor
 }
 
 func WritePrimitiveTypeReference(primitiveReference *dectype.PrimitiveTypeReference, colorer coloring.DecoratedColorer, indentation int) {
-	colorer.TypeName(primitiveReference.PrimitiveAtom().PrimitiveName())
+	colorer.PrimitiveTypeName(primitiveReference.PrimitiveAtom().PrimitiveName())
 }
 
 func WriteType(decoratedType dtype.Type, colorer coloring.DecoratedColorer, indentation int) {

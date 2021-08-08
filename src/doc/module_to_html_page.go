@@ -23,24 +23,23 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 			}
 
 			body {
-				max-width: 40em;
+				max-width: 40rem;
 			}
 			
 			code {
 				font-family: 'Source Code Pro', 'Ubuntu Mono', 'Liberation Mono', Courier, monospace;
 			}
 
-			/* 				display: table;
-				white-space: pre-wrap;
-				border-collapse: separate;
-*/
-			
 			div.description p strong {
 				color: #a3a37a;
 			}
 			
 			div.description p code {
 				color: #939393;
+			}
+
+			div.description p {
+				line-height: 1.3;
 			}
 
 			div.prototype {
@@ -61,6 +60,10 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 				color: #c1c1c1;
 			}
 
+			.keyword {
+				color: #d69c9c;
+			}
+
 			.alias {
 			  color: #cd99cd;
 			}
@@ -69,12 +72,20 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 				color: #979797;
 			}
 			
-			.primitive {
-				color: #548554;
+			.primitivetype {
+				color: #9dd0b3;
 			}
 			
 			.customtype {
 				color: #6babab;
+			}
+
+			.customtypename {
+				color: #6babab;
+			}
+
+			.customtypevariant {
+				color: #6bfefe;
 			}
 
 			.localtype {
@@ -95,6 +106,10 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 
 			.recordtype {
 				color: #ab9b75;
+			}
+
+			.recordtypefield {
+				color: #919191;
 			}
 
 			.operator {
@@ -125,34 +140,30 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 				color: #5d96b8;
 			}
 			
-
 			.swamp, .swamp-function-prototype, .swamp-value {
 				background-color: #404040;
 				padding: 0.5rem;
 				border-radius: .3rem;
-				display: table;
+				display: block;
 			}
-
-
 
 			.admonition {
 				border-left: .2rem solid #448aff;
 				background-color: red;
 				padding: 0.6rem;
-				border-radius: 0.1rem
+				border-radius: 0.3rem;
 				margin: 1.5em 0;
 			}
 
 			.admonition-title {
-				background-color: rgba(68,138,255,.1);
-				border-left: .2rem solid #448aff;
+				background-color: rgba(244, 222, 109, 0.33);
 				margin: 0 -.6rem 0 -.8rem;
 				padding: .4rem .6rem .4rem 2rem;
 			}
 
 			.warning {
- 				background-color:rgba(255,145,0,.1);
- 				border-color:#ff9100;
+ 				background-color:rgb(208, 120, 4);
+ 				border-color:#ffb554;
 			}
 
 			.admonition-title > .warning  {
@@ -175,6 +186,22 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 				color: #fafafa;
 				margin-top: 2em;
 				margin-bottom: 0.5em;
+			}
+
+			code a:link {
+				text-decoration: none;
+			}
+
+			code a:hover {
+				text-decoration: none;
+			}
+
+			code a:active {
+				text-decoration: none;
+			}
+
+			code a:visited {
+				text-decoration: none;
 			}
 		</style>
 	</head>

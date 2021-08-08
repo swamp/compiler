@@ -78,6 +78,37 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 	return nil, fmt.Errorf("must be directory in this version %v %v", mainSourceFile, absoluteOutputDirectory)
 }
 
+func BuildMainOnlyCompile(mainSourceFile string, enforceStyle bool, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
+	statInfo, statErr := os.Stat(mainSourceFile)
+	if statErr != nil {
+		return nil, statErr
+	}
+
+	config, _, configErr := environment.LoadFromConfig()
+	if configErr != nil {
+		return nil, configErr
+	}
+
+	if !statInfo.IsDir() {
+		return nil, fmt.Errorf("must have a solution file in this version")
+	} else {
+		if solutionSettings, err := solution.LoadIfExists(mainSourceFile); err == nil {
+			var packages []*loader.Package
+			for _, packageSubDirectoryName := range solutionSettings.Packages {
+				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
+				compiledPackage, err := CompileMainDefaultDocumentProvider(packageSubDirectoryName, absoluteSubDirectory, config, enforceStyle, verboseFlag)
+				if err != nil {
+					return packages, err
+				}
+				packages = append(packages, compiledPackage)
+			}
+			return packages, nil
+		}
+	}
+
+	return nil, fmt.Errorf("must be directory in this version %v", mainSourceFile)
+}
+
 func CompileMain(name string, mainSourceFile string, documentProvider loader.DocumentProvider, configuration environment.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, decshared.DecoratedError) {
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
@@ -207,12 +238,22 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	return nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, name string, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+func CompileMainDefaultDocumentProvider(name string, filename string, configuration environment.Environment,
+	enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
 	defaultDocumentProvider := loader.NewFileSystemDocumentProvider()
 
 	compiledPackage, _, moduleErr := CompileMain(name, filename, defaultDocumentProvider, configuration, enforceStyle, verboseFlag)
 	if moduleErr != nil {
 		return compiledPackage, moduleErr
+	}
+
+	return compiledPackage, nil
+}
+
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, name string, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
+	if compileErr != nil {
+		return nil, compileErr
 	}
 
 	if err := GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, verboseFlag); err != nil {

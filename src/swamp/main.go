@@ -34,6 +34,12 @@ func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceSty
 	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, verbosity)
 }
 
+func buildCommandLineNoOutput(fileOrDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
+	filenameToCompile := fileOrDirectory
+
+	return swampcompiler.BuildMainOnlyCompile(filenameToCompile, enforceStyle, verbosity)
+}
+
 type FmtCmd struct {
 	Path string `help:"fmt" arg:""`
 }
@@ -72,7 +78,7 @@ type DocCmd struct {
 }
 
 func (c *DocCmd) Run() error {
-	compiledPackages, err := buildCommandLine(c.Path, "", !c.DisableStyle, verbosity.Verbosity(c.Verbosity))
+	compiledPackages, err := buildCommandLineNoOutput(c.Path, !c.DisableStyle, verbosity.Verbosity(c.Verbosity))
 	if err != nil {
 		return err
 	}

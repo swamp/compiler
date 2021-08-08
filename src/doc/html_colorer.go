@@ -20,6 +20,9 @@ func spanWrite(writer io.Writer, className string, value string) {
 
 func spanWriteLink(writer io.Writer, typeToWrite dtype.Type, value string) {
 	_, fullyQualifiedName := findTypeNames(typeToWrite)
+	if fullyQualifiedName.String() == "" {
+		panic(fmt.Errorf("must have fully qualified name for %T", typeToWrite))
+	}
 	cssClassName := classNameFromType(typeToWrite)
 	fmt.Fprintf(writer, "<a href='#%v'>", fullyQualifiedName.String())
 	fmt.Fprintf(writer, span(cssClassName, value))
@@ -43,12 +46,13 @@ func (c *HtmlColorer) RecordTypeField(t *dectype.RecordField) {
 }
 
 func (c *HtmlColorer) AliasName(t *dectype.Alias) {
-	aliasName := classNameFromType(t)
-	spanWrite(c.writer, aliasName, t.TypeIdentifier().Name())
+	// aliasName := classNameFromType(t)
+
+	spanWriteLink(c.writer, t, t.TypeIdentifier().Name())
 }
 
-func (c *HtmlColorer) TypeName(t *ast.TypeIdentifier) {
-	spanWrite(c.writer, "typename", t.Name())
+func (c *HtmlColorer) PrimitiveTypeName(t *ast.TypeIdentifier) {
+	spanWrite(c.writer, "primitivetype", t.Name())
 }
 
 func (c *HtmlColorer) UnmanagedName(t *ast.UnmanagedType) {
@@ -94,7 +98,7 @@ func (c *HtmlColorer) ModuleReference(t token.TypeSymbolToken) {
 }
 
 func (c *HtmlColorer) PrimitiveType(t token.TypeSymbolToken) {
-	spanWrite(c.writer, "primitive", t.Raw())
+	spanWrite(c.writer, "primitivetype", t.Raw())
 }
 
 func (c *HtmlColorer) AliasNameSymbol(t token.TypeSymbolToken) {

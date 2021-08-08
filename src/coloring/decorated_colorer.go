@@ -18,5 +18,5 @@ type DecoratedColorer interface {
 	AliasName(t *dectype.Alias)
 	KeywordString(s string)
 	UnmanagedName(s *ast.UnmanagedType)
-	TypeName(identifier *ast.TypeIdentifier)
+	PrimitiveTypeName(identifier *ast.TypeIdentifier)
 }

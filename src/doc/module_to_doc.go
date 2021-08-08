@@ -63,7 +63,11 @@ func classNameFromType(typeToConvert dtype.Type) string {
 	case *dectype.FunctionTypeReference:
 		return classNameFromType(t.Next())
 	case *dectype.PrimitiveAtom:
-		return "primitive"
+		if t.PrimitiveName().Name() == "Any" {
+			return "anytype"
+		}
+
+		return "primitivetype"
 	case *dectype.PrimitiveTypeReference:
 		return classNameFromType(t.Next())
 	case *dectype.LocalType:
@@ -81,7 +85,7 @@ func typeToHtml(typeToConvert dtype.Type) string {
 	switch t := typeToConvert.(type) {
 	case *dectype.Alias:
 		className := classNameFromType(t.Next())
-		if className == "primitive" {
+		if className == "primitivetype" {
 			className = "alias"
 		}
 		return span(className, t.AstAlias().Name())
@@ -122,7 +126,7 @@ func typeToHtml(typeToConvert dtype.Type) string {
 	case *dectype.FunctionTypeReference:
 		return typeToHtml(t.Next())
 	case *dectype.PrimitiveAtom:
-		return span("primitive", t.PrimitiveName().Name())
+		return span("primitivetype", t.PrimitiveName().Name())
 	case *dectype.PrimitiveTypeReference:
 		return typeToHtml(t.Next())
 	case *dectype.LocalType:
@@ -271,6 +275,11 @@ func findTypeNames(d dtype.Type) (string, dectype.ArtifactFullyQualifiedTypeName
 	case *dectype.PrimitiveTypeReference:
 		moduleName := dectype.MakeModuleNameFromString(t.PrimitiveAtom().PrimitiveName().Name())
 		return t.AstIdentifier().SomeTypeIdentifier().Name(), dectype.ArtifactFullyQualifiedTypeName{ModuleName: moduleName}
+	case *dectype.UnmanagedType:
+		moduleName := dectype.MakeModuleNameFromString("builtin")
+		return "Unmanaged", dectype.ArtifactFullyQualifiedTypeName{ModuleName: moduleName}
+	case *dectype.RecordAtom:
+		return "Record", dectype.ArtifactFullyQualifiedTypeName{}
 	default:
 		panic(fmt.Errorf("unknown type to get name from %T", t))
 	}
