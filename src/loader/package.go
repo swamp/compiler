@@ -48,6 +48,10 @@ func (w *Package) AddModule(moduleName dectype.ArtifactFullyQualifiedModuleName,
 	if module == nil {
 		panic("not a good module")
 	}
+	if _, hasExisting := w.moduleLookup[moduleName.String()]; hasExisting {
+		panic(fmt.Errorf("tried to add an already existing module '%v'", moduleName))
+	}
+
 	w.moduleLookup[moduleName.String()] = module
 
 	localFilePath, convertErr := module.Document().Uri.ToLocalFilePath()

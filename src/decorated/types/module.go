@@ -127,7 +127,7 @@ func (m SingleModuleName) IsEmpty() bool {
 	return m.path == nil
 }
 
-func (n *ArtifactFullyQualifiedModuleName) String() string {
+func (n ArtifactFullyQualifiedModuleName) String() string {
 	return n.ModuleName.String()
 }
 

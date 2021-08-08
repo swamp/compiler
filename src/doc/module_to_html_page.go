@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/loader"
 )
 
@@ -219,11 +220,24 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 
 	fmt.Fprintf(writer, header)
 
+	documentedModules := make(map[string]*decorated.Module)
 	for _, compiledPackage := range packages {
-		fmt.Fprintf(writer, "\n\n\n<hr/>\n<h1>Package %v</h1>\n", compiledPackage.Name())
 		for _, module := range compiledPackage.AllModules() {
-			ModuleToHtml(writer, module)
+			if _, alreadyDocumented := documentedModules[module.FullyQualifiedModuleName().String()]; alreadyDocumented {
+				continue
+			}
+			documentedModules[module.FullyQualifiedModuleName().String()] = module
 		}
+	}
+
+	keys := make([]string, 0, len(documentedModules))
+	for k := range documentedModules {
+		keys = append(keys, k)
+	}
+
+	for _, key := range keys {
+		compiledModule := documentedModules[key]
+		ModuleToHtml(writer, compiledModule)
 	}
 
 	fmt.Fprintf(writer, footer)
