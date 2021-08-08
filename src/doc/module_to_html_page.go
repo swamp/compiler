@@ -141,6 +141,11 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) error {
 				color: #a37df6;
 			}
 
+			.modulereferenceprefix {
+				color: #a3a3a3;
+				font-size: 0.7em;
+			}
+
 			.typegenerator {
 				color: #5d96b8;
 			}

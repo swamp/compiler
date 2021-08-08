@@ -23,11 +23,24 @@ func spanWriteLink(writer io.Writer, typeToWrite dtype.Type, value string) {
 	if fullyQualifiedName.String() == "" {
 		panic(fmt.Errorf("must have fully qualified name for %T", typeToWrite))
 	}
+	fullyQualifiedNameString := fullyQualifiedName.String()
 	cssClassName := classNameFromType(typeToWrite)
 
-	fmt.Fprintf(writer, "<a href=\"#%v\" title=\"%v\">", fullyQualifiedName.String(), fullyQualifiedName.String())
+	fmt.Fprintf(writer, "<a href=\"#%v\" title=\"%v\">", fullyQualifiedNameString, fullyQualifiedNameString)
 
-	fmt.Fprintf(writer, span(cssClassName, value))
+	if len(fullyQualifiedName.ModuleName.Path().Prefix()) > 0 {
+		for index, part := range fullyQualifiedName.ModuleName.Path().Prefix() {
+			if index > 0 {
+				spanWrite(writer, "operator", ".")
+			}
+
+			spanWrite(writer, "modulereferenceprefix", part.Name())
+		}
+
+		spanWrite(writer, "operator", ".")
+	}
+
+	fmt.Fprintf(writer, span(cssClassName, fullyQualifiedName.Last()))
 
 	fmt.Fprintf(writer, "</a>")
 }

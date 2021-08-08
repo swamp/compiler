@@ -24,6 +24,7 @@ func convertAdmonition(multiline string) (string, error) {
 	var lines []string
 
 	var admonitionLines []string
+
 	var codeLines []string
 
 	var admonitionHeader string
@@ -45,12 +46,16 @@ func convertAdmonition(multiline string) (string, error) {
 				lines = append(lines, fmt.Sprintf("<div class='admonition %v'>", parts[0]))
 				lines = append(lines, "<p class='admonition-title'>warning</p>")
 				lines = append(lines, "<p>")
+
 				for _, admonitionLine := range admonitionLines {
 					lines = append(lines, admonitionLine)
 				}
+
 				lines = append(lines, "</p></div>\n\n")
+
 				convertState = Normal
 				admonitionHeader = ""
+
 				lines = append(lines, line)
 			}
 		case convertState == InCodeExample:

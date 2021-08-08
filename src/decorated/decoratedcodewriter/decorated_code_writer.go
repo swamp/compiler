@@ -133,6 +133,10 @@ func WriteLocalType(localType *dectype.LocalType, colorer coloring.DecoratedColo
 	colorer.LocalTypeName(localType)
 }
 
+func WriteAnyMatchingType(localType *dectype.AnyMatchingTypes, colorer coloring.DecoratedColorer) {
+	colorer.OperatorString("*")
+}
+
 func WriteCustomTypeReference(customTypeReference *dectype.CustomTypeReference, colorer coloring.DecoratedColorer, indentation int) {
 	colorer.CustomTypeName(customTypeReference)
 }
@@ -163,6 +167,8 @@ func WriteType(decoratedType dtype.Type, colorer coloring.DecoratedColorer, inde
 		WriteTupleType(t, colorer, indentation)
 	case *dectype.LocalType:
 		WriteLocalType(t, colorer, indentation)
+	case *dectype.AnyMatchingTypes:
+		WriteAnyMatchingType(t, colorer)
 	default:
 		panic(fmt.Errorf("couldn't write type %T in decorated writer", decoratedType))
 	}

@@ -1136,7 +1136,6 @@ func isListLike(typeToCheck dtype.Type) bool {
 }
 
 func generateExpression(code *assembler.Code, target assembler.TargetVariable, expr decorated.Expression, genContext *generateContext) error {
-	//	log.Printf("gen expr:%T (%v)\n", expr, expr)
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)
@@ -1152,7 +1151,8 @@ func generateExpression(code *assembler.Code, target assembler.TargetVariable, e
 			case isIntLike(e.Left().Type()):
 				return generateArithmetic(code, target, e, genContext)
 			default:
-				return fmt.Errorf("Cant generate arithmetic for type:%v <-> %v (%v)", e.Left().Type(), e.Right().Type(), e.OperatorType())
+				return fmt.Errorf("cant generate arithmetic for type: %v <-> %v (%v)",
+					e.Left().Type(), e.Right().Type(), e.OperatorType())
 			}
 		}
 
