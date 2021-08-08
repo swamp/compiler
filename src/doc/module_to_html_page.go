@@ -8,7 +8,7 @@ import (
 	"github.com/swamp/compiler/src/loader"
 )
 
-func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
+func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) error {
 	header := `
 <!DOCTYPE html>
 <html lang="en">
@@ -237,8 +237,12 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 
 	for _, key := range keys {
 		compiledModule := documentedModules[key]
-		ModuleToHtml(writer, compiledModule)
+		if err := ModuleToHtml(writer, compiledModule); err != nil {
+			return err
+		}
 	}
 
 	fmt.Fprintf(writer, footer)
+
+	return nil
 }

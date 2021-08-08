@@ -304,18 +304,16 @@ func writeBooleanLiteral(boolean *ast.BooleanLiteral, colorer coloring.Colorer, 
 
 func writeLet(letExpression *ast.Let, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("let")
-	colorer.NewLine(indentation + 1)
 
 	for index, assignment := range letExpression.Assignments() {
-		if index > 0 {
-			colorer.NewLine(0)
+		if index >= 0 {
 			colorer.NewLine(indentation + 1)
 		}
 
 		colorer.VariableSymbol(assignment.Identifiers()[0].Symbol())
 		colorer.OneSpace()
 		colorer.OperatorString("=")
-		colorer.NewLine(indentation + 2)
+		colorer.OneSpace()
 		WriteExpression(assignment.Expression(), colorer, indentation+1)
 	}
 
@@ -377,11 +375,13 @@ func writeTypeParameters(typeParameters []*ast.TypeParameter, colorer coloring.C
 */
 
 func writeConstructorCall(constructorCall *ast.ConstructorCall, colorer coloring.Colorer, indentation int) {
+	colorer.OperatorString("constructorcall")
 	writeSomeTypeIdentifier(constructorCall.TypeReference().SomeTypeIdentifier(), colorer)
 	hasArguments := len(constructorCall.Arguments()) > 0
 	if hasArguments {
 		colorer.OneSpace()
 	}
+	colorer.OperatorString("constructorcall after")
 	for index, argument := range constructorCall.Arguments() {
 		if index > 0 {
 			colorer.OneSpace()
@@ -593,6 +593,14 @@ func WriteExpression(expression ast.Expression, colorer coloring.Colorer, indent
 		{
 			writeGetVariable(t, colorer, indentation)
 		}
+	case *ast.VariableIdentifierScoped:
+		{
+			writeGetScopedVariable(t, colorer, indentation)
+		}
+	case *ast.TypeIdentifier:
+		{
+			writeTypeIdentifier(t, colorer)
+		}
 	case *ast.IntegerLiteral:
 		{
 			writeIntegerLiteral(t, colorer, indentation)
@@ -640,27 +648,27 @@ func WriteCode(program *ast.SourceFile, useColor bool) (string, error) {
 		colorer = coloring.NewColorerWithoutColor()
 	}
 
-	return WriteCodeUsingColorer(program, colorer)
+	return WriteCodeUsingColorer(program, colorer, 0)
 }
 
-func WriteStatementUsingColorer(expression ast.Expression, colorer coloring.Colorer) error {
+func WriteStatementUsingColorer(expression ast.Expression, colorer coloring.Colorer, indentation int) error {
 	switch t := expression.(type) {
 	case *ast.Alias:
-		WriteAliasStatement(t, colorer, 0)
+		WriteAliasStatement(t, colorer, indentation)
 	case *ast.FunctionValueNamedDefinition:
-		writeDefinitionAssignment(t, colorer, 0)
+		writeDefinitionAssignment(t, colorer, indentation)
 	case *ast.ExternalFunction:
-		writeExternalFunction(t, colorer, 0)
+		writeExternalFunction(t, colorer, indentation)
 	case *ast.Import:
-		writeImport(t, colorer, 0)
+		writeImport(t, colorer, indentation)
 	case *ast.Annotation:
-		writeAnnotation(t, colorer, 0)
+		writeAnnotation(t, colorer, indentation)
 	case *ast.CustomType:
 		{
-			WriteCustomTypeStatement(t, colorer, 0)
+			WriteCustomTypeStatement(t, colorer, indentation)
 		}
 	case *ast.ConstantDefinition:
-		writeDefinitionAssignmentConstant(t, colorer, 0)
+		writeDefinitionAssignmentConstant(t, colorer, indentation)
 	default:
 		panic(fmt.Errorf(">>> what is this statement %T\n", t))
 	}
@@ -668,7 +676,7 @@ func WriteStatementUsingColorer(expression ast.Expression, colorer coloring.Colo
 	return nil
 }
 
-func WriteCodeUsingColorer(program *ast.SourceFile, colorer coloring.Colorer) (string, error) {
+func WriteCodeUsingColorer(program *ast.SourceFile, colorer coloring.Colorer, indentation int) (string, error) {
 	var lastStatement ast.Expression
 	for index, expression := range program.Statements() {
 		if index > 0 {
@@ -676,12 +684,12 @@ func WriteCodeUsingColorer(program *ast.SourceFile, colorer coloring.Colorer) (s
 			numberOfLinesToPad := ast.LinesToInsertBetween(lastStatement, expression)
 
 			if numberOfLinesToPad >= 2 {
-				colorer.NewLine(0)
-				colorer.NewLine(0)
+				colorer.NewLine(indentation)
+				colorer.NewLine(indentation)
 			}
 		}
 
-		if err := WriteStatementUsingColorer(expression, colorer); err != nil {
+		if err := WriteStatementUsingColorer(expression, colorer, indentation); err != nil {
 			return "", err
 		}
 		lastStatement = expression

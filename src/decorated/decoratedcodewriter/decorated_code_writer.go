@@ -105,7 +105,9 @@ func WriteFunctionType(functionType *dectype.FunctionAtom, colorer coloring.Deco
 	colorer.OperatorString("(")
 	for index, parameterType := range functionType.FunctionParameterTypes() {
 		if index > 0 {
+			colorer.OneSpace()
 			colorer.RightArrow()
+			colorer.OneSpace()
 		}
 		WriteType(parameterType, colorer, indentation)
 	}

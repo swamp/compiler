@@ -57,7 +57,7 @@ func (c *HtmlColorer) AliasName(t *dectype.Alias) {
 }
 
 func (c *HtmlColorer) RightArrow() {
-	spanWrite(c.writer, "arrow", " &#8594; ")
+	spanWrite(c.writer, "arrow", "➞")
 }
 
 func (c *HtmlColorer) PrimitiveTypeName(t *ast.TypeIdentifier) {

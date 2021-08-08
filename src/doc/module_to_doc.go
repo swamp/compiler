@@ -24,12 +24,22 @@ func descriptionDiv(value string) string {
 	return div("description", value)
 }
 
-func commentDiv(markdownString string) string {
-	return descriptionDiv(markdownToHtml(markdownString))
+func commentDiv(markdownString string) (string, error) {
+	markdownConverted, err := markdownToHtml(markdownString)
+	if err != nil {
+		return "", err
+	}
+	return descriptionDiv(markdownConverted), nil
 }
 
-func commentDivWrite(writer io.Writer, markdownString string) {
-	fmt.Fprint(writer, commentDiv(markdownString))
+func commentDivWrite(writer io.Writer, markdownString string) error {
+	output, err := commentDiv(markdownString)
+	if err != nil {
+		return err
+	}
+	fmt.Fprint(writer, output)
+
+	return nil
 }
 
 func span(className string, value string) string {
@@ -94,12 +104,15 @@ func expressionToHtmlBlock(expression ast.Expression, colorer coloring.Colorer) 
 	codewriter.WriteExpression(expression, colorer, 0)
 }
 
-func markdownToHtml(rawMarkdownString string) string {
-	markdownString := ConvertSwampMarkdown(rawMarkdownString)
+func markdownToHtml(rawMarkdownString string) (string, error) {
+	markdownString, err := ConvertSwampMarkdown(rawMarkdownString)
+	if err != nil {
+		return "", err
+	}
 	raw := []byte(markdownString)
 	outputRaw := markdown.ToHTML(raw, nil, nil)
 
-	return string(outputRaw)
+	return string(outputRaw), nil
 }
 
 func shouldIncludeCommentBlock(commentBlock *ast.MultilineComment) bool {
@@ -211,13 +224,13 @@ func writeHeaderForConstant(writer io.Writer, colorer coloring.Colorer, fullyQua
 	fmt.Fprintf(writer, "</pre>\n")
 }
 
-func documentType(astType ast.Type, comment token.MultiLineCommentToken, colorer coloring.Colorer, writer io.Writer) {
+func documentType(astType ast.Type, comment token.MultiLineCommentToken, colorer coloring.Colorer, writer io.Writer) error {
 	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", astType.Name(), astType.Name())
 	fmt.Fprintf(writer, "<pre class='swamp'>")
 	codewriter.WriteType(astType, colorer, false, 0)
 	fmt.Fprintf(writer, "</pre>")
 	markdownString := comment.Value()
-	commentDivWrite(writer, markdownString)
+	return commentDivWrite(writer, markdownString)
 }
 
 func findTypeNames(d dtype.Type) (string, dectype.ArtifactFullyQualifiedTypeName) {
@@ -241,25 +254,25 @@ func findTypeNames(d dtype.Type) (string, dectype.ArtifactFullyQualifiedTypeName
 	}
 }
 
-func documentDecoratedType(decoratedType dtype.Type, comment token.MultiLineCommentToken, colorer coloring.DecoratedColorer, writer io.Writer) {
+func documentDecoratedType(decoratedType dtype.Type, comment token.MultiLineCommentToken, colorer coloring.DecoratedColorer, writer io.Writer) error {
 	shortName, fullyQualifiedName := findTypeNames(decoratedType)
 	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName.String(), shortName)
 	fmt.Fprintf(writer, "<pre><code class=\"swamp\">")
 	decoratedcodewriter.WriteType(decoratedType, colorer, 0)
 	fmt.Fprintf(writer, "</code></pre>")
 	markdownString := comment.Value()
-	commentDivWrite(writer, markdownString)
+	return commentDivWrite(writer, markdownString)
 }
 
-func documentConstant(name *decorated.FullyQualifiedPackageVariableName, constant *decorated.Constant, colorer coloring.Colorer, writer io.Writer) {
+func documentConstant(name *decorated.FullyQualifiedPackageVariableName, constant *decorated.Constant, colorer coloring.Colorer, writer io.Writer) error {
 	expression := constant.AstConstant().Expression()
 	writeHeaderForConstant(writer, colorer, name, expression)
 	comment := constant.CommentBlock()
 	markdownString := comment.Value()
-	commentDivWrite(writer, markdownString)
+	return commentDivWrite(writer, markdownString)
 }
 
-func ModuleToHtml(writer io.Writer, module *decorated.Module) {
+func ModuleToHtml(writer io.Writer, module *decorated.Module) error {
 	var markdownString string
 
 	colorer := &HtmlColorer{writer: writer}
@@ -268,7 +281,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 
 	filteredFunctions, filteredConstants := filterDefinitions(module.LocalDefinitions().Definitions())
 	if len(filteredFunctions) == 0 && len(filteredConstants) == 0 && len(filteredTypes) == 0 {
-		return
+		return nil
 	}
 
 	fmt.Fprintf(writer, "\n\n<hr/><h2>Module %v</h2>\n", module.FullyQualifiedModuleName())
@@ -276,7 +289,9 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 	sortedConstantKeys := sortConstantKeys(filteredConstants)
 	for _, constantName := range sortedConstantKeys {
 		filteredConstant := filteredConstants[constantName]
-		documentConstant(constantName, filteredConstant, colorer, writer)
+		if err := documentConstant(constantName, filteredConstant, colorer, writer); err != nil {
+			return err
+		}
 	}
 
 	sortedTypeKeys := sortTypeKeys(filteredTypes)
@@ -286,17 +301,23 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 		case *dectype.Alias:
 			{
 				comment := t.AstAlias().Comment()
-				documentDecoratedType(t, comment.Token(), colorer, writer)
+				if err := documentDecoratedType(t, comment.Token(), colorer, writer); err != nil {
+					return err
+				}
 			}
 		case *dectype.CustomTypeAtom:
 			{
 				comment := t.AstCustomType().Comment()
-				documentDecoratedType(t, comment.Token(), colorer, writer)
+				if err := documentDecoratedType(t, comment.Token(), colorer, writer); err != nil {
+					return err
+				}
 			}
 		case *dectype.RecordAtom:
 			{
 				comment := t.AstRecord().Comment()
-				documentDecoratedType(t, comment.Token(), colorer, writer)
+				if err := documentDecoratedType(t, comment.Token(), colorer, writer); err != nil {
+					return err
+				}
 			}
 		default:
 			{
@@ -326,6 +347,10 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 		token := commentBlock.Token()
 		markdownString = token.Value()
 
-		commentDivWrite(writer, markdownString)
+		if err := commentDivWrite(writer, markdownString); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
