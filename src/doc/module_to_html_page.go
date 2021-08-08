@@ -61,7 +61,7 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 			}
 
 			.keyword {
-				color: #d69c9c;
+				color: #f2c9c9;
 			}
 
 			.alias {
@@ -102,6 +102,10 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) {
 
 			.unmanagedtype {
 				color: #ab4e6a;
+			}
+
+			.unmanagedname {
+				color: #ab2e2a;
 			}
 
 			.recordtype {

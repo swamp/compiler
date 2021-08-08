@@ -24,13 +24,20 @@ func spanWriteLink(writer io.Writer, typeToWrite dtype.Type, value string) {
 		panic(fmt.Errorf("must have fully qualified name for %T", typeToWrite))
 	}
 	cssClassName := classNameFromType(typeToWrite)
-	fmt.Fprintf(writer, "<a href='#%v'>", fullyQualifiedName.String())
+
+	fmt.Fprintf(writer, "<a href=\"#%v\" title=\"%v\">", fullyQualifiedName.String(), fullyQualifiedName.String())
+
 	fmt.Fprintf(writer, span(cssClassName, value))
+
 	fmt.Fprintf(writer, "</a>")
 }
 
 func (c *HtmlColorer) CustomType(t *dectype.CustomTypeAtom) {
 	spanWrite(c.writer, "customtypename", t.Name())
+}
+
+func (c *HtmlColorer) CustomTypeName(t *dectype.CustomTypeReference) {
+	spanWriteLink(c.writer, t.CustomTypeAtom(), t.CustomTypeAtom().Name())
 }
 
 func (c *HtmlColorer) CustomTypeVariant(t *dectype.CustomTypeVariant) {
@@ -46,9 +53,11 @@ func (c *HtmlColorer) RecordTypeField(t *dectype.RecordField) {
 }
 
 func (c *HtmlColorer) AliasName(t *dectype.Alias) {
-	// aliasName := classNameFromType(t)
-
 	spanWriteLink(c.writer, t, t.TypeIdentifier().Name())
+}
+
+func (c *HtmlColorer) RightArrow() {
+	spanWrite(c.writer, "arrow", " &#8594; ")
 }
 
 func (c *HtmlColorer) PrimitiveTypeName(t *ast.TypeIdentifier) {
@@ -84,9 +93,7 @@ func (c *HtmlColorer) RecordField(t token.VariableSymbolToken) {
 }
 
 func (c *HtmlColorer) TypeSymbol(t token.TypeSymbolToken) {
-	// fmt.Fprintf(c.writer, "<a href='#%v'>", t.Raw())
 	spanWrite(c.writer, "typesymbol", t.Raw())
-	// fmt.Fprintf(c.writer, "</a>")
 }
 
 func (c *HtmlColorer) TypeGeneratorName(t token.TypeSymbolToken) {
@@ -119,6 +126,7 @@ func (c *HtmlColorer) KeywordString(t string) {
 
 func (c *HtmlColorer) NewLine(indentation int) {
 	fmt.Fprintf(c.writer, "\n")
+
 	for i := 0; i < indentation; i++ {
 		fmt.Fprintf(c.writer, "  ")
 	}
@@ -132,12 +140,12 @@ func (c *HtmlColorer) StringLiteral(s token.StringToken) {
 	spanWrite(c.writer, "string", s.Raw())
 }
 
-func (c *HtmlColorer) OneSpace() {
-	fmt.Fprintf(c.writer, " ")
+func (c *HtmlColorer) LocalTypeName(s *dectype.LocalType) {
+	spanWrite(c.writer, "localtype", s.Identifier().Name())
 }
 
-func (c *HtmlColorer) RightArrow() {
-	fmt.Fprintf(c.writer, "->")
+func (c *HtmlColorer) OneSpace() {
+	fmt.Fprintf(c.writer, " ")
 }
 
 func (c *HtmlColorer) RightPipe() {

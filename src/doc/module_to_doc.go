@@ -17,7 +17,7 @@ import (
 )
 
 func div(className string, value string) string {
-	return fmt.Sprintf("<div class='%v'>%v</div>", className, value)
+	return fmt.Sprintf("<div class=\"%v\">%v</div>", className, value)
 }
 
 func descriptionDiv(value string) string {
@@ -33,11 +33,11 @@ func commentDivWrite(writer io.Writer, markdownString string) {
 }
 
 func span(className string, value string) string {
-	return fmt.Sprintf("<span class='%v'>%v</span>", className, value)
+	return fmt.Sprintf("<span class=\"%v\">%v</span>", className, value)
 }
 
 func code(className string, value string) string {
-	return fmt.Sprintf("<pre><code class='%v'>%v</code></pre>", className, value)
+	return fmt.Sprintf("<pre><code class=\"%v\">%v</code></pre>", className, value)
 }
 
 func codeWrite(writer io.Writer, className string, value string) {
@@ -81,63 +81,13 @@ func classNameFromType(typeToConvert dtype.Type) string {
 	}
 }
 
-func typeToHtml(typeToConvert dtype.Type) string {
-	switch t := typeToConvert.(type) {
-	case *dectype.Alias:
-		className := classNameFromType(t.Next())
-		if className == "primitivetype" {
-			className = "alias"
-		}
-		return span(className, t.AstAlias().Name())
-
-	case *dectype.AliasReference:
-		return typeToHtml(t.Next())
-	case *dectype.CustomTypeReference:
-		return typeToHtml(t.Next())
-	case *dectype.CustomTypeAtom:
-		return span("customtype", t.AstCustomType().Name())
-	case *dectype.TupleTypeAtom:
-		s := span("paren", "(")
-		for index, parameterType := range t.ParameterTypes() {
-			if index > 0 {
-				s += span("comma", ", ")
-			}
-			s += typeToHtml(parameterType)
-		}
-		s += span("paren", ")")
-		return s
-	case *dectype.InvokerType:
-		s := span("invokertype", t.TypeGenerator().HumanReadable())
-		for _, param := range t.Params() {
-			s += " "
-			s += typeToHtml(param)
-		}
-		return s
-	case *dectype.FunctionAtom:
-		s := span("paren", "(")
-		for index, parameterType := range t.FunctionParameterTypes() {
-			if index > 0 {
-				s += span("arrow", " &#8594; ")
-			}
-			s += typeToHtml(parameterType)
-		}
-		s += span("paren", ")")
-		return s
-	case *dectype.FunctionTypeReference:
-		return typeToHtml(t.Next())
-	case *dectype.PrimitiveAtom:
-		return span("primitivetype", t.PrimitiveName().Name())
-	case *dectype.PrimitiveTypeReference:
-		return typeToHtml(t.Next())
-	case *dectype.LocalType:
-		return span("localtype", t.Identifier().Name())
-	default:
-		panic(fmt.Sprintf("can not understand %T", typeToConvert))
-	}
+func typeToHtml(typeToConvert dtype.Type, colorer coloring.DecoratedColorer) {
+	decoratedcodewriter.WriteType(typeToConvert, colorer, 0)
 }
 
-func typeToHtmlBlock(typeToConvert dtype.Type) string {
-	return typeToHtml(typeToConvert) + "\n"
+func typeToHtmlBlock(typeToConvert dtype.Type, colorer coloring.DecoratedColorer, writer io.Writer) {
+	typeToHtml(typeToConvert, colorer)
+	fmt.Fprintf(writer, "\n")
 }
 
 func expressionToHtmlBlock(expression ast.Expression, colorer coloring.Colorer) {
@@ -243,10 +193,14 @@ func filterDefinitions(definitions []decorated.ModuleDef) (map[*decorated.FullyQ
 	return filteredFunctions, filteredConstants
 }
 
-func writeHeaderForType(writer io.Writer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, p dtype.Type) {
+func writeHeaderForType(writer io.Writer, colorer coloring.DecoratedColorer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, p dtype.Type) {
 	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName, fullyQualifiedName.Identifier().Name())
 
-	fmt.Fprintf(writer, "<div class='swamp-function-prototype'><code>%v</code></div>\n", typeToHtmlBlock(p))
+	fmt.Fprintf(writer, "<div class='swamp-function-prototype'><code>\n")
+
+	typeToHtmlBlock(p, colorer, writer)
+
+	fmt.Fprintf(writer, "\n</code></div>")
 }
 
 func writeHeaderForConstant(writer io.Writer, colorer coloring.Colorer, fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, expression ast.Expression) {
@@ -280,6 +234,8 @@ func findTypeNames(d dtype.Type) (string, dectype.ArtifactFullyQualifiedTypeName
 		return "Unmanaged", dectype.ArtifactFullyQualifiedTypeName{ModuleName: moduleName}
 	case *dectype.RecordAtom:
 		return "Record", dectype.ArtifactFullyQualifiedTypeName{}
+	case *dectype.CustomTypeReference:
+		return findTypeNames(t.CustomTypeAtom())
 	default:
 		panic(fmt.Errorf("unknown type to get name from %T", t))
 	}
@@ -288,7 +244,7 @@ func findTypeNames(d dtype.Type) (string, dectype.ArtifactFullyQualifiedTypeName
 func documentDecoratedType(decoratedType dtype.Type, comment token.MultiLineCommentToken, colorer coloring.DecoratedColorer, writer io.Writer) {
 	shortName, fullyQualifiedName := findTypeNames(decoratedType)
 	fmt.Fprintf(writer, "\n\n<h3 id='%v'>%v</h3>\n", fullyQualifiedName.String(), shortName)
-	fmt.Fprintf(writer, "<pre><code class='swamp'>")
+	fmt.Fprintf(writer, "<pre><code class=\"swamp\">")
 	decoratedcodewriter.WriteType(decoratedType, colorer, 0)
 	fmt.Fprintf(writer, "</code></pre>")
 	markdownString := comment.Value()
@@ -354,7 +310,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) {
 		filteredFunction := filteredFunctions[functionName]
 
 		commentBlock := filteredFunction.CommentBlock()
-		writeHeaderForType(writer, functionName, filteredFunction.Type())
+		writeHeaderForType(writer, colorer, functionName, filteredFunction.Type())
 
 		params := ""
 		for index, arg := range filteredFunction.Parameters() {

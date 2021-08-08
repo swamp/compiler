@@ -9,6 +9,7 @@ import (
 type DecoratedColorer interface {
 	Operator(t token.OperatorToken)
 	CustomType(t *dectype.CustomTypeAtom)
+	CustomTypeName(t *dectype.CustomTypeReference)
 	NewLine(indentation int)
 	OperatorString(s string)
 	OneSpace()
@@ -19,4 +20,6 @@ type DecoratedColorer interface {
 	KeywordString(s string)
 	UnmanagedName(s *ast.UnmanagedType)
 	PrimitiveTypeName(identifier *ast.TypeIdentifier)
+	RightArrow()
+	LocalTypeName(localType *dectype.LocalType)
 }

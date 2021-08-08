@@ -101,10 +101,46 @@ func WritePrimitiveTypeReference(primitiveReference *dectype.PrimitiveTypeRefere
 	colorer.PrimitiveTypeName(primitiveReference.PrimitiveAtom().PrimitiveName())
 }
 
+func WriteFunctionType(functionType *dectype.FunctionAtom, colorer coloring.DecoratedColorer, indentation int) {
+	colorer.OperatorString("(")
+	for index, parameterType := range functionType.FunctionParameterTypes() {
+		if index > 0 {
+			colorer.RightArrow()
+		}
+		WriteType(parameterType, colorer, indentation)
+	}
+	colorer.OperatorString(")")
+}
+
+func WriteFunctionTypeReference(functionTypeReference *dectype.FunctionTypeReference, colorer coloring.DecoratedColorer, indentation int) {
+	WriteFunctionType(functionTypeReference.FunctionAtom(), colorer, indentation)
+}
+
+func WriteTupleType(tupleType *dectype.TupleTypeAtom, colorer coloring.DecoratedColorer, indentation int) {
+	colorer.OperatorString("(")
+	for index, parameterType := range tupleType.ParameterTypes() {
+		if index > 0 {
+			colorer.OperatorString(", ")
+		}
+		WriteType(parameterType, colorer, indentation)
+	}
+	colorer.OperatorString(")")
+}
+
+func WriteLocalType(localType *dectype.LocalType, colorer coloring.DecoratedColorer, indentation int) {
+	colorer.LocalTypeName(localType)
+}
+
+func WriteCustomTypeReference(customTypeReference *dectype.CustomTypeReference, colorer coloring.DecoratedColorer, indentation int) {
+	colorer.CustomTypeName(customTypeReference)
+}
+
 func WriteType(decoratedType dtype.Type, colorer coloring.DecoratedColorer, indentation int) {
 	switch t := decoratedType.(type) {
 	case *dectype.CustomTypeAtom:
 		WriteCustomType(t, colorer, indentation)
+	case *dectype.CustomTypeReference:
+		WriteCustomTypeReference(t, colorer, indentation)
 	case *dectype.InvokerType:
 		WriteInvokerType(t, colorer, indentation)
 	case *dectype.RecordAtom:
@@ -119,6 +155,12 @@ func WriteType(decoratedType dtype.Type, colorer coloring.DecoratedColorer, inde
 		WritePrimitiveTypeReference(t, colorer, indentation)
 	case *dectype.PrimitiveAtom:
 		WritePrimitiveType(t, colorer, indentation)
+	case *dectype.FunctionTypeReference:
+		WriteFunctionTypeReference(t, colorer, indentation)
+	case *dectype.TupleTypeAtom:
+		WriteTupleType(t, colorer, indentation)
+	case *dectype.LocalType:
+		WriteLocalType(t, colorer, indentation)
 	default:
 		panic(fmt.Errorf("couldn't write type %T in decorated writer", decoratedType))
 	}
