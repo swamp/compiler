@@ -93,10 +93,10 @@ func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleTyp
 	return readModule, nil
 }
 
-func (l *ModuleRepository) FetchModuleInPackage(packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
+func (l *ModuleRepository) FetchModuleInPackage(parentModuleType decorated.ModuleType, packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	artifactFullyModuleName := l.moduleNamespace.Join(packageRelativeModuleName)
 
-	return l.FetchModuleInPackageEx(decorated.ModuleTypeNormal, artifactFullyModuleName, packageRelativeModuleName, verboseFlag)
+	return l.FetchModuleInPackageEx(parentModuleType, artifactFullyModuleName, packageRelativeModuleName, verboseFlag)
 }
 
 func (l *ModuleRepository) FetchMainModuleInPackage(moduleType decorated.ModuleType, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {

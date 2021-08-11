@@ -284,7 +284,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) error {
 		return nil
 	}
 
-	fmt.Fprintf(writer, "\n\n<hr/><h2>Module %v</h2>\n", module.FullyQualifiedModuleName())
+	fmt.Fprintf(writer, "\n\n<hr/><h2>Module %v (%v)</h2>\n", module.FullyQualifiedModuleName(), decorated.ModuleTypeToString(module.ModuleType()))
 
 	sortedConstantKeys := sortConstantKeys(filteredConstants)
 	for _, constantName := range sortedConstantKeys {

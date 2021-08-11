@@ -71,6 +71,18 @@ func (d *ExternalFunctionDeclaration) String() string {
 	return "external func"
 }
 
+func ModuleTypeToString(moduleType ModuleType) string {
+	switch moduleType {
+	case ModuleTypeNormal:
+		return "normal"
+	case ModuleTypeFromPath:
+		return "shared library"
+	case ModuleTypeFromEnvironment:
+		return "environment"
+	}
+	panic("unknown module type")
+}
+
 type ModuleType = int
 
 const (

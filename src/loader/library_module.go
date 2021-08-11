@@ -45,10 +45,20 @@ func FindSettingsDirectory(swampDirectory string) (string, error) {
 	return "", fmt.Errorf("sorry, couldn't find settings file from %v and up. Not a library", swampDirectory)
 }
 
+func ModuleTypeFromMapped(moduleMap settings.ModuleMap) decorated.ModuleType {
+	switch moduleMap {
+	case settings.ModuleFromEnvironment:
+		return decorated.ModuleTypeFromEnvironment
+	case settings.ModuleFromPath:
+		return decorated.ModuleTypeFromPath
+	}
+	panic("unknown mapped")
+}
+
 func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, documentProvider DocumentProvider, configuration environment.Environment, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	settingsFilename := filepath.Join(swampDirectory, ".swamp.toml")
 
-	mapping := make(map[string]string)
+	mapping := make(map[string]settings.Module)
 
 	settingsFile, settingsFileErr := os.Open(settingsFilename)
 	if settingsFileErr != nil {
@@ -67,13 +77,13 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 			fmt.Printf("  * found mapping %s => %s\n", m.Name, m.Path)
 		}
 
-		mapping[m.Name] = m.Path
+		mapping[m.Name] = m
 	}
 
 	for packageRootModuleNameString, packagePath := range mapping {
-		dependencyFilePrefix := packagePath
-		if !filepath.IsAbs(packagePath) {
-			dependencyFilePrefix = filepath.Join(swampDirectory, packagePath)
+		dependencyFilePrefix := packagePath.Path
+		if !filepath.IsAbs(packagePath.Path) {
+			dependencyFilePrefix = filepath.Join(swampDirectory, packagePath.Path)
 		}
 
 		rootNamespace := dectype.MakePackageRootModuleNameFromString(packageRootModuleNameString)
@@ -81,7 +91,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 			full, _ := filepath.Abs(dependencyFilePrefix)
 			return decorated.NewInternalError(fmt.Errorf("could not find directory '%v' '%v' ('%v' '%v')", full, dependencyFilePrefix, swampDirectory, packagePath))
 		}
-		_, moduleErr := r.ReadLibraryModule(decorated.ModuleTypeFromPath, world, repository, dependencyFilePrefix, rootNamespace, documentProvider, configuration)
+		_, moduleErr := r.ReadLibraryModule(ModuleTypeFromMapped(packagePath.Mapped), world, repository, dependencyFilePrefix, rootNamespace, documentProvider, configuration)
 		if moduleErr != nil {
 			return moduleErr
 		}

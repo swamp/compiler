@@ -24,7 +24,7 @@ import (
 
 type NoImportModuleRepository struct{}
 
-func (*NoImportModuleRepository) FetchModuleInPackage(moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
+func (*NoImportModuleRepository) FetchModuleInPackage(moduleType decorated.ModuleType, moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	return nil, decorated.NewInternalError(fmt.Errorf("this is a no import module. Imports are not allowed"))
 }
 
@@ -128,7 +128,6 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 		if importErr != nil {
 			return nil, decorated.NewInternalError(importErr)
 		}
-
 	}
 
 	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.LocalTypes(), module.ImportedTypes())
@@ -136,7 +135,7 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 
 	converter := NewDecorator(moduleRepository, module, createAndLookup)
 
-	rootStatementHandler := decorator.NewRootStatementHandler(converter, createAndLookup, "compiletomodule")
+	rootStatementHandler := decorator.NewRootStatementHandler(converter, createAndLookup, moduleType, "compiletomodule")
 	var allErrors []decshared.DecoratedError
 	rootNodes, generateErr := rootStatementHandler.HandleStatements(program)
 	if generateErr != nil {

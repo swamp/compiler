@@ -3,6 +3,7 @@ package doc
 import (
 	"fmt"
 	"io"
+	"sort"
 
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/loader"
@@ -154,15 +155,16 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) error {
 				background-color: #404040;
 				padding: 0.5rem;
 				border-radius: .3rem;
-				display: block;
+				display: table;
 			}
 
 			.admonition {
 				border-left: .2rem solid #448aff;
-				background-color: red;
+				background-color: #ffffff05;
 				padding: 0.6rem;
 				border-radius: 0.3rem;
 				margin: 1.5em 0;
+				box-shadow: 0 .1rem .5rem rgba(255, 247, 247, 0.14),0 .05rem .05rem rgba(241, 242, 241, 0.75)
 			}
 
 			.admonition-title {
@@ -172,13 +174,11 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) error {
 			}
 
 			.warning {
- 				background-color:rgb(208, 120, 4);
  				border-color:#ffb554;
 			}
 
 			.admonition-title > .warning  {
- 				background-color:rgba(255,145,0,.1);
- 				border-color:#ff9100;
+ 				background-color:rgba(244, 222, 109, 0.27);
 			}
 
 			h1 {
@@ -239,6 +239,8 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) error {
 	for k := range documentedModules {
 		keys = append(keys, k)
 	}
+
+	sort.Strings(keys)
 
 	for _, key := range keys {
 		compiledModule := documentedModules[key]

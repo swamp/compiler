@@ -65,7 +65,6 @@ func convertAdmonition(multiline string) (string, error) {
 			case strings.HasPrefix(strings.TrimSpace(line), "```"):
 				swampCode := strings.Join(codeLines, "\n") + "\n"
 				reader := strings.NewReader(swampCode)
-				log.Printf("found:\n%v\n\n", swampCode)
 				runeReader, runeErr := runestream.NewRuneReader(reader, "unknown filename")
 				if runeErr != nil {
 					return "", runeErr
@@ -88,7 +87,6 @@ func convertAdmonition(multiline string) (string, error) {
 				lines = append(lines, buf.String())
 				convertState = Normal
 			default:
-				log.Printf("adding:\n'%v'\n\n", line)
 				codeLines = append(codeLines, line)
 			}
 		case strings.HasPrefix(line, "!!! "):

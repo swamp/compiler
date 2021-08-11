@@ -16,7 +16,7 @@ import (
 )
 
 type ModuleRepository interface {
-	FetchModuleInPackage(moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError)
+	FetchModuleInPackage(parentModuleType decorated.ModuleType, moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError)
 }
 
 type Decorator struct {
@@ -63,8 +63,8 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 	return decorator.NewVariableContext(d.module.LocalAndImportedDefinitions())
 }
 
-func (d *Decorator) ImportModule(importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag verbosity.Verbosity) (*decorated.ImportStatement, decshared.DecoratedError) {
-	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(relativeModuleName, verboseFlag)
+func (d *Decorator) ImportModule(moduleType decorated.ModuleType, importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag verbosity.Verbosity) (*decorated.ImportStatement, decshared.DecoratedError) {
+	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(moduleType, relativeModuleName, verboseFlag)
 	if importErr != nil {
 		return nil, importErr
 	}

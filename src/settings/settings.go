@@ -65,6 +65,8 @@ func Load(reader io.Reader, rootDirectory string, configuration environment.Envi
 			}
 			convertedPath = convertedPath + suffix
 			mapped = ModuleFromEnvironment
+		} else {
+			mapped = ModuleFromPath
 		}
 		if !filepath.IsAbs(convertedPath) {
 			convertedPath = filepath.Join(rootDirectory, convertedPath)

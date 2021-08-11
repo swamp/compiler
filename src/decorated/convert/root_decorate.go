@@ -25,10 +25,11 @@ type RootStatementHandler struct {
 	localCommentBlock *ast.MultilineComment
 	verboseFlag       verbosity.Verbosity
 	decorateStream    DecorateStream
+	parentModuletype  decorated.ModuleType
 }
 
-func NewRootStatementHandler(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker, debugName string) *RootStatementHandler {
-	g := &RootStatementHandler{verboseFlag: verbosity.None, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo}
+func NewRootStatementHandler(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker, parentModuletype decorated.ModuleType, debugName string) *RootStatementHandler {
+	g := &RootStatementHandler{verboseFlag: verbosity.None, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo, parentModuletype: parentModuletype}
 	return g
 }
 
@@ -116,7 +117,7 @@ func (g *RootStatementHandler) handleImport(d DecorateStream, importAst *ast.Imp
 		alias = dectype.MakeSingleModuleName(importAst.Alias())
 	}
 	packageRelative := dectype.MakePackageRelativeModuleName(importAst.ModuleName())
-	return d.ImportModule(importAst, packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
+	return d.ImportModule(g.parentModuletype, importAst, packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
 }
 
 func (g *RootStatementHandler) handleExternalFunction(d DecorateStream, externalFunction *ast.ExternalFunction) (*decorated.ExternalFunctionDeclaration, decshared.DecoratedError) {
