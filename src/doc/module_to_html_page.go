@@ -3,9 +3,7 @@ package doc
 import (
 	"fmt"
 	"io"
-	"sort"
 
-	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/loader"
 )
 
@@ -225,27 +223,35 @@ func PackagesToHtmlPage(writer io.Writer, packages []*loader.Package) error {
 
 	fmt.Fprintf(writer, header)
 
-	documentedModules := make(map[string]*decorated.Module)
-	for _, compiledPackage := range packages {
-		for _, module := range compiledPackage.AllModules() {
-			if _, alreadyDocumented := documentedModules[module.FullyQualifiedModuleName().String()]; alreadyDocumented {
-				continue
+	docRoot := FilterOutDocRoot(packages)
+	for _, foundPackage := range docRoot.packages {
+		fmt.Fprintf(writer, "\n\n\n\n<hr /><h1>Package %v</h1>\n", foundPackage.foundPackage.Name())
+
+		if len(foundPackage.modules) > 0 {
+			fmt.Fprintf(writer, "\n\n<h2>Normal Modules</h2>\n")
+			for _, normalModule := range foundPackage.modules {
+				if err := ModuleToHtml(writer, normalModule); err != nil {
+					return err
+				}
 			}
-			documentedModules[module.FullyQualifiedModuleName().String()] = module
 		}
-	}
 
-	keys := make([]string, 0, len(documentedModules))
-	for k := range documentedModules {
-		keys = append(keys, k)
-	}
+		if len(foundPackage.sharedModules) > 0 {
+			fmt.Fprintf(writer, "\n\n<h2>Shared Modules</h2>\n")
+			for _, sharedModule := range foundPackage.sharedModules {
+				if err := ModuleToHtml(writer, sharedModule); err != nil {
+					return err
+				}
+			}
+		}
 
-	sort.Strings(keys)
-
-	for _, key := range keys {
-		compiledModule := documentedModules[key]
-		if err := ModuleToHtml(writer, compiledModule); err != nil {
-			return err
+		if len(foundPackage.environmentModules) > 0 {
+			fmt.Fprintf(writer, "\n\n<h2>Environment Modules</h2>\n")
+			for _, environmentModule := range foundPackage.environmentModules {
+				if err := ModuleToHtml(writer, environmentModule); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
