@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 )
 
 func isIndentation(ch rune) bool {
@@ -30,16 +31,33 @@ type RuneReader struct {
 	index            int
 }
 
+func filterOutCr(octets []byte) []byte {
+	var result []byte
+	for _, ch := range octets {
+		if ch == '\r' { // It is common on Windows for files to have CR before LF
+			continue
+		}
+		result = append(result, ch)
+	}
+
+	return result
+}
+
 // NewRuneReader :
 func NewRuneReader(r io.Reader, absoluteFilename string) (*RuneReader, error) {
 	if len(absoluteFilename) == 0 {
 		panic("relative filename can not be null")
+	}
+	if strings.Contains(absoluteFilename, "\\") {
+		panic("backslash is not supported path:" + absoluteFilename)
 	}
 
 	octets, octetsErr := ioutil.ReadAll(r)
 	if octetsErr != nil {
 		return nil, fmt.Errorf("runereader: ReadAll %w", octetsErr)
 	}
+
+	octets = filterOutCr(octets)
 
 	octets = append(octets, 0)
 

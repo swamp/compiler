@@ -13,6 +13,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/pelletier/go-toml"
 	"github.com/swamp/compiler/src/file"
@@ -60,6 +61,10 @@ func Load(reader io.Reader) (Environment, error) {
 	unmarshalErr := toml.Unmarshal(data, &config)
 	if unmarshalErr != nil {
 		return Environment{}, unmarshalErr
+	}
+
+	for _, entry := range config.Package {
+		entry.Path = filepath.ToSlash(entry.Path)
 	}
 
 	return config, nil

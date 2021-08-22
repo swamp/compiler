@@ -125,6 +125,8 @@ func (c *BuildCmd) Run() error {
 		return fmt.Errorf("must specify build directory")
 	}
 
+	c.Path = filepath.ToSlash(c.Path)
+
 	compiledPackages, err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, verbosity.Verbosity(c.Verbosity))
 	if err != nil {
 		return err

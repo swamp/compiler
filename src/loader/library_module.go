@@ -9,8 +9,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
+	"path/filepath"
 
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -35,10 +36,10 @@ func FindSettingsDirectory(swampDirectory string) (string, error) {
 		return "", fmt.Errorf("wasn't a directory %q", swampDirectory)
 	}
 	for file.IsDir(testDirectory) && tryCount < 3 {
-		if file.HasFile(filepath.Join(testDirectory, ".swamp.toml")) {
+		if file.HasFile(path.Join(testDirectory, ".swamp.toml")) {
 			return testDirectory, nil
 		}
-		testDirectory = filepath.Dir(testDirectory)
+		testDirectory = path.Dir(testDirectory)
 		tryCount++
 	}
 
@@ -56,7 +57,7 @@ func ModuleTypeFromMapped(moduleMap settings.ModuleMap) decorated.ModuleType {
 }
 
 func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, documentProvider DocumentProvider, configuration environment.Environment, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
-	settingsFilename := filepath.Join(swampDirectory, ".swamp.toml")
+	settingsFilename := path.Join(swampDirectory, ".swamp.toml")
 
 	mapping := make(map[string]settings.Module)
 
@@ -83,12 +84,13 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 	for packageRootModuleNameString, packagePath := range mapping {
 		dependencyFilePrefix := packagePath.Path
 		if !filepath.IsAbs(packagePath.Path) {
-			dependencyFilePrefix = filepath.Join(swampDirectory, packagePath.Path)
+			dependencyFilePrefix = path.Join(swampDirectory, packagePath.Path)
 		}
 
 		rootNamespace := dectype.MakePackageRootModuleNameFromString(packageRootModuleNameString)
 		if !file.IsDir(dependencyFilePrefix) {
 			full, _ := filepath.Abs(dependencyFilePrefix)
+			full = filepath.ToSlash(full)
 			return decorated.NewInternalError(fmt.Errorf("could not find directory '%v' '%v' ('%v' '%v')", full, dependencyFilePrefix, swampDirectory, packagePath))
 		}
 		_, moduleErr := r.ReadLibraryModule(ModuleTypeFromMapped(packagePath.Mapped), world, repository, dependencyFilePrefix, rootNamespace, documentProvider, configuration)

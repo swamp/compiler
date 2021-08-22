@@ -7,6 +7,7 @@ package loader
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -39,14 +40,15 @@ func NewLoader(rootPath string, documentProvider DocumentProvider) *Loader {
 
 func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (string, string, decshared.DecoratedError) {
 	relativePath := moduleNameToRelativeFilePath(relativeModuleName)
-	if filepath.IsAbs(relativePath) {
+	if path.IsAbs(relativePath) {
 		return "", "", decorated.NewInternalError(fmt.Errorf("loader wants relative paths, can not use absolute ones '%s'", relativeModuleName))
 	}
-	fullPath := filepath.Join(l.rootPath, relativePath)
+	fullPath := path.Join(l.rootPath, relativePath)
 	completeFilename, completeFilenameErr := filepath.Abs(fullPath)
 	if completeFilenameErr != nil {
 		return "", "", decorated.NewInternalError(completeFilenameErr)
 	}
+	completeFilename = filepath.ToSlash(completeFilename)
 	if verboseFlag >= verbosity.Low {
 		fmt.Printf("* loading file %v\n", completeFilename)
 	}

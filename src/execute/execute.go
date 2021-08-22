@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -43,7 +42,7 @@ func Execute(verboseFlag verbosity.Verbosity, executableName string, arguments .
 func FindProjectDirectory() (string, error) {
 	wd, _ := os.Getwd()
 	for i := 0; !strings.HasSuffix(wd, "swamp-compiler"); i++ {
-		wd = filepath.Dir(wd)
+		wd = path.Dir(wd)
 
 		if i > 4 {
 			return "", fmt.Errorf("could not find project directory")
@@ -61,14 +60,14 @@ func ExecuteSwamp(swampCode string) (string, error) {
 		return "", err
 	}
 
-	tempFileName := filepath.Join(tempDir, "Main.swamp")
+	tempFileName := path.Join(tempDir, "Main.swamp")
 
 	tmpFile, tmpFileErr := os.Create(tempFileName)
 	if tmpFileErr != nil {
 		return "", tmpFileErr
 	}
 
-	tempOutputFile := filepath.Join(tempDir, tempOutputFileTemplate)
+	tempOutputFile := path.Join(tempDir, tempOutputFileTemplate)
 
 	tempSwampFilename := tmpFile.Name()
 	const verbose = verbosity.None

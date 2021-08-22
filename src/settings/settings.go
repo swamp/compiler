@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -69,7 +70,7 @@ func Load(reader io.Reader, rootDirectory string, configuration environment.Envi
 			mapped = ModuleFromPath
 		}
 		if !filepath.IsAbs(convertedPath) {
-			convertedPath = filepath.Join(rootDirectory, convertedPath)
+			convertedPath = path.Join(rootDirectory, convertedPath)
 		}
 
 		settings.Module[index].Path = convertedPath

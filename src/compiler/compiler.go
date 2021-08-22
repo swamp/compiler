@@ -113,7 +113,7 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	mainPrefix := mainSourceFile
 	if file.IsDir(mainSourceFile) {
 	} else {
-		mainPrefix = filepath.Dir(mainSourceFile)
+		mainPrefix = path.Dir(mainSourceFile)
 	}
 	world := loader.NewPackage(loader.LocalFileSystemRoot(mainPrefix), name)
 
