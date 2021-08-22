@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"log"
 	"unicode"
 )
 
@@ -69,7 +68,7 @@ func (s DocumentURI) ToLocalFilePath() (string, error) {
 	if isWindowsDriveURI(pathOnly) {
 		pathOnly = strings.ToUpper(string(fullUrl.Path[1])) + fullUrl.Path[2:]
 	}	
-	log.Printf("converted from %v to %v", s, pathOnly)
+
 	return pathOnly, nil
 }
 
