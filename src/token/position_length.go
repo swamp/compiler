@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"log"
+	"unicode"
 )
 
 type DocumentURI string
@@ -20,13 +22,55 @@ func MakeDocumentURI(s string) DocumentURI {
 	return DocumentURI(s)
 }
 
+func MakeDocumentURIFromLocalPath(s string) DocumentURI {
+	if strings.HasPrefix(s, "file://") {
+		panic("illegal localPath")
+	}
+
+	if isWindowsDrivePrefix(s) {
+		s = "/" + strings.ToUpper(string(s[0])) + s[1:]
+	}
+
+	u := url.URL{
+		Scheme: "file",
+		Path:   s,
+	}
+
+	return DocumentURI(u.String())
+}
+
+
+func isWindowsDrivePrefix(path string) bool {
+	if len(path) < 3 {
+		return false
+	}
+	return unicode.IsLetter(rune(path[0])) && path[1] == ':'
+}
+
+func isWindowsDriveURI(uri string) bool {
+	if len(uri) < 4 {
+		return false
+	}
+	return uri[0] == '/' && unicode.IsLetter(rune(uri[1])) && uri[2] == ':'
+}
+
 func (s DocumentURI) ToLocalFilePath() (string, error) {
-	fullUrl, urlErr := url.Parse(string(s))
+	fullUrl, urlErr := url.ParseRequestURI(string(s))
 	if urlErr != nil {
 		return "", urlErr
 	}
 
-	return fullUrl.Path, nil
+	if fullUrl.Scheme != "file" {
+		panic("must have file prefix")
+	} 
+
+	pathOnly := fullUrl.Path
+
+	if isWindowsDriveURI(pathOnly) {
+		pathOnly = strings.ToUpper(string(fullUrl.Path[1])) + fullUrl.Path[2:]
+	}	
+	log.Printf("converted from %v to %v", s, pathOnly)
+	return pathOnly, nil
 }
 
 type SourceFileDocument struct {
@@ -49,6 +93,11 @@ type SourceFileReference struct {
 func MakeSourceFileDocument(uri string) *SourceFileDocument {
 	return MakeSourceFileDocumentFromURI(MakeDocumentURI(uri))
 }
+
+func MakeSourceFileDocumentFromLocalPath(localPath string) *SourceFileDocument {
+	return MakeSourceFileDocumentFromURI(MakeDocumentURIFromLocalPath(localPath))
+}
+
 
 func MakeSourceFileDocumentFromURI(uri DocumentURI) *SourceFileDocument {
 	return &SourceFileDocument{

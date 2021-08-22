@@ -74,9 +74,10 @@ func (l *LspImpl) FindModuleHelper(sourceFile token.DocumentURI) *decorated.Modu
 	if err != nil {
 		return nil
 	}
-	module, _ := l.workspace.FindModuleFromSourceFile(loader.LocalFileSystemPath(localPath))
+	localFileSystemPath := loader.LocalFileSystemPath(localPath)
+	module, _ := l.workspace.FindModuleFromSourceFile(localFileSystemPath)
 	if module == nil {
-		log.Printf("could not find source file %v\n", sourceFile)
+		log.Printf("could not find source file %v using '%v'\n", sourceFile, localFileSystemPath)
 		return nil
 	}
 

@@ -68,11 +68,13 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 	return nil
 }
 
+
+
 // NewTokenizerInternal :
 func NewTokenizerInternal(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
 	t := &Tokenizer{
 		r:                     r,
-		document:              token.MakeSourceFileDocument("file://" + r.RelativeFilename()),
+		document:              token.MakeSourceFileDocumentFromLocalPath(r.RelativeFilename()),
 		position:              token.NewPositionToken(token.NewPositionTopLeft(), 0),
 		lastTokenWasDelimiter: true,
 		enforceStyleGuide:     exactWhitespace,
