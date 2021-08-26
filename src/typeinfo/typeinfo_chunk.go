@@ -995,13 +995,13 @@ func (c *Chunk) consumeUnmanaged() (InfoType, error) {
 */
 
 func (c *Chunk) consumeUnmanaged(unmanagedType *dectype.UnmanagedType) (InfoType, error) {
-	if len(unmanagedType.Identifier().Name()) == 0 {
+	if len(unmanagedType.Identifier().NativeLanguageTypeName().Name()) == 0 {
 		return nil, fmt.Errorf("must have a nativeLanguageTypeName")
 	}
 
 	propsedNewUnmanaged := &UnmanagedType{
 		Type: Type{},
-		name: unmanagedType.Identifier().Name(),
+		name: unmanagedType.Identifier().NativeLanguageTypeName().Name(),
 	}
 
 	indexArray := c.doWeHaveUnmanaged(propsedNewUnmanaged)

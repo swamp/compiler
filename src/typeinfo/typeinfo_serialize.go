@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"hash/fnv"
 	"io"
 )
 
@@ -80,6 +81,21 @@ func writeList(writer io.Writer, list *ListType) error {
 		return err
 	}
 	return writeTypeRef(writer, list.itemType)
+}
+
+func writeUnmanaged(writer io.Writer, unmanaged *UnmanagedType) error {
+	if err := writeTypeID(writer, SwtiTypeUnmanaged); err != nil {
+		return err
+	}
+
+	if err := writeName(writer, unmanaged.name); err != nil {
+		return err
+	}
+
+	hash := fnv.New32a()
+	hash.Write([]byte(unmanaged.name))
+	lowHash := int(hash.Sum32() & 0xffff)
+	return writeUint16(writer, lowHash)
 }
 
 func writeTuple(writer io.Writer, tuple *TupleType) error {
@@ -245,7 +261,7 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		// TODO:
 		return writePrimitive(writer, SwtiTypeAny)
 	case *UnmanagedType:
-		return writePrimitive(writer, SwtiTypeUnmanaged)
+		return writeUnmanaged(writer, t)
 	case *AnyMatchingTypes:
 		// TODO:
 		return writePrimitive(writer, SwtiTypeAnyMatchingTypes)
@@ -257,7 +273,7 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 func writeVersion(writer io.Writer) error {
 	const major byte = 0
 	const minor byte = 1
-	const patch byte = 5
+	const patch byte = 6
 
 	if err := writeUint8(writer, major); err != nil {
 		return err
