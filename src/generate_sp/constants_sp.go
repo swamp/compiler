@@ -2,6 +2,7 @@ package generate_sp
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/swamp/compiler/src/assembler_sp"
@@ -70,9 +71,43 @@ func NewBooleanConstant(posRange assembler_sp.ConstantPosAndRange, b bool) *Cons
 	return &Constant{posRange: posRange, constantType: ConstantTypeBoolean, b: b}
 }
 
-type StartMemoryConstants struct {
-	constants []*Constant
+type StartMemoryLayout struct {
 	pointer   uint32
+	posRanges []assembler_sp.ConstantPosAndRange
+}
+
+func (c *StartMemoryLayout) AllocateSpace(octetSize uint32, debugString string) assembler_sp.ConstantPosAndRange {
+	posRange := assembler_sp.ConstantPosAndRange{Pos: c.pointer, Size: octetSize, DebugString: debugString}
+	c.pointer += octetSize
+	if (c.pointer % 8) != 0 {
+		c.pointer += 8 - (c.pointer % 8)
+	}
+
+	c.posRanges = append(c.posRanges, posRange)
+
+	return posRange
+}
+
+func (c *StartMemoryLayout) AllRanges() []assembler_sp.ConstantPosAndRange {
+	return c.posRanges
+}
+
+func (c *StartMemoryLayout) DebugOutput() {
+	lastPointer := uint32(0)
+	log.Printf("constants memory layout\n")
+	for _, posRange := range c.posRanges {
+		if posRange.Pos < lastPointer {
+			panic("problem with order")
+		}
+		lastPointer = posRange.Pos + posRange.Size
+
+		log.Printf("%04d: %d > '%s'\n", posRange.Pos, posRange.Size, posRange.DebugString)
+	}
+}
+
+type StartMemoryConstants struct {
+	constants    []*Constant
+	memoryLayout *StartMemoryLayout
 }
 
 func (c *StartMemoryConstants) String() string {
@@ -90,19 +125,14 @@ func (c *StartMemoryConstants) Constants() []*Constant {
 	return c.constants
 }
 
+func (c *StartMemoryConstants) AllocateSpace(size uint32, debugString string) assembler_sp.ConstantPosAndRange {
+	return c.memoryLayout.AllocateSpace(size, debugString)
+}
+
 func (c *StartMemoryConstants) CopyConstants(constants []*Constant) {
 	for _, constantToCopy := range constants {
 		c.constants = append(c.constants, constantToCopy)
 	}
-}
-
-func (c *StartMemoryConstants) AllocateSpace(octetSize uint32) assembler_sp.ConstantPosAndRange {
-	posRange := assembler_sp.ConstantPosAndRange{Pos: c.pointer, Size: octetSize}
-	c.pointer += octetSize
-	if (c.pointer % 8) != 0 {
-		c.pointer += 8 - (c.pointer % 8)
-	}
-	return posRange
 }
 
 func (c *StartMemoryConstants) AllocateStringConstant(s string) *Constant {
@@ -113,7 +143,7 @@ func (c *StartMemoryConstants) AllocateStringConstant(s string) *Constant {
 			}
 		}
 	}
-	posRange := c.AllocateSpace(uint32(len(s) + 1))
+	posRange := c.AllocateSpace(uint32(len(s)+1), "string")
 	newConstant := NewStringConstant(posRange, s)
 	c.constants = append(c.constants, newConstant)
 
@@ -128,7 +158,7 @@ func (c *StartMemoryConstants) AllocateIntegerConstant(i int32) *Constant {
 			}
 		}
 	}
-	posRange := c.AllocateSpace(4)
+	posRange := c.AllocateSpace(4, "int32")
 	newConstant := NewIntegerConstant(posRange, i)
 	c.constants = append(c.constants, newConstant)
 
@@ -143,7 +173,7 @@ func (c *StartMemoryConstants) AllocateResourceNameConstant(name string) *Consta
 			}
 		}
 	}
-	posRange := c.AllocateSpace(uint32(len(name) + 1))
+	posRange := c.AllocateSpace(uint32(len(name)+1), "resource name")
 	newConstant := NewResourceNameConstant(posRange, name)
 	c.constants = append(c.constants, newConstant)
 
@@ -158,7 +188,7 @@ func (c *StartMemoryConstants) AllocateBooleanConstant(t bool) *Constant {
 			}
 		}
 	}
-	posRange := c.AllocateSpace(1)
+	posRange := c.AllocateSpace(1, "boolean")
 	newConstant := NewBooleanConstant(posRange, t)
 	c.constants = append(c.constants, newConstant)
 	return newConstant
@@ -172,7 +202,7 @@ func (c *StartMemoryConstants) AllocateFunctionReferenceConstant(uniqueFullyQual
 			}
 		}
 	}
-	posRange := c.AllocateSpace(uint32(len(uniqueFullyQualifiedFunctionName) + 1))
+	posRange := c.AllocateSpace(uint32(len(uniqueFullyQualifiedFunctionName)+1), "function ref constant")
 	newConstant := NewFunctionReferenceConstantWithDebug(posRange, uniqueFullyQualifiedFunctionName)
 	c.constants = append(c.constants, newConstant)
 
@@ -187,7 +217,7 @@ func (c *StartMemoryConstants) AllocateExternalFunctionReferenceConstant(uniqueF
 			}
 		}
 	}
-	posRange := c.AllocateSpace(uint32(len(uniqueFullyQualifiedFunctionName) + 1))
+	posRange := c.AllocateSpace(uint32(len(uniqueFullyQualifiedFunctionName)+1), "external func")
 	newConstant := NewExternalFunctionReferenceConstantWithDebug(posRange, uniqueFullyQualifiedFunctionName)
 	c.constants = append(c.constants, newConstant)
 
@@ -207,6 +237,7 @@ func (c *StartMemoryConstants) findFunc(identifier *VariableName) *Constant {
 	return nil
 }
 */
+
 func (c *StartMemoryConstants) FindStringConstant(s string) *Constant {
 	for _, constant := range c.constants {
 		if constant.constantType == ConstantTypeString {

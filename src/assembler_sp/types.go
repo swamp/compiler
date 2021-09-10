@@ -1,8 +1,13 @@
 package assembler_sp
 
+import (
+	"fmt"
+)
+
 type ConstantPosAndRange struct {
-	Pos  uint32
-	Size uint32
+	Pos         uint32
+	Size        uint32
+	DebugString string
 }
 
 func (s ConstantPosAndRange) getPosition() uint32 {
@@ -20,8 +25,9 @@ type StackRange uint32
 type StackPosOffset uint32
 
 type StackPosAndRange struct {
-	Pos  StackPos
-	Size StackRange
+	Pos         StackPos
+	Size        StackRange
+	DebugString string
 }
 
 func (s StackPosAndRange) getPosition() StackPos {
@@ -52,6 +58,10 @@ type SourceStackPosRange StackPosAndRange
 type SourceStackPosRangeCompound StackPosAndRange
 
 type TargetStackPos StackPos
+
+func (t TargetStackPos) String() string {
+	return fmt.Sprintf("targetPos: %04X", uint32(t))
+}
 
 type SourceStackPos StackPos
 

@@ -8,7 +8,6 @@ package assembler_sp
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/swampspopcode"
 	swampdisasm "github.com/swamp/disassembler/lib"
 	swampopcodeinst "github.com/swamp/opcodes/instruction"
 	swampopcode "github.com/swamp/opcodes/opcode"
@@ -89,15 +88,6 @@ func NewCode() *Code {
 	return &Code{}
 }
 
-type CopyVariable struct {
-	target TargetStackPosRange
-	source SourceStackPosRange
-}
-
-func (o *CopyVariable) String() string {
-	return fmt.Sprintf("[copyvar %v <= %v]", o.target, o.source)
-}
-
 func (c *Code) addStatement(cmd CodeCommand) {
 	c.statements = append(c.statements, cmd)
 }
@@ -138,6 +128,8 @@ func (c *Code) BinaryOperator(target TargetStackPos, a SourceStackPos, b SourceS
 	o := &BinaryOperator{target: target, a: a, b: b, r: r, operator: operator}
 	c.addStatement(o)
 }
+
+/*
 
 func (c *Code) UnaryOperator(target TargetStackPos, a SourceStackPos, r SourceStackRange, operator swampopcodeinst.UnaryOperatorType) {
 	o := &UnaryOperator{target: target, a: a, operator: operator}
@@ -198,13 +190,10 @@ func (c *Code) Jump(jump *Label) {
 	c.addStatement(o)
 }
 
-func (c *Code) Return() {
-	o := &Return{}
-	c.addStatement(o)
-}
+*/
 
-func (c *Code) CopyVariable(target TargetStackPos, source SourceStackPosRange) {
-	o := &CopyVariable{target: target, source: source}
+func (c *Code) Return(stackPointerAdd uint32) {
+	o := &Return{}
 	c.addStatement(o)
 }
 
@@ -220,11 +209,6 @@ func (c *Code) Recur(arguments []SourceStackPosRange) {
 
 func (c *Code) CallExternal(target TargetStackPosRange, function SourceStackPosRange, arguments []SourceStackPosRange) {
 	o := &CallExternal{target: target, function: function, arguments: arguments}
-	c.addStatement(o)
-}
-
-func (c *Code) CreateEnum(target TargetStackPosRange, enumFieldIndex int, arguments []SourceStackPosRange) {
-	o := &Enum{target: target, enumFieldIndex: enumFieldIndex, arguments: arguments}
 	c.addStatement(o)
 }
 
@@ -397,27 +381,6 @@ func writeCurry(stream *swampopcode.Stream, call *Curry) {
 	stream.Curry(call.target.Register(), call.typeIDConstant, call.function.Register(), arguments)
 }
 
-func writeEnum(stream *swampopcode.Stream, enumConstructor *Enum) {
-	var arguments []swampopcodetype.Register
-
-	for _, argument := range enumConstructor.arguments {
-		arguments = append(arguments, argument.Register())
-	}
-
-	stream.Enum(enumConstructor.target.Register(), enumConstructor.enumFieldIndex, arguments)
-}
-
-func writeLookups(stream *swampopcode.Stream, lookups *Lookups) {
-	var fields []swampopcodetype.Field
-
-	for _, indexLookup := range lookups.indexLookups {
-		fld := swampopcodetype.NewField(indexLookup)
-		fields = append(fields, fld)
-	}
-
-	stream.GetStruct(lookups.target.Register(), lookups.a.Register(), fields)
-}
-
 func writeCopyVar(stream *swampopcode.Stream, copyVar *CopyVariable) {
 	stream.RegCopy(copyVar.target.Register(), copyVar.source.Register())
 }
@@ -444,8 +407,6 @@ func handleStatement(cmd CodeCommand, opStream *swampopcode.Stream) {
 		writeCasePatternMatching(opStream, t)
 	case *Constructor:
 		writeConstructor(opStream, t)
-	case *StructSplit:
-		writeStructSplit(opStream, t)
 	case *UpdateStruct:
 		writeUpdateStruct(opStream, t)
 	case *ListLiteral:
@@ -458,8 +419,6 @@ func handleStatement(cmd CodeCommand, opStream *swampopcode.Stream) {
 		writeStringAppend(opStream, t)
 	case *Lookups:
 		writeLookups(opStream, t)
-	case *CopyVariable:
-		writeCopyVar(opStream, t)
 	case *Return:
 		writeReturn(opStream)
 	case *Label:
@@ -472,8 +431,6 @@ func handleStatement(cmd CodeCommand, opStream *swampopcode.Stream) {
 		writeCallExternal(opStream, t)
 	case *Curry:
 		writeCurry(opStream, t)
-	case *Enum:
-		writeEnum(opStream, t)
 	default:
 		panic(fmt.Sprintf("swamp assembler: unknown cmd %v", cmd))
 	}
