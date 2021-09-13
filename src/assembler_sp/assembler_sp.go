@@ -8,60 +8,11 @@ package assembler_sp
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/instruction_sp"
+	"github.com/swamp/compiler/src/opcode_sp"
+	"github.com/swamp/compiler/src/opcode_sp_type"
 	swampdisasm "github.com/swamp/disassembler/lib"
-	swampopcodeinst "github.com/swamp/opcodes/instruction"
-	swampopcode "github.com/swamp/opcodes/opcode"
-	swampopcodetype "github.com/swamp/opcodes/type"
 )
-
-type Label struct {
-	identifier  *VariableName
-	debugString string
-	opLabel     *swampopcodetype.Label
-	offset      *swampopcodetype.Label
-}
-
-func (o *Label) String() string {
-	if o.identifier != nil {
-		return fmt.Sprintf("%v: # (%v)]", o.identifier, o.debugString)
-	}
-	return fmt.Sprintf("%v:", o.debugString)
-}
-
-func (o *Label) SetOpLabel(opLabel *swampopcodetype.Label) {
-	o.opLabel = opLabel
-}
-
-func (o *Label) OpLabel() *swampopcodetype.Label {
-	return o.opLabel
-}
-
-func (o *Label) OffsetLabel() *swampopcodetype.Label {
-	return o.offset
-}
-
-func (o *Label) Name() string {
-	if o.identifier != nil {
-		return o.identifier.Name()
-	}
-	return o.debugString
-}
-
-type VariableName struct {
-	name string
-}
-
-func NewVariableName(name string) *VariableName {
-	return &VariableName{name: name}
-}
-
-func (o *VariableName) Name() string {
-	return o.name
-}
-
-func (o *VariableName) String() string {
-	return fmt.Sprintf("[var %v]", o.name)
-}
 
 type VariableType uint
 
@@ -124,39 +75,27 @@ func (c *Code) ListConj(target TargetStackPos, item SourceStackPos, list SourceS
 	c.addStatement(o)
 }
 
-func (c *Code) BinaryOperator(target TargetStackPos, a SourceStackPos, b SourceStackPos, r SourceStackRange, operator swampopcodeinst.BinaryOperatorType) {
+func (c *Code) BinaryOperator(target TargetStackPos, a SourceStackPos, b SourceStackPos, r SourceStackRange, operator instruction_sp.BinaryOperatorType) {
 	o := &BinaryOperator{target: target, a: a, b: b, r: r, operator: operator}
 	c.addStatement(o)
 }
 
-/*
-
-func (c *Code) UnaryOperator(target TargetStackPos, a SourceStackPos, r SourceStackRange, operator swampopcodeinst.UnaryOperatorType) {
+func (c *Code) UnaryOperator(target TargetStackPos, a SourceStackPos, operator instruction_sp.UnaryOperatorType) {
 	o := &UnaryOperator{target: target, a: a, operator: operator}
 	c.addStatement(o)
 }
 
-func (c *Code) ListLiteral(target TargetStackPos, values []SourceStackPos, itemSize SourceStackRange) {
+func (c *Code) ListLiteral(target TargetStackPos, values []SourceStackPos, itemSize StackRange) {
 	o := &ListLiteral{target: target, values: values, itemSize: itemSize}
 	c.addStatement(o)
 }
 
-func (c *Code) Constructor(target TargetStackPosRange, values SourceStackPosRangeCompound) {
-	o := &Constructor{target: target, values: values}
-	c.addStatement(o)
-}
-
-func (c *Code) StructSplit(source SourceStackPosRange, targets []TargetStackPosRange) {
-	o := &StructSplit{source: source, targets: targets}
-	c.addStatement(o)
-}
-
-func (c *Code) UpdateStruct(targetClone TargetStackPosRange, structToClone SourceStackPosRange, updates []SourceStackPosOffsetRange) {
+func (c *Code) UpdateStruct(targetClone TargetStackPos, structToClone SourceStackPosRange, updates []SourceStackPosAndRangeToLocalOffset) {
 	o := &UpdateStruct{targetClone: targetClone, structToClone: structToClone, updates: updates}
 	c.addStatement(o)
 }
 
-func (c *Code) Case(test SourceStackPosRange, consequences []*CaseConsequence, defaultConsequence *CaseConsequence) {
+func (c *Code) CaseEnum(test SourceStackPos, consequences []*CaseConsequence, defaultConsequence *CaseConsequence) {
 	o := &Case{test: test, consequences: consequences, defaultConsequence: defaultConsequence}
 	c.addStatement(o)
 }
@@ -166,7 +105,7 @@ func (c *Code) CasePatternMatching(test SourceStackPosRange, consequences []*Cas
 	c.addStatement(o)
 }
 
-func (c *Code) BranchFalse(condition SourceStackPosRange, jump *Label) {
+func (c *Code) BranchFalse(condition SourceStackPos, jump *Label) {
 	if jump == nil {
 		panic("swamp assembler: null jump")
 	}
@@ -174,11 +113,11 @@ func (c *Code) BranchFalse(condition SourceStackPosRange, jump *Label) {
 	c.addStatement(o)
 }
 
-func (c *Code) BranchTrue(condition SourceStackPosRange, jump *Label) {
+func (c *Code) BranchTrue(condition SourceStackPos, jump *Label) {
 	if jump == nil {
 		panic("swamp assembler: null jump")
 	}
-	o := &swampspopcode.BranchTrue{condition: condition, jump: jump}
+	o := &BranchTrue{condition: condition, jump: jump}
 	c.addStatement(o)
 }
 
@@ -190,78 +129,95 @@ func (c *Code) Jump(jump *Label) {
 	c.addStatement(o)
 }
 
-*/
-
-func (c *Code) Return(stackPointerAdd uint32) {
+func (c *Code) ReturnWithMemoryMove(memoryMove SourceStackPosRange) {
 	o := &Return{}
 	c.addStatement(o)
 }
 
-func (c *Code) Call(function SourceStackPos, arguments []SourceStackPosRange) {
-	o := &Call{target: target, function: function, arguments: arguments}
+func (c *Code) Return() {
+	o := &Return{}
 	c.addStatement(o)
 }
 
-func (c *Code) Recur(arguments []SourceStackPosRange) {
-	o := &Recur{arguments: arguments}
+func (c *Code) Call(function SourceStackPos, newBasePointer SourceStackPos) {
+	o := &Call{function: function, newBasePointer: newBasePointer}
 	c.addStatement(o)
 }
 
-func (c *Code) CallExternal(target TargetStackPosRange, function SourceStackPosRange, arguments []SourceStackPosRange) {
-	o := &CallExternal{target: target, function: function, arguments: arguments}
+func (c *Code) Recur() {
+	o := &Recur{}
 	c.addStatement(o)
 }
 
-func (c *Code) Curry(target TargetStackPosRange, typeIDConstant uint16, function SourceStackPos, arguments []SourceStackPosRange) {
+func (c *Code) CallExternal(target TargetStackPosRange, function SourceStackPos, arguments SourceStackPos) {
+	o := &CallExternal{target: target, function: function, newBasePointer: arguments}
+	c.addStatement(o)
+}
+
+func (c *Code) Curry(target TargetStackPos, typeIDConstant uint16, function SourceStackPos, arguments []SourceStackPos) {
 	o := &Curry{target: target, typeIDConstant: typeIDConstant, function: function, arguments: arguments}
 	c.addStatement(o)
 }
 
-func writeUnaryOperator(stream *swampopcode.Stream, operator *UnaryOperator) {
-	stream.IntUnaryOperator(operator.target.Register(), operator.operator, operator.a.Register())
+func targetStackPosition(pos TargetStackPos) opcode_sp_type.TargetStackPosition {
+	return opcode_sp_type.TargetStackPosition(pos)
 }
 
-func writeListAppend(stream *swampopcode.Stream, operator *ListAppend) {
-	stream.ListAppend(operator.target.Register(), operator.a.Register(), operator.b.Register())
+func sourceStackPosition(pos SourceStackPos) opcode_sp_type.SourceStackPosition {
+	return opcode_sp_type.SourceStackPosition(pos)
 }
 
-func writeStringAppend(stream *swampopcode.Stream, operator *StringAppend) {
-	stream.StringAppend(operator.target.Register(), operator.a.Register(), operator.b.Register())
+func sourceStackRange(size SourceStackRange) opcode_sp_type.SourceStackRange {
+	return opcode_sp_type.SourceStackRange(size)
 }
 
-func writeListConj(stream *swampopcode.Stream, operator *ListConj) {
-	stream.ListConj(operator.target.Register(), operator.list.Register(), operator.item.Register())
+func stackRange(size StackRange) opcode_sp_type.StackRange {
+	return opcode_sp_type.StackRange(size)
 }
 
-func writeBinaryOperator(stream *swampopcode.Stream, operator *BinaryOperator) {
-	stream.BinaryOperator(operator.target.Register(), operator.operator, operator.a.Register(), operator.b.Register())
+func sourceStackPositionRange(pos SourceStackPosRange) opcode_sp_type.SourceStackPositionRange {
+	return opcode_sp_type.SourceStackPositionRange{Position: sourceStackPosition(pos.Pos), Range: sourceStackRange(pos.Size)}
 }
 
-func writeBranchFalse(stream *swampopcode.Stream, branch *BranchFalse) {
-	stream.BranchFalse(branch.Condition().Register(), branch.Jump().OpLabel())
+func writeUnaryOperator(stream *opcode_sp.Stream, operator *UnaryOperator) {
+	stream.IntUnaryOperator(targetStackPosition(operator.target), operator.operator, sourceStackPosition(operator.a))
 }
 
-func writeBranchTrue(stream *swampopcode.Stream, branch *BranchTrue) {
-	stream.BranchTrue(branch.Condition().Register(), branch.Jump().OpLabel())
+func writeListAppend(stream *opcode_sp.Stream, operator *ListAppend) {
+	stream.ListAppend(targetStackPosition(operator.target), sourceStackPosition(operator.a), sourceStackPosition(operator.b))
 }
 
-func writeJump(stream *swampopcode.Stream, jump *Jump) {
+func writeStringAppend(stream *opcode_sp.Stream, operator *StringAppend) {
+	stream.StringAppend(targetStackPosition(operator.target), sourceStackPosition(operator.a), sourceStackPosition(operator.b))
+}
+
+func writeListConj(stream *opcode_sp.Stream, operator *ListConj) {
+	stream.ListConj(targetStackPosition(operator.target), sourceStackPosition(operator.list), sourceStackPosition(operator.item))
+}
+
+func writeBinaryOperator(stream *opcode_sp.Stream, operator *BinaryOperator) {
+	stream.BinaryOperator(targetStackPosition(operator.target), operator.operator, sourceStackPosition(operator.a), sourceStackPosition(operator.b))
+}
+
+func writeBranchFalse(stream *opcode_sp.Stream, branch *BranchFalse) {
+	stream.BranchFalse(sourceStackPosition(branch.Condition()), branch.Jump().OpLabel())
+}
+
+func writeBranchTrue(stream *opcode_sp.Stream, branch *BranchTrue) {
+	stream.BranchTrue(sourceStackPosition(branch.Condition()), branch.Jump().OpLabel())
+}
+
+func writeJump(stream *opcode_sp.Stream, jump *Jump) {
 	stream.Jump(jump.Jump().OpLabel())
 }
 
-func writeCase(stream *swampopcode.Stream, caseExpr *Case) {
-	var opLabels []swampopcodeinst.EnumCaseJump
+func writeCase(stream *opcode_sp.Stream, caseExpr *Case) {
+	var opLabels []instruction_sp.EnumCaseJump
 
 	for _, consequence := range caseExpr.consequences {
 		label := consequence.label.OpLabel()
 
-		var arguments []swampopcodetype.Register
-
-		for _, argument := range consequence.arguments {
-			arguments = append(arguments, argument.Register())
-		}
-
-		caseJump := swampopcodeinst.NewEnumCaseJump(consequence.InternalEnumIndex(), arguments, label)
+		caseJump := instruction_sp.NewEnumCaseJump(consequence.InternalEnumIndex(), label)
 		opLabels = append(opLabels, caseJump)
 	}
 
@@ -269,20 +225,20 @@ func writeCase(stream *swampopcode.Stream, caseExpr *Case) {
 
 	if caseExpr.defaultConsequence != nil {
 		label := defaultCons.label.OpLabel()
-		caseJump := swampopcodeinst.NewEnumCaseJump(0xff, nil, label)
+		caseJump := instruction_sp.NewEnumCaseJump(0xff, label)
 		opLabels = append(opLabels, caseJump)
 	}
 
-	stream.EnumCase(caseExpr.test.Register(), opLabels)
+	stream.EnumCase(sourceStackPosition(caseExpr.test), opLabels)
 }
 
-func writeCasePatternMatching(stream *swampopcode.Stream, caseExpr *CasePatternMatching) {
-	var opLabels []swampopcodeinst.CasePatternMatchingJump
+func writeCasePatternMatching(stream *opcode_sp.Stream, caseExpr *CasePatternMatching) {
+	var opLabels []instruction_sp.CasePatternMatchingJump
 
 	for _, consequence := range caseExpr.consequences {
 		label := consequence.label.OpLabel()
 
-		caseJump := swampopcodeinst.NewCasePatternMatchingJump(consequence.LiteralVariable().Register(), label)
+		caseJump := instruction_sp.NewCasePatternMatchingJump(sourceStackPosition(consequence.LiteralVariable()), label)
 		opLabels = append(opLabels, caseJump)
 	}
 
@@ -290,106 +246,64 @@ func writeCasePatternMatching(stream *swampopcode.Stream, caseExpr *CasePatternM
 
 	if caseExpr.defaultConsequence != nil {
 		label := defaultCons.label.OpLabel()
-		caseJump := swampopcodeinst.NewCasePatternMatchingJump(swampopcodetype.Register{}, label)
+		caseJump := instruction_sp.NewCasePatternMatchingJump(sourceStackPosition(caseExpr.test.Pos), label)
 		opLabels = append(opLabels, caseJump)
 	}
 
-	stream.CasePatternMatching(caseExpr.test.Register(), opLabels)
+	stream.CasePatternMatching(sourceStackPositionRange(caseExpr.test), opLabels)
 }
 
-func writeConstructor(stream *swampopcode.Stream, constructor *Constructor) {
-	var registers []swampopcodetype.Register
-
-	for _, argument := range constructor.values {
-		registers = append(registers, argument.Register())
-	}
-
-	stream.CreateStruct(constructor.target.Register(), registers)
-}
-
-func writeStructSplit(stream *swampopcode.Stream, constructor *StructSplit) {
-	var targets []swampopcodetype.Register
-
-	for _, argument := range constructor.targets {
-		targets = append(targets, argument.Register())
-	}
-
-	stream.StructSplit(constructor.source.Register(), targets)
-}
-
-func writeUpdateStruct(stream *swampopcode.Stream, copyStruct *UpdateStruct) {
-	var copyFields []swampopcodeinst.CopyToFieldInfo
+func writeUpdateStruct(stream *opcode_sp.Stream, copyStruct *UpdateStruct) {
+	var copyFields []instruction_sp.CopyToFieldInfo
 
 	for _, update := range copyStruct.updates {
-		copyField := swampopcodeinst.CopyToFieldInfo{
-			Source: update.Source.Register(),
-			Target: swampopcodetype.NewField(update.TargetField),
+		copyField := instruction_sp.CopyToFieldInfo{
+			Source: sourceStackPositionRange(update.PosRange),
+			Target: opcode_sp_type.TargetFieldOffset(update.TargetOffset),
 		}
 		copyFields = append(copyFields, copyField)
 	}
 
-	stream.UpdateStruct(copyStruct.target.Register(), copyStruct.structToCopy.Register(), copyFields)
+	stream.UpdateStruct(targetStackPosition(copyStruct.targetClone),
+		sourceStackPositionRange(copyStruct.structToClone), copyFields)
 }
 
-func writeList(stream *swampopcode.Stream, listLiteral *ListLiteral) {
-	var registers []swampopcodetype.Register
+func writeList(stream *opcode_sp.Stream, listLiteral *ListLiteral) {
+	var registers []opcode_sp_type.SourceStackPosition
 
 	for _, argument := range listLiteral.values {
-		registers = append(registers, argument.Register())
+		registers = append(registers, sourceStackPosition(argument))
 	}
 
-	stream.CreateList(listLiteral.target.Register(), registers)
+	stream.CreateList(targetStackPosition(listLiteral.target), stackRange(listLiteral.itemSize), registers)
 }
 
-func writeCallExternal(stream *swampopcode.Stream, call *CallExternal) {
-	var arguments []swampopcodetype.Register
+func writeCallExternal(stream *opcode_sp.Stream, call *CallExternal) {
+}
+
+func writeCall(stream *opcode_sp.Stream, call *Call) {
+	stream.Call(sourceStackPosition(call.newBasePointer), sourceStackPosition(call.function))
+}
+
+func writeRecur(stream *opcode_sp.Stream, call *Recur) {
+	stream.TailCall()
+}
+
+func writeCurry(stream *opcode_sp.Stream, call *Curry) {
+	var arguments []opcode_sp_type.SourceStackPosition
 
 	for _, argument := range call.arguments {
-		arguments = append(arguments, argument.Register())
+		arguments = append(arguments, sourceStackPosition(argument))
 	}
 
-	stream.CallExternal(call.target.Register(), call.function.Register(), arguments)
+	stream.Curry(targetStackPosition(call.target), call.typeIDConstant, sourceStackPosition(call.function), arguments)
 }
 
-func writeCall(stream *swampopcode.Stream, call *Call) {
-	var arguments []swampopcodetype.Register
-
-	for _, argument := range call.arguments {
-		arguments = append(arguments, argument.Register())
-	}
-
-	stream.Call(call.target.Register(), call.function.Register(), arguments)
-}
-
-func writeRecur(stream *swampopcode.Stream, call *Recur) {
-	var arguments []swampopcodetype.Register
-
-	for _, argument := range call.arguments {
-		arguments = append(arguments, argument.Register())
-	}
-
-	stream.TailCall(arguments)
-}
-
-func writeCurry(stream *swampopcode.Stream, call *Curry) {
-	var arguments []swampopcodetype.Register
-
-	for _, argument := range call.arguments {
-		arguments = append(arguments, argument.Register())
-	}
-
-	stream.Curry(call.target.Register(), call.typeIDConstant, call.function.Register(), arguments)
-}
-
-func writeCopyVar(stream *swampopcode.Stream, copyVar *CopyVariable) {
-	stream.RegCopy(copyVar.target.Register(), copyVar.source.Register())
-}
-
-func writeReturn(stream *swampopcode.Stream) {
+func writeReturn(stream *opcode_sp.Stream) {
 	stream.Return()
 }
 
-func handleStatement(cmd CodeCommand, opStream *swampopcode.Stream) {
+func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 	switch t := cmd.(type) {
 	case *BinaryOperator:
 		writeBinaryOperator(opStream, t)
@@ -405,8 +319,6 @@ func handleStatement(cmd CodeCommand, opStream *swampopcode.Stream) {
 		writeCase(opStream, t)
 	case *CasePatternMatching:
 		writeCasePatternMatching(opStream, t)
-	case *Constructor:
-		writeConstructor(opStream, t)
 	case *UpdateStruct:
 		writeUpdateStruct(opStream, t)
 	case *ListLiteral:
@@ -417,8 +329,6 @@ func handleStatement(cmd CodeCommand, opStream *swampopcode.Stream) {
 		writeListConj(opStream, t)
 	case *StringAppend:
 		writeStringAppend(opStream, t)
-	case *Lookups:
-		writeLookups(opStream, t)
 	case *Return:
 		writeReturn(opStream)
 	case *Label:
@@ -441,7 +351,7 @@ func (c *Code) Resolve(context *FunctionRootContext, verboseFlag bool) ([]byte, 
 		context.ShowSummary()
 	}
 
-	opStream := swampopcode.NewStream()
+	opStream := opcode_sp.NewStream()
 
 	for _, label := range c.labels {
 		opLabel := opStream.CreateLabel(label.Name())

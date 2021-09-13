@@ -20,7 +20,9 @@ func (s ConstantPosAndRange) getSize() uint32 {
 
 type StackPos uint32
 
-type StackRange uint32
+type StackRange uint16
+
+type StackItemSize uint16
 
 type StackPosOffset uint32
 
@@ -53,7 +55,7 @@ func (s StackPosOffsetAndRange) getSize() StackRange {
 
 type TargetStackPosRange StackPosAndRange
 
-type SourceStackPosRange StackPosAndRange
+type FieldRanges []SourceStackPosRange
 
 type SourceStackPosRangeCompound StackPosAndRange
 
@@ -63,8 +65,20 @@ func (t TargetStackPos) String() string {
 	return fmt.Sprintf("targetPos: %04X", uint32(t))
 }
 
+type TargetFieldOffset uint16
+
+type SourceStackPosAndRangeToLocalOffset struct {
+	PosRange     SourceStackPosRange
+	TargetOffset TargetFieldOffset
+}
+
 type SourceStackPos StackPos
 
 type SourceStackPosOffsetRange StackPosOffsetAndRange
 
 type SourceStackRange StackRange
+
+type SourceStackPosRange struct {
+	Pos  SourceStackPos
+	Size SourceStackRange
+}

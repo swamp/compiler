@@ -3,19 +3,20 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-package assembler_sp
+package instruction_sp
 
-import (
-	"fmt"
-)
+type ReturnWithMemMove struct{}
 
-type ListConj struct {
-	target        TargetStackPos
-	item          SourceStackPos
-	list          SourceStackPos
-	debugItemSize StackItemSize
+func NewReturnWithMemMove() *ReturnWithMemMove {
+	return &ReturnWithMemMove{}
 }
 
-func (o *ListConj) String() string {
-	return fmt.Sprintf("[ListConj %v <= item:%v (%d) list:%v]", o.target, o.item, o.debugItemSize, o.list)
+func (c *ReturnWithMemMove) Write(writer OpcodeWriter) error {
+	writer.Command(CmdReturnWithMemMove)
+
+	return nil
+}
+
+func (c *ReturnWithMemMove) String() string {
+	return "ret"
 }

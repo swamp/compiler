@@ -3,19 +3,20 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-package assembler_sp
+package instruction_sp
 
-import (
-	"fmt"
-)
+type Return struct{}
 
-type ListConj struct {
-	target        TargetStackPos
-	item          SourceStackPos
-	list          SourceStackPos
-	debugItemSize StackItemSize
+func NewReturn() *Return {
+	return &Return{}
 }
 
-func (o *ListConj) String() string {
-	return fmt.Sprintf("[ListConj %v <= item:%v (%d) list:%v]", o.target, o.item, o.debugItemSize, o.list)
+func (c *Return) Write(writer OpcodeWriter) error {
+	writer.Command(CmdReturn)
+
+	return nil
+}
+
+func (c *Return) String() string {
+	return "ret"
 }

@@ -14,9 +14,9 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/instruction_sp"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
-	swampopcodeinst "github.com/swamp/opcodes/instruction"
 	swamppack "github.com/swamp/pack/lib"
 )
 
@@ -41,12 +41,9 @@ type generateContext struct {
 }
 
 type Function struct {
-	name           *decorated.FullyQualifiedPackageVariableName
-	signature      swamppack.TypeRef
-	parameterCount uint
-	variableCount  uint
-	constants      []*assembler_sp.Constant
-	opcodes        []byte
+	name      *decorated.FullyQualifiedPackageVariableName
+	signature swamppack.TypeRef
+	opcodes   []byte
 }
 
 type ExternalFunction struct {
@@ -55,77 +52,10 @@ type ExternalFunction struct {
 	parameterCount uint
 }
 
-func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfoPayload []byte,
-	lookup typeinfo.TypeLookup) ([]byte, error) {
-	constantRepo := swamppack.NewConstantRepo()
-
-	for _, externalFunction := range externalFunctions {
-		constantRepo.AddExternalFunction(externalFunction.name.ResolveToString(), externalFunction.parameterCount)
-	}
-
-	for _, declareFunction := range functions {
-		constantRepo.AddFunctionDeclaration(declareFunction.name.ResolveToString(),
-			declareFunction.signature, declareFunction.parameterCount)
-	}
-
-	for _, function := range functions {
-		var packConstants []*swamppack.Constant
-
-		for _, subConstant := range function.constants {
-			var packConstant *swamppack.Constant
-
-			switch subConstant.ConstantType() {
-			case assembler_sp.ConstantTypeInteger:
-				packConstant = constantRepo.AddInteger(subConstant.IntegerValue())
-			case assembler_sp.ConstantTypeResourceName:
-				packConstant = constantRepo.AddResourceName(subConstant.StringValue())
-			case assembler_sp.ConstantTypeString:
-				packConstant = constantRepo.AddString(subConstant.StringValue())
-			case assembler_sp.ConstantTypeBoolean:
-				packConstant = constantRepo.AddBoolean(subConstant.BooleanValue())
-			case assembler_sp.ConstantTypeFunction:
-				refConstant, functionRefErr := constantRepo.AddFunctionReference(
-					subConstant.FunctionReferenceFullyQualifiedName())
-				if functionRefErr != nil {
-					return nil, functionRefErr
-				}
-				packConstant = refConstant
-			case assembler_sp.ConstantTypeFunctionExternal:
-				refConstant, functionRefErr := constantRepo.AddExternalFunctionReference(
-					subConstant.FunctionReferenceFullyQualifiedName())
-				if functionRefErr != nil {
-					return nil, functionRefErr
-				}
-
-				packConstant = refConstant
-			default:
-				return nil, fmt.Errorf("not handled constanttype %v", subConstant)
-			}
-
-			if packConstant == nil {
-				return nil, fmt.Errorf("internal error: not handled constanttype %v", subConstant)
-			}
-
-			packConstants = append(packConstants, packConstant)
-		}
-
-		constantRepo.AddFunction(function.name.ResolveToString(), function.signature, function.parameterCount,
-			function.variableCount, packConstants, function.opcodes)
-	}
-
-	octets, packErr := swamppack.Pack(constantRepo, typeInfoPayload)
-	if packErr != nil {
-		return nil, packErr
-	}
-
-	return octets, nil
-}
-
 func NewFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, signature swamppack.TypeRef,
-	parameterCount uint, variableCount uint, constants []*assembler_sp.Constant, opcodes []byte) *Function {
+	opcodes []byte) *Function {
 	f := &Function{
-		name: fullyQualifiedName, signature: signature, parameterCount: parameterCount,
-		variableCount: variableCount, constants: constants, opcodes: opcodes,
+		name: fullyQualifiedName, signature: signature, opcodes: opcodes,
 	}
 
 	return f
@@ -139,7 +69,7 @@ func NewExternalFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVari
 }
 
 func (f *Function) String() string {
-	return fmt.Sprintf("[function %v %v %v %v]", f.name, f.signature, f.parameterCount, f.constants)
+	return fmt.Sprintf("[function %v %v %v %v]", f.name, f.signature)
 }
 
 func (f *Function) Opcodes() []byte {
@@ -154,67 +84,67 @@ func NewGenerator() *Generator {
 	return &Generator{code: assembler_sp.NewCode()}
 }
 
-func arithmeticToBinaryOperatorType(operatorType decorated.ArithmeticOperatorType) swampopcodeinst.BinaryOperatorType {
+func arithmeticToBinaryOperatorType(operatorType decorated.ArithmeticOperatorType) instruction_sp.BinaryOperatorType {
 	switch operatorType {
 	case decorated.ArithmeticPlus:
-		return swampopcodeinst.BinaryOperatorArithmeticIntPlus
+		return instruction_sp.BinaryOperatorArithmeticIntPlus
 	case decorated.ArithmeticCons:
 		panic("cons not handled here")
 	case decorated.ArithmeticMinus:
-		return swampopcodeinst.BinaryOperatorArithmeticIntMinus
+		return instruction_sp.BinaryOperatorArithmeticIntMinus
 	case decorated.ArithmeticMultiply:
-		return swampopcodeinst.BinaryOperatorArithmeticIntMultiply
+		return instruction_sp.BinaryOperatorArithmeticIntMultiply
 	case decorated.ArithmeticDivide:
-		return swampopcodeinst.BinaryOperatorArithmeticIntDivide
+		return instruction_sp.BinaryOperatorArithmeticIntDivide
 	case decorated.ArithmeticAppend:
-		return swampopcodeinst.BinaryOperatorArithmeticListAppend
+		return instruction_sp.BinaryOperatorArithmeticListAppend
 	case decorated.ArithmeticFixedMultiply:
-		return swampopcodeinst.BinaryOperatorArithmeticFixedMultiply
+		return instruction_sp.BinaryOperatorArithmeticFixedMultiply
 	case decorated.ArithmeticFixedDivide:
-		return swampopcodeinst.BinaryOperatorArithmeticFixedDivide
+		return instruction_sp.BinaryOperatorArithmeticFixedDivide
 	}
 
 	panic("unknown binary operator")
 }
 
-func bitwiseToUnaryOperatorType(operatorType decorated.BitwiseUnaryOperatorType) swampopcodeinst.UnaryOperatorType {
+func bitwiseToUnaryOperatorType(operatorType decorated.BitwiseUnaryOperatorType) instruction_sp.UnaryOperatorType {
 	switch operatorType {
 	case decorated.BitwiseUnaryNot:
-		return swampopcodeinst.UnaryOperatorBitwiseNot
+		return instruction_sp.UnaryOperatorBitwiseNot
 	}
 
 	panic("illegal unaryoperator")
 }
 
-func logicalToUnaryOperatorType(operatorType decorated.LogicalUnaryOperatorType) swampopcodeinst.UnaryOperatorType {
+func logicalToUnaryOperatorType(operatorType decorated.LogicalUnaryOperatorType) instruction_sp.UnaryOperatorType {
 	switch operatorType {
 	case decorated.LogicalUnaryNot:
-		return swampopcodeinst.UnaryOperatorNot
+		return instruction_sp.UnaryOperatorNot
 	}
 
 	panic("illegal unaryoperator")
 }
 
-func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperatorType) swampopcodeinst.UnaryOperatorType {
+func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperatorType) instruction_sp.UnaryOperatorType {
 	switch operatorType {
 	case decorated.ArithmeticUnaryMinus:
-		return swampopcodeinst.UnaryOperatorNegate
+		return instruction_sp.UnaryOperatorNegate
 	}
 
 	panic("illegal unaryoperator")
 }
 
-func bitwiseToBinaryOperatorType(operatorType decorated.BitwiseOperatorType) swampopcodeinst.BinaryOperatorType {
+func bitwiseToBinaryOperatorType(operatorType decorated.BitwiseOperatorType) instruction_sp.BinaryOperatorType {
 	switch operatorType {
 	case decorated.BitwiseAnd:
-		return swampopcodeinst.BinaryOperatorBitwiseIntAnd
+		return instruction_sp.BinaryOperatorBitwiseIntAnd
 	case decorated.BitwiseOr:
-		return swampopcodeinst.BinaryOperatorBitwiseIntOr
+		return instruction_sp.BinaryOperatorBitwiseIntOr
 	case decorated.BitwiseXor:
-		return swampopcodeinst.BinaryOperatorBitwiseIntXor
+		return instruction_sp.BinaryOperatorBitwiseIntXor
 	case decorated.BitwiseNot:
 		return 0
-		// return swampopcodeinst.BinaryOperatorBitwiseIntNot
+		// return opcode_sp.BinaryOperatorBitwiseIntNot
 	}
 
 	return 0
@@ -250,8 +180,6 @@ func generateStringAppend(code *assembler_sp.Code, target assembler_sp.TargetSta
 	}
 
 	code.StringAppend(target, leftVar, rightVar)
-	genContext.context.FreeVariableIfNeeded(leftVar)
-	genContext.context.FreeVariableIfNeeded(rightVar)
 
 	return nil
 }
@@ -275,8 +203,7 @@ func generateListCons(code *assembler_sp.Code, target assembler_sp.TargetStackPo
 	}
 
 	code.ListConj(target, leftVar, rightVar)
-	genContext.context.FreeVariableIfNeeded(leftVar)
-	genContext.context.FreeVariableIfNeeded(rightVar)
+
 	return nil
 }
 
@@ -293,8 +220,7 @@ func generateArithmetic(code *assembler_sp.Code, target assembler_sp.TargetStack
 
 	opcodeBinaryOperator := arithmeticToBinaryOperatorType(operator.OperatorType())
 	code.BinaryOperator(target, leftVar, rightVar, opcodeBinaryOperator)
-	genContext.context.FreeVariableIfNeeded(leftVar)
-	genContext.context.FreeVariableIfNeeded(rightVar)
+
 	return nil
 }
 
@@ -321,7 +247,7 @@ func generateUnaryBitwise(code *assembler_sp.Code, target assembler_sp.TargetSta
 	}
 	opcodeUnaryOperatorType := bitwiseToUnaryOperatorType(operator.OperatorType())
 	code.UnaryOperator(target, leftVar, opcodeUnaryOperatorType)
-	genContext.context.FreeVariableIfNeeded(leftVar)
+
 	return nil
 }
 
@@ -332,7 +258,6 @@ func generateUnaryLogical(code *assembler_sp.Code, target assembler_sp.TargetSta
 	}
 	opcodeUnaryOperatorType := logicalToUnaryOperatorType(operator.OperatorType())
 	code.UnaryOperator(target, leftVar, opcodeUnaryOperatorType)
-	genContext.context.FreeVariableIfNeeded(leftVar)
 	return nil
 }
 
@@ -343,7 +268,7 @@ func generateUnaryArithmetic(code *assembler_sp.Code, target assembler_sp.Target
 	}
 	opcodeUnaryOperatorType := arithmeticToUnaryOperatorType(operator.OperatorType())
 	code.UnaryOperator(target, leftVar, opcodeUnaryOperatorType)
-	genContext.context.FreeVariableIfNeeded(leftVar)
+
 	return nil
 }
 
@@ -360,8 +285,7 @@ func generateBitwise(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 
 	opcodeBinaryOperator := bitwiseToBinaryOperatorType(operator.OperatorType())
 	code.BinaryOperator(target, leftVar, rightVar, opcodeBinaryOperator)
-	genContext.context.FreeVariableIfNeeded(leftVar)
-	genContext.context.FreeVariableIfNeeded(rightVar)
+
 	return nil
 }
 
@@ -388,31 +312,31 @@ func generateLogical(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 	return nil
 }
 
-func booleanToBinaryIntOperatorType(operatorType decorated.BooleanOperatorType) swampopcodeinst.BinaryOperatorType {
+func booleanToBinaryIntOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
 	switch operatorType {
 	case decorated.BooleanEqual:
-		return swampopcodeinst.BinaryOperatorBooleanIntEqual
+		return instruction_sp.BinaryOperatorBooleanIntEqual
 	case decorated.BooleanNotEqual:
-		return swampopcodeinst.BinaryOperatorBooleanIntNotEqual
+		return instruction_sp.BinaryOperatorBooleanIntNotEqual
 	case decorated.BooleanLess:
-		return swampopcodeinst.BinaryOperatorBooleanIntLess
+		return instruction_sp.BinaryOperatorBooleanIntLess
 	case decorated.BooleanLessOrEqual:
-		return swampopcodeinst.BinaryOperatorBooleanIntLessOrEqual
+		return instruction_sp.BinaryOperatorBooleanIntLessOrEqual
 	case decorated.BooleanGreater:
-		return swampopcodeinst.BinaryOperatorBooleanIntGreater
+		return instruction_sp.BinaryOperatorBooleanIntGreater
 	case decorated.BooleanGreaterOrEqual:
-		return swampopcodeinst.BinaryOperatorBooleanIntGreaterOrEqual
+		return instruction_sp.BinaryOperatorBooleanIntGreaterOrEqual
 	}
 
 	return 0
 }
 
-func booleanToBinaryValueOperatorType(operatorType decorated.BooleanOperatorType) swampopcodeinst.BinaryOperatorType {
+func booleanToBinaryValueOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
 	switch operatorType {
 	case decorated.BooleanEqual:
-		return swampopcodeinst.BinaryOperatorBooleanValueEqual
+		return instruction_sp.BinaryOperatorBooleanValueEqual
 	case decorated.BooleanNotEqual:
-		return swampopcodeinst.BinaryOperatorBooleanValueNotEqual
+		return instruction_sp.BinaryOperatorBooleanValueNotEqual
 	}
 
 	return 0
@@ -438,8 +362,6 @@ func generateBoolean(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 	}
 
 	code.BinaryOperator(target, leftVar, rightVar, opcodeBinaryOperator)
-	genContext.context.FreeVariableIfNeeded(leftVar)
-	genContext.context.FreeVariableIfNeeded(rightVar)
 
 	return nil
 }
@@ -594,7 +516,7 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 	for _, codeItem := range codeItems {
 		code.Copy(codeItem.ConditionCode)
 		code.BranchFalse(codeItem.ConditionVariable, codeItem.EndOfConsequenceLabel)
-		genContext.context.FreeVariableIfNeeded(codeItem.ConditionVariable)
+
 		code.Copy(codeItem.ConsequenceCode)
 	}
 
@@ -683,7 +605,7 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 	}
 
 	code.Case(testVar, consequences, defaultCase)
-	genContext.context.FreeVariableIfNeeded(testVar)
+
 	code.Copy(consequencesBlockCode)
 
 	return nil
@@ -764,7 +686,7 @@ func generateCasePatternMatching(code *assembler_sp.Code, target assembler_sp.Ta
 	}
 
 	code.CasePatternMatching(testVar, consequences, defaultCase)
-	genContext.context.FreeVariableIfNeeded(testVar)
+
 	code.Copy(consequencesBlockCode)
 
 	return nil
@@ -957,10 +879,6 @@ func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetSta
 	}
 
 	code.Call(functionRegister.getPosition(), arguments)
-
-	for _, tempVariable := range tempVariables {
-		genContext.context.FreeTempVariable(tempVariable)
-	}
 
 	return nil
 }
@@ -1330,7 +1248,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	}
 
 	functionConstant := NewFunction(fullyQualifiedVariableName, swamppack.TypeRef(signature),
-		parameterCount, uint(root.Layouter().HighestUsedRegisterValue()), root.Constants().Constants(), opcodes)
+		parameterCount, root.Constants().Constants(), opcodes)
 
 	return functionConstant, nil
 }

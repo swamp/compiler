@@ -8,7 +8,7 @@ package assembler_sp
 import (
 	"fmt"
 
-	swampopcodeinst "github.com/swamp/opcodes/instruction"
+	"github.com/swamp/compiler/src/instruction_sp"
 )
 
 type BinaryOperator struct {
@@ -16,7 +16,7 @@ type BinaryOperator struct {
 	a        SourceStackPos
 	b        SourceStackPos
 	r        SourceStackRange
-	operator swampopcodeinst.BinaryOperatorType
+	operator instruction_sp.BinaryOperatorType
 }
 
 func (o *BinaryOperator) String() string {

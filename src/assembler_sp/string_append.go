@@ -9,13 +9,12 @@ import (
 	"fmt"
 )
 
-type ListConj struct {
-	target        TargetStackPos
-	item          SourceStackPos
-	list          SourceStackPos
-	debugItemSize StackItemSize
+type StringAppend struct {
+	target TargetStackPos
+	a      SourceStackPos
+	b      SourceStackPos
 }
 
-func (o *ListConj) String() string {
-	return fmt.Sprintf("[ListConj %v <= item:%v (%d) list:%v]", o.target, o.item, o.debugItemSize, o.list)
+func (o *StringAppend) String() string {
+	return fmt.Sprintf("[stringappend %v <= %v %v]", o.target, o.a, o.b)
 }

@@ -5,17 +5,20 @@
 
 package assembler_sp
 
-import (
-	"fmt"
-)
+import "fmt"
 
-type ListConj struct {
-	target        TargetStackPos
-	item          SourceStackPos
-	list          SourceStackPos
-	debugItemSize StackItemSize
+type VariableName struct {
+	name string
 }
 
-func (o *ListConj) String() string {
-	return fmt.Sprintf("[ListConj %v <= item:%v (%d) list:%v]", o.target, o.item, o.debugItemSize, o.list)
+func NewVariableName(name string) *VariableName {
+	return &VariableName{name: name}
+}
+
+func (o *VariableName) Name() string {
+	return o.name
+}
+
+func (o *VariableName) String() string {
+	return fmt.Sprintf("[var %v]", o.name)
 }

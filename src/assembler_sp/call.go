@@ -5,17 +5,13 @@
 
 package assembler_sp
 
-import (
-	"fmt"
-)
+import "fmt"
 
-type ListConj struct {
-	target        TargetStackPos
-	item          SourceStackPos
-	list          SourceStackPos
-	debugItemSize StackItemSize
+type Call struct {
+	function       SourceStackPos
+	newBasePointer SourceStackPos
 }
 
-func (o *ListConj) String() string {
-	return fmt.Sprintf("[ListConj %v <= item:%v (%d) list:%v]", o.target, o.item, o.debugItemSize, o.list)
+func (o *Call) String() string {
+	return fmt.Sprintf("[call %v]", o.function)
 }

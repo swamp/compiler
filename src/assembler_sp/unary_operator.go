@@ -7,15 +7,16 @@ package assembler_sp
 
 import (
 	"fmt"
+
+	"github.com/swamp/compiler/src/instruction_sp"
 )
 
-type ListConj struct {
-	target        TargetStackPos
-	item          SourceStackPos
-	list          SourceStackPos
-	debugItemSize StackItemSize
+type UnaryOperator struct {
+	target   TargetStackPos
+	a        SourceStackPos
+	operator instruction_sp.UnaryOperatorType
 }
 
-func (o *ListConj) String() string {
-	return fmt.Sprintf("[ListConj %v <= item:%v (%d) list:%v]", o.target, o.item, o.debugItemSize, o.list)
+func (o *UnaryOperator) String() string {
+	return fmt.Sprintf("[unary %v <= %v %v]", o.target, o.operator, o.a)
 }
