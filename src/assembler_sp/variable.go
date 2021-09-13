@@ -7,16 +7,13 @@ package assembler_sp
 
 import (
 	"fmt"
-
-	swampopcodetype "github.com/swamp/opcodes/type"
 )
 
 type VariableNode struct {
-	context       *Context
-	someID        int
-	debugString   string
-	register      swampopcodetype.Register
-	registerIsSet bool
+	context     *Context
+	someID      int
+	debugString string
+	source      SourceStackPosRange
 }
 
 type VariableImpl struct {
@@ -24,36 +21,16 @@ type VariableImpl struct {
 	identifier *VariableName
 }
 
-func NewVariable(context *Context, someID int, identifier *VariableName) *VariableImpl {
-	return &VariableImpl{VariableNode: VariableNode{context: context, someID: someID, register: swampopcodetype.NewRegister(0xff)}, identifier: identifier}
+func NewVariable(context *Context, someID int, identifier *VariableName, source SourceStackPosRange) *VariableImpl {
+	return &VariableImpl{VariableNode: VariableNode{context: context, someID: someID, source: source}}
 }
 
-func NewKeepVariable(context *Context, someID int, identifier *VariableName) *VariableImpl {
-	return &VariableImpl{VariableNode: VariableNode{context: context, someID: someID, register: swampopcodetype.NewRegister(0xff)}, identifier: identifier}
-}
-
-func NewTempVariable(context *Context, someID int, debugString string) *VariableImpl {
-	return &VariableImpl{VariableNode: VariableNode{context: context, someID: someID, debugString: debugString, register: swampopcodetype.NewRegister(0xff)}}
+func NewTempVariable(context *Context, someID int, debugString string, source SourceStackPosRange) *VariableImpl {
+	return &VariableImpl{VariableNode: VariableNode{context: context, someID: someID, debugString: debugString, source: source}}
 }
 
 func (v *VariableImpl) SomeID() int {
 	return v.someID
-}
-
-func (v *VariableImpl) SetRegister(r swampopcodetype.Register) {
-	v.VariableNode.register = r
-	v.VariableNode.registerIsSet = true
-}
-
-func (v *VariableImpl) Register() swampopcodetype.Register {
-	if !v.VariableNode.registerIsSet {
-		panic(fmt.Sprintf("swamp assembler: can not read variableimpl register %v (%v)", v.identifier, v.debugString))
-	}
-	return v.VariableNode.register
-}
-
-func (v *VariableImpl) RegisterIsSet() bool {
-	return v.registerIsSet
 }
 
 func (v *VariableImpl) IAmTarget() bool {
@@ -62,7 +39,7 @@ func (v *VariableImpl) IAmTarget() bool {
 
 func (v *VariableImpl) String() string {
 	if v.identifier != nil {
-		return fmt.Sprintf("[var%v %v #%v]", v.someID, v.identifier, v.VariableNode.register)
+		return fmt.Sprintf("[var%v %v #%v]", v.someID, v.identifier, v.VariableNode.source)
 	}
-	return fmt.Sprintf("[tmpvar%v '%v' #%v]", v.someID, v.debugString, v.VariableNode.register)
+	return fmt.Sprintf("[tmpvar%v '%v' #%v]", v.someID, v.debugString, v.VariableNode.source)
 }

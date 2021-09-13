@@ -100,6 +100,11 @@ func (c *Code) CaseEnum(test SourceStackPos, consequences []*CaseConsequence, de
 	c.addStatement(o)
 }
 
+func (c *Code) CopyConstant(target TargetStackPos, source SourceZeroMemoryPosRange) {
+	o := &CopyConstant{target: target, source: source}
+	c.addStatement(o)
+}
+
 func (c *Code) CasePatternMatching(test SourceStackPosRange, consequences []*CaseConsequencePatternMatching, defaultConsequence *CaseConsequencePatternMatching) {
 	o := &CasePatternMatching{test: test, consequences: consequences, defaultConsequence: defaultConsequence}
 	c.addStatement(o)

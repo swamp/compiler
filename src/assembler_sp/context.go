@@ -6,6 +6,8 @@
 package assembler_sp
 
 import (
+	"C"
+	"encoding/binary"
 	"fmt"
 	"strings"
 
@@ -13,8 +15,16 @@ import (
 )
 
 type FunctionContextConstants struct {
-	constants             []*Constant
-	someConstantIDCounter int
+	constants     []*Constant
+	zeroMapper    *ZeroMemoryMapper
+	dynamicMapper *DynamicMemoryMapper
+}
+
+func FunctionContextConstantsNew() *FunctionContextConstants {
+	return &FunctionContextConstants{
+		zeroMapper:    ZeroMemoryMapperNew(32 * 1024),
+		dynamicMapper: DynamicMemoryMapperNew(128 * 1024),
+	}
 }
 
 func (c *FunctionContextConstants) String() string {
@@ -38,6 +48,13 @@ func (c *FunctionContextConstants) CopyConstants(constants []*Constant) {
 	}
 }
 
+// typedef struct SwampString {
+//    const char* characters; // 8 octets
+//    size_t characterCount; // 8 octets
+// } SwampString;
+
+const SizeofSwampString = 16
+
 func (c *FunctionContextConstants) AllocateStringConstant(s string) *Constant {
 	for _, constant := range c.constants {
 		if constant.constantType == ConstantTypeString {
@@ -46,8 +63,18 @@ func (c *FunctionContextConstants) AllocateStringConstant(s string) *Constant {
 			}
 		}
 	}
-	c.someConstantIDCounter++
-	newConstant := NewStringConstant(c.someConstantIDCounter, s)
+
+	stringOctets := []byte(s)
+	stringOctets = append(stringOctets, byte(0))
+	stringOctetsPointer := c.dynamicMapper.Write(stringOctets, "string")
+
+	var swampStringOctets [SizeofSwampString]byte
+	binary.LittleEndian.PutUint64(swampStringOctets[0:8], uint64(stringOctetsPointer.Position))
+	binary.LittleEndian.PutUint64(swampStringOctets[8:16], uint64(len(s)))
+
+	swampStringPointer := c.zeroMapper.Write(swampStringOctets[:], "swampStringOctets")
+
+	newConstant := NewStringConstant("string", s, swampStringPointer)
 	c.constants = append(c.constants, newConstant)
 
 	return newConstant
@@ -61,7 +88,7 @@ func (c *FunctionContextConstants) AllocateIntegerConstant(i int32) *Constant {
 			}
 		}
 	}
-	c.someConstantIDCounter++
+	pointer := c.zeroMapper.Allocate(SizeofSwampString, "stringConstant")
 	newConstant := NewIntegerConstant(c.someConstantIDCounter, i)
 	c.constants = append(c.constants, newConstant)
 

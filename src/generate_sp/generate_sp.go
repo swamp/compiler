@@ -699,10 +699,10 @@ func generateStringLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 	return nil
 }
 
-func generateCharacterLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.CharacterLiteral,
+func generateCharacterLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPos, str *decorated.CharacterLiteral,
 	context *assembler_sp.Context) error {
 	constant := context.Constants().AllocateIntegerConstant(str.Value())
-	code.CopyConstant(target, constant.posRange)
+	code.CopyConstant(target, constant.PosRange())
 	return nil
 }
 
