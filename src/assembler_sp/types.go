@@ -55,7 +55,10 @@ func (s StackPosOffsetAndRange) getSize() StackRange {
 	return s.Size
 }
 
-type TargetStackPosRange StackPosAndRange
+type TargetStackPosRange struct {
+	Pos  TargetStackPos
+	Size StackRange
+}
 
 type FieldRanges []SourceStackPosRange
 

@@ -28,6 +28,18 @@ func (l LookupField) Identifier() *ast.VariableIdentifier {
 	return l.reference.ident
 }
 
+func (l LookupField) RecordTypeFieldReference() *RecordTypeFieldReference {
+	return l.reference
+}
+
+func (l LookupField) MemoryOffset() uint {
+	return l.reference.recordTypeField.MemoryOffset()
+}
+
+func (l LookupField) MemorySize() uint {
+	return l.reference.recordTypeField.MemorySize()
+}
+
 func NewLookupField(reference *RecordTypeFieldReference) LookupField {
 	return LookupField{reference: reference}
 }

@@ -12,12 +12,20 @@ func StackMemoryMapperNew(maxOctetSize uint) *StackMemoryMapper {
 	return &StackMemoryMapper{maxOctetSize: maxOctetSize}
 }
 
-func (m *StackMemoryMapper) Allocate(octetSize uint, debugString string) uint32 {
+func (m *StackMemoryMapper) Allocate(octetSize uint, align uint32, debugString string) TargetStackPosRange {
+	extra := m.position % align
+	if extra != 0 {
+		m.position += align - extra
+	}
 	pos := m.position
 
 	m.position += uint32(octetSize)
 
-	return pos
+	posRange := TargetStackPosRange{
+		Pos:  TargetStackPos(pos),
+		Size: StackRange(octetSize),
+	}
+	return posRange
 }
 
 type ZeroMemoryMapper struct {
@@ -49,6 +57,13 @@ func (m *ZeroMemoryMapper) Write(data []byte, debugString string) SourceZeroMemo
 	copy(m.memory[position:endPos], data)
 
 	return posRange
+}
+
+func (m *ZeroMemoryMapper) Read(pos SourceZeroMemoryPosRange) []byte {
+	start := pos.Position
+	endPos := uint32(start) + uint32(pos.Size)
+
+	return m.memory[start:endPos]
 }
 
 type DynamicMemoryMapper struct {

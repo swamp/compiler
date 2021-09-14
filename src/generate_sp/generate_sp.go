@@ -26,11 +26,17 @@ type AnyPosAndRange interface {
 }
 
 type Context struct {
-	nameToVariable map[string]AnyPosAndRange
-	constants      *StartMemoryConstants
+	startMemoryConstants *StartMemoryConstants
+	constants            *assembler_sp.Constants
+	functionVariables    *assembler_sp.FunctionVariables
+	stackMemory          *assembler_sp.StackMemoryMapper
 }
 
-func (c *Context) Constants() *StartMemoryConstants {
+func (c *Context) StartMemoryConstants() *StartMemoryConstants {
+	return c.startMemoryConstants
+}
+
+func (c *Context) Constants() *assembler_sp.Constants {
 	return c.constants
 }
 
@@ -163,7 +169,7 @@ func generateListAppend(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return rightErr
 	}
 
-	code.ListAppend(target, leftVar, rightVar)
+	code.ListAppend(target.Pos, leftVar.Pos, rightVar.Pos)
 
 	return nil
 }
@@ -179,7 +185,7 @@ func generateStringAppend(code *assembler_sp.Code, target assembler_sp.TargetSta
 		return rightErr
 	}
 
-	code.StringAppend(target, leftVar, rightVar)
+	code.StringAppend(target.Pos, leftVar.Pos, rightVar.Pos)
 
 	return nil
 }
@@ -202,7 +208,7 @@ func generateListCons(code *assembler_sp.Code, target assembler_sp.TargetStackPo
 		return rightErr
 	}
 
-	code.ListConj(target, leftVar, rightVar)
+	code.ListConj(target.Pos, leftVar.Pos, rightVar.Pos)
 
 	return nil
 }
@@ -219,7 +225,7 @@ func generateArithmetic(code *assembler_sp.Code, target assembler_sp.TargetStack
 	}
 
 	opcodeBinaryOperator := arithmeticToBinaryOperatorType(operator.OperatorType())
-	code.BinaryOperator(target, leftVar, rightVar, opcodeBinaryOperator)
+	code.BinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
 
 	return nil
 }
@@ -246,7 +252,7 @@ func generateUnaryBitwise(code *assembler_sp.Code, target assembler_sp.TargetSta
 		return leftErr
 	}
 	opcodeUnaryOperatorType := bitwiseToUnaryOperatorType(operator.OperatorType())
-	code.UnaryOperator(target, leftVar, opcodeUnaryOperatorType)
+	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType)
 
 	return nil
 }
@@ -257,7 +263,7 @@ func generateUnaryLogical(code *assembler_sp.Code, target assembler_sp.TargetSta
 		return leftErr
 	}
 	opcodeUnaryOperatorType := logicalToUnaryOperatorType(operator.OperatorType())
-	code.UnaryOperator(target, leftVar, opcodeUnaryOperatorType)
+	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType)
 	return nil
 }
 
@@ -267,7 +273,7 @@ func generateUnaryArithmetic(code *assembler_sp.Code, target assembler_sp.Target
 		return leftErr
 	}
 	opcodeUnaryOperatorType := arithmeticToUnaryOperatorType(operator.OperatorType())
-	code.UnaryOperator(target, leftVar, opcodeUnaryOperatorType)
+	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType)
 
 	return nil
 }
@@ -284,7 +290,7 @@ func generateBitwise(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 	}
 
 	opcodeBinaryOperator := bitwiseToBinaryOperatorType(operator.OperatorType())
-	code.BinaryOperator(target, leftVar, rightVar, opcodeBinaryOperator)
+	code.BinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
 
 	return nil
 }
@@ -303,9 +309,9 @@ func generateLogical(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 	afterLabel := codeAlternative.Label(nil, "after-alternative")
 
 	if operator.OperatorType() == decorated.LogicalAnd {
-		code.BranchFalse(target, afterLabel)
+		code.BranchFalse(targetToSourceStackPosRange(target).Pos, afterLabel)
 	} else if operator.OperatorType() == decorated.LogicalOr {
-		code.BranchTrue(target, afterLabel)
+		code.BranchTrue(targetToSourceStackPosRange(target).Pos, afterLabel)
 	}
 	code.Copy(codeAlternative)
 
@@ -361,35 +367,22 @@ func generateBoolean(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 		opcodeBinaryOperator = booleanToBinaryValueOperatorType(operator.OperatorType())
 	}
 
-	code.BinaryOperator(target, leftVar, rightVar, opcodeBinaryOperator)
+	code.BinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
 
 	return nil
 }
 
 func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, let *decorated.Let, genContext *generateContext) error {
 	for _, assignment := range let.Assignments() {
+		sourceVar, sourceErr := generateExpressionWithSourceVar(code, assignment.Expression(), genContext, "let source")
+		if sourceErr != nil {
+			return sourceErr
+		}
+
 		if len(assignment.LetVariables()) == 1 {
-			varName := assembler_sp.NewVariableName(assignment.LetVariables()[0].Name().Name())
-			targetVar := genContext.context.AllocateVariable(varName)
-
-			genErr := generateExpression(code, targetVar, assignment.Expression(), genContext)
-			if genErr != nil {
-				return genErr
-			}
+			firstVar := assignment.LetVariables()[0]
+			genContext.context.functionVariables.DefineVariable(firstVar.Name().Name(), sourceVar)
 		} else {
-			sourceVar, sourceErr := generateExpressionWithSourceVar(code, assignment.Expression(), genContext, "tuple split")
-			if sourceErr != nil {
-				return sourceErr
-			}
-
-			var targetVariables []TargetStackPosRange
-
-			for _, letVariable := range assignment.LetVariables() {
-				varName := assembler_sp.NewVariableName(letVariable.Name().Name())
-				targetVar := genContext.context.AllocateVariable(varName)
-				targetVariables = append(targetVariables, targetVar)
-			}
-			code.StructSplit(sourceVar, targetVariables)
 		}
 	}
 
@@ -401,19 +394,27 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 	return nil
 }
 
-func generateLookups(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, lookups *decorated.RecordLookups, genContext *generateContext) error {
-	sourceVariable, err := generateExpressionWithSourceVar(code, lookups.Expression(), genContext, "lookups")
+func generateLookups(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, lookups *decorated.RecordLookups,
+	genContext *generateContext) error {
+	startOfStruct, err := generateExpressionWithSourceVar(code, lookups.Expression(), genContext, "lookups")
 	if err != nil {
 		return err
 	}
 
-	var structLookups []uint8
+	indexOffset := uint(0)
 
-	for _, indexLookups := range lookups.LookupFields() {
-		structLookups = append(structLookups, uint8(indexLookups.Index()))
+	var lastLookup decorated.LookupField
+	for _, indexLookup := range lookups.LookupFields() {
+		indexOffset += indexLookup.MemoryOffset()
+		lastLookup = indexLookup
 	}
 
-	code.Lookups(target, sourceVariable, structLookups)
+	sourcePosRange := assembler_sp.SourceStackPosRange{
+		Pos:  assembler_sp.SourceStackPos(uint(startOfStruct.Pos) + indexOffset),
+		Size: assembler_sp.SourceStackRange(lastLookup.MemorySize()),
+	}
+
+	code.CopyMemory(target.Pos, sourcePosRange)
 
 	return nil
 }
@@ -450,7 +451,7 @@ func generateIf(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange
 	alternativeContext2.context.Free()
 
 	code.BranchFalse(conditionVar, alternativeLabel)
-	genContext.context.FreeVariableIfNeeded(conditionVar)
+
 	consequenceCode.Jump(endLabel)
 	code.Copy(consequenceCode)
 	code.Copy(alternativeCode)
@@ -695,63 +696,35 @@ func generateCasePatternMatching(code *assembler_sp.Code, target assembler_sp.Ta
 func generateStringLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.StringLiteral,
 	context *assembler_sp.Context) error {
 	constant := context.Constants().AllocateStringConstant(str.Value())
-	code.CopyConstantPointer(target, constant.posRange)
+	code.LoadZeroMemoryPointer(target.Pos, constant.PosRange().Position)
 	return nil
 }
 
-func generateCharacterLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPos, str *decorated.CharacterLiteral,
+func generateCharacterLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.CharacterLiteral,
 	context *assembler_sp.Context) error {
-	constant := context.Constants().AllocateIntegerConstant(str.Value())
-	code.CopyConstant(target, constant.PosRange())
+	code.LoadRune(target.Pos, uint8(str.Value()))
 	return nil
-}
-
-func generateTypeIdConstant(typeToAdd dtype.Type, genContext *generateContext) (*Constant, error) {
-	indexIntoTypeInformationChunk, err := genContext.lookup.Lookup(typeToAdd)
-	if err != nil {
-		return nil, err
-	}
-	constant := genContext.context.Constants().AllocateIntegerConstant(int32(indexIntoTypeInformationChunk))
-
-	return constant, nil
 }
 
 func generateTypeIdLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, typeId *decorated.TypeIdLiteral,
 	genContext *generateContext) error {
-	constant, err := generateTypeIdConstant(typeId.ContainedType(), genContext)
-	if err != nil {
-		return err
-	}
-	code.CopyConstant(target, constant)
 	return nil
 }
 
 func generateIntLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, integer *decorated.IntegerLiteral,
 	context *assembler_sp.Context) error {
-	constant := context.Constants().AllocateIntegerConstant(integer.Value())
-	code.CopyConstant(target, constant)
+	code.LoadInteger(target.Pos, integer.Value())
 	return nil
 }
 
 func generateFixedLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, fixed *decorated.FixedLiteral,
 	context *assembler_sp.Context) error {
-	constant := context.Constants().AllocateIntegerConstant(fixed.Value())
-	code.CopyConstant(target, constant)
+	code.LoadInteger(target.Pos, fixed.Value())
 	return nil
 }
 
 func generateResourceNameLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	resourceName *decorated.ResourceNameLiteral, context *assembler_sp.Context) error {
-	constant := context.Constants().AllocateResourceNameConstant(resourceName.Value())
-	code.CopyConstantPointer(target, constant)
-	return nil
-}
-
-func generateFunctionReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	getVar *decorated.FunctionReference, context *assembler_sp.Context) error {
-	varName := assembler_sp.NewVariableName(getVar.Identifier().Name())
-	variable := context.FindVariable(varName)
-	code.CopyConstantPointer(target, variable)
 	return nil
 }
 
@@ -972,7 +945,7 @@ func generateTuple(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		}
 		variables[index] = exprVar
 	}
-	code.Constructor(target, variables)
+
 	return nil
 }
 
@@ -987,59 +960,94 @@ func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		}
 		variables[index] = exprVar
 	}
-	code.Constructor(target, variables)
+	code.CreateArray(target, variables)
 	return nil
 }
 
+const (
+	PointerSize  = 8
+	PointerAlign = 8
+)
+
+func targetToSourceStackPosRange(functionPointer assembler_sp.TargetStackPosRange) assembler_sp.SourceStackPosRange {
+	sourcePosRange := assembler_sp.SourceStackPosRange{
+		Pos:  assembler_sp.SourceStackPos(functionPointer.Pos),
+		Size: assembler_sp.SourceStackRange(functionPointer.Size),
+	}
+
+	return sourcePosRange
+}
+
+func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembler_sp.StackMemoryMapper, constant *assembler_sp.Constant) (assembler_sp.SourceStackPosRange, error) {
+	functionPointer := stackMemory.Allocate(PointerSize, PointerAlign, "functionReference")
+	code.LoadZeroMemoryPointer(functionPointer.Pos, constant.PosRange().Position)
+
+	return targetToSourceStackPosRange(functionPointer), nil
+}
+
+func handleFunctionReference(code *assembler_sp.Code,
+	t *decorated.FunctionReference,
+	stackMemory *assembler_sp.StackMemoryMapper,
+	constants *assembler_sp.Constants) (assembler_sp.SourceStackPosRange, error) {
+	ident := t.Identifier()
+	functionReferenceName := assembler_sp.VariableName(ident.Name())
+	foundConstant := constants.FindFunction(functionReferenceName)
+	if foundConstant == nil {
+		return assembler_sp.SourceStackPosRange{}, fmt.Errorf("couldn't find it %v", t)
+	}
+
+	return constantToSourceStackPosRange(code, stackMemory, foundConstant)
+}
+
+func generateFunctionReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
+	getVar *decorated.FunctionReference, context *assembler_sp.Context) error {
+	varName := assembler_sp.VariableName(getVar.Identifier().Name())
+	functionConstant := context.Constants().FindFunction(varName)
+	code.LoadZeroMemoryPointer(target.Pos, functionConstant.PosRange().Position)
+	return nil
+}
+
+const (
+	SizeofSwampInt  = 4
+	SizeofSwampRune = 2
+	SizeofSwampBool = 1
+)
+
 func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Expression,
-	genContext *generateContext, debugName string) (AnyPosAndRange, error) {
+	genContext *generateContext, debugName string) (assembler_sp.SourceStackPosRange, error) {
 	switch t := expr.(type) {
 	case *decorated.StringLiteral:
 		constant := genContext.context.Constants().AllocateStringConstant(t.Value())
-
-		return constant.posRange, nil
+		return constantToSourceStackPosRange(code, genContext.context.stackMemory, constant)
 	case *decorated.IntegerLiteral:
-		constant := genContext.context.Constants().AllocateIntegerConstant(t.Value())
-
-		return constant.posRange, nil
+		{
+			intStorage := genContext.context.stackMemory.Allocate(SizeofSwampInt, SizeofSwampInt, "intLiteral")
+			code.LoadInteger(intStorage.Pos, t.Value())
+			return targetToSourceStackPosRange(intStorage), nil
+		}
 	case *decorated.CharacterLiteral:
-		constant := genContext.context.Constants().AllocateIntegerConstant(t.Value())
-
-		return constant.posRange, nil
+		{
+			runeStorage := genContext.context.stackMemory.Allocate(SizeofSwampRune, SizeofSwampRune, "runeLiteral")
+			code.LoadRune(runeStorage.Pos, uint8(t.Value()))
+			return targetToSourceStackPosRange(runeStorage), nil
+		}
 	case *decorated.BooleanLiteral:
-		constant := genContext.context.Constants().AllocateBooleanConstant(t.Value())
-
-		return constant.posRange, nil
+		{
+			boolStorage := genContext.context.stackMemory.Allocate(SizeofSwampBool, SizeofSwampBool, "boolLiteral")
+			code.LoadBool(boolStorage.Pos, t.Value())
+			return targetToSourceStackPosRange(boolStorage), nil
+		}
 	case *decorated.LetVariableReference:
-		parameterReferenceName := assembler_sp.NewVariableName(t.LetVariable().Name().Name())
-
-		return genContext.context.FindVariable(parameterReferenceName), nil
+		letVariableReferenceName := t.LetVariable().Name().Name()
+		return genContext.context.functionVariables.FindVariable(letVariableReferenceName)
 	case *decorated.FunctionParameterReference:
-		parameterReferenceName := assembler_sp.NewVariableName(t.Identifier().Name())
-
-		return genContext.context.FindVariable(parameterReferenceName), nil
+		parameterReferenceName := t.Identifier().Name()
+		return genContext.context.functionVariables.FindVariable(parameterReferenceName)
 	case *decorated.FunctionReference:
-		ident := t.Identifier()
-		functionReferenceName := assembler_sp.NewVariableName(ident.Name())
-		foundVar := genContext.context.FindVariable(functionReferenceName)
-		if foundVar != nil {
-			return foundVar, nil
-		}
-		foundNamedExpression := genContext.definitions.FindScopedNamedDecoratedExpressionScopedOrNormal(ident)
-		if foundNamedExpression == nil {
-			return nil, fmt.Errorf("sorry, I don't know what '%v' is %v", ident, ident.FetchPositionLength())
-		}
-		fullyQualifiedName := foundNamedExpression.FullyQualifiedName()
-		refConstant, _ := genContext.context.Constants().AllocateFunctionReferenceConstant(fullyQualifiedName)
-		return refConstant, nil
+		return handleFunctionReference(code, t, genContext.context.stackMemory, genContext.context.constants)
 	}
 
-	newVar := genContext.context.AllocateTempVariable(debugName)
-	if genErr := generateExpression(code, newVar, expr, genContext); genErr != nil {
-		return nil, genErr
-	}
-
-	return newVar, nil
+	return assembler_sp.SourceStackPosRange{}, nil
 }
 
 func isIntLike(typeToCheck dtype.Type) bool {
@@ -1175,9 +1183,6 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 
 	case *decorated.CustomTypeVariantConstructor:
 		return generateCustomTypeVariantConstructor(code, target, e, genContext)
-
-	case *decorated.FunctionReference:
-		return generateFunctionReference(code, target, e, genContext.context)
 
 	case *decorated.Constant:
 		return generateConstant(code, target, e, genContext)

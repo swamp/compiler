@@ -52,6 +52,14 @@ func (s *RecordField) SetIndexBySorter(index int) {
 	s.index = index
 }
 
+func (s *RecordField) MemoryOffset() uint {
+	return 0
+}
+
+func (s *RecordField) MemorySize() uint {
+	return 0
+}
+
 func (s *RecordField) Index() int {
 	if s.index == -1 {
 		panic("you can not read index if it isn't set properly")

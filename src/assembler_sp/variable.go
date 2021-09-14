@@ -9,37 +9,26 @@ import (
 	"fmt"
 )
 
+type VariableName string
+
+func (o VariableName) String() string {
+	return fmt.Sprintf("[var %s]", string(o))
+}
+
 type VariableNode struct {
-	context     *Context
-	someID      int
 	debugString string
 	source      SourceStackPosRange
 }
 
 type VariableImpl struct {
 	VariableNode
-	identifier *VariableName
+	identifier VariableName
 }
 
-func NewVariable(context *Context, someID int, identifier *VariableName, source SourceStackPosRange) *VariableImpl {
-	return &VariableImpl{VariableNode: VariableNode{context: context, someID: someID, source: source}}
-}
-
-func NewTempVariable(context *Context, someID int, debugString string, source SourceStackPosRange) *VariableImpl {
-	return &VariableImpl{VariableNode: VariableNode{context: context, someID: someID, debugString: debugString, source: source}}
-}
-
-func (v *VariableImpl) SomeID() int {
-	return v.someID
-}
-
-func (v *VariableImpl) IAmTarget() bool {
-	return true
+func NewVariable(identifier VariableName, source SourceStackPosRange) *VariableImpl {
+	return &VariableImpl{identifier: identifier, VariableNode: VariableNode{source: source}}
 }
 
 func (v *VariableImpl) String() string {
-	if v.identifier != nil {
-		return fmt.Sprintf("[var%v %v #%v]", v.someID, v.identifier, v.VariableNode.source)
-	}
-	return fmt.Sprintf("[tmpvar%v '%v' #%v]", v.someID, v.debugString, v.VariableNode.source)
+	return fmt.Sprintf("[var %v #%v]", v.identifier, v.VariableNode.source)
 }

@@ -105,6 +105,31 @@ func (c *Code) CopyConstant(target TargetStackPos, source SourceZeroMemoryPosRan
 	c.addStatement(o)
 }
 
+func (c *Code) LoadInteger(target TargetStackPos, intValue int32) {
+	o := &LoadInteger{target: target, intValue: intValue}
+	c.addStatement(o)
+}
+
+func (c *Code) LoadRune(target TargetStackPos, runeValue uint8) {
+	o := &LoadRune{target: target, rune: runeValue}
+	c.addStatement(o)
+}
+
+func (c *Code) LoadBool(target TargetStackPos, boolValue bool) {
+	o := &LoadBool{target: target, boolean: boolValue}
+	c.addStatement(o)
+}
+
+func (c *Code) LoadZeroMemoryPointer(target TargetStackPos, zeroMemoryPointer SourceZeroMemoryPos) {
+	o := &LoadZeroMemoryPointer{target: target, sourceZeroMemory: zeroMemoryPointer}
+	c.addStatement(o)
+}
+
+func (c *Code) CopyMemory(target TargetStackPos, source SourceStackPosRange) {
+	o := &CopyMemory{target: target, source: source}
+	c.addStatement(o)
+}
+
 func (c *Code) CasePatternMatching(test SourceStackPosRange, consequences []*CaseConsequencePatternMatching, defaultConsequence *CaseConsequencePatternMatching) {
 	o := &CasePatternMatching{test: test, consequences: consequences, defaultConsequence: defaultConsequence}
 	c.addStatement(o)
