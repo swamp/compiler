@@ -9,7 +9,7 @@ import "fmt"
 
 type Call struct {
 	function       SourceStackPos
-	newBasePointer SourceStackPos
+	newBasePointer TargetStackPos
 }
 
 func (o *Call) String() string {

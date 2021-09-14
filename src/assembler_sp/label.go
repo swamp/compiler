@@ -12,14 +12,14 @@ import (
 )
 
 type Label struct {
-	identifier  *VariableName
+	identifier  VariableName
 	debugString string
 	opLabel     *opcode_sp_type.Label
 	offset      *opcode_sp_type.Label
 }
 
 func (o *Label) String() string {
-	if o.identifier != nil {
+	if o.identifier != "" {
 		return fmt.Sprintf("%v: # (%v)]", o.identifier, o.debugString)
 	}
 	return fmt.Sprintf("%v:", o.debugString)
@@ -38,8 +38,8 @@ func (o *Label) OffsetLabel() *opcode_sp_type.Label {
 }
 
 func (o *Label) Name() string {
-	if o.identifier != nil {
-		return o.identifier.Name()
+	if o.identifier != "" {
+		return string(o.identifier)
 	}
 	return o.debugString
 }

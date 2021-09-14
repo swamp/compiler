@@ -128,13 +128,14 @@ func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*C
 }
 
 func replaceTupleTypeFromContext(tupleType *TupleTypeAtom, lookup Lookup) (dtype.Type, error) {
-	var convertedTypes []dtype.Type
-	for _, someType := range tupleType.parameterTypes {
+	var convertedTypes []*TupleTypeField
+	for index, someType := range tupleType.parameterTypes {
 		convertedType, convertedErr := ReplaceTypeFromContext(someType, lookup)
 		if convertedErr != nil {
 			return nil, convertedErr
 		}
-		convertedTypes = append(convertedTypes, convertedType)
+		field := NewTupleTypeField(index, convertedType)
+		convertedTypes = append(convertedTypes, field)
 	}
 
 	return NewTupleTypeAtom(tupleType.astTupleType, convertedTypes), nil

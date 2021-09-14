@@ -72,7 +72,7 @@ func (s *Stream) TailCall() *instruction_sp.TailCall {
 	return c
 }
 
-func (s *Stream) Call(newBasePointer opcode_sp_type.SourceStackPosition, function opcode_sp_type.SourceStackPosition,
+func (s *Stream) Call(newBasePointer opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition,
 ) *instruction_sp.Call {
 	c := instruction_sp.NewCall(newBasePointer, function)
 	s.addInstruction(c)

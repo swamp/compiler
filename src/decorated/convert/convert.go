@@ -49,13 +49,14 @@ func newInvokerType(astTypeReference ast.TypeReferenceScopedOrNormal, foundType 
 }
 
 func DecorateTupleType(tupleType *ast.TupleType, t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
-	var convertedParameters []dtype.Type
-	for _, a := range tupleType.Types() {
+	var convertedParameters []*dectype.TupleTypeField
+	for index, a := range tupleType.Types() {
 		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
 		if convertedParameterErr != nil {
 			return nil, convertedParameterErr
 		}
-		convertedParameters = append(convertedParameters, convertedParameter)
+		field := dectype.NewTupleTypeField(index, convertedParameter)
+		convertedParameters = append(convertedParameters, field)
 	}
 
 	return dectype.NewTupleTypeAtom(tupleType, convertedParameters), nil

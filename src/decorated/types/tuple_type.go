@@ -10,17 +10,32 @@ import (
 )
 
 type TupleTypeAtom struct {
-	parameterTypes []dtype.Type
-	astTupleType   *ast.TupleType
+	parameterFields []*TupleTypeField
+	parameterTypes  []dtype.Type
+	astTupleType    *ast.TupleType
 }
 
-func NewTupleTypeAtom(astTupleType *ast.TupleType, parameterTypes []dtype.Type) *TupleTypeAtom {
-	for _, param := range parameterTypes {
+func NewTupleTypeAtom(astTupleType *ast.TupleType, parameterFields []*TupleTypeField) *TupleTypeAtom {
+	for _, param := range parameterFields {
 		if reflect.TypeOf(param) == nil {
 			panic("function atom: nil parameter type")
 		}
 	}
-	return &TupleTypeAtom{parameterTypes: parameterTypes, astTupleType: astTupleType}
+
+	var parameterTypes []dtype.Type
+	for _, param := range parameterFields {
+		parameterTypes = append(parameterTypes, param.Type())
+	}
+
+	return &TupleTypeAtom{parameterFields: parameterFields, parameterTypes: parameterTypes, astTupleType: astTupleType}
+}
+
+func (u *TupleTypeAtom) MemorySize() uint {
+	return 0
+}
+
+func (u *TupleTypeAtom) MemoryAlignment() uint32 {
+	return 0
 }
 
 func (u *TupleTypeAtom) ParameterTypes() []dtype.Type {

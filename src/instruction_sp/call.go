@@ -12,18 +12,18 @@ import (
 )
 
 type Call struct {
-	newBasePointer opcode_sp_type.SourceStackPosition
+	newBasePointer opcode_sp_type.TargetStackPosition
 	function       opcode_sp_type.SourceStackPosition
 }
 
-func NewCall(newBasePointer opcode_sp_type.SourceStackPosition, function opcode_sp_type.SourceStackPosition) *Call {
+func NewCall(newBasePointer opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition) *Call {
 	return &Call{newBasePointer: newBasePointer, function: function}
 }
 
 func (c *Call) Write(writer OpcodeWriter) error {
 	writer.Command(CmdCall)
 	writer.SourceStackPosition(c.function)
-	writer.SourceStackPosition(c.newBasePointer)
+	writer.TargetStackPosition(c.newBasePointer)
 
 	return nil
 }

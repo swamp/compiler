@@ -53,7 +53,7 @@ func (c *Code) Copy(other *Code) {
 	}
 }
 
-func (c *Code) Label(identifier *VariableName, debugString string) *Label {
+func (c *Code) Label(identifier VariableName, debugString string) *Label {
 	o := &Label{identifier: identifier, debugString: debugString}
 	c.labels = append(c.labels, o)
 	c.addStatement(o)
@@ -169,7 +169,7 @@ func (c *Code) Return() {
 	c.addStatement(o)
 }
 
-func (c *Code) Call(function SourceStackPos, newBasePointer SourceStackPos) {
+func (c *Code) Call(function SourceStackPos, newBasePointer TargetStackPos) {
 	o := &Call{function: function, newBasePointer: newBasePointer}
 	c.addStatement(o)
 }
@@ -312,7 +312,7 @@ func writeCallExternal(stream *opcode_sp.Stream, call *CallExternal) {
 }
 
 func writeCall(stream *opcode_sp.Stream, call *Call) {
-	stream.Call(sourceStackPosition(call.newBasePointer), sourceStackPosition(call.function))
+	stream.Call(targetStackPosition(call.newBasePointer), sourceStackPosition(call.function))
 }
 
 func writeRecur(stream *opcode_sp.Stream, call *Recur) {
@@ -378,7 +378,7 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 
 func (c *Code) Resolve(context *FunctionRootContext, verboseFlag bool) ([]byte, error) {
 	if verboseFlag {
-		context.ShowSummary()
+		// context.ShowSummary()
 	}
 
 	opStream := opcode_sp.NewStream()

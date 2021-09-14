@@ -801,10 +801,15 @@ func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 	return nil
 }
 
+func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
+	unaliased := dectype.Unalias(p)
+	switch t := unaliased.(type) {
+	case *dectype.RecordAtom:
+	}
+}
+
 func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, call *decorated.FunctionCall,
 	genContext *generateContext) error {
-	var arguments []assembler_sp.SourceVariable
-
 	functionType := dectype.Unalias(call.FunctionExpression().Type())
 	functionAtom, wasFunctionAtom := functionType.(*dectype.FunctionAtom)
 
@@ -812,13 +817,24 @@ func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetSta
 		return fmt.Errorf("this is not a function atom %T", functionType)
 	}
 
-	var tempVariables []assembler_sp.SourceVariable
+	fn := call.FunctionExpression()
+	functionRegister, functionGenErr := generateExpressionWithSourceVar(code, fn, genContext, "functioncall")
+	if functionGenErr != nil {
+		return functionGenErr
+	}
+
+	var arguments []assembler_sp.TargetStackPosRange
+	for index, arg := range call.Arguments() {
+		memorySize, alignment := getMemorySizeAndAlignment(arg.Type())
+		arguments[index] = genContext.context.stackMemory.Allocate(memorySize, alignment, fmt.Sprintf("arg %d", index))
+	}
 
 	for index, arg := range call.Arguments() {
 		functionArgType := functionAtom.FunctionParameterTypes()[index]
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 
-		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "arg")
+		argReg := arguments[index]
+		argRegErr := generateExpression(code, argReg, arg, genContext)
 		if argRegErr != nil {
 			return argRegErr
 		}
@@ -844,30 +860,13 @@ func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetSta
 		arguments = append(arguments, argReg)
 	}
 
-	fn := call.FunctionExpression()
-
-	functionRegister, functionGenErr := generateExpressionWithSourceVar(code, fn, genContext, "functioncall")
-	if functionGenErr != nil {
-		return functionGenErr
-	}
-
-	code.Call(functionRegister.getPosition(), arguments)
+	code.Call(functionRegister.Pos, arguments[0].Pos)
 
 	return nil
 }
 
 func generateRecurCall(code *assembler_sp.Code, call *decorated.RecurCall, genContext *generateContext) error {
-	var arguments []assembler_sp.SourceVariable
-
-	for _, arg := range call.Arguments() {
-		argReg, argRegErr := generateExpressionWithSourceVar(code, arg, genContext, "recurarg")
-		if argRegErr != nil {
-			return argRegErr
-		}
-		arguments = append(arguments, argReg)
-	}
-
-	code.Recur(arguments)
+	code.Recur()
 
 	return nil
 }
@@ -921,25 +920,31 @@ func generateRecordLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 
 func generateList(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	list *decorated.ListLiteral, genContext *generateContext) error {
-	variables := make([]assembler_sp.SourceVariable, len(list.Expressions()))
+	variables := make([]assembler_sp.SourceStackPos, len(list.Expressions()))
 	for index, expr := range list.Expressions() {
 		debugName := fmt.Sprintf("listliteral%v", index)
 		exprVar, genErr := generateExpressionWithSourceVar(code, expr, genContext, debugName)
 		if genErr != nil {
 			return genErr
 		}
-		variables[index] = exprVar
+		variables[index] = exprVar.Pos
 	}
-	code.ListLiteral(target, variables)
+	primitive, _ := list.Type().(*dectype.PrimitiveAtom)
+	itemSize, _ := getMemorySizeAndAlignment(primitive.Next())
+	code.ListLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize))
 	return nil
 }
 
 func generateTuple(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	tupleLiteral *decorated.TupleLiteral, genContext *generateContext) error {
-	variables := make([]assembler_sp.SourceVariable, len(tupleLiteral.Expressions()))
+	variables := make([]assembler_sp.SourceStackPos, len(tupleLiteral.Expressions()))
+
+	tuplePointer := genContext.context.stackMemory.Allocate(tupleLiteral.TupleType().MemorySize(),
+		tupleLiteral.TupleType().MemoryAlignment(), "tuple")
 	for index, expr := range tupleLiteral.Expressions() {
+		tupleIndex := tupleLiteral.TupleType().
 		debugName := fmt.Sprintf("tupleliteral%v", index)
-		exprVar, genErr := generateExpressionWithSourceVar(code, expr, genContext, debugName)
+		exprVar, genErr := generateExpression(code, expr, genContext, debugName)
 		if genErr != nil {
 			return genErr
 		}
