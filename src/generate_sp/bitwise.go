@@ -22,7 +22,8 @@ func bitwiseToBinaryOperatorType(operatorType decorated.BitwiseOperatorType) ins
 	return 0
 }
 
-func generateBitwise(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.BitwiseOperator, genContext *generateContext) error {
+func generateBitwise(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
+	operator *decorated.BitwiseOperator, genContext *generateContext) error {
 	leftVar, leftErr := generateExpressionWithSourceVar(code, operator.Left(), genContext, "bitwise-left")
 	if leftErr != nil {
 		return leftErr
