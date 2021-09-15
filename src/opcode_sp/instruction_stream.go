@@ -43,6 +43,13 @@ func (s *Stream) CreateList(destination opcode_sp_type.TargetStackPosition,
 	return c
 }
 
+func (s *Stream) CreateArray(destination opcode_sp_type.TargetStackPosition,
+	itemSize opcode_sp_type.StackRange, arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CreateArray {
+	c := instruction_sp.NewCreateArray(destination, itemSize, arguments)
+	s.addInstruction(c)
+	return c
+}
+
 func (s *Stream) UpdateStruct(target opcode_sp_type.TargetStackPosition, source opcode_sp_type.SourceStackPositionRange,
 	fieldDefinitions []instruction_sp.CopyToFieldInfo) *instruction_sp.UpdateStruct {
 	c := instruction_sp.NewUpdateStruct(target, source, fieldDefinitions)

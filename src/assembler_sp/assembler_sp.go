@@ -90,8 +90,8 @@ func (c *Code) ListLiteral(target TargetStackPos, values []SourceStackPos, itemS
 	c.addStatement(o)
 }
 
-func (c *Code) UpdateStruct(targetClone TargetStackPos, structToClone SourceStackPosRange, updates []SourceStackPosAndRangeToLocalOffset) {
-	o := &UpdateStruct{targetClone: targetClone, structToClone: structToClone, updates: updates}
+func (c *Code) ArrayLiteral(target TargetStackPos, values []SourceStackPos, itemSize StackRange) {
+	o := &ArrayLiteral{target: target, values: values, itemSize: itemSize}
 	c.addStatement(o)
 }
 
@@ -156,11 +156,6 @@ func (c *Code) Jump(jump *Label) {
 		panic("swamp assembler: null jump")
 	}
 	o := &Jump{jump: jump}
-	c.addStatement(o)
-}
-
-func (c *Code) ReturnWithMemoryMove(memoryMove SourceStackPosRange) {
-	o := &Return{}
 	c.addStatement(o)
 }
 
@@ -308,6 +303,16 @@ func writeList(stream *opcode_sp.Stream, listLiteral *ListLiteral) {
 	stream.CreateList(targetStackPosition(listLiteral.target), stackRange(listLiteral.itemSize), registers)
 }
 
+func writeCreateArray(stream *opcode_sp.Stream, arrayLiteral *ArrayLiteral) {
+	var registers []opcode_sp_type.SourceStackPosition
+
+	for _, argument := range arrayLiteral.values {
+		registers = append(registers, sourceStackPosition(argument))
+	}
+
+	stream.CreateArray(targetStackPosition(arrayLiteral.target), stackRange(arrayLiteral.itemSize), registers)
+}
+
 func writeCallExternal(stream *opcode_sp.Stream, call *CallExternal) {
 }
 
@@ -353,6 +358,8 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeUpdateStruct(opStream, t)
 	case *ListLiteral:
 		writeList(opStream, t)
+	case *ArrayLiteral:
+		writeCreateArray(opStream, t)
 	case *ListAppend:
 		writeListAppend(opStream, t)
 	case *ListConj:

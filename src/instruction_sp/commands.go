@@ -9,64 +9,59 @@ type Commands uint8
 
 const (
 	CmdCreateStruct Commands = 0x01
-	CmdUpdateStruct          = 0x02
-	CmdStructGet             = 0x03
-	CmdRegCopy               = 0x04
-	CmdListConj              = 0x05
+	CmdUpdateStruct Commands = 0x02
+	CmdListConj     Commands = 0x05
 
-	CmdEnumCase    = 0x06
-	CmdBranchFalse = 0x07
-	CmdJump        = 0x08
+	CmdEnumCase    Commands = 0x06
+	CmdBranchFalse Commands = 0x07
+	CmdJump        Commands = 0x08
 
-	CmdCall         = 0x09
-	CmdReturn       = 0x0a
-	CmdCallExternal = 0x0b
-	CmdTailCall     = 0x0c
+	CmdCall         Commands = 0x09
+	CmdReturn       Commands = 0x0a
+	CmdCallExternal Commands = 0x0b
+	CmdTailCall     Commands = 0x0c
 
-	CmdIntAdd = 0x0d
-	CmdIntSub = 0x0e
-	CmdIntMul = 0x0f
-	CmdIntDiv = 0x10
+	CmdIntAdd Commands = 0x0d
+	CmdIntSub Commands = 0x0e
+	CmdIntMul Commands = 0x0f
+	CmdIntDiv Commands = 0x10
 
 	// Boolean operators
-	CmdIntEqual          = 0x11
-	CmdIntNotEqual       = 0x12
-	CmdIntLess           = 0x13
-	CmdIntLessOrEqual    = 0x14
-	CmdIntGreater        = 0x15
-	CmdIntGreaterOrEqual = 0x16
+	CmdIntEqual          Commands = 0x11
+	CmdIntNotEqual       Commands = 0x12
+	CmdIntLess           Commands = 0x13
+	CmdIntLessOrEqual    Commands = 0x14
+	CmdIntGreater        Commands = 0x15
+	CmdIntGreaterOrEqual Commands = 0x16
 
 	// Bitwise operators
-	CmdIntBitwiseAnd = 0x17
-	CmdIntBitwiseOr  = 0x18
-	CmdIntBitwiseXor = 0x19
-	CmdIntBitwiseNot = 0x1a
+	CmdIntBitwiseAnd Commands = 0x17
+	CmdIntBitwiseOr  Commands = 0x18
+	CmdIntBitwiseXor Commands = 0x19
+	CmdIntBitwiseNot Commands = 0x1a
 
-	CmdBoolLogicalNot      = 0x1b
-	CmdBranchTrue          = 0x1c
-	CmdCasePatternMatching = 0x1d
-	CmdValueEqual          = 0x1e
-	CmdValueNotEqual       = 0x1f
+	CmdBoolLogicalNot      Commands = 0x1b
+	CmdBranchTrue          Commands = 0x1c
+	CmdCasePatternMatching Commands = 0x1d
+	CmdValueEqual          Commands = 0x1e
+	CmdValueNotEqual       Commands = 0x1f
 
-	CmdCurry        = 0x20
-	CmdCreateList   = 0x21
-	CmdListAppend   = 0x22
-	CmdCreateEnum   = 0x23
-	CmdStringAppend = 0x24
+	CmdCurry        Commands = 0x20
+	CmdCreateList   Commands = 0x21
+	CmdListAppend   Commands = 0x22
+	CmdCreateEnum   Commands = 0x23
+	CmdStringAppend Commands = 0x24
 
-	CmdFixedMul          = 0x25
-	CmdFixedDiv          = 0x26
-	CmdIntNegate         = 0x27
-	CmdStructSplit       = 0x28
-	CmdReturnWithMemMove = 0x29
+	CmdFixedMul    Commands = 0x25
+	CmdFixedDiv    Commands = 0x26
+	CmdIntNegate   Commands = 0x27
+	CmdCreateArray Commands = 0x29
 )
 
 func OpcodeToName(cmd Commands) string {
 	names := map[Commands]string{
 		CmdCreateStruct:        "crs",
 		CmdUpdateStruct:        "upd",
-		CmdStructGet:           "get",
-		CmdRegCopy:             "lr",
 		CmdListConj:            "conj",
 		CmdEnumCase:            "case",
 		CmdBranchFalse:         "bne",
@@ -102,6 +97,7 @@ func OpcodeToName(cmd Commands) string {
 		CmdFixedMul:            "fxmul",
 		CmdFixedDiv:            "fxdiv",
 		CmdIntNegate:           "neg",
+		CmdCreateArray:         "carr",
 	}
 
 	return names[cmd]

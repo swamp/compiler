@@ -28,6 +28,14 @@ func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
 	return s.astCustomType
 }
 
+func (s *CustomTypeAtom) MemorySize() uint {
+	return 0
+}
+
+func (s *CustomTypeAtom) MemoryAlignment() uint32 {
+	return 0
+}
+
 func (s *CustomTypeAtom) String() string {
 	return fmt.Sprintf("[custom-type %v]", s.variants)
 }

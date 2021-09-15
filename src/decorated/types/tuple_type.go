@@ -34,6 +34,10 @@ func (u *TupleTypeAtom) MemorySize() uint {
 	return 0
 }
 
+func (u *TupleTypeAtom) Fields() []*TupleTypeField {
+	return u.parameterFields
+}
+
 func (u *TupleTypeAtom) MemoryAlignment() uint32 {
 	return 0
 }

@@ -122,6 +122,8 @@ typedef struct SwampFunc {
 } SwampFunc;
 */
 
+const SizeofSwampFunc = 11 * 8
+
 func (c *Constants) AllocateFunctionConstant(uniqueFullyQualifiedFunctionName string, opcodes []byte) (*Constant, error) {
 	for _, constant := range c.functions {
 		if constant.str == uniqueFullyQualifiedFunctionName {
@@ -131,7 +133,6 @@ func (c *Constants) AllocateFunctionConstant(uniqueFullyQualifiedFunctionName st
 
 	opcodesPointer := c.dynamicMapper.Write(opcodes, "opcodes")
 
-	const SizeofSwampFunc = 11 * 8
 	var swampStringOctets [SizeofSwampFunc]byte
 	binary.LittleEndian.PutUint64(swampStringOctets[0:8], uint64(0))
 	binary.LittleEndian.PutUint64(swampStringOctets[8:16], uint64(0))  // Curry Octets

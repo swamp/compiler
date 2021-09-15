@@ -7,12 +7,12 @@ package assembler_sp
 
 import "fmt"
 
-type UpdateStruct struct {
-	targetClone   TargetStackPos
-	structToClone SourceStackPosRange
-	updates       []SourceStackPosAndRangeToLocalOffset
+type ArrayLiteral struct {
+	target   TargetStackPos
+	itemSize StackRange
+	values   []SourceStackPos
 }
 
-func (o *UpdateStruct) String() string {
-	return fmt.Sprintf("[UpdateStruct %v <= (%v) %v]", o.targetClone, o.structToClone, o.updates)
+func (o *ArrayLiteral) String() string {
+	return fmt.Sprintf("[array %v (%d) <= %v]", o.target, o.itemSize, o.values)
 }

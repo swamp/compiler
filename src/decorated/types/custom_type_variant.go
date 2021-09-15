@@ -13,10 +13,23 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type CustomTypeVariantField struct {
+	memoryOffset uint
+}
+
+func (c *CustomTypeVariantField) MemoryOffset() uint {
+	return 0
+}
+
+func (c *CustomTypeVariantField) MemorySize() uint {
+	return 0
+}
+
 type CustomTypeVariant struct {
 	index                int
 	astCustomTypeVariant *ast.CustomTypeVariant
 	parameterTypes       []dtype.Type
+	parameterFields      []*CustomTypeVariantField
 	parent               dtype.Type
 	inCustomType         *CustomTypeAtom
 	references           []*CustomTypeVariantReference
@@ -28,7 +41,18 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 			panic("paramtype is nil")
 		}
 	}
-	return &CustomTypeVariant{index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes}
+
+	var fields []*CustomTypeVariantField
+	for _, paramType := range parameterTypes {
+		if paramType == nil {
+			panic("paramtype is nil")
+		}
+		field := &CustomTypeVariantField{
+			memoryOffset: 0,
+		}
+		fields = append(fields, field)
+	}
+	return &CustomTypeVariant{index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes, parameterFields: fields}
 }
 
 func (s *CustomTypeVariant) AttachToCustomType(c *CustomTypeAtom) {
@@ -46,6 +70,10 @@ func (s *CustomTypeVariant) AstCustomTypeVariant() *ast.CustomTypeVariant {
 
 func (s *CustomTypeVariant) FetchPositionLength() token.SourceFileReference {
 	return s.astCustomTypeVariant.FetchPositionLength()
+}
+
+func (s *CustomTypeVariant) Fields() []*CustomTypeVariantField {
+	return s.parameterFields
 }
 
 func (s *CustomTypeVariant) InCustomType() *CustomTypeAtom {

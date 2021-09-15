@@ -124,6 +124,10 @@ func (c *RecordLiteral) Type() dtype.Type {
 	return c.t
 }
 
+func (c *RecordLiteral) RecordType() *dectype.RecordAtom {
+	return c.t
+}
+
 func (c *RecordLiteral) SortedAssignments() []*RecordLiteralAssignment {
 	return c.sortedAssignments
 }

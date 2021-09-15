@@ -22,6 +22,14 @@ type RecordAtom struct {
 	record            *ast.Record
 }
 
+func (s *RecordAtom) MemorySize() uint {
+	return 0
+}
+
+func (s *RecordAtom) MemoryAlignment() uint32 {
+	return 0
+}
+
 func (s *RecordAtom) GenericTypes() []dtype.Type {
 	return s.genericTypes
 }

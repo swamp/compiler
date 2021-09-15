@@ -8,7 +8,7 @@ type StackMemoryMapper struct {
 	memory       []byte
 }
 
-func StackMemoryMapperNew(maxOctetSize uint) *StackMemoryMapper {
+func NewStackMemoryMapper(maxOctetSize uint) *StackMemoryMapper {
 	return &StackMemoryMapper{maxOctetSize: maxOctetSize}
 }
 
