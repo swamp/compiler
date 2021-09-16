@@ -20,7 +20,8 @@ func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		variables[index] = exprVar.Pos
 	}
 	primitive, _ := array.Type().(*dectype.PrimitiveAtom)
-	itemSize, _ := getMemorySizeAndAlignment(primitive.Next())
+	firstPrimitiveType := primitive.GenericTypes()[0]
+	itemSize, _ := getMemorySizeAndAlignment(firstPrimitiveType)
 	code.ArrayLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize))
 	return nil
 }

@@ -1,5 +1,9 @@
 package assembler_sp
 
+import (
+	"fmt"
+)
+
 type ZeroMemoryPointer uint32
 
 type StackMemoryMapper struct {
@@ -13,6 +17,12 @@ func NewStackMemoryMapper(maxOctetSize uint) *StackMemoryMapper {
 }
 
 func (m *StackMemoryMapper) Allocate(octetSize uint, align uint32, debugString string) TargetStackPosRange {
+	if octetSize == 0 {
+		panic(fmt.Errorf("octet size zero is not allowed for allocate stack memory"))
+	}
+	if align == 0 {
+		panic(fmt.Errorf("align zero size is not allowed for allocate stack memory"))
+	}
 	extra := m.position % align
 	if extra != 0 {
 		m.position += align - extra
@@ -40,6 +50,12 @@ func DynamicMemoryMapperNew(maxOctetSize uint) *DynamicMemoryMapper {
 }
 
 func (m *DynamicMemoryMapper) Allocate(octetSize uint, align uint32, debugString string) SourceDynamicMemoryPosRange {
+	if octetSize == 0 {
+		panic(fmt.Errorf("octet size zero is not allowed for allocate DynamicMemoryMapper memory"))
+	}
+	if align == 0 {
+		panic(fmt.Errorf("align zero size is not allowed for allocate DynamicMemoryMapper memory"))
+	}
 	extra := m.position % align
 	if extra != 0 {
 		m.position += align - extra

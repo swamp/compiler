@@ -192,6 +192,10 @@ func sourceStackPosition(pos SourceStackPos) opcode_sp_type.SourceStackPosition 
 	return opcode_sp_type.SourceStackPosition(pos)
 }
 
+func sourceDynamicMemoryPos(pos SourceDynamicMemoryPos) opcode_sp_type.SourceDynamicMemoryPosition {
+	return opcode_sp_type.SourceDynamicMemoryPosition(pos)
+}
+
 func sourceStackRange(size SourceStackRange) opcode_sp_type.SourceStackRange {
 	return opcode_sp_type.SourceStackRange(size)
 }
@@ -222,6 +226,18 @@ func writeListConj(stream *opcode_sp.Stream, operator *ListConj) {
 
 func writeBinaryOperator(stream *opcode_sp.Stream, operator *BinaryOperator) {
 	stream.BinaryOperator(targetStackPosition(operator.target), operator.operator, sourceStackPosition(operator.a), sourceStackPosition(operator.b))
+}
+
+func writeIntBinaryOperator(stream *opcode_sp.Stream, operator *IntBinaryOperator) {
+	stream.IntBinaryOperator(targetStackPosition(operator.target), operator.operator, sourceStackPosition(operator.a), sourceStackPosition(operator.b))
+}
+
+func writeCopyMemory(stream *opcode_sp.Stream, operator *CopyMemory) {
+	stream.MemoryCopy(targetStackPosition(operator.target), sourceStackPositionRange(operator.source))
+}
+
+func writeZeroMemoryPointer(stream *opcode_sp.Stream, operator *LoadZeroMemoryPointer) {
+	stream.LoadZeroMemoryPointer(targetStackPosition(operator.target), sourceDynamicMemoryPos(operator.sourceZeroMemory))
 }
 
 func writeBranchFalse(stream *opcode_sp.Stream, branch *BranchFalse) {
@@ -288,6 +304,14 @@ func writeList(stream *opcode_sp.Stream, listLiteral *ListLiteral) {
 	stream.CreateList(targetStackPosition(listLiteral.target), stackRange(listLiteral.itemSize), registers)
 }
 
+func writeLoadInteger(stream *opcode_sp.Stream, loadInteger *LoadInteger) {
+	stream.LoadInteger(targetStackPosition(loadInteger.target), loadInteger.intValue)
+}
+
+func writeLoadBool(stream *opcode_sp.Stream, loadBool *LoadBool) {
+	stream.LoadBool(targetStackPosition(loadBool.target), loadBool.boolean)
+}
+
 func writeCreateArray(stream *opcode_sp.Stream, arrayLiteral *ArrayLiteral) {
 	var registers []opcode_sp_type.SourceStackPosition
 
@@ -341,6 +365,10 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeCasePatternMatching(opStream, t)
 	case *ListLiteral:
 		writeList(opStream, t)
+	case *LoadInteger:
+		writeLoadInteger(opStream, t)
+	case *LoadBool:
+		writeLoadBool(opStream, t)
 	case *ArrayLiteral:
 		writeCreateArray(opStream, t)
 	case *ListAppend:
@@ -361,6 +389,12 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeCallExternal(opStream, t)
 	case *Curry:
 		writeCurry(opStream, t)
+	case *IntBinaryOperator:
+		writeIntBinaryOperator(opStream, t)
+	case *CopyMemory:
+		writeCopyMemory(opStream, t)
+	case *LoadZeroMemoryPointer:
+		writeZeroMemoryPointer(opStream, t)
 	default:
 		panic(fmt.Sprintf("swamp assembler: unknown cmd %v", cmd))
 	}

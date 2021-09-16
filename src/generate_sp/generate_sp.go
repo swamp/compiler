@@ -54,7 +54,7 @@ func NewExternalFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVari
 }
 
 func (f *Function) String() string {
-	return fmt.Sprintf("[function %v %v %v %v]", f.name, f.signature)
+	return fmt.Sprintf("[function %v %v]", f.name, f.signature)
 }
 
 func (f *Function) Opcodes() []byte {
@@ -90,14 +90,45 @@ func generateConstant(code *assembler_sp.Code, target assembler_sp.TargetStackPo
 	return generateExpression(code, target, constant.Expression(), context)
 }
 
+const (
+	Sizeof64BitPointer  uint   = 8
+	Alignof64BitPointer uint32 = 8
+)
+
 func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
+	if p == nil {
+		panic(fmt.Errorf("nil is not allowed"))
+	}
 	unaliased := dectype.Unalias(p)
 	switch t := unaliased.(type) {
 	case *dectype.RecordAtom:
 		return t.MemorySize(), t.MemoryAlignment()
+	case *dectype.PrimitiveAtom:
+		{
+			name := t.PrimitiveName().Name()
+			switch name {
+			case "List":
+				{
+					return Sizeof64BitPointer, Alignof64BitPointer
+				}
+			case "Bool":
+				return SizeofSwampBool, AlignOfSwampBool
+			case "Int":
+				return SizeofSwampInt, AlignOfSwampInt
+			}
+			panic(fmt.Errorf("do not know primitive atom of %v %T", p, unaliased))
+		}
+	case *dectype.InvokerType:
+		_, wasPrimitive := t.TypeGenerator().(*dectype.PrimitiveTypeReference)
+		if wasPrimitive {
+			return Sizeof64BitPointer, Alignof64BitPointer
+		}
+	case *dectype.CustomTypeAtom:
+		return t.MemorySize(), t.MemoryAlignment()
 	default:
-		panic(fmt.Errorf("do not know memory size of %v", p))
+		panic(fmt.Errorf("do not know memory size of %v %T", p, unaliased))
 	}
+	panic(fmt.Errorf("do not know memory size of %v %T", p, unaliased))
 }
 
 func allocMemoryForType(stackMemory *assembler_sp.StackMemoryMapper, typeToAlloc dtype.Type,
@@ -150,9 +181,13 @@ func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembl
 }
 
 const (
-	SizeofSwampInt  = 4
-	SizeofSwampRune = 2
-	SizeofSwampBool = 1
+	SizeofSwampInt  uint = 4
+	SizeofSwampRune uint = 4
+	SizeofSwampBool uint = 1
+
+	AlignOfSwampBool uint32 = uint32(SizeofSwampBool)
+	AlignOfSwampRune uint32 = uint32(SizeofSwampRune)
+	AlignOfSwampInt  uint32 = uint32(SizeofSwampInt)
 )
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, definitions *decorator.VariableContext,

@@ -23,11 +23,11 @@ type RecordAtom struct {
 }
 
 func (s *RecordAtom) MemorySize() uint {
-	return 0
+	return 9
 }
 
 func (s *RecordAtom) MemoryAlignment() uint32 {
-	return 0
+	return 16
 }
 
 func (s *RecordAtom) GenericTypes() []dtype.Type {

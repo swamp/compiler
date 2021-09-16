@@ -18,6 +18,9 @@ func NewFunctionVariablesWithParent(parent *FunctionVariables) *FunctionVariable
 }
 
 func (c *FunctionVariables) DefineVariable(name string, posRange SourceStackPosRange) {
+	if uint(posRange.Size) == 0 {
+		panic(fmt.Errorf("octet size zero is not allowed for allocate stack memory"))
+	}
 	_, alreadyHas := c.nameToVariable[name]
 	if alreadyHas {
 		panic("cannot define variable again")

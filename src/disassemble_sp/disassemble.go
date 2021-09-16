@@ -87,6 +87,14 @@ func (s *OpcodeInStream) readCount() int {
 	return int(s.readUint8())
 }
 
+func (s *OpcodeInStream) readInt32() int32 {
+	return int32(s.readUint32())
+}
+
+func (s *OpcodeInStream) readBoolean() bool {
+	return s.readUint8() != 0
+}
+
 func (s *OpcodeInStream) readItemSize() opcode_sp_type.StackRange {
 	return opcode_sp_type.StackRange(s.readUint16())
 }
@@ -132,6 +140,11 @@ func (s *OpcodeInStream) readSourceStackPositions() []opcode_sp_type.SourceStack
 func (s *OpcodeInStream) readTargetStackPosition() opcode_sp_type.TargetStackPosition {
 	pointer := s.readUint32()
 	return opcode_sp_type.TargetStackPosition(pointer)
+}
+
+func (s *OpcodeInStream) readSourceDynamicMemoryPosition() opcode_sp_type.SourceDynamicMemoryPosition {
+	pointer := s.readUint32()
+	return opcode_sp_type.SourceDynamicMemoryPosition(pointer)
 }
 
 func disassembleListConj(s *OpcodeInStream) *instruction_sp.ListConj {
@@ -181,12 +194,41 @@ func disassembleBitwiseUnaryOperator(cmd instruction_sp.Commands, s *OpcodeInStr
 	return instruction_sp.NewIntUnaryOperator(cmd, destination, a)
 }
 
+func disassembleLoadInteger(s *OpcodeInStream) *instruction_sp.LoadInteger {
+	destination := s.readTargetStackPosition()
+	a := s.readInt32()
+
+	return instruction_sp.NewLoadInteger(destination, a)
+}
+
+func disassembleLoadBoolean(s *OpcodeInStream) *instruction_sp.LoadBool {
+	destination := s.readTargetStackPosition()
+	a := s.readBoolean()
+
+	return instruction_sp.NewLoadBool(destination, a)
+}
+
+func disassembleLoadZeroMemoryPointer(s *OpcodeInStream) *instruction_sp.LoadZeroMemoryPointer {
+	destination := s.readTargetStackPosition()
+	source := s.readSourceDynamicMemoryPosition()
+
+	return instruction_sp.NewLoadZeroMemoryPointer(destination, source)
+}
+
 func disassembleCreateList(s *OpcodeInStream) *instruction_sp.CreateList {
 	destination := s.readTargetStackPosition()
 	itemSize := s.readItemSize()
 	arguments := s.readSourceStackPositions()
 
 	return instruction_sp.NewCreateList(destination, itemSize, arguments)
+}
+
+func disassembleCreateArray(s *OpcodeInStream) *instruction_sp.CreateArray {
+	destination := s.readTargetStackPosition()
+	itemSize := s.readItemSize()
+	arguments := s.readSourceStackPositions()
+
+	return instruction_sp.NewCreateArray(destination, itemSize, arguments)
 }
 
 func disassembleCall(s *OpcodeInStream) *instruction_sp.Call {
@@ -340,6 +382,8 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleStringAppend(s)
 	case instruction_sp.CmdCreateList:
 		return disassembleCreateList(s)
+	case instruction_sp.CmdCreateArray:
+		return disassembleCreateArray(s)
 	case instruction_sp.CmdEnumCase:
 		return disassembleEnumCase(s)
 	case instruction_sp.CmdCasePatternMatching:
@@ -374,6 +418,12 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleBitwiseUnaryOperator(cmd, s)
 	case instruction_sp.CmdIntNegate:
 		return disassembleBitwiseUnaryOperator(cmd, s)
+	case instruction_sp.CmdLoadInteger:
+		return disassembleLoadInteger(s)
+	case instruction_sp.CmdLoadBoolean:
+		return disassembleLoadBoolean(s)
+	case instruction_sp.CmdLoadZeroMemoryPointer:
+		return disassembleLoadZeroMemoryPointer(s)
 	}
 
 	panic(fmt.Sprintf("swamp disassembler: unknown opcode:%v", cmd))

@@ -11,24 +11,24 @@ import (
 	"github.com/swamp/compiler/src/opcode_sp_type"
 )
 
-type MemoryCopy struct {
-	a           opcode_sp_type.SourceStackPositionRange
+type LoadBool struct {
 	destination opcode_sp_type.TargetStackPosition
+	a           bool
 }
 
-func (c *MemoryCopy) Write(writer OpcodeWriter) error {
-	writer.Command(CmdCopyMemory)
+func (c *LoadBool) Write(writer OpcodeWriter) error {
+	writer.Command(CmdLoadBoolean)
 	writer.TargetStackPosition(c.destination)
-	writer.SourceStackPositionRange(c.a)
+	writer.Boolean(c.a)
 
 	return nil
 }
 
-func NewMemoryCopy(destination opcode_sp_type.TargetStackPosition,
-	a opcode_sp_type.SourceStackPositionRange) *MemoryCopy {
-	return &MemoryCopy{destination: destination, a: a}
+func NewLoadBool(destination opcode_sp_type.TargetStackPosition,
+	a bool) *LoadBool {
+	return &LoadBool{destination: destination, a: a}
 }
 
-func (c *MemoryCopy) String() string {
-	return fmt.Sprintf("%s %v,%v", OpcodeToName(CmdCopyMemory), c.destination, c.a)
+func (c *LoadBool) String() string {
+	return fmt.Sprintf("%s %v,%v", OpcodeToName(CmdLoadBoolean), c.destination, c.a)
 }

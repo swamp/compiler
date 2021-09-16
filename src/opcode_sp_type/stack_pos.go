@@ -20,7 +20,7 @@ type SourceStackRange StackRange
 type TargetStackPosition StackPosition
 
 func (r TargetStackPosition) String() string {
-	return fmt.Sprintf("%v<-", uint32(r))
+	return fmt.Sprintf("%v", uint32(r))
 }
 
 type SourceStackPosition StackPosition
@@ -44,7 +44,7 @@ type SourceStackPositionRange struct {
 }
 
 func (r SourceStackPositionRange) String() string {
-	return fmt.Sprintf("%v:%v", r.Position, r.Range)
+	return fmt.Sprintf("(%v:%v)", r.Position, r.Range)
 }
 
 type TargetStackPositionRange StackPositionRange
@@ -58,3 +58,7 @@ type TargetFieldOffset StackRange
 func (r TargetFieldOffset) String() string {
 	return fmt.Sprintf("#%v", uint32(r))
 }
+
+type DynamicMemoryPosition uint32
+
+type SourceDynamicMemoryPosition uint32

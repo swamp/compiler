@@ -36,6 +36,20 @@ func (s *Stream) CreateLabel(name string) *opcode_sp_type.Label {
 	return l
 }
 
+func (s *Stream) LoadInteger(destination opcode_sp_type.TargetStackPosition,
+	v int32) *instruction_sp.LoadInteger {
+	c := instruction_sp.NewLoadInteger(destination, v)
+	s.addInstruction(c)
+	return c
+}
+
+func (s *Stream) LoadBool(destination opcode_sp_type.TargetStackPosition,
+	v bool) *instruction_sp.LoadBool {
+	c := instruction_sp.NewLoadBool(destination, v)
+	s.addInstruction(c)
+	return c
+}
+
 func (s *Stream) CreateList(destination opcode_sp_type.TargetStackPosition,
 	itemSize opcode_sp_type.StackRange, arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CreateList {
 	c := instruction_sp.NewCreateList(destination, itemSize, arguments)
@@ -135,6 +149,29 @@ func (s *Stream) BinaryOperator(destination opcode_sp_type.TargetStackPosition,
 	b opcode_sp_type.SourceStackPosition) *instruction_sp.BinaryOperator {
 	opcode := instruction_sp.BinaryOperatorToOpCode(operatorType)
 	c := instruction_sp.NewBinaryOperator(opcode, destination, a, b)
+	s.addInstruction(c)
+	return c
+}
+
+func (s *Stream) IntBinaryOperator(destination opcode_sp_type.TargetStackPosition,
+	operatorType instruction_sp.BinaryOperatorType, a opcode_sp_type.SourceStackPosition,
+	b opcode_sp_type.SourceStackPosition) *instruction_sp.BinaryOperator {
+	opcode := instruction_sp.BinaryOperatorToOpCode(operatorType)
+	c := instruction_sp.NewBinaryOperator(opcode, destination, a, b)
+	s.addInstruction(c)
+	return c
+}
+
+func (s *Stream) MemoryCopy(destination opcode_sp_type.TargetStackPosition,
+	a opcode_sp_type.SourceStackPositionRange) *instruction_sp.MemoryCopy {
+	c := instruction_sp.NewMemoryCopy(destination, a)
+	s.addInstruction(c)
+	return c
+}
+
+func (s *Stream) LoadZeroMemoryPointer(destination opcode_sp_type.TargetStackPosition,
+	source opcode_sp_type.SourceDynamicMemoryPosition) *instruction_sp.LoadZeroMemoryPointer {
+	c := instruction_sp.NewLoadZeroMemoryPointer(destination, source)
 	s.addInstruction(c)
 	return c
 }

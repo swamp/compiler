@@ -10,6 +10,9 @@ import "github.com/swamp/compiler/src/opcode_sp_type"
 type OpcodeWriter interface {
 	SourceStackPosition(r opcode_sp_type.SourceStackPosition)
 	TargetStackPosition(r opcode_sp_type.TargetStackPosition)
+	SourceDynamicMemoryPosition(r opcode_sp_type.SourceDynamicMemoryPosition)
+	Int32(r int32)
+	Boolean(r bool)
 	// StackPositionRange(r opcode_sp_type.StackPositionRange)
 	SourceStackPositionRange(r opcode_sp_type.SourceStackPositionRange)
 	StackRange(r opcode_sp_type.StackRange)

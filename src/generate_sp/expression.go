@@ -2,12 +2,14 @@ package generate_sp
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
 func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, expr decorated.Expression, genContext *generateContext) error {
+	log.Printf("generate expression %T %v", expr, expr)
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)
@@ -111,6 +113,9 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 	case *decorated.FunctionParameterReference:
 		return generateLocalFunctionParameterReference(code, target, e, genContext.context)
 
+	case *decorated.LetVariableReference:
+		return generateLetVariableReference(code, target, e, genContext.context)
+
 	case *decorated.CaseConsequenceParameterReference:
 		return generateLocalConsequenceParameterReference(code, target, e, genContext.context)
 
@@ -127,5 +132,5 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateRecordConstructorSortedAssignments(code, target, e, genContext)
 	}
 
-	return fmt.Errorf("generate: unknown node %T %v %v", expr, expr, genContext)
+	panic(fmt.Errorf("generate_sp: unknown node %T %v %v", expr, expr, genContext))
 }

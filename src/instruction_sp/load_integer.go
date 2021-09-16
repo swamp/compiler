@@ -11,24 +11,24 @@ import (
 	"github.com/swamp/compiler/src/opcode_sp_type"
 )
 
-type MemoryCopy struct {
-	a           opcode_sp_type.SourceStackPositionRange
+type LoadInteger struct {
 	destination opcode_sp_type.TargetStackPosition
+	a           int32
 }
 
-func (c *MemoryCopy) Write(writer OpcodeWriter) error {
-	writer.Command(CmdCopyMemory)
+func (c *LoadInteger) Write(writer OpcodeWriter) error {
+	writer.Command(CmdLoadInteger)
 	writer.TargetStackPosition(c.destination)
-	writer.SourceStackPositionRange(c.a)
+	writer.Int32(c.a)
 
 	return nil
 }
 
-func NewMemoryCopy(destination opcode_sp_type.TargetStackPosition,
-	a opcode_sp_type.SourceStackPositionRange) *MemoryCopy {
-	return &MemoryCopy{destination: destination, a: a}
+func NewLoadInteger(destination opcode_sp_type.TargetStackPosition,
+	a int32) *LoadInteger {
+	return &LoadInteger{destination: destination, a: a}
 }
 
-func (c *MemoryCopy) String() string {
-	return fmt.Sprintf("%s %v,%v", OpcodeToName(CmdCopyMemory), c.destination, c.a)
+func (c *LoadInteger) String() string {
+	return fmt.Sprintf("%s %v,%v", OpcodeToName(CmdLoadInteger), c.destination, c.a)
 }

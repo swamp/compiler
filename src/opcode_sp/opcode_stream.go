@@ -53,6 +53,10 @@ func (s *OpCodeStream) SourceStackPosition(r opcode_sp_type.SourceStackPosition)
 	s.WriteUint32(uint32(r))
 }
 
+func (s *OpCodeStream) SourceDynamicMemoryPosition(r opcode_sp_type.SourceDynamicMemoryPosition) {
+	s.WriteUint32(uint32(r))
+}
+
 func (s *OpCodeStream) StackRange(r opcode_sp_type.StackRange) {
 	s.WriteUint16(uint16(r))
 }
@@ -72,6 +76,18 @@ func (s *OpCodeStream) TargetStackPosition(r opcode_sp_type.TargetStackPosition)
 
 func (s *OpCodeStream) TargetFieldOffset(f opcode_sp_type.TargetFieldOffset) {
 	s.WriteUint16(uint16(f))
+}
+
+func (s *OpCodeStream) Int32(v int32) {
+	s.WriteUint32(uint32(v))
+}
+
+func (s *OpCodeStream) Boolean(v bool) {
+	value := 0
+	if v {
+		value = 1
+	}
+	s.Write(uint8(value))
 }
 
 func (s *OpCodeStream) EnumValue(v uint8) {

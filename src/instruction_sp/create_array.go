@@ -35,5 +35,5 @@ func (c *CreateArray) Write(writer OpcodeWriter) error {
 }
 
 func (c *CreateArray) String() string {
-	return fmt.Sprintf("crl %v %v", c.destination, c.arguments)
+	return fmt.Sprintf("%v %v %v", OpcodeToName(CmdCreateArray), c.destination, c.arguments)
 }

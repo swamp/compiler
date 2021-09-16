@@ -29,11 +29,11 @@ func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
 }
 
 func (s *CustomTypeAtom) MemorySize() uint {
-	return 0
+	return 76
 }
 
 func (s *CustomTypeAtom) MemoryAlignment() uint32 {
-	return 0
+	return 16
 }
 
 func (s *CustomTypeAtom) String() string {
