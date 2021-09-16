@@ -92,9 +92,9 @@ func (s *Stream) Return() *instruction_sp.Return {
 	return c
 }
 
-func (s *Stream) CallExternal(basePointer opcode_sp_type.SourceStackPosition, function opcode_sp_type.SourceStackPosition,
+func (s *Stream) CallExternal(target opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition,
 	arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CallExternal {
-	c := instruction_sp.NewCallExternal(basePointer, function, arguments)
+	c := instruction_sp.NewCallExternal(target, function, arguments)
 	s.addInstruction(c)
 	return c
 }

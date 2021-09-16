@@ -13,21 +13,21 @@ import (
 
 // CallExternal is an instruction that calls into the embedder (usually C/C++ code).
 type CallExternal struct {
-	newBasePointer opcode_sp_type.SourceStackPosition
-	function       opcode_sp_type.SourceStackPosition
-	arguments      []opcode_sp_type.SourceStackPosition
+	target    opcode_sp_type.TargetStackPosition
+	function  opcode_sp_type.SourceStackPosition
+	arguments []opcode_sp_type.SourceStackPosition
 }
 
-func NewCallExternal(newBasePointer opcode_sp_type.SourceStackPosition, function opcode_sp_type.SourceStackPosition, arguments []opcode_sp_type.SourceStackPosition) *CallExternal {
-	return &CallExternal{newBasePointer: newBasePointer, function: function, arguments: arguments}
+func NewCallExternal(target opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition, arguments []opcode_sp_type.SourceStackPosition) *CallExternal {
+	return &CallExternal{target: target, function: function, arguments: arguments}
 }
 
 func (c *CallExternal) Write(writer OpcodeWriter) error {
 	writer.Command(CmdCallExternal)
-	writer.SourceStackPosition(c.newBasePointer)
+	writer.TargetStackPosition(c.target)
 	writer.SourceStackPosition(c.function)
-	writer.Count(len(c.arguments))
 
+	writer.Count(len(c.arguments))
 	for _, argument := range c.arguments {
 		writer.SourceStackPosition(argument)
 	}
@@ -36,5 +36,5 @@ func (c *CallExternal) Write(writer OpcodeWriter) error {
 }
 
 func (c *CallExternal) String() string {
-	return fmt.Sprintf("callexternal %v %v (%v)", c.newBasePointer, c.function, c.arguments)
+	return fmt.Sprintf("callexternal %v <- %v (%v)", c.target, c.function, c.arguments)
 }

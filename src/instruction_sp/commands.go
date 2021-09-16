@@ -49,13 +49,13 @@ const (
 	CmdCurry        Commands = 0x20
 	CmdCreateList   Commands = 0x21
 	CmdListAppend   Commands = 0x22
-	CmdCreateEnum   Commands = 0x23
 	CmdStringAppend Commands = 0x24
 
 	CmdFixedMul    Commands = 0x25
 	CmdFixedDiv    Commands = 0x26
 	CmdIntNegate   Commands = 0x27
 	CmdCreateArray Commands = 0x29
+	CmdCopyMemory  Commands = 0x30
 )
 
 func OpcodeToName(cmd Commands) string {
@@ -92,7 +92,7 @@ func OpcodeToName(cmd Commands) string {
 		CmdCurry:               "curry",
 		CmdCreateList:          "crl",
 		CmdListAppend:          "lap",
-		CmdCreateEnum:          "cre",
+		CmdCopyMemory:          "mcpy",
 		CmdStringAppend:        "sap",
 		CmdFixedMul:            "fxmul",
 		CmdFixedDiv:            "fxdiv",
