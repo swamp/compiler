@@ -9,14 +9,17 @@ import (
 	swamppack "github.com/swamp/pack/lib"
 )
 
-func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName, f *decorated.FunctionValue, root *assembler_sp.FunctionRootContext, definitions *decorator.VariableContext, lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
+func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
+	f *decorated.FunctionValue, funcContext *Context, definitions *decorator.VariableContext,
+	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
-	funcContext := root.ScopeContext()
-	tempVar := root.ReturnVariable()
+
+	returnValueSourcePointer := allocateVariable(funcContext.functionVariables, funcContext.stackMemory, "", f.ForcedFunctionType().ReturnType())
+	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 
 	for _, parameter := range f.Parameters() {
-		paramVarName := assembler_sp.NewVariableName(parameter.Identifier().Name())
-		funcContext.AllocateKeepParameterVariable(paramVarName)
+		paramVarName := parameter.Identifier().Name()
+		allocateVariable(funcContext.functionVariables, funcContext.stackMemory, paramVarName, parameter.Type())
 	}
 
 	genContext := &generateContext{
@@ -25,14 +28,14 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		lookup:      lookup,
 	}
 
-	genErr := generateExpression(code, tempVar, f.Expression(), genContext)
+	genErr := generateExpression(code, returnValueTargetPointer, f.Expression(), genContext)
 	if genErr != nil {
 		return nil, genErr
 	}
 
-	code.Return(0)
+	code.Return()
 
-	opcodes, resolveErr := code.Resolve(root, verboseFlag >= verbosity.Mid)
+	opcodes, resolveErr := code.Resolve(verboseFlag >= verbosity.Mid)
 	if resolveErr != nil {
 		return nil, resolveErr
 	}
@@ -50,7 +53,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	}
 
 	functionConstant := NewFunction(fullyQualifiedVariableName, swamppack.TypeRef(signature),
-		parameterCount, root.Constants().Constants(), opcodes)
+		opcodes, parameterCount)
 
 	return functionConstant, nil
 }

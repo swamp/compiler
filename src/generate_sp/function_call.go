@@ -8,7 +8,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func generateFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
+func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
 	functionType := dectype.Unalias(call.FunctionExpression().Type())
 	functionAtom, wasFunctionAtom := functionType.(*dectype.FunctionAtom)
@@ -63,4 +63,13 @@ func generateFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	code.Call(functionRegister.Pos, returnValue.Pos)
 
 	return targetToSourceStackPosRange(returnValue), nil
+}
+
+func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, call *decorated.FunctionCall,
+	genContext *generateContext) error {
+	posRange, err := handleFunctionCall(code, call, genContext)
+
+	code.CopyMemory(target.Pos, posRange)
+
+	return err
 }

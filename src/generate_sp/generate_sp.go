@@ -25,9 +25,10 @@ type AnyPosAndRange interface {
 }
 
 type Function struct {
-	name      *decorated.FullyQualifiedPackageVariableName
-	signature swamppack.TypeRef
-	opcodes   []byte
+	name                *decorated.FullyQualifiedPackageVariableName
+	signature           swamppack.TypeRef
+	opcodes             []byte
+	debugParameterCount uint
 }
 
 type ExternalFunction struct {
@@ -37,9 +38,9 @@ type ExternalFunction struct {
 }
 
 func NewFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, signature swamppack.TypeRef,
-	opcodes []byte) *Function {
+	opcodes []byte, debugParameterCount uint) *Function {
 	f := &Function{
-		name: fullyQualifiedName, signature: signature, opcodes: opcodes,
+		name: fullyQualifiedName, signature: signature, opcodes: opcodes, debugParameterCount: debugParameterCount,
 	}
 
 	return f
@@ -93,6 +94,9 @@ func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
 	unaliased := dectype.Unalias(p)
 	switch t := unaliased.(type) {
 	case *dectype.RecordAtom:
+		return t.MemorySize(), t.MemoryAlignment()
+	default:
+		panic(fmt.Errorf("do not know memory size of %v", p))
 	}
 }
 
@@ -129,6 +133,15 @@ func targetToSourceStackPosRange(functionPointer assembler_sp.TargetStackPosRang
 	return sourcePosRange
 }
 
+func sourceToTargetStackPosRange(functionPointer assembler_sp.SourceStackPosRange) assembler_sp.TargetStackPosRange {
+	targetPosRange := assembler_sp.TargetStackPosRange{
+		Pos:  assembler_sp.TargetStackPos(functionPointer.Pos),
+		Size: assembler_sp.StackRange(functionPointer.Size),
+	}
+
+	return targetPosRange
+}
+
 func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembler_sp.StackMemoryMapper, constant *assembler_sp.Constant) (assembler_sp.SourceStackPosRange, error) {
 	functionPointer := stackMemory.Allocate(PointerSize, PointerAlign, "functionReference")
 	code.LoadZeroMemoryPointer(functionPointer.Pos, constant.PosRange().Position)
@@ -146,6 +159,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) ([]*Function, error) {
 	var functionConstants []*Function
 
+	moduleContext := NewContext()
 	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
 
@@ -157,7 +171,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
-			rootContext := assembler_sp.NewFunctionRootContext()
+			rootContext := moduleContext.MakeFunctionContext()
 
 			functionConstant, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
 				rootContext, definitions, lookup, verboseFlag)

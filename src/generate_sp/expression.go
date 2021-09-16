@@ -58,7 +58,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateGuard(code, target, e, genContext)
 
 	case *decorated.StringLiteral:
-		return generateStringLiteral(code, target, e, genContext.context)
+		return generateStringLiteral(code, target, e, genContext.context.Constants())
 
 	case *decorated.CharacterLiteral:
 		return generateCharacterLiteral(code, target, e)
@@ -73,7 +73,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateFixedLiteral(code, target, e)
 
 	case *decorated.ResourceNameLiteral:
-		return generateResourceNameLiteral(code, target, e, genContext.context)
+		return generateResourceNameLiteral(code, target, e, genContext.context.Constants())
 
 	case *decorated.BooleanLiteral:
 		return generateBoolLiteral(code, target, e)

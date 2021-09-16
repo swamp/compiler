@@ -11,6 +11,15 @@ type Context struct {
 	stackMemory          *assembler_sp.StackMemoryMapper
 }
 
+func NewContext() *Context {
+	return &Context{
+		startMemoryConstants: NewStartMemoryConstants(),
+		constants:            assembler_sp.NewConstants(),
+		functionVariables:    assembler_sp.NewFunctionVariables(),
+		stackMemory:          assembler_sp.NewStackMemoryMapper(32 * 1024),
+	}
+}
+
 func (c *Context) StartMemoryConstants() *StartMemoryConstants {
 	return c.startMemoryConstants
 }

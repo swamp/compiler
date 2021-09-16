@@ -35,7 +35,7 @@ func generateBitwise(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 	}
 
 	opcodeBinaryOperator := bitwiseToBinaryOperatorType(operator.OperatorType())
-	code.BinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+	code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
 
 	return nil
 }

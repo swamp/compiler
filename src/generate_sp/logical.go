@@ -16,7 +16,7 @@ func generateLogical(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 	if rightErr != nil {
 		return rightErr
 	}
-	afterLabel := codeAlternative.Label(nil, "after-alternative")
+	afterLabel := codeAlternative.Label("", "after-alternative")
 
 	if operator.OperatorType() == decorated.LogicalAnd {
 		code.BranchFalse(targetToSourceStackPosRange(target).Pos, afterLabel)

@@ -2,8 +2,16 @@ package generate_sp
 
 import (
 	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
+
+func allocateVariable(scopeVariables *assembler_sp.FunctionVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName string, variableType dtype.Type) assembler_sp.SourceStackPosRange {
+	targetPosRange := allocMemoryForType(stackMemory, variableType, "variable:"+variableName)
+	sourcePosRange := targetToSourceStackPosRange(targetPosRange)
+	scopeVariables.DefineVariable(variableName, sourcePosRange)
+	return sourcePosRange
+}
 
 func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, caseExpr *decorated.CaseCustomType, genContext *generateContext) error {
 	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), genContext, "cast-test")
@@ -20,15 +28,15 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 
 		consequencesCode := assembler_sp.NewCode()
 
-		var parameters []assembler_sp.SourceVariable
+		var parameters []assembler_sp.SourceStackPosRange
 
 		for _, param := range consequence.Parameters() {
-			consequenceLabelVariableName := assembler_sp.NewVariableName(param.Identifier().Name())
-			paramVariable := consequenceContext.context.AllocateVariable(consequenceLabelVariableName)
+			consequenceLabelVariableName := param.Identifier().Name()
+			paramVariable := allocateVariable(genContext.context.functionVariables, genContext.context.stackMemory, consequenceLabelVariableName, param.Type())
 			parameters = append(parameters, paramVariable)
 		}
 
-		labelVariableName := assembler_sp.NewVariableName(
+		labelVariableName := assembler_sp.VariableName(
 			consequence.VariantReference().AstIdentifier().SomeTypeIdentifier().Name())
 
 		caseLabel := consequencesCode.Label(labelVariableName, "case")
@@ -54,7 +62,7 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 		defaultContext := genContext.MakeScopeContext()
 
 		decoratedDefault := caseExpr.DefaultCase()
-		defaultLabel := consequencesCode.Label(nil, "default")
+		defaultLabel := consequencesCode.Label("default", "default")
 		caseExprErr := generateExpression(consequencesCode, target, decoratedDefault, defaultContext)
 		if caseExprErr != nil {
 			return caseExprErr
@@ -69,7 +77,7 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 
 	lastConsequnce := consequencesCodes[len(consequencesCodes)-1]
 
-	labelVariableEndName := assembler_sp.NewVariableName("case end")
+	labelVariableEndName := assembler_sp.VariableName("case end")
 	endLabel := lastConsequnce.Label(labelVariableEndName, "caseend")
 
 	for index, consequenceCode := range consequencesCodes {
@@ -82,7 +90,7 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 		consequencesBlockCode.Copy(consequenceCode)
 	}
 
-	code.Case(testVar, consequences, defaultCase)
+	code.CaseEnum(testVar.Pos, consequences, defaultCase)
 
 	code.Copy(consequencesBlockCode)
 

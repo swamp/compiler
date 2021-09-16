@@ -11,13 +11,11 @@ type Constants struct {
 	functions         []*Constant
 	externalFunctions []*Constant
 	strings           []*Constant
-	zeroMapper        *ZeroMemoryMapper
 	dynamicMapper     *DynamicMemoryMapper
 }
 
-func ConstantsNew() *Constants {
+func NewConstants() *Constants {
 	return &Constants{
-		zeroMapper:    ZeroMemoryMapperNew(32 * 1024),
 		dynamicMapper: DynamicMemoryMapperNew(128 * 1024),
 	}
 }
@@ -65,7 +63,7 @@ func (c *Constants) AllocateStringConstant(s string) *Constant {
 	binary.LittleEndian.PutUint64(swampStringOctets[0:8], uint64(stringOctetsPointer.Position))
 	binary.LittleEndian.PutUint64(swampStringOctets[8:16], uint64(len(s)))
 
-	swampStringPointer := c.zeroMapper.Write(swampStringOctets[:], "swampStringOctets")
+	swampStringPointer := c.dynamicMapper.Write(swampStringOctets[:], "swampStringOctets")
 
 	newConstant := NewStringConstant("string", s, swampStringPointer)
 	c.constants = append(c.constants, newConstant)
@@ -74,8 +72,8 @@ func (c *Constants) AllocateStringConstant(s string) *Constant {
 	return newConstant
 }
 
-func intValue(memory *ZeroMemoryMapper, pos SourceZeroMemoryPos) int32 {
-	posRange := SourceZeroMemoryPosRange{
+func intValue(memory *DynamicMemoryMapper, pos SourceDynamicMemoryPos) int32 {
+	posRange := SourceDynamicMemoryPosRange{
 		Position: pos,
 		Size:     4,
 	}
@@ -148,7 +146,7 @@ func (c *Constants) AllocateFunctionConstant(uniqueFullyQualifiedFunctionName st
 	binary.LittleEndian.PutUint64(swampStringOctets[64:72], uint64(0)) // debugName
 	binary.LittleEndian.PutUint64(swampStringOctets[72:76], uint64(0)) // typeIndex
 
-	funcPointer := c.zeroMapper.Write(swampStringOctets[:], "fn:"+uniqueFullyQualifiedFunctionName)
+	funcPointer := c.dynamicMapper.Write(swampStringOctets[:], "fn:"+uniqueFullyQualifiedFunctionName)
 
 	newConstant := NewFunctionReferenceConstantWithDebug("fn", uniqueFullyQualifiedFunctionName, funcPointer)
 	c.constants = append(c.constants, newConstant)

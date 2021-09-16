@@ -22,7 +22,7 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		return altErr
 	}
 
-	endLabel := defaultCode.Label(nil, "guard-end")
+	endLabel := defaultCode.Label("", "guard-end")
 
 	var codeItems []codeItem
 
@@ -45,7 +45,7 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		}
 
 		consequenceCode.Jump(endLabel)
-		endOfConsequenceLabel := consequenceCode.Label(nil, "guard-end")
+		endOfConsequenceLabel := consequenceCode.Label("", "guard-end")
 
 		// consequenceContext.context.Free()
 

@@ -76,6 +76,10 @@ type StartMemoryLayout struct {
 	posRanges []assembler_sp.ConstantPosAndRange
 }
 
+func NewStartMemoryLayout() *StartMemoryLayout {
+	return &StartMemoryLayout{}
+}
+
 func (c *StartMemoryLayout) AllocateSpace(octetSize uint32, debugString string) assembler_sp.ConstantPosAndRange {
 	posRange := assembler_sp.ConstantPosAndRange{Pos: c.pointer, Size: octetSize, DebugString: debugString}
 	c.pointer += octetSize
@@ -108,6 +112,12 @@ func (c *StartMemoryLayout) DebugOutput() {
 type StartMemoryConstants struct {
 	constants    []*Constant
 	memoryLayout *StartMemoryLayout
+}
+
+func NewStartMemoryConstants() *StartMemoryConstants {
+	return &StartMemoryConstants{
+		memoryLayout: NewStartMemoryLayout(),
+	}
 }
 
 func (c *StartMemoryConstants) String() string {

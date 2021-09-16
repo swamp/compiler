@@ -30,6 +30,10 @@ func (c *Context) Parent() *Context {
 	return c.parent
 }
 
+func (c *Context) ScopeVariables() *FunctionVariables {
+	return c.functionVariables
+}
+
 func (r *Context) Constants() *Constants {
 	return r.constants
 }
@@ -52,9 +56,7 @@ func (c *Context) ShowSummary() {
 }
 
 type FunctionRootContext struct {
-	returnVariable *VariableImpl
-	constants      *Constants
-
+	constants    *Constants
 	scopeContext *Context
 }
 

@@ -14,7 +14,7 @@ func NewFunctionVariables() *FunctionVariables {
 }
 
 func NewFunctionVariablesWithParent(parent *FunctionVariables) *FunctionVariables {
-	return &FunctionVariables{nameToVariable: make(map[string]*VariableImpl)}
+	return &FunctionVariables{nameToVariable: make(map[string]*VariableImpl), parent: parent}
 }
 
 func (c *FunctionVariables) DefineVariable(name string, posRange SourceStackPosRange) {

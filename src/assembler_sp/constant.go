@@ -22,7 +22,7 @@ type Constant struct {
 	constantType ConstantType
 	str          string
 	b            bool
-	source       SourceZeroMemoryPosRange
+	source       SourceDynamicMemoryPosRange
 	debugString  string
 }
 
@@ -38,7 +38,7 @@ func (v *Constant) BooleanValue() bool {
 	return v.b
 }
 
-func (v *Constant) PosRange() SourceZeroMemoryPosRange {
+func (v *Constant) PosRange() SourceDynamicMemoryPosRange {
 	return v.source
 }
 
@@ -46,19 +46,19 @@ func (v *Constant) FunctionReferenceFullyQualifiedName() string {
 	return v.str
 }
 
-func NewStringConstant(debugString string, str string, source SourceZeroMemoryPosRange) *Constant {
+func NewStringConstant(debugString string, str string, source SourceDynamicMemoryPosRange) *Constant {
 	return &Constant{constantType: ConstantTypeString, str: str, source: source, debugString: debugString}
 }
 
-func NewResourceNameConstant(debugString string, str string, source SourceZeroMemoryPosRange) *Constant {
+func NewResourceNameConstant(debugString string, str string, source SourceDynamicMemoryPosRange) *Constant {
 	return &Constant{constantType: ConstantTypeResourceName, str: str, source: source, debugString: debugString}
 }
 
-func NewFunctionReferenceConstantWithDebug(debugString string, uniqueFullyQualifiedName string, source SourceZeroMemoryPosRange) *Constant {
+func NewFunctionReferenceConstantWithDebug(debugString string, uniqueFullyQualifiedName string, source SourceDynamicMemoryPosRange) *Constant {
 	return &Constant{constantType: ConstantTypeFunction, str: uniqueFullyQualifiedName, source: source, debugString: debugString}
 }
 
-func NewExternalFunctionReferenceConstantWithDebug(debugString string, uniqueFullyQualifiedName string, source SourceZeroMemoryPosRange) *Constant {
+func NewExternalFunctionReferenceConstantWithDebug(debugString string, uniqueFullyQualifiedName string, source SourceDynamicMemoryPosRange) *Constant {
 	return &Constant{constantType: ConstantTypeFunctionExternal, str: uniqueFullyQualifiedName, source: source, debugString: debugString}
 }
 

@@ -75,8 +75,8 @@ func (c *Code) ListConj(target TargetStackPos, item SourceStackPos, list SourceS
 	c.addStatement(o)
 }
 
-func (c *Code) BinaryOperator(target TargetStackPos, a SourceStackPos, b SourceStackPos, r SourceStackRange, operator instruction_sp.BinaryOperatorType) {
-	o := &BinaryOperator{target: target, a: a, b: b, r: r, operator: operator}
+func (c *Code) IntBinaryOperator(target TargetStackPos, a SourceStackPos, b SourceStackPos, operator instruction_sp.BinaryOperatorType) {
+	o := &IntBinaryOperator{target: target, a: a, b: b, operator: operator}
 	c.addStatement(o)
 }
 
@@ -100,7 +100,7 @@ func (c *Code) CaseEnum(test SourceStackPos, consequences []*CaseConsequence, de
 	c.addStatement(o)
 }
 
-func (c *Code) CopyConstant(target TargetStackPos, source SourceZeroMemoryPosRange) {
+func (c *Code) CopyConstant(target TargetStackPos, source SourceDynamicMemoryPos) {
 	o := &CopyConstant{target: target, source: source}
 	c.addStatement(o)
 }
@@ -120,7 +120,7 @@ func (c *Code) LoadBool(target TargetStackPos, boolValue bool) {
 	c.addStatement(o)
 }
 
-func (c *Code) LoadZeroMemoryPointer(target TargetStackPos, zeroMemoryPointer SourceZeroMemoryPos) {
+func (c *Code) LoadZeroMemoryPointer(target TargetStackPos, zeroMemoryPointer SourceDynamicMemoryPos) {
 	o := &LoadZeroMemoryPointer{target: target, sourceZeroMemory: zeroMemoryPointer}
 	c.addStatement(o)
 }
@@ -278,21 +278,6 @@ func writeCasePatternMatching(stream *opcode_sp.Stream, caseExpr *CasePatternMat
 	stream.CasePatternMatching(sourceStackPositionRange(caseExpr.test), opLabels)
 }
 
-func writeUpdateStruct(stream *opcode_sp.Stream, copyStruct *UpdateStruct) {
-	var copyFields []instruction_sp.CopyToFieldInfo
-
-	for _, update := range copyStruct.updates {
-		copyField := instruction_sp.CopyToFieldInfo{
-			Source: sourceStackPositionRange(update.PosRange),
-			Target: opcode_sp_type.TargetFieldOffset(update.TargetOffset),
-		}
-		copyFields = append(copyFields, copyField)
-	}
-
-	stream.UpdateStruct(targetStackPosition(copyStruct.targetClone),
-		sourceStackPositionRange(copyStruct.structToClone), copyFields)
-}
-
 func writeList(stream *opcode_sp.Stream, listLiteral *ListLiteral) {
 	var registers []opcode_sp_type.SourceStackPosition
 
@@ -354,8 +339,6 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeCase(opStream, t)
 	case *CasePatternMatching:
 		writeCasePatternMatching(opStream, t)
-	case *UpdateStruct:
-		writeUpdateStruct(opStream, t)
 	case *ListLiteral:
 		writeList(opStream, t)
 	case *ArrayLiteral:
@@ -383,7 +366,7 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 	}
 }
 
-func (c *Code) Resolve(context *FunctionRootContext, verboseFlag bool) ([]byte, error) {
+func (c *Code) Resolve(verboseFlag bool) ([]byte, error) {
 	if verboseFlag {
 		// context.ShowSummary()
 	}

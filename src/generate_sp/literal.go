@@ -6,8 +6,8 @@ import (
 )
 
 func generateStringLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.StringLiteral,
-	context *assembler_sp.Context) error {
-	constant := context.Constants().AllocateStringConstant(str.Value())
+	constants *assembler_sp.Constants) error {
+	constant := constants.AllocateStringConstant(str.Value())
 	code.LoadZeroMemoryPointer(target.Pos, constant.PosRange().Position)
 	return nil
 }
@@ -33,7 +33,7 @@ func generateFixedLiteral(code *assembler_sp.Code, target assembler_sp.TargetSta
 }
 
 func generateResourceNameLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	resourceName *decorated.ResourceNameLiteral, context *assembler_sp.Context) error {
+	resourceName *decorated.ResourceNameLiteral, context *assembler_sp.Constants) error {
 	return nil
 }
 

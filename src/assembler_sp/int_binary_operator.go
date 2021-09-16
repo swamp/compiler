@@ -7,13 +7,17 @@ package assembler_sp
 
 import (
 	"fmt"
+
+	"github.com/swamp/compiler/src/instruction_sp"
 )
 
-type CopyConstant struct {
-	target TargetStackPos
-	source SourceDynamicMemoryPos
+type IntBinaryOperator struct {
+	target   TargetStackPos
+	a        SourceStackPos
+	b        SourceStackPos
+	operator instruction_sp.BinaryOperatorType
 }
 
-func (o *CopyConstant) String() string {
-	return fmt.Sprintf("[CopyConstant %v <= %v]", o.target, o.source)
+func (o *IntBinaryOperator) String() string {
+	return fmt.Sprintf("[ibinop %v <= %v %v %v]", o.target, o.operator, o.a, o.b)
 }

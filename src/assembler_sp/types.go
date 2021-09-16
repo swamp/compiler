@@ -70,23 +70,6 @@ func (t TargetStackPos) String() string {
 	return fmt.Sprintf("targetPos: %04X", uint32(t))
 }
 
-type ZeroMemoryPos uint32
-
-type SourceZeroMemoryPos uint32
-
-func (t SourceZeroMemoryPos) String() string {
-	return fmt.Sprintf("zeroMemPos: %04X", uint32(t))
-}
-
-type SourceZeroMemoryPosRange struct {
-	Position SourceZeroMemoryPos
-	Size     ZeroMemoryRange
-}
-
-func (t SourceZeroMemoryPosRange) String() string {
-	return fmt.Sprintf("zeroMemPosRange: %v:%v", t.Position, t.Size)
-}
-
 type TargetFieldOffset uint16
 
 type SourceStackPosAndRangeToLocalOffset struct {

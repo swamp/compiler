@@ -50,13 +50,6 @@ func (s *Stream) CreateArray(destination opcode_sp_type.TargetStackPosition,
 	return c
 }
 
-func (s *Stream) UpdateStruct(target opcode_sp_type.TargetStackPosition, source opcode_sp_type.SourceStackPositionRange,
-	fieldDefinitions []instruction_sp.CopyToFieldInfo) *instruction_sp.UpdateStruct {
-	c := instruction_sp.NewUpdateStruct(target, source, fieldDefinitions)
-	s.addInstruction(c)
-	return c
-}
-
 func (s *Stream) EnumCase(source opcode_sp_type.SourceStackPosition,
 	jumps []instruction_sp.EnumCaseJump) *instruction_sp.EnumCase {
 	c := instruction_sp.NewEnumCase(source, jumps)

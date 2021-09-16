@@ -6,7 +6,7 @@ import (
 
 type LoadZeroMemoryPointer struct {
 	target           TargetStackPos
-	sourceZeroMemory SourceZeroMemoryPos
+	sourceZeroMemory SourceDynamicMemoryPos
 }
 
 func (o *LoadZeroMemoryPointer) String() string {
