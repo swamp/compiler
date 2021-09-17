@@ -13,28 +13,28 @@ type Commands uint8
 
 const (
 	// Branching
-	CmdEnumCase    Commands = 0x06
-	CmdBranchFalse Commands = 0x07
-	CmdBranchTrue  Commands = 0x1c
-	CmdJump        Commands = 0x08
+	CmdEnumCase    Commands = 0x01
+	CmdBranchFalse Commands = 0x02
+	CmdBranchTrue  Commands = 0x03
+	CmdJump        Commands = 0x04
 
 	// Call
-	CmdCall         Commands = 0x09
-	CmdReturn       Commands = 0x0a
-	CmdCallExternal Commands = 0x0b
-	CmdTailCall     Commands = 0x0c
-	CmdCurry        Commands = 0x20
+	CmdCall         Commands = 0x05
+	CmdReturn       Commands = 0x06
+	CmdCallExternal Commands = 0x07
+	CmdTailCall     Commands = 0x08
+	CmdCurry        Commands = 0x09
 
 	// Arithmetic
-	CmdIntAdd    Commands = 0x0d
-	CmdIntSub    Commands = 0x0e
-	CmdIntMul    Commands = 0x0f
-	CmdIntDiv    Commands = 0x10
-	CmdIntNegate Commands = 0x27
+	CmdIntAdd    Commands = 0x0a
+	CmdIntSub    Commands = 0x0b
+	CmdIntMul    Commands = 0x0c
+	CmdIntDiv    Commands = 0x0d
+	CmdIntNegate Commands = 0x0e
 
 	// Arithmetic fixed point
-	CmdFixedMul Commands = 0x25
-	CmdFixedDiv Commands = 0x26
+	CmdFixedMul Commands = 0x0f
+	CmdFixedDiv Commands = 0x10
 
 	// Boolean operators
 	CmdIntEqual          Commands = 0x11
@@ -45,78 +45,78 @@ const (
 	CmdIntGreaterOrEqual Commands = 0x16
 
 	// Boolean
-	CmdBoolLogicalNot Commands = 0x1b
+	CmdBoolLogicalNot Commands = 0x17
 
 	// Boolean strings
-	CmdStringEqual    Commands = 0x35
-	CmdStringNotEqual Commands = 0x36
+	CmdStringEqual    Commands = 0x18
+	CmdStringNotEqual Commands = 0x19
 
 	// Bitwise operators
-	CmdIntBitwiseAnd Commands = 0x17
-	CmdIntBitwiseOr  Commands = 0x18
-	CmdIntBitwiseXor Commands = 0x19
-	CmdIntBitwiseNot Commands = 0x1a
+	CmdIntBitwiseAnd Commands = 0x1a
+	CmdIntBitwiseOr  Commands = 0x1b
+	CmdIntBitwiseXor Commands = 0x1c
+	CmdIntBitwiseNot Commands = 0x1d
 
 	// Creating dynamic structures
-	CmdCreateList  Commands = 0x21
-	CmdCreateArray Commands = 0x29
+	CmdCreateList  Commands = 0x1e
+	CmdCreateArray Commands = 0x1f
 
 	// Append
-	CmdListConj     Commands = 0x05
-	CmdListAppend   Commands = 0x22
-	CmdStringAppend Commands = 0x24
+	CmdListConj     Commands = 0x20
+	CmdListAppend   Commands = 0x21
+	CmdStringAppend Commands = 0x22
 
 	// Load
-	CmdLoadInteger           Commands = 0x31
-	CmdLoadBoolean           Commands = 0x32
-	CmdLoadRune              Commands = 0x37
-	CmdLoadZeroMemoryPointer Commands = 0x33
-	CmdCopyMemory            Commands = 0x30
-	CmdSetEnum               Commands = 0x34
+	CmdLoadInteger           Commands = 0x23
+	CmdLoadBoolean           Commands = 0x24
+	CmdLoadRune              Commands = 0x25
+	CmdLoadZeroMemoryPointer Commands = 0x26
+	CmdCopyMemory            Commands = 0x27
+	CmdSetEnum               Commands = 0x28
 )
 
 func OpcodeToMnemonic(cmd Commands) string {
 	names := map[Commands]string{
-		CmdListConj:              "conj",
-		CmdEnumCase:              "case",
+		CmdListConj:              "lconj",
+		CmdEnumCase:              "ecase",
 		CmdBranchFalse:           "bne",
 		CmdJump:                  "jmp",
 		CmdCall:                  "call",
 		CmdReturn:                "ret",
 		CmdCallExternal:          "ecall",
 		CmdTailCall:              "tcl",
-		CmdIntAdd:                "add",
-		CmdIntSub:                "sub",
-		CmdIntMul:                "mul",
-		CmdIntDiv:                "div",
-		CmdIntEqual:              "cpieq",
-		CmdIntNotEqual:           "cpine",
-		CmdIntLess:               "cpl",
-		CmdIntLessOrEqual:        "cple",
-		CmdIntGreater:            "cpg",
-		CmdIntGreaterOrEqual:     "cpge",
-		CmdIntBitwiseAnd:         "band",
-		CmdIntBitwiseOr:          "bor",
-		CmdIntBitwiseXor:         "bxor",
-		CmdIntBitwiseNot:         "bnot",
+		CmdIntAdd:                "iadd",
+		CmdIntSub:                "isub",
+		CmdIntMul:                "imul",
+		CmdIntDiv:                "idiv",
+		CmdIntEqual:              "icpeq",
+		CmdIntNotEqual:           "icpne",
+		CmdIntLess:               "icpl",
+		CmdIntLessOrEqual:        "icple",
+		CmdIntGreater:            "icpg",
+		CmdIntGreaterOrEqual:     "icpge",
+		CmdIntBitwiseAnd:         "iband",
+		CmdIntBitwiseOr:          "ibor",
+		CmdIntBitwiseXor:         "ibxor",
+		CmdIntBitwiseNot:         "ibnot",
 		CmdBoolLogicalNot:        "not",
 		CmdBranchTrue:            "brt",
 		CmdCurry:                 "curry",
 		CmdCreateList:            "crl",
 		CmdListAppend:            "lap",
-		CmdCopyMemory:            "mcpy",
-		CmdStringAppend:          "sap",
+		CmdCopyMemory:            "memcpy",
+		CmdStringAppend:          "strap",
 		CmdFixedMul:              "fxmul",
 		CmdFixedDiv:              "fxdiv",
-		CmdIntNegate:             "neg",
-		CmdCreateArray:           "carr",
-		CmdLoadInteger:           "ldi",
-		CmdLoadBoolean:           "ldb",
-		CmdLoadZeroMemoryPointer: "lpzm",
-		CmdSetEnum:               "ldenum",
-		CmdStringEqual:           "cpseq",
-		CmdStringNotEqual:        "cpsneq",
-		CmdLoadRune:              "ldch",
+		CmdIntNegate:             "ineg",
+		CmdCreateArray:           "cra",
+		CmdLoadInteger:           "ild",
+		CmdLoadBoolean:           "bld",
+		CmdLoadZeroMemoryPointer: "dld",
+		CmdSetEnum:               "eld",
+		CmdStringEqual:           "scpeq",
+		CmdStringNotEqual:        "scpneq",
+		CmdLoadRune:              "rld",
 	}
 
 	mnemonic, found := names[cmd]

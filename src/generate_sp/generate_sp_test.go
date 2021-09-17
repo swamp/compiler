@@ -183,20 +183,20 @@ func [function main func(Bool -> Bool) 1 [[constant1 John #2] [constant2 func:is
 func TestCurry(t *testing.T) {
 	testGenerate(t,
 		`
-f : String -> Int -> Bool
-f name score =
-    if name == "Peter" then
+isWinner : String -> Int -> Bool
+isWinner name score =
+    if name == "Ossian" then
         score * 2 > 100
     else
         score > 100
 
 
-another : Int -> Bool
-another score =
+main : Int -> Bool
+main score =
     let
-        af = f "Peter"
+        checkScoreFn = isWinner "Ossian"
     in
-    af score
+    checkScoreFn score
 `, `
 func [function another func(Int -> Bool) 1 [[constant1 Peter #3] [constant2 func:f #4]]]
 00: curry 2 4 ([3])

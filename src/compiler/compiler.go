@@ -13,21 +13,21 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/swamp/compiler/src/assembler_sp"
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	swampdisasm_sp "github.com/swamp/compiler/src/disassemble_sp"
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/file"
-	"github.com/swamp/compiler/src/generate"
+	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/solution"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
-
-	swampdisasm "github.com/swamp/disassembler/lib"
 )
 
 func CheckUnused(world *loader.Package) {
@@ -160,11 +160,11 @@ type CoreFunctionInfo struct {
 }
 
 func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
-	gen := generate.NewGenerator()
+	gen := generate_sp.NewGenerator()
 
-	var allFunctions []*generate.Function
+	var allFunctions []*assembler_sp.Constant
 
-	var allExternalFunctions []*generate.ExternalFunction
+	var allExternalFunctions []*generate_sp.ExternalFunction
 
 	fakeMod := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(nil), nil)
 
@@ -179,6 +179,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		}
 	}
 
+	var constants *assembler_sp.Constants
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.Mid {
 			fmt.Printf("============================================== generating for module %v\n", module)
@@ -186,10 +187,11 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 
 		context := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
 
-		functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, verboseFlag)
+		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}
+		constants = createdConstants
 
 		allFunctions = append(allFunctions, functions...)
 		externalFunctions := module.ExternalFunctions()
@@ -198,7 +200,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod,
 				ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.AstExternalFunction.FunctionName(),
 					token.SourceFileReference{}, 0))) //nolint:exhaustivestruct
-			fakeFunc := generate.NewExternalFunction(fakeName, 0, externalFunction.AstExternalFunction.ParameterCount())
+			fakeFunc := generate_sp.NewExternalFunction(fakeName, 0, externalFunction.AstExternalFunction.ParameterCount())
 			allExternalFunctions = append(allExternalFunctions, fakeFunc)
 		}
 	}
@@ -207,7 +209,8 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		var assemblerOutput string
 
 		for _, f := range allFunctions {
-			lines := swampdisasm.Disassemble(f.Opcodes())
+			opcodes := constants.FetchOpcodes(f)
+			lines := swampdisasm_sp.Disassemble(opcodes)
 
 			assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
 		}
@@ -225,7 +228,9 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		typeInformationChunk.DebugOutput()
 	}
 
-	packed, packedErr := generate.Pack(allFunctions, allExternalFunctions, typeInformationOctets, typeInformationChunk)
+	dynamicMemoryOctets := constants.DynamicMemory().Octets()
+
+	packed, packedErr := generate_sp.Pack(allFunctions, dynamicMemoryOctets, typeInformationOctets)
 	if packedErr != nil {
 		return decorated.NewInternalError(packedErr)
 	}

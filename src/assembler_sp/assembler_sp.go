@@ -8,10 +8,10 @@ package assembler_sp
 import (
 	"fmt"
 
+	swampdisasm_sp "github.com/swamp/compiler/src/disassemble_sp"
 	"github.com/swamp/compiler/src/instruction_sp"
 	"github.com/swamp/compiler/src/opcode_sp"
 	"github.com/swamp/compiler/src/opcode_sp_type"
-	swampdisasm "github.com/swamp/disassembler/lib"
 )
 
 type VariableType uint
@@ -415,7 +415,7 @@ func (c *Code) Resolve(verboseFlag bool) ([]byte, error) {
 	if verboseFlag {
 		fmt.Println("--- disassembly ---")
 
-		stringLines := swampdisasm.Disassemble(octets)
+		stringLines := swampdisasm_sp.Disassemble(octets)
 		for _, line := range stringLines {
 			fmt.Printf("%s\n", line)
 		}

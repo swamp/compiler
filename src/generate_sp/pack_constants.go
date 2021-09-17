@@ -1,71 +1,35 @@
 package generate_sp
 
-/*
-func Pack(functions []*Function, externalFunctions []*ExternalFunction, typeInfoPayload []byte,
-	lookup typeinfo.TypeLookup) ([]byte, error) {
-	constantRepo := swamppack.NewConstantRepo()
+import (
+	"encoding/binary"
 
-	for _, externalFunction := range externalFunctions {
-		constantRepo.AddExternalFunction(externalFunction.name.ResolveToString(), externalFunction.parameterCount)
+	"github.com/swamp/compiler/src/assembler_sp"
+	swamppack_sp "github.com/swamp/compiler/src/swamp_pack_sp"
+)
+
+func PackLedger(constants []*assembler_sp.Constant) ([]byte, error) {
+	var octets []byte
+
+	for _, constant := range constants {
+		var entryOctets [8]byte
+		binary.LittleEndian.PutUint32(entryOctets[0:4], uint32(constant.ConstantType()))
+		binary.LittleEndian.PutUint32(entryOctets[4:8], uint32(constant.PosRange().Position))
+		octets = append(octets, entryOctets[:]...)
 	}
 
-	for _, declareFunction := range functions {
-		constantRepo.AddFunctionDeclaration(declareFunction.name.ResolveToString(),
-			declareFunction.signature, declareFunction.parameterCount)
-	}
-
-	for _, function := range functions {
-		var packConstants []*swamppack.Constant
-
-		for _, subConstant := range function.constants {
-			var packConstant *swamppack.Constant
-
-			switch subConstant.ConstantType() {
-			case assembler_sp.ConstantTypeInteger:
-				packConstant = constantRepo.AddInteger(subConstant.IntegerValue())
-			case assembler_sp.ConstantTypeResourceName:
-				packConstant = constantRepo.AddResourceName(subConstant.StringValue())
-			case assembler_sp.ConstantTypeString:
-				packConstant = constantRepo.AddString(subConstant.StringValue())
-			case assembler_sp.ConstantTypeBoolean:
-				packConstant = constantRepo.AddBoolean(subConstant.BooleanValue())
-			case assembler_sp.ConstantTypeFunction:
-				refConstant, functionRefErr := constantRepo.AddFunctionReference(
-					subConstant.FunctionReferenceFullyQualifiedName())
-				if functionRefErr != nil {
-					return nil, functionRefErr
-				}
-				packConstant = refConstant
-			case assembler_sp.ConstantTypeFunctionExternal:
-				refConstant, functionRefErr := constantRepo.AddExternalFunctionReference(
-					subConstant.FunctionReferenceFullyQualifiedName())
-				if functionRefErr != nil {
-					return nil, functionRefErr
-				}
-
-				packConstant = refConstant
-			default:
-				return nil, fmt.Errorf("not handled constanttype %v", subConstant)
-			}
-
-			if packConstant == nil {
-				return nil, fmt.Errorf("internal error: not handled constanttype %v", subConstant)
-			}
-
-			packConstants = append(packConstants, packConstant)
-		}
-
-		constantRepo.AddFunction(function.name.ResolveToString(), function.signature, function.parameterCount,
-			function.variableCount, packConstants, function.opcodes)
-	}
-
-	octets, packErr := swamppack.Pack(constantRepo, typeInfoPayload)
-	if packErr != nil {
-		return nil, packErr
-	}
+	var entryOctets [8]byte
+	binary.LittleEndian.PutUint32(entryOctets[0:4], uint32(0))
+	binary.LittleEndian.PutUint32(entryOctets[4:8], uint32(0))
+	octets = append(octets, entryOctets[:]...)
 
 	return octets, nil
 }
 
+func Pack(constants []*assembler_sp.Constant, dynamicMemory []byte, typeInfoPayload []byte) ([]byte, error) {
+	ledgerOctets, ledgerErr := PackLedger(constants)
+	if ledgerErr != nil {
+		return nil, ledgerErr
+	}
 
-*/
+	return swamppack_sp.Pack(ledgerOctets, dynamicMemory, typeInfoPayload)
+}

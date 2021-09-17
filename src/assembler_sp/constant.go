@@ -12,7 +12,8 @@ import (
 type ConstantType uint
 
 const (
-	ConstantTypeString ConstantType = iota
+	ConstantTypeNone ConstantType = iota
+	ConstantTypeString
 	ConstantTypeResourceName
 	ConstantTypeFunction
 	ConstantTypeFunctionExternal

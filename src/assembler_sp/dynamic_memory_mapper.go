@@ -22,6 +22,10 @@ func DynamicMemoryMapperNew(maxOctetSize uint) *DynamicMemoryMapper {
 	return &DynamicMemoryMapper{maxOctetSize: maxOctetSize, memory: make([]byte, maxOctetSize)}
 }
 
+func (m *DynamicMemoryMapper) Octets() []byte {
+	return m.memory[0:m.position]
+}
+
 func (m *DynamicMemoryMapper) Allocate(octetSize uint, align uint32, debugString string) SourceDynamicMemoryPosRange {
 	if octetSize == 0 {
 		panic(fmt.Errorf("octet size zero is not allowed for allocate DynamicMemoryMapper memory"))

@@ -148,7 +148,7 @@ func (c *Constants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName stri
 	return newConstant, nil
 }
 
-const SwampFuncOpcodeOffset = 32
+const SwampFuncOpcodeOffset = 40
 
 func (c *Constants) FetchOpcodes(functionConstant *Constant) []byte {
 	readSection := SourceDynamicMemoryPosRange{
@@ -179,7 +179,7 @@ func (c *Constants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunction
 func (c *Constants) DefineFunctionOpcodes(funcConstant *Constant, opcodes []byte) error {
 	opcodesPointer := c.dynamicMapper.Write(opcodes, "opcodes for:"+funcConstant.str)
 
-	overwritePointer := SourceDynamicMemoryPos(uint(funcConstant.PosRange().Position) + 32)
+	overwritePointer := SourceDynamicMemoryPos(uint(funcConstant.PosRange().Position) + SwampFuncOpcodeOffset)
 
 	var opcodePointerOctets [16]byte
 

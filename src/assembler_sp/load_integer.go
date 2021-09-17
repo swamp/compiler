@@ -10,5 +10,5 @@ type LoadInteger struct {
 }
 
 func (o *LoadInteger) String() string {
-	return fmt.Sprintf("[loadinteger %v <= %v %v]", o.target, o.intValue)
+	return fmt.Sprintf("[loadinteger %v <= %v]", o.target, o.intValue)
 }

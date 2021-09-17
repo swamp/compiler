@@ -134,6 +134,8 @@ func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
 
 	case *dectype.CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
+	case *dectype.FunctionAtom:
+		return Sizeof64BitPointer, Alignof64BitPointer
 	default:
 		panic(fmt.Errorf("do not know memory size of %v %T", p, unaliased))
 	}

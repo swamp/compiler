@@ -37,5 +37,5 @@ func (c *Curry) Write(writer OpcodeWriter) error {
 }
 
 func (c *Curry) String() string {
-	return fmt.Sprintf("curry %v <- fn:%v arg:%v (typeID:%v)", c.target, c.function, c.arguments, c.typeIDConstant)
+	return fmt.Sprintf("curry %v,%v,%v (typeId:%v)", c.target, c.function, c.arguments, c.typeIDConstant)
 }
