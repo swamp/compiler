@@ -13,6 +13,7 @@ type OpcodeWriter interface {
 	SourceDynamicMemoryPosition(r opcode_sp_type.SourceDynamicMemoryPosition)
 	Int32(r int32)
 	Boolean(r bool)
+	Rune(r ShortRune)
 	// StackPositionRange(r opcode_sp_type.StackPositionRange)
 	SourceStackPositionRange(r opcode_sp_type.SourceStackPositionRange)
 	StackRange(r opcode_sp_type.StackRange)

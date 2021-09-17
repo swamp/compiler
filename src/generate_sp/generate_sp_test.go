@@ -231,3 +231,19 @@ func [function a func(Int -> List<Int>) 1 [[constant1 int:1 #5] [constant2 int:3
 19: ret
 `)
 }
+
+func TestGuardLetInChar(t *testing.T) {
+	testGenerate(t,
+		`
+tester : Int -> Char
+tester x =
+    let
+        existingTile = 'a'
+        isUpperLeft = False
+    in
+    | existingTile == '_' -> '@'
+    | isUpperLeft -> '/'
+    | _ -> '2'
+`, `
+`)
+}

@@ -1,6 +1,8 @@
 package generate_sp
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -64,14 +66,15 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 	if foundPrimitive == nil {
 		panic("not implemented binary operator boolean")
 	} else if foundPrimitive.AtomName() == "String" {
-		// todo:
 		opcodeBinaryOperator := booleanToBinaryStringOperatorType(operator.OperatorType())
 		code.StringBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
-	} else if foundPrimitive.AtomName() == "Int" {
+	} else if foundPrimitive.AtomName() == "Int" || foundPrimitive.AtomName() == "Char" {
 		opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
 
 		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
 		opcodeBinaryOperator = booleanToBinaryValueOperatorType(operator.OperatorType())
+	} else {
+		panic(fmt.Errorf("what operator is this for %v", foundPrimitive.AtomName()))
 	}
 
 	return nil

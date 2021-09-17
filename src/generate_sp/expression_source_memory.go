@@ -5,6 +5,7 @@ import (
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	"github.com/swamp/compiler/src/instruction_sp"
 )
 
 func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Expression,
@@ -22,7 +23,7 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 	case *decorated.CharacterLiteral:
 		{
 			runeStorage := genContext.context.stackMemory.Allocate(SizeofSwampRune, AlignOfSwampRune, "runeLiteral"+t.String())
-			code.LoadRune(runeStorage.Pos, uint8(t.Value()))
+			code.LoadRune(runeStorage.Pos, instruction_sp.ShortRune(t.Value()))
 			return targetToSourceStackPosRange(runeStorage), nil
 		}
 	case *decorated.BooleanLiteral:

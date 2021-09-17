@@ -116,6 +116,8 @@ func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
 				return SizeofSwampBool, AlignOfSwampBool
 			case "Int":
 				return SizeofSwampInt, AlignOfSwampInt
+			case "Char":
+				return SizeofSwampInt, AlignOfSwampInt
 			case "String":
 				return Sizeof64BitPointer, Alignof64BitPointer
 			}

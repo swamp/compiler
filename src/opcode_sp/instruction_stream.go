@@ -43,6 +43,13 @@ func (s *Stream) LoadInteger(destination opcode_sp_type.TargetStackPosition,
 	return c
 }
 
+func (s *Stream) LoadRune(destination opcode_sp_type.TargetStackPosition,
+	v instruction_sp.ShortRune) *instruction_sp.LoadRune {
+	c := instruction_sp.NewLoadRune(destination, v)
+	s.addInstruction(c)
+	return c
+}
+
 func (s *Stream) LoadBool(destination opcode_sp_type.TargetStackPosition,
 	v bool) *instruction_sp.LoadBool {
 	c := instruction_sp.NewLoadBool(destination, v)

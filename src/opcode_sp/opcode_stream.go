@@ -85,6 +85,10 @@ func (s *OpCodeStream) Int32(v int32) {
 	s.WriteUint32(uint32(v))
 }
 
+func (s *OpCodeStream) Rune(v instruction_sp.ShortRune) {
+	s.Write(uint8(v))
+}
+
 func (s *OpCodeStream) Boolean(v bool) {
 	value := 0
 	if v {

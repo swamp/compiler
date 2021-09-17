@@ -213,6 +213,13 @@ func disassembleLoadInteger(s *OpcodeInStream) *instruction_sp.LoadInteger {
 	return instruction_sp.NewLoadInteger(destination, a)
 }
 
+func disassembleLoadRune(s *OpcodeInStream) *instruction_sp.LoadRune {
+	destination := s.readTargetStackPosition()
+	shortRune := s.readUint8()
+
+	return instruction_sp.NewLoadRune(destination, instruction_sp.ShortRune(shortRune))
+}
+
 func disassembleLoadBoolean(s *OpcodeInStream) *instruction_sp.LoadBool {
 	destination := s.readTargetStackPosition()
 	a := s.readBoolean()
@@ -439,6 +446,8 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleBitwiseUnaryOperator(cmd, s)
 	case instruction_sp.CmdLoadInteger:
 		return disassembleLoadInteger(s)
+	case instruction_sp.CmdLoadRune:
+		return disassembleLoadRune(s)
 	case instruction_sp.CmdLoadBoolean:
 		return disassembleLoadBoolean(s)
 	case instruction_sp.CmdLoadZeroMemoryPointer:

@@ -115,7 +115,7 @@ func (c *Code) LoadInteger(target TargetStackPos, intValue int32) {
 	c.addStatement(o)
 }
 
-func (c *Code) LoadRune(target TargetStackPos, runeValue uint8) {
+func (c *Code) LoadRune(target TargetStackPos, runeValue instruction_sp.ShortRune) {
 	o := &LoadRune{target: target, rune: runeValue}
 	c.addStatement(o)
 }
@@ -322,6 +322,10 @@ func writeLoadInteger(stream *opcode_sp.Stream, loadInteger *LoadInteger) {
 	stream.LoadInteger(targetStackPosition(loadInteger.target), loadInteger.intValue)
 }
 
+func writeLoadRune(stream *opcode_sp.Stream, loadRune *LoadRune) {
+	stream.LoadRune(targetStackPosition(loadRune.target), loadRune.rune)
+}
+
 func writeLoadBool(stream *opcode_sp.Stream, loadBool *LoadBool) {
 	stream.LoadBool(targetStackPosition(loadBool.target), loadBool.boolean)
 }
@@ -381,6 +385,8 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeLoadInteger(opStream, t)
 	case *LoadBool:
 		writeLoadBool(opStream, t)
+	case *LoadRune:
+		writeLoadRune(opStream, t)
 	case *ArrayLiteral:
 		writeCreateArray(opStream, t)
 	case *ListAppend:

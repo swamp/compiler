@@ -2,11 +2,13 @@ package assembler_sp
 
 import (
 	"fmt"
+
+	"github.com/swamp/compiler/src/instruction_sp"
 )
 
 type LoadRune struct {
 	target TargetStackPos
-	rune   uint8
+	rune   instruction_sp.ShortRune
 }
 
 func (o *LoadRune) String() string {

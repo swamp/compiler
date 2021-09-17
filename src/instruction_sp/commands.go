@@ -5,6 +5,10 @@
 
 package instruction_sp
 
+import (
+	"fmt"
+)
+
 type Commands uint8
 
 const (
@@ -60,9 +64,9 @@ const (
 	CmdLoadBoolean           Commands = 0x32
 	CmdLoadZeroMemoryPointer Commands = 0x33
 	CmdSetEnum               Commands = 0x34
-
-	CmdStringEqual    Commands = 0x35
-	CmdStringNotEqual Commands = 0x36
+	CmdStringEqual           Commands = 0x35
+	CmdStringNotEqual        Commands = 0x36
+	CmdLoadRune              Commands = 0x37
 )
 
 func OpcodeToMnemonic(cmd Commands) string {
@@ -111,7 +115,13 @@ func OpcodeToMnemonic(cmd Commands) string {
 		CmdSetEnum:               "ldenum",
 		CmdStringEqual:           "cpseq",
 		CmdStringNotEqual:        "cpsneq",
+		CmdLoadRune:              "ldch",
 	}
 
-	return names[cmd]
+	mnemonic, found := names[cmd]
+	if !found {
+		panic(fmt.Errorf("no lookup for %v", cmd))
+	}
+
+	return mnemonic
 }
