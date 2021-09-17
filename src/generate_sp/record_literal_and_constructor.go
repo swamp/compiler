@@ -65,7 +65,7 @@ func generateRecordLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 func handleRecordLiteral(code *assembler_sp.Code,
 	record *decorated.RecordLiteral, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
 	recordType := record.RecordType()
-	targetPosRange := allocMemoryForType(genContext.context.stackMemory, recordType, "record literal: "+recordType.String())
+	targetPosRange := allocMemoryForType(genContext.context.stackMemory, recordType, "record literal: "+recordType.HumanReadable())
 	if err := generateRecordLiteral(code, targetPosRange, record, genContext); err != nil {
 		return assembler_sp.SourceStackPosRange{}, err
 	}

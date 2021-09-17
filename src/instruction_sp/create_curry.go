@@ -15,11 +15,11 @@ type Curry struct {
 	target         opcode_sp_type.TargetStackPosition
 	typeIDConstant uint16
 	function       opcode_sp_type.SourceStackPosition
-	arguments      []opcode_sp_type.SourceStackPosition
+	arguments      opcode_sp_type.SourceStackPositionRange
 }
 
 func NewCurry(target opcode_sp_type.TargetStackPosition, typeIDConstant uint16,
-	function opcode_sp_type.SourceStackPosition, arguments []opcode_sp_type.SourceStackPosition) *Curry {
+	function opcode_sp_type.SourceStackPosition, arguments opcode_sp_type.SourceStackPositionRange) *Curry {
 	return &Curry{
 		target: target, typeIDConstant: typeIDConstant,
 		function: function, arguments: arguments,
@@ -31,15 +31,11 @@ func (c *Curry) Write(writer OpcodeWriter) error {
 	writer.TargetStackPosition(c.target)
 	writer.TypeIDConstant(c.typeIDConstant)
 	writer.SourceStackPosition(c.function)
-	writer.Count(len(c.arguments))
-
-	for _, argument := range c.arguments {
-		writer.SourceStackPosition(argument)
-	}
+	writer.SourceStackPositionRange(c.arguments)
 
 	return nil
 }
 
 func (c *Curry) String() string {
-	return fmt.Sprintf("curry %v (%v) %v (%v)", c.target, c.typeIDConstant, c.function, c.arguments)
+	return fmt.Sprintf("curry %v <- fn:%v arg:%v (typeID:%v)", c.target, c.function, c.arguments, c.typeIDConstant)
 }

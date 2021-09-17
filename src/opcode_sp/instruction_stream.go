@@ -50,6 +50,13 @@ func (s *Stream) LoadBool(destination opcode_sp_type.TargetStackPosition,
 	return c
 }
 
+func (s *Stream) SetEnum(destination opcode_sp_type.TargetStackPosition,
+	enumIndex uint8) *instruction_sp.SetEnum {
+	c := instruction_sp.NewSetEnum(destination, enumIndex)
+	s.addInstruction(c)
+	return c
+}
+
 func (s *Stream) CreateList(destination opcode_sp_type.TargetStackPosition,
 	itemSize opcode_sp_type.StackRange, arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CreateList {
 	c := instruction_sp.NewCreateList(destination, itemSize, arguments)
@@ -94,7 +101,7 @@ func (s *Stream) Call(newBasePointer opcode_sp_type.TargetStackPosition, functio
 }
 
 func (s *Stream) Curry(target opcode_sp_type.TargetStackPosition, typeIDConstant uint16, function opcode_sp_type.SourceStackPosition,
-	arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.Curry {
+	arguments opcode_sp_type.SourceStackPositionRange) *instruction_sp.Curry {
 	c := instruction_sp.NewCurry(target, typeIDConstant, function, arguments)
 	s.addInstruction(c)
 	return c
@@ -157,6 +164,15 @@ func (s *Stream) IntBinaryOperator(destination opcode_sp_type.TargetStackPositio
 	operatorType instruction_sp.BinaryOperatorType, a opcode_sp_type.SourceStackPosition,
 	b opcode_sp_type.SourceStackPosition) *instruction_sp.BinaryOperator {
 	opcode := instruction_sp.BinaryOperatorToOpCode(operatorType)
+	c := instruction_sp.NewBinaryOperator(opcode, destination, a, b)
+	s.addInstruction(c)
+	return c
+}
+
+func (s *Stream) StringBinaryOperator(destination opcode_sp_type.TargetStackPosition,
+	operatorType instruction_sp.BinaryOperatorType, a opcode_sp_type.SourceStackPosition,
+	b opcode_sp_type.SourceStackPosition) *instruction_sp.BinaryOperator {
+	opcode := instruction_sp.BinaryStringOperatorToOpCode(operatorType)
 	c := instruction_sp.NewBinaryOperator(opcode, destination, a, b)
 	s.addInstruction(c)
 	return c

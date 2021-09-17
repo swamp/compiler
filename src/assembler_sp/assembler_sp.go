@@ -80,6 +80,11 @@ func (c *Code) IntBinaryOperator(target TargetStackPos, a SourceStackPos, b Sour
 	c.addStatement(o)
 }
 
+func (c *Code) StringBinaryOperator(target TargetStackPos, a SourceStackPos, b SourceStackPos, operator instruction_sp.BinaryOperatorType) {
+	o := &StringBinaryOperator{target: target, a: a, b: b, operator: operator}
+	c.addStatement(o)
+}
+
 func (c *Code) UnaryOperator(target TargetStackPos, a SourceStackPos, operator instruction_sp.UnaryOperatorType) {
 	o := &UnaryOperator{target: target, a: a, operator: operator}
 	c.addStatement(o)
@@ -117,6 +122,11 @@ func (c *Code) LoadRune(target TargetStackPos, runeValue uint8) {
 
 func (c *Code) LoadBool(target TargetStackPos, boolValue bool) {
 	o := &LoadBool{target: target, boolean: boolValue}
+	c.addStatement(o)
+}
+
+func (c *Code) SetEnum(target TargetStackPos, enumIndex uint8) {
+	o := &SetEnum{target: target, enumIndex: enumIndex}
 	c.addStatement(o)
 }
 
@@ -179,8 +189,8 @@ func (c *Code) CallExternal(target TargetStackPosRange, function SourceStackPos,
 	c.addStatement(o)
 }
 
-func (c *Code) Curry(target TargetStackPos, typeIDConstant uint16, function SourceStackPos, arguments []SourceStackPos) {
-	o := &Curry{target: target, typeIDConstant: typeIDConstant, function: function, arguments: arguments}
+func (c *Code) Curry(target TargetStackPos, typeIDConstant uint16, function SourceStackPos, startArgument SourceStackPosRange) {
+	o := &Curry{target: target, typeIDConstant: typeIDConstant, function: function, arguments: startArgument}
 	c.addStatement(o)
 }
 
@@ -230,6 +240,10 @@ func writeBinaryOperator(stream *opcode_sp.Stream, operator *BinaryOperator) {
 
 func writeIntBinaryOperator(stream *opcode_sp.Stream, operator *IntBinaryOperator) {
 	stream.IntBinaryOperator(targetStackPosition(operator.target), operator.operator, sourceStackPosition(operator.a), sourceStackPosition(operator.b))
+}
+
+func writeStringBinaryOperator(stream *opcode_sp.Stream, operator *StringBinaryOperator) {
+	stream.StringBinaryOperator(targetStackPosition(operator.target), operator.operator, sourceStackPosition(operator.a), sourceStackPosition(operator.b))
 }
 
 func writeCopyMemory(stream *opcode_sp.Stream, operator *CopyMemory) {
@@ -312,6 +326,10 @@ func writeLoadBool(stream *opcode_sp.Stream, loadBool *LoadBool) {
 	stream.LoadBool(targetStackPosition(loadBool.target), loadBool.boolean)
 }
 
+func writeSetEnum(stream *opcode_sp.Stream, setEnum *SetEnum) {
+	stream.SetEnum(targetStackPosition(setEnum.target), setEnum.enumIndex)
+}
+
 func writeCreateArray(stream *opcode_sp.Stream, arrayLiteral *ArrayLiteral) {
 	var registers []opcode_sp_type.SourceStackPosition
 
@@ -334,13 +352,7 @@ func writeRecur(stream *opcode_sp.Stream, call *Recur) {
 }
 
 func writeCurry(stream *opcode_sp.Stream, call *Curry) {
-	var arguments []opcode_sp_type.SourceStackPosition
-
-	for _, argument := range call.arguments {
-		arguments = append(arguments, sourceStackPosition(argument))
-	}
-
-	stream.Curry(targetStackPosition(call.target), call.typeIDConstant, sourceStackPosition(call.function), arguments)
+	stream.Curry(targetStackPosition(call.target), call.typeIDConstant, sourceStackPosition(call.function), sourceStackPositionRange(call.arguments))
 }
 
 func writeReturn(stream *opcode_sp.Stream) {
@@ -391,10 +403,14 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeCurry(opStream, t)
 	case *IntBinaryOperator:
 		writeIntBinaryOperator(opStream, t)
+	case *StringBinaryOperator:
+		writeStringBinaryOperator(opStream, t)
 	case *CopyMemory:
 		writeCopyMemory(opStream, t)
 	case *LoadZeroMemoryPointer:
 		writeZeroMemoryPointer(opStream, t)
+	case *SetEnum:
+		writeSetEnum(opStream, t)
 	default:
 		panic(fmt.Sprintf("swamp assembler: unknown cmd %v", cmd))
 	}

@@ -49,14 +49,15 @@ func (s *OpcodeInStream) readUint8() uint8 {
 }
 
 func (s *OpcodeInStream) readUint16() uint16 {
-	if s.position+1 == len(s.octets) {
+	if s.position+2 == len(s.octets) {
 		panic("swamp disassembler: read too far uint16")
 	}
 
-	high := s.readUint8()
-	low := s.readUint8()
+	pointer := binary.LittleEndian.Uint16(s.octets[s.position : s.position+2])
 
-	return uint16((high << 8) | low)
+	s.position += 2
+
+	return pointer
 }
 
 func (s *OpcodeInStream) readUint32() uint32 {
@@ -121,6 +122,9 @@ func (s *OpcodeInStream) readSourceStackPosition() opcode_sp_type.SourceStackPos
 func (s *OpcodeInStream) readSourceStackPositionRange() opcode_sp_type.SourceStackPositionRange {
 	pointer := s.readUint32()
 	size := s.readUint16()
+	if size == 0 {
+		panic("disassemble: we can not allow zero size in range")
+	}
 	return opcode_sp_type.SourceStackPositionRange{
 		Position: opcode_sp_type.SourceStackPosition(pointer),
 		Range:    opcode_sp_type.SourceStackRange(size),
@@ -179,6 +183,14 @@ func disassembleBinaryOperator(cmd instruction_sp.Commands, s *OpcodeInStream) *
 	return instruction_sp.NewBinaryOperator(cmd, destination, a, b)
 }
 
+func disassembleStringBinaryOperator(cmd instruction_sp.Commands, s *OpcodeInStream) *instruction_sp.BinaryOperator {
+	destination := s.readTargetStackPosition()
+	a := s.readSourceStackPosition()
+	b := s.readSourceStackPosition()
+
+	return instruction_sp.NewBinaryOperator(cmd, destination, a, b)
+}
+
 func disassembleBitwiseOperator(cmd instruction_sp.Commands, s *OpcodeInStream) *instruction_sp.BinaryOperator {
 	destination := s.readTargetStackPosition()
 	a := s.readSourceStackPosition()
@@ -206,6 +218,13 @@ func disassembleLoadBoolean(s *OpcodeInStream) *instruction_sp.LoadBool {
 	a := s.readBoolean()
 
 	return instruction_sp.NewLoadBool(destination, a)
+}
+
+func disassembleSetEnum(s *OpcodeInStream) *instruction_sp.SetEnum {
+	destination := s.readTargetStackPosition()
+	a := s.readUint8()
+
+	return instruction_sp.NewSetEnum(destination, a)
 }
 
 func disassembleLoadZeroMemoryPointer(s *OpcodeInStream) *instruction_sp.LoadZeroMemoryPointer {
@@ -250,7 +269,7 @@ func disassembleCurry(s *OpcodeInStream) *instruction_sp.Curry {
 	destination := s.readTargetStackPosition()
 	typeIDConstant := s.readTypeIDConstant()
 	functionRegister := s.readSourceStackPosition()
-	arguments := s.readSourceStackPositions()
+	arguments := s.readSourceStackPositionRange()
 
 	return instruction_sp.NewCurry(destination, typeIDConstant, functionRegister, arguments)
 }
@@ -424,6 +443,12 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleLoadBoolean(s)
 	case instruction_sp.CmdLoadZeroMemoryPointer:
 		return disassembleLoadZeroMemoryPointer(s)
+	case instruction_sp.CmdSetEnum:
+		return disassembleSetEnum(s)
+	case instruction_sp.CmdStringEqual:
+		return disassembleStringBinaryOperator(cmd, s)
+	case instruction_sp.CmdStringNotEqual:
+		return disassembleStringBinaryOperator(cmd, s)
 	}
 
 	panic(fmt.Sprintf("swamp disassembler: unknown opcode:%v", cmd))
@@ -440,7 +465,7 @@ func Disassemble(octets []byte) []string {
 		startPc := s.programCounter()
 		cmd := s.readCommand()
 
-		log.Printf("disasembling :%s (%02x)\n", instruction_sp.OpcodeToName(cmd), cmd)
+		log.Printf("disasembling :%s (%02x)\n", instruction_sp.OpcodeToMnemonic(cmd), cmd)
 		args := decodeOpcode(cmd, s)
 		line := fmt.Sprintf("%02x: %v", startPc.Value(), args)
 		lines = append(lines, line)

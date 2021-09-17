@@ -33,5 +33,5 @@ func NewBinaryOperator(opcode Commands, destination opcode_sp_type.TargetStackPo
 }
 
 func (c *BinaryOperator) String() string {
-	return fmt.Sprintf("%s %v,%v,%v", OpcodeToName(c.opcode), c.destination, c.a, c.b)
+	return fmt.Sprintf("%s %v,%v,%v", OpcodeToMnemonic(c.opcode), c.destination, c.a, c.b)
 }

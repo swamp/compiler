@@ -62,6 +62,9 @@ func (s *OpCodeStream) StackRange(r opcode_sp_type.StackRange) {
 }
 
 func (s *OpCodeStream) SourceStackRange(r opcode_sp_type.SourceStackRange) {
+	if uint(r) == 0 {
+		panic("not allowed for it to be zero range")
+	}
 	s.WriteUint16(uint16(r))
 }
 

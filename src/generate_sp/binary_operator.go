@@ -26,6 +26,17 @@ func booleanToBinaryIntOperatorType(operatorType decorated.BooleanOperatorType) 
 	return 0
 }
 
+func booleanToBinaryStringOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
+	switch operatorType {
+	case decorated.BooleanEqual:
+		return instruction_sp.BinaryOperatorBooleanStringEqual
+	case decorated.BooleanNotEqual:
+		return instruction_sp.BinaryOperatorBooleanStringNotEqual
+	}
+
+	return 0
+}
+
 func booleanToBinaryValueOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
 	switch operatorType {
 	case decorated.BooleanEqual:
@@ -37,7 +48,7 @@ func booleanToBinaryValueOperatorType(operatorType decorated.BooleanOperatorType
 	return 0
 }
 
-func generateBoolean(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.BooleanOperator, genContext *generateContext) error {
+func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.BooleanOperator, genContext *generateContext) error {
 	leftVar, leftErr := generateExpressionWithSourceVar(code, operator.Left(), genContext, "bool-left")
 	if leftErr != nil {
 		return leftErr
@@ -50,13 +61,27 @@ func generateBoolean(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 
 	unaliasedTypeLeft := dectype.UnaliasWithResolveInvoker(operator.Left().Type())
 	foundPrimitive, _ := unaliasedTypeLeft.(*dectype.PrimitiveAtom)
+	if foundPrimitive == nil {
+		panic("not implemented binary operator boolean")
+	} else if foundPrimitive.AtomName() == "String" {
+		// todo:
+		opcodeBinaryOperator := booleanToBinaryStringOperatorType(operator.OperatorType())
+		code.StringBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+	} else if foundPrimitive.AtomName() == "Int" {
+		opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
 
-	opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
-	if foundPrimitive == nil || foundPrimitive.AtomName() != "Int" {
+		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
 		opcodeBinaryOperator = booleanToBinaryValueOperatorType(operator.OperatorType())
 	}
 
-	code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
-
 	return nil
+}
+
+func handleBinaryOperatorBooleanResult(code *assembler_sp.Code, operator *decorated.BooleanOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	target := genContext.context.stackMemory.Allocate(SizeofSwampBool, AlignOfSwampBool, "booleanOperatorTarget")
+	if err := generateBinaryOperatorBooleanResult(code, target, operator, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(target), nil
 }

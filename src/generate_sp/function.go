@@ -14,7 +14,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
 
-	returnValueSourcePointer := allocateVariable(funcContext.functionVariables, funcContext.stackMemory, "", f.ForcedFunctionType().ReturnType())
+	returnValueSourcePointer := allocateVariable(funcContext.functionVariables, funcContext.stackMemory, "__return", f.ForcedFunctionType().ReturnType())
 	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 
 	for _, parameter := range f.Parameters() {

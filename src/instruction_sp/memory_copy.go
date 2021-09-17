@@ -30,5 +30,5 @@ func NewMemoryCopy(destination opcode_sp_type.TargetStackPosition,
 }
 
 func (c *MemoryCopy) String() string {
-	return fmt.Sprintf("%s %v,%v", OpcodeToName(CmdCopyMemory), c.destination, c.a)
+	return fmt.Sprintf("%s %v,%v", OpcodeToMnemonic(CmdCopyMemory), c.destination, c.a)
 }

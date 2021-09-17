@@ -24,7 +24,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	}
 
 	returnValue := allocMemoryForType(genContext.context.stackMemory, functionAtom.ReturnType(), "returnValue")
-	var arguments []assembler_sp.TargetStackPosRange
+	arguments := make([]assembler_sp.TargetStackPosRange, len(call.Arguments()))
 	for index, arg := range call.Arguments() {
 		arguments[index] = allocMemoryForType(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
 	}
@@ -61,6 +61,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	}
 
 	code.Call(functionRegister.Pos, returnValue.Pos)
+
+	genContext.context.stackMemory.Set(arguments[0].Pos)
 
 	return targetToSourceStackPosRange(returnValue), nil
 }

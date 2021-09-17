@@ -59,9 +59,13 @@ const (
 	CmdLoadInteger           Commands = 0x31
 	CmdLoadBoolean           Commands = 0x32
 	CmdLoadZeroMemoryPointer Commands = 0x33
+	CmdSetEnum               Commands = 0x34
+
+	CmdStringEqual    Commands = 0x35
+	CmdStringNotEqual Commands = 0x36
 )
 
-func OpcodeToName(cmd Commands) string {
+func OpcodeToMnemonic(cmd Commands) string {
 	names := map[Commands]string{
 		CmdCreateStruct:          "crs",
 		CmdUpdateStruct:          "upd",
@@ -77,8 +81,8 @@ func OpcodeToName(cmd Commands) string {
 		CmdIntSub:                "sub",
 		CmdIntMul:                "mul",
 		CmdIntDiv:                "div",
-		CmdIntEqual:              "cpeq",
-		CmdIntNotEqual:           "cpne",
+		CmdIntEqual:              "cpieq",
+		CmdIntNotEqual:           "cpine",
 		CmdIntLess:               "cpl",
 		CmdIntLessOrEqual:        "cple",
 		CmdIntGreater:            "cpg",
@@ -104,6 +108,9 @@ func OpcodeToName(cmd Commands) string {
 		CmdLoadInteger:           "ldi",
 		CmdLoadBoolean:           "ldb",
 		CmdLoadZeroMemoryPointer: "lpzm",
+		CmdSetEnum:               "ldenum",
+		CmdStringEqual:           "cpseq",
+		CmdStringNotEqual:        "cpsneq",
 	}
 
 	return names[cmd]

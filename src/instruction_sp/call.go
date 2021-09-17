@@ -29,5 +29,5 @@ func (c *Call) Write(writer OpcodeWriter) error {
 }
 
 func (c *Call) String() string {
-	return fmt.Sprintf("call %v %v (%v)", c.newBasePointer, c.function)
+	return fmt.Sprintf("call %v %v", c.newBasePointer, c.function)
 }

@@ -14,15 +14,16 @@ import (
 )
 
 type CustomTypeVariantField struct {
+	index        uint
 	memoryOffset uint
 }
 
 func (c *CustomTypeVariantField) MemoryOffset() uint {
-	return 0
+	return c.index*4 + 1 // todo
 }
 
 func (c *CustomTypeVariantField) MemorySize() uint {
-	return 0
+	return 3
 }
 
 type CustomTypeVariant struct {
@@ -43,11 +44,12 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 	}
 
 	var fields []*CustomTypeVariantField
-	for _, paramType := range parameterTypes {
+	for index, paramType := range parameterTypes {
 		if paramType == nil {
 			panic("paramtype is nil")
 		}
 		field := &CustomTypeVariantField{
+			index:        uint(index),
 			memoryOffset: 0,
 		}
 		fields = append(fields, field)

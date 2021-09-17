@@ -7,6 +7,7 @@ package generate_sp
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
@@ -115,14 +116,20 @@ func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
 				return SizeofSwampBool, AlignOfSwampBool
 			case "Int":
 				return SizeofSwampInt, AlignOfSwampInt
+			case "String":
+				return Sizeof64BitPointer, Alignof64BitPointer
 			}
 			panic(fmt.Errorf("do not know primitive atom of %v %T", p, unaliased))
 		}
 	case *dectype.InvokerType:
-		_, wasPrimitive := t.TypeGenerator().(*dectype.PrimitiveTypeReference)
-		if wasPrimitive {
+		switch it := t.TypeGenerator().(type) {
+		case *dectype.PrimitiveTypeReference:
 			return Sizeof64BitPointer, Alignof64BitPointer
+		case *dectype.CustomTypeReference:
+			log.Printf("this is : %T %v (%v)", it.Type(), it.HumanReadable(), t.TypeGenerator().HumanReadable())
+			return getMemorySizeAndAlignment(it.Type())
 		}
+
 	case *dectype.CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	default:
@@ -174,7 +181,7 @@ func sourceToTargetStackPosRange(functionPointer assembler_sp.SourceStackPosRang
 }
 
 func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembler_sp.StackMemoryMapper, constant *assembler_sp.Constant) (assembler_sp.SourceStackPosRange, error) {
-	functionPointer := stackMemory.Allocate(PointerSize, PointerAlign, "functionReference")
+	functionPointer := stackMemory.Allocate(PointerSize, PointerAlign, "functionReference:"+constant.String())
 	code.LoadZeroMemoryPointer(functionPointer.Pos, constant.PosRange().Position)
 
 	return targetToSourceStackPosRange(functionPointer), nil

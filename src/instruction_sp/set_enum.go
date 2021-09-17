@@ -11,24 +11,24 @@ import (
 	"github.com/swamp/compiler/src/opcode_sp_type"
 )
 
-type LoadInteger struct {
+type SetEnum struct {
 	destination opcode_sp_type.TargetStackPosition
-	a           int32
+	enumIndex   uint8
 }
 
-func (c *LoadInteger) Write(writer OpcodeWriter) error {
-	writer.Command(CmdLoadInteger)
+func (c *SetEnum) Write(writer OpcodeWriter) error {
+	writer.Command(CmdSetEnum)
 	writer.TargetStackPosition(c.destination)
-	writer.Int32(c.a)
+	writer.EnumValue(c.enumIndex)
 
 	return nil
 }
 
-func NewLoadInteger(destination opcode_sp_type.TargetStackPosition,
-	a int32) *LoadInteger {
-	return &LoadInteger{destination: destination, a: a}
+func NewSetEnum(destination opcode_sp_type.TargetStackPosition,
+	enumIndex uint8) *SetEnum {
+	return &SetEnum{destination: destination, enumIndex: enumIndex}
 }
 
-func (c *LoadInteger) String() string {
-	return fmt.Sprintf("%s %v,%v", OpcodeToMnemonic(CmdLoadInteger), c.destination, c.a)
+func (c *SetEnum) String() string {
+	return fmt.Sprintf("%s %v,%v", OpcodeToMnemonic(CmdSetEnum), c.destination, c.enumIndex)
 }

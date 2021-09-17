@@ -30,5 +30,5 @@ func NewLoadZeroMemoryPointer(destination opcode_sp_type.TargetStackPosition,
 }
 
 func (c *LoadZeroMemoryPointer) String() string {
-	return fmt.Sprintf("%s %v,%v", OpcodeToName(CmdLoadZeroMemoryPointer), c.destination, c.source)
+	return fmt.Sprintf("%s %v,%v", OpcodeToMnemonic(CmdLoadZeroMemoryPointer), c.destination, c.source)
 }

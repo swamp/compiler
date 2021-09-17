@@ -30,5 +30,5 @@ func NewLoadBool(destination opcode_sp_type.TargetStackPosition,
 }
 
 func (c *LoadBool) String() string {
-	return fmt.Sprintf("%s %v,%v", OpcodeToName(CmdLoadBoolean), c.destination, c.a)
+	return fmt.Sprintf("%s %v,%v", OpcodeToMnemonic(CmdLoadBoolean), c.destination, c.a)
 }

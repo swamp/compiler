@@ -15,7 +15,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateLet(code, target, e, genContext)
 
 	case *decorated.ArithmeticOperator:
-		return handleArithmeticMultiple(code, target, e, genContext)
+		return generateArithmeticMultiple(code, target, e, genContext)
 
 	case *decorated.BitwiseOperator:
 		return generateBitwise(code, target, e, genContext)
@@ -33,7 +33,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateLogical(code, target, e, genContext)
 
 	case *decorated.BooleanOperator:
-		return generateBoolean(code, target, e, genContext)
+		return generateBinaryOperatorBooleanResult(code, target, e, genContext)
 
 	case *decorated.PipeLeftOperator:
 		return generatePipeLeft(code, target, e, genContext)

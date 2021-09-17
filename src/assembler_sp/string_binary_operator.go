@@ -5,15 +5,19 @@
 
 package assembler_sp
 
-import "fmt"
+import (
+	"fmt"
 
-type Curry struct {
-	target         TargetStackPos
-	typeIDConstant uint16
-	function       SourceStackPos
-	arguments      SourceStackPosRange
+	"github.com/swamp/compiler/src/instruction_sp"
+)
+
+type StringBinaryOperator struct {
+	target   TargetStackPos
+	a        SourceStackPos
+	b        SourceStackPos
+	operator instruction_sp.BinaryOperatorType
 }
 
-func (o *Curry) String() string {
-	return fmt.Sprintf("[curry %v (%v) <= %v (%v)]", o.target, o.typeIDConstant, o.function, o.arguments)
+func (o *StringBinaryOperator) String() string {
+	return fmt.Sprintf("[sbinop %v <= %v %v %v]", o.target, o.operator, o.a, o.b)
 }

@@ -1,8 +1,6 @@
 package generate_sp
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
@@ -15,7 +13,11 @@ func handleFunctionReference(code *assembler_sp.Code,
 	functionReferenceName := assembler_sp.VariableName(ident.Name())
 	foundConstant := constants.FindFunction(functionReferenceName)
 	if foundConstant == nil {
-		return assembler_sp.SourceStackPosRange{}, fmt.Errorf("couldn't find it %v", t)
+		targetPosRange := stackMemory.Allocate(Sizeof64BitPointer, Alignof64BitPointer, "Hackptr")
+		fake := assembler_sp.SourceDynamicMemoryPos(9494)
+		code.LoadZeroMemoryPointer(targetPosRange.Pos, fake)
+		return targetToSourceStackPosRange(targetPosRange), nil
+		//	return assembler_sp.SourceStackPosRange{}, fmt.Errorf("couldn't find function reference '%s' %v", functionReferenceName, t)
 	}
 
 	return constantToSourceStackPosRange(code, stackMemory, foundConstant)

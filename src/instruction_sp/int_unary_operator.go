@@ -23,7 +23,7 @@ func NewIntUnaryOperator(opcode Commands, destination opcode_sp_type.TargetStack
 }
 
 func (c *IntUnaryOperator) String() string {
-	return fmt.Sprintf("%s %v,%v", OpcodeToName(c.opcode), c.destination, c.a)
+	return fmt.Sprintf("%s %v,%v", OpcodeToMnemonic(c.opcode), c.destination, c.a)
 }
 
 func (c *IntUnaryOperator) Write(writer OpcodeWriter) error {
