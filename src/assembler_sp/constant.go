@@ -21,7 +21,6 @@ const (
 type Constant struct {
 	constantType ConstantType
 	str          string
-	b            bool
 	source       SourceDynamicMemoryPosRange
 	debugString  string
 }
@@ -32,10 +31,6 @@ func (v *Constant) ConstantType() ConstantType {
 
 func (v *Constant) StringValue() string {
 	return v.str
-}
-
-func (v *Constant) BooleanValue() bool {
-	return v.b
 }
 
 func (v *Constant) PosRange() SourceDynamicMemoryPosRange {

@@ -62,3 +62,7 @@ func (r TargetFieldOffset) String() string {
 type DynamicMemoryPosition uint32
 
 type SourceDynamicMemoryPosition uint32
+
+func (r SourceDynamicMemoryPosition) String() string {
+	return fmt.Sprintf("$%04X", uint32(r))
+}

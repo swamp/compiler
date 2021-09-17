@@ -14,18 +14,18 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
 
-	returnValueSourcePointer := allocateVariable(funcContext.functionVariables, funcContext.stackMemory, "__return", f.ForcedFunctionType().ReturnType())
+	returnValueSourcePointer := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, "__return", f.ForcedFunctionType().ReturnType())
 	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 
 	for _, parameter := range f.Parameters() {
 		paramVarName := parameter.Identifier().Name()
-		allocateVariable(funcContext.functionVariables, funcContext.stackMemory, paramVarName, parameter.Type())
+		allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, paramVarName, parameter.Type())
 	}
 
 	genContext := &generateContext{
-		context:     funcContext,
-		definitions: definitions,
-		lookup:      lookup,
+		context: funcContext,
+		// definitions: definitions,
+		lookup: lookup,
 	}
 
 	genErr := generateExpression(code, returnValueTargetPointer, f.Expression(), genContext)

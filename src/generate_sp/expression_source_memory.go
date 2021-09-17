@@ -33,14 +33,16 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		}
 	case *decorated.LetVariableReference:
 		letVariableReferenceName := t.LetVariable().Name().Name()
-		return genContext.context.functionVariables.FindVariable(letVariableReferenceName)
+		return genContext.context.scopeVariables.FindVariable(letVariableReferenceName)
 	case *decorated.FunctionParameterReference:
 		parameterReferenceName := t.Identifier().Name()
-		return genContext.context.functionVariables.FindVariable(parameterReferenceName)
+		return genContext.context.scopeVariables.FindVariable(parameterReferenceName)
 	case *decorated.FunctionReference:
 		return handleFunctionReference(code, t, genContext.context.stackMemory, genContext.context.constants)
 	case *decorated.RecordLiteral:
 		return handleRecordLiteral(code, t, genContext)
+	case *decorated.ListLiteral:
+		return handleList(code, t, genContext)
 	case *decorated.BooleanOperator:
 		return handleBinaryOperatorBooleanResult(code, t, genContext)
 	case *decorated.ArithmeticOperator:

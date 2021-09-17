@@ -11,27 +11,20 @@ import (
 )
 
 type Context struct {
-	functionVariables *FunctionVariables
-	parent            *Context
-	root              *FunctionRootContext
-	constants         *Constants
+	scopeVariables *ScopeVariables
+	constants      *Constants
 }
 
 func (c *Context) MakeScopeContext() *Context {
 	newContext := &Context{
-		functionVariables: NewFunctionVariables(),
-		root:              c.root, parent: c, constants: c.constants,
+		scopeVariables: NewFunctionVariables(),
+		constants:      c.constants,
 	}
-	newContext.parent = c
 	return newContext
 }
 
-func (c *Context) Parent() *Context {
-	return c.parent
-}
-
-func (c *Context) ScopeVariables() *FunctionVariables {
-	return c.functionVariables
+func (c *Context) ScopeVariables() *ScopeVariables {
+	return c.scopeVariables
 }
 
 func (r *Context) Constants() *Constants {
@@ -43,38 +36,14 @@ func (c *Context) Free() {
 
 func (c *Context) String() string {
 	s := "\n"
-	s += fmt.Sprintf("%v\n", c.functionVariables)
+	s += fmt.Sprintf("%v\n", c.scopeVariables)
 	return strings.TrimSpace(s)
 }
 
 func (c *Context) ShowSummary() {
 	fmt.Printf("---------- Variables ------------\n")
-	fmt.Printf("%v\n", c.functionVariables)
+	fmt.Printf("%v\n", c.scopeVariables)
 	fmt.Printf("---------- Constants ------------\n")
 	fmt.Printf("%v\n", c.constants)
 	fmt.Printf("---------------------------------\n")
-}
-
-type FunctionRootContext struct {
-	constants    *Constants
-	scopeContext *Context
-}
-
-func NewFunctionRootContext() *FunctionRootContext {
-	c := &FunctionRootContext{constants: &Constants{}}
-	bootstrap := &Context{root: c, constants: c.constants}
-	c.scopeContext = bootstrap.MakeScopeContext()
-	return c
-}
-
-func (r *FunctionRootContext) ScopeContext() *Context {
-	return r.scopeContext
-}
-
-func (r *FunctionRootContext) Constants() *Constants {
-	return r.constants
-}
-
-func (r *FunctionRootContext) String() string {
-	return r.constants.String() + r.scopeContext.String()
 }

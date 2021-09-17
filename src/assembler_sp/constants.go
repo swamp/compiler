@@ -3,6 +3,7 @@ package assembler_sp
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -35,10 +36,8 @@ func (c *Constants) Constants() []*Constant {
 	return c.constants
 }
 
-func (c *Constants) CopyConstants(constants []*Constant) {
-	for _, constantToCopy := range constants {
-		c.constants = append(c.constants, constantToCopy)
-	}
+func (c *Constants) DynamicMemory() *DynamicMemoryMapper {
+	return c.dynamicMapper
 }
 
 // typedef struct SwampString {
@@ -57,13 +56,13 @@ func (c *Constants) AllocateStringConstant(s string) *Constant {
 
 	stringOctets := []byte(s)
 	stringOctets = append(stringOctets, byte(0))
-	stringOctetsPointer := c.dynamicMapper.Write(stringOctets, "string")
+	stringOctetsPointer := c.dynamicMapper.Write(stringOctets, "string:"+s)
 
 	var swampStringOctets [SizeofSwampString]byte
 	binary.LittleEndian.PutUint64(swampStringOctets[0:8], uint64(stringOctetsPointer.Position))
 	binary.LittleEndian.PutUint64(swampStringOctets[8:16], uint64(len(s)))
 
-	swampStringPointer := c.dynamicMapper.Write(swampStringOctets[:], "swampStringOctets")
+	swampStringPointer := c.dynamicMapper.Write(swampStringOctets[:], "SwampString struct (character-pointer, characterCount) for:"+s)
 
 	newConstant := NewStringConstant("string", s, swampStringPointer)
 	c.constants = append(c.constants, newConstant)
@@ -122,37 +121,74 @@ typedef struct SwampFunc {
 
 const SizeofSwampFunc = 11 * 8
 
-func (c *Constants) AllocateFunctionConstant(uniqueFullyQualifiedFunctionName string, opcodes []byte) (*Constant, error) {
-	for _, constant := range c.functions {
-		if constant.str == uniqueFullyQualifiedFunctionName {
-			return constant, nil
-		}
-	}
+func (c *Constants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName string,
+	opcodesPointer SourceDynamicMemoryPosRange) (*Constant, error) {
+	var swampFuncStruct [SizeofSwampFunc]byte
 
-	opcodesPointer := c.dynamicMapper.Write(opcodes, "opcodes")
+	binary.LittleEndian.PutUint64(swampFuncStruct[0:8], uint64(0))
+	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(0))  // Curry Octets
+	binary.LittleEndian.PutUint64(swampFuncStruct[16:24], uint64(0)) // Curry fn
+	binary.LittleEndian.PutUint64(swampFuncStruct[24:32], uint64(0)) // parameterCount
+	binary.LittleEndian.PutUint64(swampFuncStruct[24:32], uint64(0)) // parameters octet size
 
-	var swampStringOctets [SizeofSwampFunc]byte
-	binary.LittleEndian.PutUint64(swampStringOctets[0:8], uint64(0))
-	binary.LittleEndian.PutUint64(swampStringOctets[8:16], uint64(0))  // Curry Octets
-	binary.LittleEndian.PutUint64(swampStringOctets[16:24], uint64(0)) // Curry fn
-	binary.LittleEndian.PutUint64(swampStringOctets[24:32], uint64(0)) // parameterCount
-	binary.LittleEndian.PutUint64(swampStringOctets[24:32], uint64(0)) // parameters octet size
+	binary.LittleEndian.PutUint64(swampFuncStruct[32:40], uint64(opcodesPointer.Position))
+	binary.LittleEndian.PutUint64(swampFuncStruct[40:48], uint64(opcodesPointer.Size))
 
-	binary.LittleEndian.PutUint64(swampStringOctets[32:40], uint64(opcodesPointer.Position))
-	binary.LittleEndian.PutUint64(swampStringOctets[40:48], uint64(opcodesPointer.Size))
+	binary.LittleEndian.PutUint64(swampFuncStruct[48:56], uint64(0)) // totalStackUsed
+	binary.LittleEndian.PutUint64(swampFuncStruct[56:64], uint64(0)) // returnOctetSize
+	binary.LittleEndian.PutUint64(swampFuncStruct[64:72], uint64(0)) // debugName
+	binary.LittleEndian.PutUint64(swampFuncStruct[72:80], uint64(0)) // typeIndex
 
-	binary.LittleEndian.PutUint64(swampStringOctets[48:56], uint64(0)) // totalStackUsed
-	binary.LittleEndian.PutUint64(swampStringOctets[56:64], uint64(0)) // returnOctetSize
-	binary.LittleEndian.PutUint64(swampStringOctets[64:72], uint64(0)) // debugName
-	binary.LittleEndian.PutUint64(swampStringOctets[72:76], uint64(0)) // typeIndex
-
-	funcPointer := c.dynamicMapper.Write(swampStringOctets[:], "fn:"+uniqueFullyQualifiedFunctionName)
+	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], "function Struct for:"+uniqueFullyQualifiedFunctionName)
 
 	newConstant := NewFunctionReferenceConstantWithDebug("fn", uniqueFullyQualifiedFunctionName, funcPointer)
 	c.constants = append(c.constants, newConstant)
 	c.functions = append(c.functions, newConstant)
 
 	return newConstant, nil
+}
+
+const SwampFuncOpcodeOffset = 32
+
+func (c *Constants) FetchOpcodes(functionConstant *Constant) []byte {
+	readSection := SourceDynamicMemoryPosRange{
+		Position: SourceDynamicMemoryPos(uint(functionConstant.source.Position + SwampFuncOpcodeOffset)),
+		Size:     DynamicMemoryRange(8 + 8),
+	}
+	opcodePointerAndSize := c.dynamicMapper.Read(readSection)
+	opcodePosition := binary.LittleEndian.Uint64(opcodePointerAndSize[0:8])
+	opcodeSize := binary.LittleEndian.Uint64(opcodePointerAndSize[8:16])
+
+	readOpcodeSection := SourceDynamicMemoryPosRange{
+		Position: SourceDynamicMemoryPos(opcodePosition),
+		Size:     DynamicMemoryRange(opcodeSize),
+	}
+
+	return c.dynamicMapper.Read(readOpcodeSection)
+}
+
+func (c *Constants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunctionName string) (*Constant, error) {
+	pointer := SourceDynamicMemoryPosRange{
+		Position: 0,
+		Size:     0,
+	}
+
+	return c.AllocateFunctionStruct(uniqueFullyQualifiedFunctionName, pointer)
+}
+
+func (c *Constants) DefineFunctionOpcodes(funcConstant *Constant, opcodes []byte) error {
+	opcodesPointer := c.dynamicMapper.Write(opcodes, "opcodes for:"+funcConstant.str)
+
+	overwritePointer := SourceDynamicMemoryPos(uint(funcConstant.PosRange().Position) + 32)
+
+	var opcodePointerOctets [16]byte
+
+	binary.LittleEndian.PutUint64(opcodePointerOctets[0:8], uint64(opcodesPointer.Position))
+	binary.LittleEndian.PutUint64(opcodePointerOctets[8:16], uint64(opcodesPointer.Size))
+
+	c.dynamicMapper.Overwrite(overwritePointer, opcodePointerOctets[:], "opcodepointer"+funcConstant.str)
+
+	return nil
 }
 
 /*
@@ -179,11 +215,10 @@ func (c *Constants) FindFunction(identifier VariableName) *Constant {
 			return constant
 		}
 	}
-	/*
-		if c.parent != nil {
-			return c.parent.findFunc(identifier)
-		}
-	*/
+
+	log.Printf("couldn't find %v", identifier)
+	c.DebugOutput()
+
 	return nil
 }
 
@@ -194,4 +229,11 @@ func (c *Constants) FindStringConstant(s string) *Constant {
 		}
 	}
 	return nil
+}
+
+func (c *Constants) DebugOutput() {
+	log.Printf("functions:\n")
+	for _, function := range c.functions {
+		log.Printf("%v %v\n", function.str, function.debugString)
+	}
 }

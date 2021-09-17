@@ -4,20 +4,20 @@ import (
 	"fmt"
 )
 
-type FunctionVariables struct {
-	parent         *FunctionVariables
+type ScopeVariables struct {
+	parent         *ScopeVariables
 	nameToVariable map[string]*VariableImpl
 }
 
-func NewFunctionVariables() *FunctionVariables {
-	return &FunctionVariables{nameToVariable: make(map[string]*VariableImpl)}
+func NewFunctionVariables() *ScopeVariables {
+	return &ScopeVariables{nameToVariable: make(map[string]*VariableImpl)}
 }
 
-func NewFunctionVariablesWithParent(parent *FunctionVariables) *FunctionVariables {
-	return &FunctionVariables{nameToVariable: make(map[string]*VariableImpl), parent: parent}
+func NewFunctionVariablesWithParent(parent *ScopeVariables) *ScopeVariables {
+	return &ScopeVariables{nameToVariable: make(map[string]*VariableImpl), parent: parent}
 }
 
-func (c *FunctionVariables) DefineVariable(name string, posRange SourceStackPosRange) {
+func (c *ScopeVariables) DefineVariable(name string, posRange SourceStackPosRange) {
 	if uint(posRange.Size) == 0 {
 		panic(fmt.Errorf("octet size zero is not allowed for allocate stack memory"))
 	}
@@ -31,7 +31,7 @@ func (c *FunctionVariables) DefineVariable(name string, posRange SourceStackPosR
 	c.nameToVariable[name] = v
 }
 
-func (c *FunctionVariables) FindVariable(name string) (SourceStackPosRange, error) {
+func (c *ScopeVariables) FindVariable(name string) (SourceStackPosRange, error) {
 	existingVariable, alreadyHas := c.nameToVariable[name]
 	if !alreadyHas {
 		if c.parent != nil {

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/swamp/compiler/src/assembler_sp"
 	deccy "github.com/swamp/compiler/src/decorated"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	swampdisasm_sp "github.com/swamp/compiler/src/disassemble_sp"
@@ -19,12 +20,12 @@ import (
 	"github.com/swamp/compiler/src/verbosity"
 )
 
-func testGenerateInternal(code string) ([]*Function, error) {
+func testGenerateInternal(code string) (*assembler_sp.Constants, []*assembler_sp.Constant, error) {
 	const useCores = true
 	const errorsAsWarnings = false
 	module, compileErr := deccy.CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
 	if compileErr != nil {
-		return nil, compileErr
+		return nil, nil, compileErr
 	}
 
 	gen := NewGenerator()
@@ -32,19 +33,20 @@ func testGenerateInternal(code string) ([]*Function, error) {
 	const verboseFlag = verbosity.None
 	_, lookup, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {
-		return nil, typeInfoErr
+		return nil, nil, typeInfoErr
 	}
-	functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, rootContext, lookup, verboseFlag)
+	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, rootContext, lookup, verboseFlag)
 	if genErr != nil {
-		return nil, genErr
+		return nil, nil, genErr
 	}
-	return functions, genErr
+	return constants, functions, genErr
 }
 
-func checkGeneratedAssembler(functions []*Function, expectedAsm string) error {
+func checkGeneratedAssembler(constants *assembler_sp.Constants, functions []*assembler_sp.Constant, expectedAsm string) error {
 	var assemblerOutput string
 	for _, f := range functions {
-		lines := swampdisasm_sp.Disassemble(f.opcodes)
+		opcodes := constants.FetchOpcodes(f)
+		lines := swampdisasm_sp.Disassemble(opcodes)
 		assemblerOutput = assemblerOutput + fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
 	}
 
@@ -67,11 +69,11 @@ func checkGeneratedAssembler(functions []*Function, expectedAsm string) error {
 }
 
 func testGenerateInternalWithAssemblerCheck(code string, expectedAsm string) error {
-	functions, generateErr := testGenerateInternal(code)
+	constants, functions, generateErr := testGenerateInternal(code)
 	if generateErr != nil {
 		return generateErr
 	}
-	checkErr := checkGeneratedAssembler(functions, expectedAsm)
+	checkErr := checkGeneratedAssembler(constants, functions, expectedAsm)
 	return checkErr
 }
 
@@ -86,7 +88,7 @@ func testGenerate(t *testing.T, code string, expectedAsm string) {
 
 func testGenerateFail(t *testing.T, code string, expectedError interface{}) {
 	code = strings.TrimSpace(code)
-	_, testErr := testGenerateInternal(code)
+	_, _, testErr := testGenerateInternal(code)
 	if testErr == nil {
 		fmt.Printf("problem, should fail")
 		t.Errorf("was supposed to fail")

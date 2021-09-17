@@ -15,7 +15,7 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 
 		if len(assignment.LetVariables()) == 1 {
 			firstVar := assignment.LetVariables()[0]
-			genContext.context.functionVariables.DefineVariable(firstVar.Name().Name(), sourceVar)
+			genContext.context.scopeVariables.DefineVariable(firstVar.Name().Name(), sourceVar)
 		} else {
 		}
 	}

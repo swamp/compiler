@@ -6,7 +6,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func allocateVariable(scopeVariables *assembler_sp.FunctionVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName string, variableType dtype.Type) assembler_sp.SourceStackPosRange {
+func allocateVariable(scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName string, variableType dtype.Type) assembler_sp.SourceStackPosRange {
 	targetPosRange := allocMemoryForType(stackMemory, variableType, "variable:"+variableName)
 	sourcePosRange := targetToSourceStackPosRange(targetPosRange)
 	scopeVariables.DefineVariable(variableName, sourcePosRange)
@@ -32,7 +32,7 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 
 		for _, param := range consequence.Parameters() {
 			consequenceLabelVariableName := param.Identifier().Name()
-			paramVariable := allocateVariable(genContext.context.functionVariables, genContext.context.stackMemory, consequenceLabelVariableName, param.Type())
+			paramVariable := allocateVariable(genContext.context.scopeVariables, genContext.context.stackMemory, consequenceLabelVariableName, param.Type())
 			parameters = append(parameters, paramVariable)
 		}
 

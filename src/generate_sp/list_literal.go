@@ -27,3 +27,13 @@ func generateList(code *assembler_sp.Code, target assembler_sp.TargetStackPosRan
 	code.ListLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize))
 	return nil
 }
+
+func handleList(code *assembler_sp.Code,
+	list *decorated.ListLiteral, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := genContext.context.stackMemory.Allocate(Sizeof64BitPointer, Alignof64BitPointer, "listLiteral")
+	if err := generateList(code, posRange, list, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
+}

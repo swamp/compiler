@@ -198,15 +198,26 @@ const (
 )
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, definitions *decorator.VariableContext,
-	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) ([]*Function, error) {
-	var functionConstants []*Function
-
+	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*assembler_sp.Constants, []*assembler_sp.Constant, error) {
 	moduleContext := NewContext()
+
+	var functionConstants []*assembler_sp.Constant
 	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
+		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
+		if maybeFunction != nil {
+			fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
+			if _, err := moduleContext.Constants().AllocatePrepareFunctionConstant(fullyQualifiedName.String()); err != nil {
+				return nil, nil, err
+			}
+		}
+	}
 
+	for _, named := range module.LocalDefinitions().Definitions() {
+		unknownType := named.Expression()
 		fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
-
+		preparedFuncConstant := moduleContext.Constants().FindFunction(assembler_sp.VariableName(fullyQualifiedName.String()))
+		functionConstants = append(functionConstants, preparedFuncConstant)
 		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 		if maybeFunction != nil {
 			if verboseFlag >= verbosity.Mid {
@@ -215,17 +226,19 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 
 			rootContext := moduleContext.MakeFunctionContext()
 
-			functionConstant, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
+			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
 				rootContext, definitions, lookup, verboseFlag)
 			if genFuncErr != nil {
-				return nil, genFuncErr
+				return nil, nil, genFuncErr
 			}
 
-			if functionConstant == nil {
+			if generatedFunctionInfo == nil {
 				panic(fmt.Sprintf("problem %v\n", maybeFunction))
 			}
 
-			functionConstants = append(functionConstants, functionConstant)
+			moduleContext.Constants().DefineFunctionOpcodes(preparedFuncConstant, generatedFunctionInfo.opcodes)
+
+			rootContext.constants.DynamicMemory().DebugOutput()
 		} else {
 			maybeConstant, _ := unknownType.(*decorated.Constant)
 			if maybeConstant != nil {
@@ -233,10 +246,10 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 					fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 				}
 			} else {
-				return nil, fmt.Errorf("generate: unknown type %T", unknownType)
+				return nil, nil, fmt.Errorf("generate: unknown type %T", unknownType)
 			}
 		}
 	}
 
-	return functionConstants, nil
+	return moduleContext.constants, functionConstants, nil
 }
