@@ -258,8 +258,8 @@ func disassembleCreateArray(s *OpcodeInStream) *instruction_sp.CreateArray {
 }
 
 func disassembleCall(s *OpcodeInStream) *instruction_sp.Call {
-	functionRegister := s.readSourceStackPosition()
 	newStackPointer := s.readTargetStackPosition()
+	functionRegister := s.readSourceStackPosition()
 
 	return instruction_sp.NewCall(newStackPointer, functionRegister)
 }

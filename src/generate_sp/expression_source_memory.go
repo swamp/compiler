@@ -40,6 +40,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return genContext.context.scopeVariables.FindVariable(parameterReferenceName)
 	case *decorated.FunctionReference:
 		return handleFunctionReference(code, t, genContext.context.stackMemory, genContext.context.constants)
+	case *decorated.FunctionCall:
+		return handleFunctionCall(code, t, genContext)
 	case *decorated.RecordLiteral:
 		return handleRecordLiteral(code, t, genContext)
 	case *decorated.ListLiteral:

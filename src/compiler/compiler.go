@@ -230,7 +230,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 
 	dynamicMemoryOctets := constants.DynamicMemory().Octets()
 
-	packed, packedErr := generate_sp.Pack(allFunctions, dynamicMemoryOctets, typeInformationOctets)
+	packed, packedErr := generate_sp.Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)
 	if packedErr != nil {
 		return decorated.NewInternalError(packedErr)
 	}

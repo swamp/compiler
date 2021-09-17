@@ -22,8 +22,8 @@ func NewCall(newBasePointer opcode_sp_type.TargetStackPosition, function opcode_
 
 func (c *Call) Write(writer OpcodeWriter) error {
 	writer.Command(CmdCall)
-	writer.SourceStackPosition(c.function)
 	writer.TargetStackPosition(c.newBasePointer)
+	writer.SourceStackPosition(c.function)
 
 	return nil
 }
