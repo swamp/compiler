@@ -86,14 +86,6 @@ func (s *Stream) EnumCase(source opcode_sp_type.SourceStackPosition,
 	return c
 }
 
-func (s *Stream) CasePatternMatching(source opcode_sp_type.SourceStackPositionRange,
-	jumps []instruction_sp.CasePatternMatchingJump) *instruction_sp.CasePatternMatching {
-	c := instruction_sp.NewCasePatternMatching(source, jumps)
-	s.addInstruction(c)
-
-	return c
-}
-
 func (s *Stream) TailCall() *instruction_sp.TailCall {
 	c := instruction_sp.NewTailCall()
 	s.addInstruction(c)

@@ -140,11 +140,6 @@ func (c *Code) CopyMemory(target TargetStackPos, source SourceStackPosRange) {
 	c.addStatement(o)
 }
 
-func (c *Code) CasePatternMatching(test SourceStackPosRange, consequences []*CaseConsequencePatternMatching, defaultConsequence *CaseConsequencePatternMatching) {
-	o := &CasePatternMatching{test: test, consequences: consequences, defaultConsequence: defaultConsequence}
-	c.addStatement(o)
-}
-
 func (c *Code) BranchFalse(condition SourceStackPos, jump *Label) {
 	if jump == nil {
 		panic("swamp assembler: null jump")
@@ -287,27 +282,6 @@ func writeCase(stream *opcode_sp.Stream, caseExpr *Case) {
 	stream.EnumCase(sourceStackPosition(caseExpr.test), opLabels)
 }
 
-func writeCasePatternMatching(stream *opcode_sp.Stream, caseExpr *CasePatternMatching) {
-	var opLabels []instruction_sp.CasePatternMatchingJump
-
-	for _, consequence := range caseExpr.consequences {
-		label := consequence.label.OpLabel()
-
-		caseJump := instruction_sp.NewCasePatternMatchingJump(sourceStackPosition(consequence.LiteralVariable()), label)
-		opLabels = append(opLabels, caseJump)
-	}
-
-	defaultCons := caseExpr.defaultConsequence
-
-	if caseExpr.defaultConsequence != nil {
-		label := defaultCons.label.OpLabel()
-		caseJump := instruction_sp.NewCasePatternMatchingJump(sourceStackPosition(caseExpr.test.Pos), label)
-		opLabels = append(opLabels, caseJump)
-	}
-
-	stream.CasePatternMatching(sourceStackPositionRange(caseExpr.test), opLabels)
-}
-
 func writeList(stream *opcode_sp.Stream, listLiteral *ListLiteral) {
 	var registers []opcode_sp_type.SourceStackPosition
 
@@ -377,8 +351,6 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeJump(opStream, t)
 	case *Case:
 		writeCase(opStream, t)
-	case *CasePatternMatching:
-		writeCasePatternMatching(opStream, t)
 	case *ListLiteral:
 		writeList(opStream, t)
 	case *LoadInteger:

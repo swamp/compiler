@@ -247,3 +247,19 @@ tester x =
 `, `
 `)
 }
+
+func TestCasePatternMatchingString(t *testing.T) {
+	testGenerate(t,
+		`
+some : String -> Int
+some a =
+    case a of
+        "hello" -> 0
+
+        "something else" -> 1
+
+        _ -> -1
+	`, `
+
+`)
+}

@@ -12,23 +12,29 @@ import (
 type Commands uint8
 
 const (
-	CmdCreateStruct Commands = 0x01
-	CmdUpdateStruct Commands = 0x02
-	CmdListConj     Commands = 0x05
-
+	// Branching
 	CmdEnumCase    Commands = 0x06
 	CmdBranchFalse Commands = 0x07
+	CmdBranchTrue  Commands = 0x1c
 	CmdJump        Commands = 0x08
 
+	// Call
 	CmdCall         Commands = 0x09
 	CmdReturn       Commands = 0x0a
 	CmdCallExternal Commands = 0x0b
 	CmdTailCall     Commands = 0x0c
+	CmdCurry        Commands = 0x20
 
-	CmdIntAdd Commands = 0x0d
-	CmdIntSub Commands = 0x0e
-	CmdIntMul Commands = 0x0f
-	CmdIntDiv Commands = 0x10
+	// Arithmetic
+	CmdIntAdd    Commands = 0x0d
+	CmdIntSub    Commands = 0x0e
+	CmdIntMul    Commands = 0x0f
+	CmdIntDiv    Commands = 0x10
+	CmdIntNegate Commands = 0x27
+
+	// Arithmetic fixed point
+	CmdFixedMul Commands = 0x25
+	CmdFixedDiv Commands = 0x26
 
 	// Boolean operators
 	CmdIntEqual          Commands = 0x11
@@ -38,41 +44,39 @@ const (
 	CmdIntGreater        Commands = 0x15
 	CmdIntGreaterOrEqual Commands = 0x16
 
+	// Boolean
+	CmdBoolLogicalNot Commands = 0x1b
+
+	// Boolean strings
+	CmdStringEqual    Commands = 0x35
+	CmdStringNotEqual Commands = 0x36
+
 	// Bitwise operators
 	CmdIntBitwiseAnd Commands = 0x17
 	CmdIntBitwiseOr  Commands = 0x18
 	CmdIntBitwiseXor Commands = 0x19
 	CmdIntBitwiseNot Commands = 0x1a
 
-	CmdBoolLogicalNot      Commands = 0x1b
-	CmdBranchTrue          Commands = 0x1c
-	CmdCasePatternMatching Commands = 0x1d
-	CmdValueEqual          Commands = 0x1e
-	CmdValueNotEqual       Commands = 0x1f
+	// Creating dynamic structures
+	CmdCreateList  Commands = 0x21
+	CmdCreateArray Commands = 0x29
 
-	CmdCurry        Commands = 0x20
-	CmdCreateList   Commands = 0x21
+	// Append
+	CmdListConj     Commands = 0x05
 	CmdListAppend   Commands = 0x22
 	CmdStringAppend Commands = 0x24
 
-	CmdFixedMul              Commands = 0x25
-	CmdFixedDiv              Commands = 0x26
-	CmdIntNegate             Commands = 0x27
-	CmdCreateArray           Commands = 0x29
-	CmdCopyMemory            Commands = 0x30
+	// Load
 	CmdLoadInteger           Commands = 0x31
 	CmdLoadBoolean           Commands = 0x32
-	CmdLoadZeroMemoryPointer Commands = 0x33
-	CmdSetEnum               Commands = 0x34
-	CmdStringEqual           Commands = 0x35
-	CmdStringNotEqual        Commands = 0x36
 	CmdLoadRune              Commands = 0x37
+	CmdLoadZeroMemoryPointer Commands = 0x33
+	CmdCopyMemory            Commands = 0x30
+	CmdSetEnum               Commands = 0x34
 )
 
 func OpcodeToMnemonic(cmd Commands) string {
 	names := map[Commands]string{
-		CmdCreateStruct:          "crs",
-		CmdUpdateStruct:          "upd",
 		CmdListConj:              "conj",
 		CmdEnumCase:              "case",
 		CmdBranchFalse:           "bne",
@@ -97,9 +101,6 @@ func OpcodeToMnemonic(cmd Commands) string {
 		CmdIntBitwiseNot:         "bnot",
 		CmdBoolLogicalNot:        "not",
 		CmdBranchTrue:            "brt",
-		CmdCasePatternMatching:   "csep",
-		CmdValueEqual:            "cpve",
-		CmdValueNotEqual:         "cpvne",
 		CmdCurry:                 "curry",
 		CmdCreateList:            "crl",
 		CmdListAppend:            "lap",

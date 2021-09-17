@@ -27,8 +27,6 @@ const (
 	BinaryOperatorArithmeticListAppend
 	BinaryOperatorArithmeticFixedDivide
 	BinaryOperatorArithmeticFixedMultiply
-	BinaryOperatorBooleanValueEqual
-	BinaryOperatorBooleanValueNotEqual
 	BinaryOperatorBooleanStringEqual
 	BinaryOperatorBooleanStringNotEqual
 )
@@ -68,10 +66,6 @@ func BinaryOperatorToOpCode(operator BinaryOperatorType) Commands {
 		return CmdIntBitwiseOr
 	case BinaryOperatorBitwiseIntXor:
 		return CmdIntBitwiseXor
-	case BinaryOperatorBooleanValueEqual:
-		return CmdValueEqual
-	case BinaryOperatorBooleanValueNotEqual:
-		return CmdValueNotEqual
 	}
 
 	panic("swamp opcodes: unknown binary operator")

@@ -308,33 +308,6 @@ func disassembleEnumCase(s *OpcodeInStream) *instruction_sp.EnumCase {
 	return instruction_sp.NewEnumCase(source, jumps)
 }
 
-func disassembleCasePatternMatching(s *OpcodeInStream) *instruction_sp.CasePatternMatching {
-	source := s.readSourceStackPositionRange()
-	count := s.readCount()
-
-	var jumps []instruction_sp.CasePatternMatchingJump
-
-	var lastLabel *opcode_sp_type.Label
-
-	for i := 0; i < count; i++ {
-		literalRegister := s.readSourceStackPosition()
-
-		var label *opcode_sp_type.Label
-
-		if lastLabel != nil {
-			label = s.readLabelOffset(lastLabel.DefinedProgramCounter())
-		} else {
-			label = s.readLabel()
-		}
-
-		lastLabel = label
-		jump := instruction_sp.NewCasePatternMatchingJump(literalRegister, label)
-		jumps = append(jumps, jump)
-	}
-
-	return instruction_sp.NewCasePatternMatching(source, jumps)
-}
-
 func disassembleMemoryCopy(s *OpcodeInStream) *instruction_sp.MemoryCopy {
 	destination := s.readTargetStackPosition()
 	source := s.readSourceStackPositionRange()
@@ -392,10 +365,6 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleBinaryOperator(cmd, s)
 	case instruction_sp.CmdIntGreaterOrEqual:
 		return disassembleBinaryOperator(cmd, s)
-	case instruction_sp.CmdValueEqual:
-		return disassembleBinaryOperator(cmd, s)
-	case instruction_sp.CmdValueNotEqual:
-		return disassembleBinaryOperator(cmd, s)
 	case instruction_sp.CmdFixedDiv:
 		return disassembleBinaryOperator(cmd, s)
 	case instruction_sp.CmdFixedMul:
@@ -412,8 +381,6 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleCreateArray(s)
 	case instruction_sp.CmdEnumCase:
 		return disassembleEnumCase(s)
-	case instruction_sp.CmdCasePatternMatching:
-		return disassembleCasePatternMatching(s)
 	case instruction_sp.CmdCopyMemory:
 		return disassembleMemoryCopy(s)
 	case instruction_sp.CmdCall:

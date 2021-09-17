@@ -39,17 +39,6 @@ func booleanToBinaryStringOperatorType(operatorType decorated.BooleanOperatorTyp
 	return 0
 }
 
-func booleanToBinaryValueOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
-	switch operatorType {
-	case decorated.BooleanEqual:
-		return instruction_sp.BinaryOperatorBooleanValueEqual
-	case decorated.BooleanNotEqual:
-		return instruction_sp.BinaryOperatorBooleanValueNotEqual
-	}
-
-	return 0
-}
-
 func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.BooleanOperator, genContext *generateContext) error {
 	leftVar, leftErr := generateExpressionWithSourceVar(code, operator.Left(), genContext, "bool-left")
 	if leftErr != nil {
@@ -72,7 +61,6 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 		opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
 
 		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
-		opcodeBinaryOperator = booleanToBinaryValueOperatorType(operator.OperatorType())
 	} else {
 		panic(fmt.Errorf("what operator is this for %v", foundPrimitive.AtomName()))
 	}
