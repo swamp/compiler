@@ -85,37 +85,44 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationSta
 		parameters = append(parameters, argDef)
 	}
 
-	subVariableContext := createVariableContextFromParameters(context, parameters, forcedFunctionType, functionName)
-	functionValueExpression := potentialFunc.Expression()
-	decoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
-	if decoratedExpressionErr != nil {
-		return nil, decoratedExpressionErr
-	}
+	var decoratedExpression decorated.Expression
+	if !annotation.Annotation().IsExternal() {
+		subVariableContext := createVariableContextFromParameters(context, parameters, forcedFunctionType, functionName)
+		functionValueExpression := potentialFunc.Expression()
+		convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
+		if decoratedExpressionErr != nil {
+			return nil, decoratedExpressionErr
+		}
 
-	decoratedExpressionType := decoratedExpression.Type()
-	if decoratedExpressionType == nil {
-		fmt.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
-	}
+		decoratedExpression = convertedDecoratedExpression
 
-	compatibleErr := dectype.CompatibleTypes(expectedReturnType, decoratedExpressionType)
-	if compatibleErr != nil {
-		return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, functionValueExpression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
-	}
+		decoratedExpressionType := decoratedExpression.Type()
+		if decoratedExpressionType == nil {
+			fmt.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
+		}
 
-	checkForNoLint := "a" // CheckForNoLint(comments)
-	if checkForNoLint != "unused" {
-		for _, functionVariable := range subVariableContext.InternalLookups() {
-			if !functionVariable.WasReferenced() {
-				_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
-				if !isAssemblerFunction {
-					// err := decorated.NewUnusedVariable(functionVariable, potentialFunc)
-					// TODO: ADD THIS AS ERROR
-					// d.AddDecoratedError(err)
+		compatibleErr := dectype.CompatibleTypes(expectedReturnType, decoratedExpressionType)
+		if compatibleErr != nil {
+			return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, functionValueExpression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
+		}
+
+		checkForNoLint := "a" // CheckForNoLint(comments)
+		if checkForNoLint != "unused" {
+			for _, functionVariable := range subVariableContext.InternalLookups() {
+				if !functionVariable.WasReferenced() {
+					_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
+					if !isAssemblerFunction {
+						// err := decorated.NewUnusedVariable(functionVariable, potentialFunc)
+						// TODO: ADD THIS AS ERROR
+						// d.AddDecoratedError(err)
+					}
 				}
 			}
+		} else {
+			// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
 		}
 	} else {
-		// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
+		decoratedExpression = annotation
 	}
 
 	return decorated.NewFunctionValue(annotation, potentialFunc, forcedFunctionTypeLike, parameters, decoratedExpression, comments), nil

@@ -20,7 +20,6 @@ type AnnotationStatement struct {
 }
 
 func NewAnnotation(astAnnotation *ast.Annotation, t dtype.Type) *AnnotationStatement {
-	// inclusive := token.MakeInclusiveSourceFileReference(astAnnotationidentifier.FetchPositionLength(), t.FetchPositionLength())
 	return &AnnotationStatement{astAnnotation: astAnnotation, t: t}
 }
 

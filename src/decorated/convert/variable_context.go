@@ -28,6 +28,9 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 }
 
 func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression decorated.Expression, module *decorated.Module) (decorated.Expression, decshared.DecoratedError) {
+	if expression == nil {
+		panic("reference from variable can not be nil")
+	}
 	switch t := expression.(type) {
 	case *decorated.FunctionValue:
 		var moduleRef *decorated.ModuleReference
@@ -113,7 +116,12 @@ func (c *VariableContext) FindScopedNamedDecoratedExpression(name *ast.VariableI
 		return nil
 	}
 
-	def := decorated.NewNamedDecoratedExpression(mDef.FullyQualifiedVariableName().String(), mDef, mDef.Expression())
+	var def *decorated.NamedDecoratedExpression
+	if mDef.IsExternal() {
+		def = decorated.NewNamedEmpty(mDef.FullyQualifiedVariableName().String(), mDef)
+	} else {
+		def = decorated.NewNamedDecoratedExpression(mDef.FullyQualifiedVariableName().String(), mDef, mDef.Expression())
+	}
 
 	return def
 }

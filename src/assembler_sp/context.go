@@ -12,7 +12,7 @@ import (
 
 type Context struct {
 	scopeVariables *ScopeVariables
-	constants      *Constants
+	constants      *PackageConstants
 }
 
 func (c *Context) MakeScopeContext() *Context {
@@ -27,7 +27,7 @@ func (c *Context) ScopeVariables() *ScopeVariables {
 	return c.scopeVariables
 }
 
-func (r *Context) Constants() *Constants {
+func (r *Context) Constants() *PackageConstants {
 	return r.constants
 }
 
@@ -43,7 +43,7 @@ func (c *Context) String() string {
 func (c *Context) ShowSummary() {
 	fmt.Printf("---------- Variables ------------\n")
 	fmt.Printf("%v\n", c.scopeVariables)
-	fmt.Printf("---------- Constants ------------\n")
+	fmt.Printf("---------- PackageConstants ------------\n")
 	fmt.Printf("%v\n", c.constants)
 	fmt.Printf("---------------------------------\n")
 }

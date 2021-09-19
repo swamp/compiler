@@ -178,12 +178,44 @@ func (g *RootStatementHandler) handleNamedFunctionValue(d DecorateStream, assign
 
 func (g *RootStatementHandler) handleAnnotation(d DecorateStream, declaration *ast.Annotation) (*decorated.AnnotationStatement, decshared.DecoratedError) {
 	if g.localAnnotation != nil {
-		return nil, decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
+		if !g.localAnnotation.Annotation().IsExternal() {
+			return nil, decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
+		}
 	}
 	annotatedType := declaration.AnnotatedType()
 	g.localCommentBlock = declaration.CommentBlock()
 
-	return g.functionAnnotation(declaration, annotatedType)
+	annotationStatement, err := g.functionAnnotation(declaration, annotatedType)
+	if err != nil {
+		return nil, err
+	}
+
+	functionAtom := annotationStatement.Type().(*dectype.FunctionTypeReference).FunctionAtom()
+	if declaration.IsExternal() {
+		annotatedType := g.localAnnotation.Type()
+		if annotatedType == nil {
+			return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
+		}
+		variableContext := d.NewVariableContext()
+		var parameters []*ast.VariableIdentifier
+		parameterTypes, _ := functionAtom.ParameterAndReturn()
+		for index := range parameterTypes {
+			s := fmt.Sprintf("var%d", index)
+			parameters = append(parameters, ast.NewVariableIdentifier(token.NewVariableSymbolToken(s, token.SourceFileReference{}, 0)))
+		}
+		dummyExpression := ast.NewExternalFunctionExpression(functionAtom.FetchPositionLength())
+		functionValue := ast.NewFunctionValue(token.VariableSymbolToken{}, parameters, dummyExpression, nil)
+		converted, convertedErr := convertAnnotationToFunctionValue(d, variableContext,
+			annotationStatement.Identifier(), functionValue, annotationStatement.Type(),
+			annotationStatement, nil)
+		if convertedErr != nil {
+			return nil, convertedErr
+		}
+
+		d.AddDefinition(declaration.Identifier(), converted)
+	}
+
+	return annotationStatement, nil
 }
 
 func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {

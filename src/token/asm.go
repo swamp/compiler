@@ -42,34 +42,18 @@ func (s AsmToken) FetchPositionLength() SourceFileReference {
 // Keyword :
 type ExternalFunctionToken struct {
 	SourceFileReference
-	functionName   string
-	parameterCount uint
-	raw            string
-	commentToken   IndentationReport
 }
 
-func NewExternalFunctionToken(raw string, functionName string, parameterCount uint, commentToken IndentationReport, startPosition SourceFileReference) ExternalFunctionToken {
-	return ExternalFunctionToken{raw: raw, functionName: functionName, parameterCount: parameterCount, commentToken: commentToken, SourceFileReference: startPosition}
-}
-
-func (s ExternalFunctionToken) Raw() string {
-	return s.raw
+func NewExternalFunctionToken(startPosition SourceFileReference) ExternalFunctionToken {
+	return ExternalFunctionToken{SourceFileReference: startPosition}
 }
 
 func (s ExternalFunctionToken) Type() Type {
 	return ExternalFunction
 }
 
-func (s ExternalFunctionToken) ExternalFunction() string {
-	return s.functionName
-}
-
-func (s ExternalFunctionToken) ParameterCount() uint {
-	return s.parameterCount
-}
-
 func (s ExternalFunctionToken) String() string {
-	return fmt.Sprintf("[externalfn %v %d]", s.functionName, s.parameterCount)
+	return fmt.Sprintf("[externalfn]")
 }
 
 func (s ExternalFunctionToken) FetchPositionLength() SourceFileReference {

@@ -116,6 +116,8 @@ func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
 				return SizeofSwampBool, AlignOfSwampBool
 			case "Int":
 				return SizeofSwampInt, AlignOfSwampInt
+			case "Fixed":
+				return SizeofSwampInt, AlignOfSwampInt
 			case "Char":
 				return SizeofSwampInt, AlignOfSwampInt
 			case "String":
@@ -202,20 +204,10 @@ const (
 )
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, definitions *decorator.VariableContext,
-	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*assembler_sp.Constants, []*assembler_sp.Constant, error) {
-	moduleContext := NewContext()
+	lookup typeinfo.TypeLookup, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
+	moduleContext := NewContext(packageConstants)
 
 	var functionConstants []*assembler_sp.Constant
-	for _, named := range module.LocalDefinitions().Definitions() {
-		unknownType := named.Expression()
-		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
-		if maybeFunction != nil {
-			fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
-			if _, err := moduleContext.Constants().AllocatePrepareFunctionConstant(fullyQualifiedName.String()); err != nil {
-				return nil, nil, err
-			}
-		}
-	}
 
 	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
@@ -230,6 +222,9 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 
 			rootContext := moduleContext.MakeFunctionContext()
 
+			if maybeFunction.Annotation().Annotation().IsExternal() {
+				continue
+			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
 				rootContext, definitions, lookup, verboseFlag)
 			if genFuncErr != nil {

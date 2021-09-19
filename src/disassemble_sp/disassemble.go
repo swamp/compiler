@@ -265,11 +265,10 @@ func disassembleCall(s *OpcodeInStream) *instruction_sp.Call {
 }
 
 func disassembleCallExternal(s *OpcodeInStream) *instruction_sp.CallExternal {
-	destination := s.readTargetStackPosition()
+	newStackPointer := s.readTargetStackPosition()
 	functionRegister := s.readSourceStackPosition()
-	arguments := s.readSourceStackPositions()
 
-	return instruction_sp.NewCallExternal(destination, functionRegister, arguments)
+	return instruction_sp.NewCallExternal(newStackPointer, functionRegister)
 }
 
 func disassembleCurry(s *OpcodeInStream) *instruction_sp.Curry {

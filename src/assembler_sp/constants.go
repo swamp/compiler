@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Constants struct {
+type PackageConstants struct {
 	constants         []*Constant
 	functions         []*Constant
 	externalFunctions []*Constant
@@ -15,13 +15,13 @@ type Constants struct {
 	dynamicMapper     *DynamicMemoryMapper
 }
 
-func NewConstants() *Constants {
-	return &Constants{
+func NewPackageConstants() *PackageConstants {
+	return &PackageConstants{
 		dynamicMapper: DynamicMemoryMapperNew(128 * 1024),
 	}
 }
 
-func (c *Constants) String() string {
+func (c *PackageConstants) String() string {
 	s := "\n"
 	for _, constant := range c.constants {
 		if constant == nil {
@@ -32,11 +32,11 @@ func (c *Constants) String() string {
 	return strings.TrimSpace(s)
 }
 
-func (c *Constants) Constants() []*Constant {
+func (c *PackageConstants) Constants() []*Constant {
 	return c.constants
 }
 
-func (c *Constants) DynamicMemory() *DynamicMemoryMapper {
+func (c *PackageConstants) DynamicMemory() *DynamicMemoryMapper {
 	return c.dynamicMapper
 }
 
@@ -47,7 +47,7 @@ func (c *Constants) DynamicMemory() *DynamicMemoryMapper {
 
 const SizeofSwampString = 16
 
-func (c *Constants) AllocateStringConstant(s string) *Constant {
+func (c *PackageConstants) AllocateStringConstant(s string) *Constant {
 	for _, constant := range c.strings {
 		if constant.str == s {
 			return constant
@@ -80,7 +80,7 @@ func intValue(memory *DynamicMemoryMapper, pos SourceDynamicMemoryPos) int32 {
 }
 
 /*
-func (c *Constants) AllocateResourceNameConstant(name string) *Constant {
+func (c *PackageConstants) AllocateResourceNameConstant(name string) *Constant {
 	for _, constant := range c.constants {
 		if constant.constantType == ConstantTypeResourceName {
 			if constant.str == name {
@@ -119,25 +119,38 @@ typedef struct SwampFunc {
 } SwampFunc;
 */
 
-const SizeofSwampFunc = 11 * 8
+/*
+typedef struct SwampFunc {
+    SwampFunction func;
+    size_t parameterCount;
+    size_t parametersOctetSize;
+    const uint8_t* opcodes;
+    size_t opcodeCount;
+    size_t returnOctetSize;
+    const char* debugName;
+    uint16_t typeIndex;
+} SwampFunc;
+*/
 
-func (c *Constants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName string,
+const (
+	SizeofSwampFunc         = 9 * 8
+	SizeofSwampExternalFunc = 15 * 8
+)
+
+func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName string,
 	opcodesPointer SourceDynamicMemoryPosRange) (*Constant, error) {
 	var swampFuncStruct [SizeofSwampFunc]byte
 
-	binary.LittleEndian.PutUint64(swampFuncStruct[0:8], uint64(0))
-	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(0))  // Curry Octets
-	binary.LittleEndian.PutUint64(swampFuncStruct[16:24], uint64(0)) // Curry fn
-	binary.LittleEndian.PutUint64(swampFuncStruct[24:32], uint64(0)) // parameterCount
-	binary.LittleEndian.PutUint64(swampFuncStruct[24:32], uint64(0)) // parameters octet size
+	binary.LittleEndian.PutUint32(swampFuncStruct[0:4], uint32(0))
+	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(0))  // parameterCount
+	binary.LittleEndian.PutUint64(swampFuncStruct[16:24], uint64(0)) // parameters octet size
 
-	binary.LittleEndian.PutUint64(swampFuncStruct[32:40], uint64(opcodesPointer.Position))
-	binary.LittleEndian.PutUint64(swampFuncStruct[40:48], uint64(opcodesPointer.Size))
+	binary.LittleEndian.PutUint64(swampFuncStruct[24:32], uint64(opcodesPointer.Position))
+	binary.LittleEndian.PutUint64(swampFuncStruct[32:40], uint64(opcodesPointer.Size))
 
-	binary.LittleEndian.PutUint64(swampFuncStruct[48:56], uint64(0)) // totalStackUsed
-	binary.LittleEndian.PutUint64(swampFuncStruct[56:64], uint64(0)) // returnOctetSize
-	binary.LittleEndian.PutUint64(swampFuncStruct[64:72], uint64(0)) // debugName
-	binary.LittleEndian.PutUint64(swampFuncStruct[72:80], uint64(0)) // typeIndex
+	binary.LittleEndian.PutUint64(swampFuncStruct[40:48], uint64(0)) // returnOctetSize
+	binary.LittleEndian.PutUint64(swampFuncStruct[48:56], uint64(0)) // debugName
+	binary.LittleEndian.PutUint64(swampFuncStruct[56:64], uint64(0)) // typeIndex
 
 	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], "function Struct for:"+uniqueFullyQualifiedFunctionName)
 
@@ -148,9 +161,35 @@ func (c *Constants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName stri
 	return newConstant, nil
 }
 
-const SwampFuncOpcodeOffset = 40
+func (c *PackageConstants) AllocateExternalFunctionStruct(uniqueFullyQualifiedFunctionName string, parameterCount int) (*Constant, error) {
+	var swampFuncStruct [SizeofSwampExternalFunc]byte
 
-func (c *Constants) FetchOpcodes(functionConstant *Constant) []byte {
+	binary.LittleEndian.PutUint32(swampFuncStruct[0:4], uint32(1))               // external type
+	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(parameterCount)) // parameterCount
+	binary.LittleEndian.PutUint32(swampFuncStruct[16:20], uint32(0))             // return pos
+	binary.LittleEndian.PutUint32(swampFuncStruct[20:24], uint32(0))             // return size
+
+	/*
+		for _, x := range parameters {
+
+		}
+
+	*/
+	binary.LittleEndian.PutUint32(swampFuncStruct[24:30], uint32(0)) // ] pos
+	binary.LittleEndian.PutUint32(swampFuncStruct[20:24], uint32(0)) // return size
+
+	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], "external function Struct for:"+uniqueFullyQualifiedFunctionName)
+
+	newConstant := NewExternalFunctionReferenceConstantWithDebug("fn", uniqueFullyQualifiedFunctionName, funcPointer)
+	c.constants = append(c.constants, newConstant)
+	c.externalFunctions = append(c.externalFunctions, newConstant)
+
+	return newConstant, nil
+}
+
+const SwampFuncOpcodeOffset = 24
+
+func (c *PackageConstants) FetchOpcodes(functionConstant *Constant) []byte {
 	readSection := SourceDynamicMemoryPosRange{
 		Position: SourceDynamicMemoryPos(uint(functionConstant.source.Position + SwampFuncOpcodeOffset)),
 		Size:     DynamicMemoryRange(8 + 8),
@@ -167,7 +206,7 @@ func (c *Constants) FetchOpcodes(functionConstant *Constant) []byte {
 	return c.dynamicMapper.Read(readOpcodeSection)
 }
 
-func (c *Constants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunctionName string) (*Constant, error) {
+func (c *PackageConstants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunctionName string) (*Constant, error) {
 	pointer := SourceDynamicMemoryPosRange{
 		Position: 0,
 		Size:     0,
@@ -176,7 +215,11 @@ func (c *Constants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunction
 	return c.AllocateFunctionStruct(uniqueFullyQualifiedFunctionName, pointer)
 }
 
-func (c *Constants) DefineFunctionOpcodes(funcConstant *Constant, opcodes []byte) error {
+func (c *PackageConstants) AllocatePrepareExternalFunctionConstant(uniqueFullyQualifiedFunctionName string, parameterCount int) (*Constant, error) {
+	return c.AllocateExternalFunctionStruct(uniqueFullyQualifiedFunctionName, parameterCount)
+}
+
+func (c *PackageConstants) DefineFunctionOpcodes(funcConstant *Constant, opcodes []byte) error {
 	opcodesPointer := c.dynamicMapper.Write(opcodes, "opcodes for:"+funcConstant.str)
 
 	overwritePointer := SourceDynamicMemoryPos(uint(funcConstant.PosRange().Position) + SwampFuncOpcodeOffset)
@@ -192,7 +235,7 @@ func (c *Constants) DefineFunctionOpcodes(funcConstant *Constant, opcodes []byte
 }
 
 /*
-func (c *Constants) AllocateExternalFunctionConstant(uniqueFullyQualifiedFunctionName string) (*Constant, error) {
+func (c *PackageConstants) AllocateExternalFunctionConstant(uniqueFullyQualifiedFunctionName string) (*Constant, error) {
 	for _, constant := range c.constants {
 		if constant.constantType == ConstantTypeFunctionExternal {
 			if constant.str == uniqueFullyQualifiedFunctionName {
@@ -209,20 +252,37 @@ func (c *Constants) AllocateExternalFunctionConstant(uniqueFullyQualifiedFunctio
 
 
 */
-func (c *Constants) FindFunction(identifier VariableName) *Constant {
+func (c *PackageConstants) FindFunction(identifier VariableName) *Constant {
 	for _, constant := range c.functions {
 		if constant.str == string(identifier) {
 			return constant
 		}
 	}
 
-	log.Printf("couldn't find %v", identifier)
+	return c.FindExternalFunction(identifier)
+	/*
+		log.Printf("couldn't find constant function %v", identifier)
+		c.DebugOutput()
+
+		return nil
+
+	*/
+}
+
+func (c *PackageConstants) FindExternalFunction(identifier VariableName) *Constant {
+	for _, constant := range c.externalFunctions {
+		if constant.str == string(identifier) {
+			return constant
+		}
+	}
+
+	log.Printf("couldn't find constant external function %v", identifier)
 	c.DebugOutput()
 
 	return nil
 }
 
-func (c *Constants) FindStringConstant(s string) *Constant {
+func (c *PackageConstants) FindStringConstant(s string) *Constant {
 	for _, constant := range c.strings {
 		if constant.str == s {
 			return constant
@@ -231,7 +291,7 @@ func (c *Constants) FindStringConstant(s string) *Constant {
 	return nil
 }
 
-func (c *Constants) DebugOutput() {
+func (c *PackageConstants) DebugOutput() {
 	log.Printf("functions:\n")
 	for _, function := range c.functions {
 		log.Printf("%v %v\n", function.str, function.debugString)

@@ -7,7 +7,7 @@ import (
 )
 
 func generateStringLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.StringLiteral,
-	constants *assembler_sp.Constants) error {
+	constants *assembler_sp.PackageConstants) error {
 	constant := constants.AllocateStringConstant(str.Value())
 	code.LoadZeroMemoryPointer(target.Pos, constant.PosRange().Position)
 	return nil
@@ -34,7 +34,7 @@ func generateFixedLiteral(code *assembler_sp.Code, target assembler_sp.TargetSta
 }
 
 func generateResourceNameLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	resourceName *decorated.ResourceNameLiteral, context *assembler_sp.Constants) error {
+	resourceName *decorated.ResourceNameLiteral, context *assembler_sp.PackageConstants) error {
 	return nil
 }
 

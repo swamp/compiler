@@ -10,7 +10,7 @@ import (
 func handleFunctionReference(code *assembler_sp.Code,
 	t *decorated.FunctionReference,
 	stackMemory *assembler_sp.StackMemoryMapper,
-	constants *assembler_sp.Constants) (assembler_sp.SourceStackPosRange, error) {
+	constants *assembler_sp.PackageConstants) (assembler_sp.SourceStackPosRange, error) {
 	ident := t.Identifier()
 	functionReferenceName := assembler_sp.VariableName(ident.Name())
 	foundConstant := constants.FindFunction(functionReferenceName)

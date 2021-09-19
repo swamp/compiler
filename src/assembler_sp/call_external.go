@@ -8,11 +8,10 @@ package assembler_sp
 import "fmt"
 
 type CallExternal struct {
-	target         TargetStackPosRange
 	function       SourceStackPos
-	newBasePointer SourceStackPos
+	newBasePointer TargetStackPos
 }
 
 func (o *CallExternal) String() string {
-	return fmt.Sprintf("[CallExternal %v (%v)]", o.function, o.newBasePointer)
+	return fmt.Sprintf("[callExternal %v]", o.function)
 }

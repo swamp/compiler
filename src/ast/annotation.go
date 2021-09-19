@@ -15,14 +15,19 @@ type Annotation struct {
 	symbol            *VariableIdentifier
 	annotatedType     Type
 	precedingComments *MultilineComment
+	isExternal        bool
 }
 
-func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, precedingComments *MultilineComment) *Annotation {
+func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, isExternal bool,
+	precedingComments *MultilineComment) *Annotation {
 	if annotatedType == nil {
 		panic("must set annotated type")
 	}
 
-	return &Annotation{symbol: variableIdentifier, annotatedType: annotatedType, precedingComments: precedingComments}
+	return &Annotation{
+		symbol: variableIdentifier, annotatedType: annotatedType,
+		isExternal: isExternal, precedingComments: precedingComments,
+	}
 }
 
 func (d *Annotation) CommentBlock() *MultilineComment {
@@ -35,6 +40,10 @@ func (d *Annotation) AnnotatedType() Type {
 
 func (d *Annotation) Identifier() *VariableIdentifier {
 	return d.symbol
+}
+
+func (d *Annotation) IsExternal() bool {
+	return d.isExternal
 }
 
 func (d *Annotation) FetchPositionLength() token.SourceFileReference {

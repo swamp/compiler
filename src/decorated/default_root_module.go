@@ -156,82 +156,19 @@ head lst =
 `
 
 const mathCode = `
-__externalfn coreMathRemainderBy 2
-remainderBy : Int -> Int -> Int
-remainderBy rem v =
-    __asm callexternal 00 coreMathRemainderBy 01 02
-
-
-__externalfn coreMathSin 1
-sin : Fixed -> Fixed
-sin angle =
-    __asm callexternal 00 coreMathSin 01
-
-
-__externalfn coreMathCos 1
-cos : Fixed -> Fixed
-cos angle =
-    __asm callexternal 00 coreMathCos 01
-
-
-__externalfn coreMathRnd 2
-rnd : Int -> Int -> Int
-rnd t mod =
-    __asm callexternal 00 coreMathRnd 01 02
-
-
-__externalfn coreMathAtan2 2
-atan2 : Int -> Int -> Fixed
-atan2 x y =
-    __asm callexternal 00 coreMathAtan2 01 02
-
-
-__externalfn coreMathMid 2
-mid : Int -> Int -> Int
-mid x y =
-    __asm callexternal 00 coreMathMid 01 02
-
-
-__externalfn coreMathAbs 1
-abs : Int -> Int
-abs x =
-    __asm callexternal 00 coreMathAbs 01
-
-
-__externalfn coreMathSign 1
-sign : Int -> Int
-sign x =
-    __asm callexternal 00 coreMathSign 01
-
-
-__externalfn coreMathClamp 3
-clamp : Int -> Int -> Int -> Int
-clamp v min max =
-    __asm callexternal 00 coreMathClamp 01 02 03
-
-
-__externalfn coreMathLerp 3
-lerp : Fixed -> Int -> Int -> Int
-lerp t from to =
-    __asm callexternal 00 coreMathLerp 01 02 03
-
-
-__externalfn coreMathMetronome 4
-metronome : Int -> Int -> Int -> Int -> Bool
-metronome a t from to =
-    __asm callexternal 00 coreMathMetronome 01 02 03 04
-
-
-__externalfn coreMathDrunk 3
-drunk : Int -> Int -> Int -> Int
-drunk t from to =
-    __asm callexternal 00 coreMathDrunk 01 02 03
-
-
-__externalfn coreMathMod 2
-mod : Int -> Int -> Int
-mod rem v =
-    __asm callexternal 00 coreMathMod 01 02
+__externalfn remainderBy : Int -> Int -> Int
+__externalfn sin : Fixed -> Fixed
+__externalfn cos : Fixed -> Fixed
+__externalfn rnd : Int -> Int -> Int
+__externalfn atan2 : Int -> Int -> Fixed
+__externalfn mid : Int -> Int -> Int
+__externalfn abs : Int -> Int
+__externalfn sign : Int -> Int
+__externalfn clamp : Int -> Int -> Int -> Int
+__externalfn lerp : Fixed -> Int -> Int -> Int
+__externalfn metronome : Int -> Int -> Int -> Int -> Bool
+__externalfn drunk : Int -> Int -> Int -> Int
+__externalfn mod : Int -> Int -> Int
 `
 
 const blobCode = `
@@ -485,65 +422,67 @@ func compileToGlobal(targetModule *decorated.Module, globalModule *decorated.Mod
 
 func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.Module) ([]*decorated.Module, decshared.DecoratedError) {
 	var importModules []*decorated.Module
-	listModule, listModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "List", listContent)
-	if listModuleErr != nil {
-		return nil, listModuleErr
-	}
-	importModules = append(importModules, listModule)
-
-	tupleModule, tupleModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Tuple", tupleCode)
-	if tupleModuleErr != nil {
-		return nil, listModuleErr
-	}
-	importModules = append(importModules, tupleModule)
-
 	mathModule, mathModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Math", mathCode)
 	if mathModuleErr != nil {
 		return nil, mathModuleErr
 	}
 	importModules = append(importModules, mathModule)
 
-	blobModule, blobModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Blob", blobCode)
-	if blobModuleErr != nil {
-		return nil, blobModuleErr
-	}
-	importModules = append(importModules, blobModule)
+	/*
+		listModule, listModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "List", listContent)
+		if listModuleErr != nil {
+			return nil, listModuleErr
+		}
+		importModules = append(importModules, listModule)
 
-	intModule, intModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Int", intCode)
-	if intModuleErr != nil {
-		return nil, intModuleErr
-	}
-	importModules = append(importModules, intModule)
+		tupleModule, tupleModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Tuple", tupleCode)
+		if tupleModuleErr != nil {
+			return nil, listModuleErr
+		}
+		importModules = append(importModules, tupleModule)
 
-	charModule, charModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Char", charCode)
-	if charModuleErr != nil {
-		return nil, charModuleErr
-	}
-	importModules = append(importModules, charModule)
+		blobModule, blobModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Blob", blobCode)
+		if blobModuleErr != nil {
+			return nil, blobModuleErr
+		}
+		importModules = append(importModules, blobModule)
 
-	typeId, typeIdErr := compileToGlobal(targetModule, globalPrimitiveModule, "TypeRef", typeIdCode)
-	if typeIdErr != nil {
-		return nil, typeIdErr
-	}
-	importModules = append(importModules, typeId)
+		intModule, intModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Int", intCode)
+		if intModuleErr != nil {
+			return nil, intModuleErr
+		}
+		importModules = append(importModules, intModule)
 
-	arrayModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Array", arrayCode)
-	if arrayModuleErr != nil {
-		return nil, arrayModuleErr
-	}
-	importModules = append(importModules, arrayModule)
+		charModule, charModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Char", charCode)
+		if charModuleErr != nil {
+			return nil, charModuleErr
+		}
+		importModules = append(importModules, charModule)
 
-	maybeModule, maybeModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Maybe", maybeCode)
-	if maybeModuleErr != nil {
-		return nil, maybeModuleErr
-	}
-	importModules = append(importModules, maybeModule)
+		typeId, typeIdErr := compileToGlobal(targetModule, globalPrimitiveModule, "TypeRef", typeIdCode)
+		if typeIdErr != nil {
+			return nil, typeIdErr
+		}
+		importModules = append(importModules, typeId)
 
-	debugModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Debug", debugCode)
-	if arrayModuleErr != nil {
-		return nil, arrayModuleErr
-	}
-	importModules = append(importModules, debugModule)
+		arrayModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Array", arrayCode)
+		if arrayModuleErr != nil {
+			return nil, arrayModuleErr
+		}
+		importModules = append(importModules, arrayModule)
+
+		maybeModule, maybeModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Maybe", maybeCode)
+		if maybeModuleErr != nil {
+			return nil, maybeModuleErr
+		}
+		importModules = append(importModules, maybeModule)
+
+		debugModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Debug", debugCode)
+		if arrayModuleErr != nil {
+			return nil, arrayModuleErr
+		}
+		importModules = append(importModules, debugModule)
+	*/
 
 	return importModules, nil
 }

@@ -76,7 +76,7 @@ func (m *DynamicMemoryMapper) Overwrite(position SourceDynamicMemoryPos, data []
 }
 
 func (m *DynamicMemoryMapper) DebugOutput() {
-	log.Printf("Dynamic Memory (Constants):\n")
+	log.Printf("Dynamic Memory (PackageConstants):\n")
 	for _, info := range m.infos {
 		log.Printf("  %v %v\n", info.Allocation, info.DebugString)
 	}

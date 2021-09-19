@@ -60,7 +60,11 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		arguments = append(arguments, argReg)
 	}
 
-	code.Call(functionRegister.Pos, returnValue.Pos)
+	if call.IsExternal() {
+		code.CallExternal(functionRegister.Pos, returnValue.Pos)
+	} else {
+		code.Call(functionRegister.Pos, returnValue.Pos)
+	}
 
 	genContext.context.stackMemory.Set(arguments[0].Pos)
 

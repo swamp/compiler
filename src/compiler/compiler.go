@@ -179,7 +179,28 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		}
 	}
 
-	var constants *assembler_sp.Constants
+	packageConstants := assembler_sp.NewPackageConstants()
+	for _, module := range compiledPackage.AllModules() {
+		for _, named := range module.LocalDefinitions().Definitions() {
+			unknownType := named.Expression()
+			maybeFunction, _ := unknownType.(*decorated.FunctionValue)
+			if maybeFunction != nil {
+				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
+				isExternal := maybeFunction.Annotation().Annotation().IsExternal()
+				if isExternal {
+					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), len(maybeFunction.Parameters())); err != nil {
+						return decorated.NewInternalError(err)
+					}
+				} else {
+					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String()); err != nil {
+						return decorated.NewInternalError(err)
+					}
+				}
+			}
+		}
+	}
+
+	var constants *assembler_sp.PackageConstants
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.Mid {
 			fmt.Printf("============================================== generating for module %v\n", module)
@@ -187,7 +208,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 
 		context := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
 
-		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, verboseFlag)
+		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, packageConstants, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}

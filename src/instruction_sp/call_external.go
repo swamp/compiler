@@ -13,28 +13,22 @@ import (
 
 // CallExternal is an instruction that calls into the embedder (usually C/C++ code).
 type CallExternal struct {
-	target    opcode_sp_type.TargetStackPosition
-	function  opcode_sp_type.SourceStackPosition
-	arguments []opcode_sp_type.SourceStackPosition
+	newBasePointer opcode_sp_type.TargetStackPosition
+	function       opcode_sp_type.SourceStackPosition
 }
 
-func NewCallExternal(target opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition, arguments []opcode_sp_type.SourceStackPosition) *CallExternal {
-	return &CallExternal{target: target, function: function, arguments: arguments}
+func NewCallExternal(newBasePointer opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition) *CallExternal {
+	return &CallExternal{newBasePointer: newBasePointer, function: function}
 }
 
 func (c *CallExternal) Write(writer OpcodeWriter) error {
 	writer.Command(CmdCallExternal)
-	writer.TargetStackPosition(c.target)
+	writer.TargetStackPosition(c.newBasePointer)
 	writer.SourceStackPosition(c.function)
-
-	writer.Count(len(c.arguments))
-	for _, argument := range c.arguments {
-		writer.SourceStackPosition(argument)
-	}
 
 	return nil
 }
 
 func (c *CallExternal) String() string {
-	return fmt.Sprintf("callexternal %v <- %v (%v)", c.target, c.function, c.arguments)
+	return fmt.Sprintf("callexternal %v %v", c.newBasePointer, c.function)
 }

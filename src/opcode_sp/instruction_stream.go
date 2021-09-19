@@ -99,6 +99,12 @@ func (s *Stream) Call(newBasePointer opcode_sp_type.TargetStackPosition, functio
 	return c
 }
 
+func (s *Stream) CallExternal(target opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition) *instruction_sp.CallExternal {
+	c := instruction_sp.NewCallExternal(target, function)
+	s.addInstruction(c)
+	return c
+}
+
 func (s *Stream) Curry(target opcode_sp_type.TargetStackPosition, typeIDConstant uint16, function opcode_sp_type.SourceStackPosition,
 	arguments opcode_sp_type.SourceStackPositionRange) *instruction_sp.Curry {
 	c := instruction_sp.NewCurry(target, typeIDConstant, function, arguments)
@@ -108,13 +114,6 @@ func (s *Stream) Curry(target opcode_sp_type.TargetStackPosition, typeIDConstant
 
 func (s *Stream) Return() *instruction_sp.Return {
 	c := instruction_sp.NewReturn()
-	s.addInstruction(c)
-	return c
-}
-
-func (s *Stream) CallExternal(target opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition,
-	arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CallExternal {
-	c := instruction_sp.NewCallExternal(target, function, arguments)
 	s.addInstruction(c)
 	return c
 }

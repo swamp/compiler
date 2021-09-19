@@ -179,8 +179,8 @@ func (c *Code) Recur() {
 	c.addStatement(o)
 }
 
-func (c *Code) CallExternal(target TargetStackPosRange, function SourceStackPos, arguments SourceStackPos) {
-	o := &CallExternal{target: target, function: function, newBasePointer: arguments}
+func (c *Code) CallExternal(function SourceStackPos, newBasePointer TargetStackPos) {
+	o := &CallExternal{function: function, newBasePointer: newBasePointer}
 	c.addStatement(o)
 }
 
@@ -319,6 +319,7 @@ func writeCreateArray(stream *opcode_sp.Stream, arrayLiteral *ArrayLiteral) {
 }
 
 func writeCallExternal(stream *opcode_sp.Stream, call *CallExternal) {
+	stream.CallExternal(targetStackPosition(call.newBasePointer), sourceStackPosition(call.function))
 }
 
 func writeCall(stream *opcode_sp.Stream, call *Call) {

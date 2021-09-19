@@ -20,7 +20,7 @@ import (
 	"github.com/swamp/compiler/src/verbosity"
 )
 
-func testGenerateInternal(code string) (*assembler_sp.Constants, []*assembler_sp.Constant, error) {
+func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
 	const useCores = true
 	const errorsAsWarnings = false
 	module, compileErr := deccy.CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
@@ -30,19 +30,20 @@ func testGenerateInternal(code string) (*assembler_sp.Constants, []*assembler_sp
 
 	gen := NewGenerator()
 	rootContext := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
+	packageConstants := assembler_sp.NewPackageConstants()
 	const verboseFlag = verbosity.None
 	_, lookup, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {
 		return nil, nil, typeInfoErr
 	}
-	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, rootContext, lookup, verboseFlag)
+	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, rootContext, lookup, packageConstants, verboseFlag)
 	if genErr != nil {
 		return nil, nil, genErr
 	}
 	return constants, functions, genErr
 }
 
-func checkGeneratedAssembler(constants *assembler_sp.Constants, functions []*assembler_sp.Constant, expectedAsm string) error {
+func checkGeneratedAssembler(constants *assembler_sp.PackageConstants, functions []*assembler_sp.Constant, expectedAsm string) error {
 	var assemblerOutput string
 	for _, f := range functions {
 		opcodes := constants.FetchOpcodes(f)

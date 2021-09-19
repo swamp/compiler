@@ -21,7 +21,7 @@ type WorldDecorator struct {
 }
 
 func NewWorldDecorator(forceStyle bool, verbose verbosity.Verbosity) (*WorldDecorator, decshared.DecoratedError) {
-	rootModules, importModules, rootModuleErr := deccy.CreateDefaultRootModule(false)
+	rootModules, importModules, rootModuleErr := deccy.CreateDefaultRootModule(true)
 	if rootModuleErr != nil {
 		return nil, rootModuleErr
 	}
