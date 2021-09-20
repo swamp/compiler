@@ -96,7 +96,7 @@ const (
 	Alignof64BitPointer uint32 = 8
 )
 
-func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
+func GetMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
 	if p == nil {
 		panic(fmt.Errorf("nil is not allowed"))
 	}
@@ -131,7 +131,7 @@ func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
 			return Sizeof64BitPointer, Alignof64BitPointer
 		case *dectype.CustomTypeReference:
 			log.Printf("this is : %T %v (%v)", it.Type(), it.HumanReadable(), t.TypeGenerator().HumanReadable())
-			return getMemorySizeAndAlignment(it.Type())
+			return GetMemorySizeAndAlignment(it.Type())
 		}
 
 	case *dectype.CustomTypeAtom:
@@ -146,7 +146,7 @@ func getMemorySizeAndAlignment(p dtype.Type) (uint, uint32) {
 
 func allocMemoryForType(stackMemory *assembler_sp.StackMemoryMapper, typeToAlloc dtype.Type,
 	debugString string) assembler_sp.TargetStackPosRange {
-	memorySize, alignment := getMemorySizeAndAlignment(typeToAlloc)
+	memorySize, alignment := GetMemorySizeAndAlignment(typeToAlloc)
 	return stackMemory.Allocate(memorySize, alignment, debugString)
 }
 

@@ -45,6 +45,14 @@ func (c *PackageConstants) DynamicMemory() *DynamicMemoryMapper {
 //    size_t characterCount; // 8 octets
 // } SwampString;
 
+func (c *PackageConstants) AllocateStringOctets(s string) SourceDynamicMemoryPosRange {
+	stringOctets := []byte(s)
+	stringOctets = append(stringOctets, byte(0))
+	stringOctetsPointer := c.dynamicMapper.Write(stringOctets, "string:"+s)
+
+	return stringOctetsPointer
+}
+
 const SizeofSwampString = 16
 
 func (c *PackageConstants) AllocateStringConstant(s string) *Constant {
@@ -54,9 +62,7 @@ func (c *PackageConstants) AllocateStringConstant(s string) *Constant {
 		}
 	}
 
-	stringOctets := []byte(s)
-	stringOctets = append(stringOctets, byte(0))
-	stringOctetsPointer := c.dynamicMapper.Write(stringOctets, "string:"+s)
+	stringOctetsPointer := c.AllocateStringOctets(s)
 
 	var swampStringOctets [SizeofSwampString]byte
 	binary.LittleEndian.PutUint64(swampStringOctets[0:8], uint64(stringOctetsPointer.Position))
@@ -134,12 +140,14 @@ typedef struct SwampFunc {
 
 const (
 	SizeofSwampFunc         = 9 * 8
-	SizeofSwampExternalFunc = 15 * 8
+	SizeofSwampExternalFunc = 16 * 8
 )
 
 func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName string,
 	opcodesPointer SourceDynamicMemoryPosRange) (*Constant, error) {
 	var swampFuncStruct [SizeofSwampFunc]byte
+
+	fullyQualifiedStringPointer := c.AllocateStringOctets(uniqueFullyQualifiedFunctionName)
 
 	binary.LittleEndian.PutUint32(swampFuncStruct[0:4], uint32(0))
 	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(0))  // parameterCount
@@ -149,8 +157,9 @@ func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionNa
 	binary.LittleEndian.PutUint64(swampFuncStruct[32:40], uint64(opcodesPointer.Size))
 
 	binary.LittleEndian.PutUint64(swampFuncStruct[40:48], uint64(0)) // returnOctetSize
-	binary.LittleEndian.PutUint64(swampFuncStruct[48:56], uint64(0)) // debugName
-	binary.LittleEndian.PutUint64(swampFuncStruct[56:64], uint64(0)) // typeIndex
+
+	binary.LittleEndian.PutUint64(swampFuncStruct[48:56], uint64(fullyQualifiedStringPointer.Position)) // debugName
+	binary.LittleEndian.PutUint64(swampFuncStruct[56:64], uint64(0))                                    // typeIndex
 
 	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], "function Struct for:"+uniqueFullyQualifiedFunctionName)
 
@@ -161,22 +170,26 @@ func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionNa
 	return newConstant, nil
 }
 
-func (c *PackageConstants) AllocateExternalFunctionStruct(uniqueFullyQualifiedFunctionName string, parameterCount int) (*Constant, error) {
+func (c *PackageConstants) AllocateExternalFunctionStruct(uniqueFullyQualifiedFunctionName string, returnValue SourceStackPosRange, parameters []SourceStackPosRange) (*Constant, error) {
 	var swampFuncStruct [SizeofSwampExternalFunc]byte
 
-	binary.LittleEndian.PutUint32(swampFuncStruct[0:4], uint32(1))               // external type
-	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(parameterCount)) // parameterCount
-	binary.LittleEndian.PutUint32(swampFuncStruct[16:20], uint32(0))             // return pos
-	binary.LittleEndian.PutUint32(swampFuncStruct[20:24], uint32(0))             // return size
+	fullyQualifiedStringPointer := c.AllocateStringOctets(uniqueFullyQualifiedFunctionName)
 
-	/*
-		for _, x := range parameters {
+	binary.LittleEndian.PutUint32(swampFuncStruct[0:4], uint32(1))                  // external type
+	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(len(parameters)))   // parameterCount
+	binary.LittleEndian.PutUint32(swampFuncStruct[16:20], uint32(returnValue.Pos))  // return pos
+	binary.LittleEndian.PutUint32(swampFuncStruct[20:24], uint32(returnValue.Size)) // return size
 
-		}
+	for index, param := range parameters {
+		first := 24 + index*8
+		firstEnd := first + 8
+		second := 28 + index*8
+		secondEnd := second + 8
+		binary.LittleEndian.PutUint32(swampFuncStruct[first:firstEnd], uint32(param.Pos))    // params pos
+		binary.LittleEndian.PutUint32(swampFuncStruct[second:secondEnd], uint32(param.Size)) // params size
+	}
 
-	*/
-	binary.LittleEndian.PutUint32(swampFuncStruct[24:30], uint32(0)) // ] pos
-	binary.LittleEndian.PutUint32(swampFuncStruct[20:24], uint32(0)) // return size
+	binary.LittleEndian.PutUint64(swampFuncStruct[120:128], uint64(fullyQualifiedStringPointer.Position)) // debugName
 
 	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], "external function Struct for:"+uniqueFullyQualifiedFunctionName)
 
@@ -215,8 +228,8 @@ func (c *PackageConstants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedF
 	return c.AllocateFunctionStruct(uniqueFullyQualifiedFunctionName, pointer)
 }
 
-func (c *PackageConstants) AllocatePrepareExternalFunctionConstant(uniqueFullyQualifiedFunctionName string, parameterCount int) (*Constant, error) {
-	return c.AllocateExternalFunctionStruct(uniqueFullyQualifiedFunctionName, parameterCount)
+func (c *PackageConstants) AllocatePrepareExternalFunctionConstant(uniqueFullyQualifiedFunctionName string, returnValue SourceStackPosRange, parameters []SourceStackPosRange) (*Constant, error) {
+	return c.AllocateExternalFunctionStruct(uniqueFullyQualifiedFunctionName, returnValue, parameters)
 }
 
 func (c *PackageConstants) DefineFunctionOpcodes(funcConstant *Constant, opcodes []byte) error {

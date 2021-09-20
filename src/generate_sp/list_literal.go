@@ -23,7 +23,7 @@ func generateList(code *assembler_sp.Code, target assembler_sp.TargetStackPosRan
 	}
 	primitive, _ := list.Type().(*dectype.PrimitiveAtom)
 	firstPrimitiveType := primitive.GenericTypes()[0]
-	itemSize, _ := getMemorySizeAndAlignment(firstPrimitiveType)
+	itemSize, _ := GetMemorySizeAndAlignment(firstPrimitiveType)
 	code.ListLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize))
 	return nil
 }

@@ -188,7 +188,24 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 				isExternal := maybeFunction.Annotation().Annotation().IsExternal()
 				if isExternal {
-					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), len(maybeFunction.Parameters())); err != nil {
+					parameterCount := len(maybeFunction.Parameters())
+					paramPosRanges := make([]assembler_sp.SourceStackPosRange, parameterCount)
+					pos := uint(0)
+					returnSize, _ := generate_sp.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					returnPosRange := assembler_sp.SourceStackPosRange{
+						Pos:  assembler_sp.SourceStackPos(pos),
+						Size: assembler_sp.SourceStackRange(returnSize),
+					}
+
+					pos += returnSize
+
+					for index, param := range maybeFunction.Parameters() {
+						size, _ := generate_sp.GetMemorySizeAndAlignment(param.Type())
+						paramPosRanges[index].Pos = assembler_sp.SourceStackPos(pos)
+						paramPosRanges[index].Size = assembler_sp.SourceStackRange(size)
+						pos += size
+					}
+					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
 						return decorated.NewInternalError(err)
 					}
 				} else {
@@ -230,10 +247,12 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		var assemblerOutput string
 
 		for _, f := range allFunctions {
-			opcodes := constants.FetchOpcodes(f)
-			lines := swampdisasm_sp.Disassemble(opcodes)
+			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
+				opcodes := constants.FetchOpcodes(f)
+				lines := swampdisasm_sp.Disassemble(opcodes)
 
-			assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
+				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
+			}
 		}
 
 		fmt.Println(assemblerOutput)
