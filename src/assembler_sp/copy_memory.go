@@ -20,5 +20,5 @@ func NewCopyMemory(target TargetStackPos, source SourceStackPosRange) *CopyMemor
 }
 
 func (o *CopyMemory) String() string {
-	return fmt.Sprintf("[copymemory %v <= %v %v]", o.target, o.source)
+	return fmt.Sprintf("[copymemory %v <= %v]", o.target, o.source)
 }

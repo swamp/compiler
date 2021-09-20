@@ -10,5 +10,5 @@ type LoadBool struct {
 }
 
 func (o *LoadBool) String() string {
-	return fmt.Sprintf("[loadbool %v <= %v %v]", o.target, o.boolean)
+	return fmt.Sprintf("[loadbool %v <= %v]", o.target, o.boolean)
 }

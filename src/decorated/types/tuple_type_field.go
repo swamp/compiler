@@ -12,8 +12,11 @@ import (
 )
 
 type TupleTypeField struct {
-	index     int
-	fieldType dtype.Type
+	index        int
+	fieldType    dtype.Type
+	memoryOffset MemoryOffset
+	memorySize   MemorySize
+	memoryAlign  MemoryAlign
 }
 
 func NewTupleTypeField(index int, fieldType dtype.Type) *TupleTypeField {
@@ -24,12 +27,12 @@ func (s *TupleTypeField) SetIndexBySorter(index int) {
 	s.index = index
 }
 
-func (s *TupleTypeField) MemoryOffset() uint {
-	return 0
+func (s *TupleTypeField) MemoryOffset() MemoryOffset {
+	return s.memoryOffset
 }
 
-func (s *TupleTypeField) MemorySize() uint {
-	return 0
+func (s *TupleTypeField) MemorySize() MemorySize {
+	return s.memorySize
 }
 
 func (s *TupleTypeField) Index() int {

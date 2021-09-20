@@ -8,7 +8,6 @@ package swampdisasm_sp
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/instruction_sp"
 	"github.com/swamp/compiler/src/opcode_sp"
@@ -440,7 +439,7 @@ func Disassemble(octets []byte) []string {
 		startPc := s.programCounter()
 		cmd := s.readCommand()
 
-		log.Printf("disasembling :%s (%02x)\n", instruction_sp.OpcodeToMnemonic(cmd), cmd)
+		//log.Printf("disasembling :%s (%02x)\n", instruction_sp.OpcodeToMnemonic(cmd), cmd)
 		args := decodeOpcode(cmd, s)
 		line := fmt.Sprintf("%04x: %v", startPc.Value(), args)
 		lines = append(lines, line)

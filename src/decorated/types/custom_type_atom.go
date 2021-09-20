@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -102,7 +101,6 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariant) (MemorySize, 
 
 			field.memoryOffset = offset
 			field.memorySize = memorySize
-			log.Printf("variant %v index: %d offset: %d, %d", variant.Name().Name(), field.index, field.memoryOffset, field.memorySize)
 
 			offset += MemoryOffset(memorySize)
 		}

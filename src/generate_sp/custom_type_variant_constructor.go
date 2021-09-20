@@ -29,7 +29,6 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 
 	for index, arg := range constructor.Arguments() {
 		variantField := variant.Fields()[index]
-		log.Printf("constructor %d %v field:%v", index, arg, variantField)
 		fieldTarget := assembler_sp.TargetStackPosRange{
 			Pos:  assembler_sp.TargetStackPos(uint(target.Pos) + uint(variantField.MemoryOffset())),
 			Size: assembler_sp.StackRange(variantField.MemorySize()),

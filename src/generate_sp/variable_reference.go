@@ -1,8 +1,6 @@
 package generate_sp
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
@@ -27,8 +25,6 @@ func generateLocalFunctionParameterReference(code *assembler_sp.Code, target ass
 		return err
 	}
 
-	log.Printf("WARNING: shouldn't need target for local function parameter")
-
 	code.CopyMemory(target.Pos, sourcePosRange)
 
 	return nil
@@ -42,7 +38,6 @@ func handleLocalConsequenceParameterReference(getVar *decorated.CaseConsequenceP
 
 func generateLocalConsequenceParameterReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	getVar *decorated.CaseConsequenceParameterReference, context *Context) error {
-	log.Printf("WARNING: shouldn't need target for LocalConsequenceParameter")
 	sourcePosRange, err := handleLocalConsequenceParameterReference(getVar, context.scopeVariables)
 	if err != nil {
 		return err
@@ -60,7 +55,6 @@ func handleLetVariableReference(getVar *decorated.LetVariableReference,
 
 func generateLetVariableReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	getVar *decorated.LetVariableReference, context *Context) error {
-	log.Printf("WARNING: shouldn't need target for generateLetVariableReference")
 	sourcePosRange, err := handleLetVariableReference(getVar, context.scopeVariables)
 	if err != nil {
 		return err

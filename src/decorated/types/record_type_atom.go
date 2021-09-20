@@ -115,10 +115,12 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		return t.MemorySize(), t.MemoryAlignment()
 	case *FunctionAtom:
 		return Sizeof64BitPointer, Alignof64BitPointer
+	case *TupleTypeAtom:
+		return t.MemorySize(), t.MemoryAlignment()
 	default:
-		panic(fmt.Errorf("do not know memory size of %v %T", p, unaliased))
+		panic(fmt.Errorf("calc: do not know memory size of %v %T", p, unaliased))
 	}
-	panic(fmt.Errorf("do not know memory size of %v %T", p, unaliased))
+	panic(fmt.Errorf("calcsize: do not know memory size of %v %T", p, unaliased))
 }
 
 func GetMemorySizeAndAlignment(p dtype.Type) (MemorySize, MemoryAlign) {

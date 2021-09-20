@@ -54,7 +54,7 @@ func writeTypeInfo(writer io.Writer, payload []byte) error {
 func writeDynamicMemory(writer io.Writer, payload []byte) error {
 	name := raff.FourOctets{'d', 'm', 'e', '0'}
 	packetIcon := raff.FourOctets{0xF0, 0x9F, 0x92, 0xBB}
-	log.Printf("dynamicMemory: %s", hex.Dump(payload))
+	log.Printf("dynamicMemory:\n%s", hex.Dump(payload))
 	return writeChunkHeader(writer, packetIcon, name, payload)
 }
 

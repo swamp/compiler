@@ -2,7 +2,6 @@ package assembler_sp
 
 import (
 	"fmt"
-	"log"
 )
 
 type ZeroMemoryPointer uint32
@@ -29,7 +28,6 @@ func (m *StackMemoryMapper) Allocate(octetSize uint, align uint32, debugString s
 		m.position += align - extra
 	}
 	pos := m.position
-	log.Printf("stack allocate: %v [%v] ('%v') => %v\n", octetSize, align, debugString, pos)
 
 	m.position += uint32(octetSize)
 

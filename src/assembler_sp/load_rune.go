@@ -12,5 +12,5 @@ type LoadRune struct {
 }
 
 func (o *LoadRune) String() string {
-	return fmt.Sprintf("[loadrune %v <= %v %v]", o.target, o.rune)
+	return fmt.Sprintf("[loadrune %v <= %v]", o.target, o.rune)
 }

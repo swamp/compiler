@@ -9,10 +9,40 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+func calculateTupleFieldOffsetsAndRecordMemorySizeAndAlign(fields []*TupleTypeField) (MemorySize, MemoryAlign) {
+	offset := MemoryOffset(0)
+	maxMemoryAlign := MemoryAlign(0)
+
+	for _, field := range fields {
+		memorySize, memoryAlign := GetMemorySizeAndAlignment(field.fieldType)
+		rest := MemoryAlign(uint32(offset) % uint32(memoryAlign))
+		if rest != 0 {
+			offset += MemoryOffset(memoryAlign - rest)
+		}
+		if memoryAlign > maxMemoryAlign {
+			maxMemoryAlign = memoryAlign
+		}
+
+		field.memoryOffset = offset
+		field.memorySize = memorySize
+
+		offset += MemoryOffset(memorySize)
+	}
+
+	rest := MemoryAlign(uint32(offset) % uint32(maxMemoryAlign))
+	if rest != 0 {
+		offset += MemoryOffset(maxMemoryAlign - rest)
+	}
+
+	return MemorySize(offset), maxMemoryAlign
+}
+
 type TupleTypeAtom struct {
 	parameterFields []*TupleTypeField
 	parameterTypes  []dtype.Type
 	astTupleType    *ast.TupleType
+	memorySize      MemorySize
+	memoryAlign     MemoryAlign
 }
 
 func NewTupleTypeAtom(astTupleType *ast.TupleType, parameterFields []*TupleTypeField) *TupleTypeAtom {
@@ -27,19 +57,24 @@ func NewTupleTypeAtom(astTupleType *ast.TupleType, parameterFields []*TupleTypeF
 		parameterTypes = append(parameterTypes, param.Type())
 	}
 
-	return &TupleTypeAtom{parameterFields: parameterFields, parameterTypes: parameterTypes, astTupleType: astTupleType}
+	memorySize, memoryAlign := calculateTupleFieldOffsetsAndRecordMemorySizeAndAlign(parameterFields)
+
+	return &TupleTypeAtom{
+		parameterFields: parameterFields, parameterTypes: parameterTypes, astTupleType: astTupleType,
+		memorySize: memorySize, memoryAlign: memoryAlign,
+	}
 }
 
-func (u *TupleTypeAtom) MemorySize() uint {
-	return 0
+func (u *TupleTypeAtom) MemorySize() MemorySize {
+	return u.memorySize
 }
 
 func (u *TupleTypeAtom) Fields() []*TupleTypeField {
 	return u.parameterFields
 }
 
-func (u *TupleTypeAtom) MemoryAlignment() uint32 {
-	return 0
+func (u *TupleTypeAtom) MemoryAlignment() MemoryAlign {
+	return u.memoryAlign
 }
 
 func (u *TupleTypeAtom) ParameterTypes() []dtype.Type {
