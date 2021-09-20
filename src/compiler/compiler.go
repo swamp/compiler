@@ -191,19 +191,19 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 					parameterCount := len(maybeFunction.Parameters())
 					paramPosRanges := make([]assembler_sp.SourceStackPosRange, parameterCount)
 					pos := uint(0)
-					returnSize, _ := generate_sp.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
 					returnPosRange := assembler_sp.SourceStackPosRange{
 						Pos:  assembler_sp.SourceStackPos(pos),
 						Size: assembler_sp.SourceStackRange(returnSize),
 					}
 
-					pos += returnSize
+					pos += uint(returnSize)
 
 					for index, param := range maybeFunction.Parameters() {
-						size, _ := generate_sp.GetMemorySizeAndAlignment(param.Type())
+						size, _ := dectype.GetMemorySizeAndAlignment(param.Type())
 						paramPosRanges[index].Pos = assembler_sp.SourceStackPos(pos)
 						paramPosRanges[index].Size = assembler_sp.SourceStackRange(size)
-						pos += size
+						pos += uint(size)
 					}
 					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
 						return decorated.NewInternalError(err)

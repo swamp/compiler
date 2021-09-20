@@ -40,11 +40,6 @@ func (c *PackageConstants) DynamicMemory() *DynamicMemoryMapper {
 	return c.dynamicMapper
 }
 
-// typedef struct SwampString {
-//    const char* characters; // 8 octets
-//    size_t characterCount; // 8 octets
-// } SwampString;
-
 func (c *PackageConstants) AllocateStringOctets(s string) SourceDynamicMemoryPosRange {
 	stringOctets := []byte(s)
 	stringOctets = append(stringOctets, byte(0))
@@ -101,41 +96,6 @@ func (c *PackageConstants) AllocateResourceNameConstant(name string) *Constant {
 	return newConstant
 }
 
-*/
-
-/*
-
-typedef struct SwampFunc {
-    size_t curryOctetSize;
-    const uint8_t* curryOctets;
-    const struct SwampFunc* curryFunction;
-
-    size_t parameterCount;
-    size_t parametersOctetSize;
-    const uint8_t* opcodes;
-    size_t opcodeCount;
-
-    size_t totalStackUsed;
-    size_t returnOctetSize;
-
-//    const swamp_value** constants; // or frozen variables in closure
-  //  size_t constant_count;
-    const char* debugName;
-    uint16_t typeIndex;
-} SwampFunc;
-*/
-
-/*
-typedef struct SwampFunc {
-    SwampFunction func;
-    size_t parameterCount;
-    size_t parametersOctetSize;
-    const uint8_t* opcodes;
-    size_t opcodeCount;
-    size_t returnOctetSize;
-    const char* debugName;
-    uint16_t typeIndex;
-} SwampFunc;
 */
 
 const (
@@ -247,24 +207,6 @@ func (c *PackageConstants) DefineFunctionOpcodes(funcConstant *Constant, opcodes
 	return nil
 }
 
-/*
-func (c *PackageConstants) AllocateExternalFunctionConstant(uniqueFullyQualifiedFunctionName string) (*Constant, error) {
-	for _, constant := range c.constants {
-		if constant.constantType == ConstantTypeFunctionExternal {
-			if constant.str == uniqueFullyQualifiedFunctionName {
-				return constant, nil
-			}
-		}
-	}
-	c.someConstantIDCounter++
-	newConstant := NewExternalFunctionReferenceConstantWithDebug(c.someConstantIDCounter, uniqueFullyQualifiedFunctionName)
-	c.constants = append(c.constants, newConstant)
-
-	return newConstant, nil
-}
-
-
-*/
 func (c *PackageConstants) FindFunction(identifier VariableName) *Constant {
 	for _, constant := range c.functions {
 		if constant.str == string(identifier) {
@@ -273,13 +215,6 @@ func (c *PackageConstants) FindFunction(identifier VariableName) *Constant {
 	}
 
 	return c.FindExternalFunction(identifier)
-	/*
-		log.Printf("couldn't find constant function %v", identifier)
-		c.DebugOutput()
-
-		return nil
-
-	*/
 }
 
 func (c *PackageConstants) FindExternalFunction(identifier VariableName) *Constant {

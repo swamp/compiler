@@ -22,18 +22,20 @@ type CustomTypeAtom struct {
 	artifactTypeName      ArtifactFullyQualifiedTypeName
 	genericLocalTypeNames []*dtype.TypeArgumentName
 	references            []*CustomTypeReference
+	memorySize            MemorySize
+	memoryAlign           MemoryAlign
 }
 
 func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
 	return s.astCustomType
 }
 
-func (s *CustomTypeAtom) MemorySize() uint {
-	return 76
+func (s *CustomTypeAtom) MemorySize() MemorySize {
+	return s.memorySize
 }
 
-func (s *CustomTypeAtom) MemoryAlignment() uint32 {
-	return 16
+func (s *CustomTypeAtom) MemoryAlignment() MemoryAlign {
+	return s.memoryAlign
 }
 
 func (s *CustomTypeAtom) String() string {
@@ -72,6 +74,55 @@ func (s *CustomTypeAtom) ArtifactTypeName() ArtifactFullyQualifiedTypeName {
 	return s.artifactTypeName
 }
 
+func calculateTotalSizeAndAlignment(variants []*CustomTypeVariant) (MemorySize, MemoryAlign) {
+	maxVariantSize := MemorySize(0)
+	maxVariantAlign := MemoryAlign(0)
+	for _, variant := range variants {
+		offset := MemoryOffset(1) // The union custom type starts with uint8
+		maxAlign := MemoryAlign(1)
+		for index, field := range variant.parameterFields {
+			fieldType := variant.ParameterTypes()[index]
+			_, wasLocalType := fieldType.(*LocalType)
+			if wasLocalType {
+				return 0, 0
+			}
+			memorySize, memoryAlign := GetMemorySizeAndAlignment(fieldType)
+			if memorySize == 0 || memoryAlign == 0 {
+				panic("illegal size or align values")
+			}
+
+			rest := MemoryAlign(uint32(offset) % uint32(memoryAlign))
+			if rest != 0 {
+				offset += MemoryOffset(memoryAlign - rest)
+			}
+			if memoryAlign > maxAlign {
+				maxAlign = memoryAlign
+			}
+			field.memorySize = memorySize
+			field.memoryOffset = offset
+
+			offset += MemoryOffset(memorySize)
+		}
+
+		rest := MemoryAlign(uint32(offset) % uint32(maxAlign))
+		if rest != 0 {
+			offset += MemoryOffset(maxAlign - rest)
+		}
+
+		variant.debugMemorySize = MemorySize(offset)
+		variant.debugMemoryAlign = maxAlign
+
+		if offset > MemoryOffset(maxVariantSize) {
+			maxVariantSize = MemorySize(offset)
+		}
+		if maxAlign > maxVariantAlign {
+			maxVariantAlign = maxAlign
+		}
+	}
+
+	return maxVariantSize, maxVariantAlign
+}
+
 func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName,
 	genericLocalTypeNames []*dtype.TypeArgumentName, variants []*CustomTypeVariant) *CustomTypeAtom {
 	nameToField := make(map[string]*CustomTypeVariant)
@@ -86,9 +137,12 @@ func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFully
 		nameToField[key] = variant
 	}
 
+	memorySize, memoryAlign := calculateTotalSizeAndAlignment(variants)
+
 	return &CustomTypeAtom{
 		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
 		genericLocalTypeNames: genericLocalTypeNames, variants: variants, nameToField: nameToField,
+		memorySize: memorySize, memoryAlign: memoryAlign,
 	}
 }
 

@@ -16,7 +16,7 @@ func handleRecordLookup(code *assembler_sp.Code, lookups *decorated.RecordLookup
 
 	var lastLookup decorated.LookupField
 	for _, indexLookup := range lookups.LookupFields() {
-		indexOffset += indexLookup.MemoryOffset()
+		indexOffset += uint(indexLookup.MemoryOffset())
 		lastLookup = indexLookup
 	}
 

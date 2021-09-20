@@ -136,7 +136,7 @@ func (c *Code) LoadZeroMemoryPointer(target TargetStackPos, zeroMemoryPointer So
 }
 
 func (c *Code) CopyMemory(target TargetStackPos, source SourceStackPosRange) {
-	o := &CopyMemory{target: target, source: source}
+	o := NewCopyMemory(target, source)
 	c.addStatement(o)
 }
 

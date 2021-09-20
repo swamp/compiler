@@ -21,7 +21,7 @@ func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 	}
 	primitive, _ := array.Type().(*dectype.PrimitiveAtom)
 	firstPrimitiveType := primitive.GenericTypes()[0]
-	itemSize, _ := GetMemorySizeAndAlignment(firstPrimitiveType)
+	itemSize, _ := dectype.GetMemorySizeAndAlignment(firstPrimitiveType)
 	code.ArrayLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize))
 	return nil
 }

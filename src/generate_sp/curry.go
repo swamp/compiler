@@ -5,6 +5,7 @@ import (
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, call *decorated.CurryFunction,
@@ -46,7 +47,7 @@ func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 
 func handleCurry(code *assembler_sp.Code, call *decorated.CurryFunction,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	targetPosRange := genContext.context.stackMemory.Allocate(Sizeof64BitPointer, Alignof64BitPointer, "")
+	targetPosRange := genContext.context.stackMemory.Allocate(uint(dectype.Sizeof64BitPointer), uint32(dectype.Alignof64BitPointer), "")
 
 	if err := generateCurry(code, targetPosRange, call, genContext); err != nil {
 		return assembler_sp.SourceStackPosRange{}, err

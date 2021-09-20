@@ -26,6 +26,9 @@ func (c *MemoryCopy) Write(writer OpcodeWriter) error {
 
 func NewMemoryCopy(destination opcode_sp_type.TargetStackPosition,
 	a opcode_sp_type.SourceStackPositionRange) *MemoryCopy {
+	if a.Range == 0 {
+		panic("zero range not allowed")
+	}
 	return &MemoryCopy{destination: destination, a: a}
 }
 

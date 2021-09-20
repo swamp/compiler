@@ -54,24 +54,24 @@ func generateArithmeticMultiple(code *assembler_sp.Code, target assembler_sp.Tar
 func handleArithmeticMultiple(code *assembler_sp.Code, e *decorated.ArithmeticOperator,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
 	leftPrimitive, _ := dectype.UnReference(e.Left().Type()).(*dectype.PrimitiveAtom)
-	var memorySize uint
-	var memoryAlign uint32
+	var memorySize dectype.MemorySize
+	var memoryAlign dectype.MemoryAlign
 	switch {
 	case isListLike(e.Left().Type()) && e.OperatorType() == decorated.ArithmeticAppend:
-		memorySize = Sizeof64BitPointer
-		memoryAlign = Alignof64BitPointer
+		memorySize = dectype.Sizeof64BitPointer
+		memoryAlign = dectype.Alignof64BitPointer
 	case leftPrimitive != nil && leftPrimitive.AtomName() == "String" && e.OperatorType() == decorated.ArithmeticAppend:
-		memorySize = Sizeof64BitPointer
-		memoryAlign = Alignof64BitPointer
+		memorySize = dectype.Sizeof64BitPointer
+		memoryAlign = dectype.Alignof64BitPointer
 	case isIntLike(e.Left().Type()):
-		memorySize = SizeofSwampInt
-		memoryAlign = AlignOfSwampInt
+		memorySize = dectype.SizeofSwampInt
+		memoryAlign = dectype.AlignOfSwampInt
 	default:
 		panic(fmt.Errorf("cant generate arithmetic for type: %v <-> %v (%v)",
 			e.Left().Type(), e.Right().Type(), e.OperatorType()))
 	}
 
-	target := genContext.context.stackMemory.Allocate(memorySize, memoryAlign, "arithmetic multiple")
+	target := genContext.context.stackMemory.Allocate(uint(memorySize), uint32(memoryAlign), "arithmetic multiple")
 	if err := generateArithmeticMultiple(code, target, e, genContext); err != nil {
 		return assembler_sp.SourceStackPosRange{}, err
 	}

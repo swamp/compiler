@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -32,11 +33,11 @@ func (l LookupField) RecordTypeFieldReference() *RecordTypeFieldReference {
 	return l.reference
 }
 
-func (l LookupField) MemoryOffset() uint {
+func (l LookupField) MemoryOffset() dectype.MemoryOffset {
 	return l.reference.recordTypeField.MemoryOffset()
 }
 
-func (l LookupField) MemorySize() uint {
+func (l LookupField) MemorySize() dectype.MemorySize {
 	return l.reference.recordTypeField.MemorySize()
 }
 

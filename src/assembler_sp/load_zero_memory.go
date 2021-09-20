@@ -10,5 +10,5 @@ type LoadZeroMemoryPointer struct {
 }
 
 func (o *LoadZeroMemoryPointer) String() string {
-	return fmt.Sprintf("[loadzeromem %v <= %v %v]", o.target, o.sourceZeroMemory)
+	return fmt.Sprintf("[loadzeromem %v <= %v]", o.target, o.sourceZeroMemory)
 }

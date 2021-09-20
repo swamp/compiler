@@ -37,8 +37,16 @@ func (r *RecordFieldName) HumanReadable() string {
 	return "type field name"
 }
 
+type (
+	MemoryOffset uint32
+	MemorySize   uint32
+	MemoryAlign  uint32
+)
+
 type RecordField struct {
 	index           int
+	memoryOffset    MemoryOffset
+	memorySize      MemorySize
 	name            *RecordFieldName
 	fieldType       dtype.Type
 	recordTypeField *ast.RecordTypeField
@@ -52,12 +60,12 @@ func (s *RecordField) SetIndexBySorter(index int) {
 	s.index = index
 }
 
-func (s *RecordField) MemoryOffset() uint {
-	return 0
+func (s *RecordField) MemoryOffset() MemoryOffset {
+	return s.memoryOffset
 }
 
-func (s *RecordField) MemorySize() uint {
-	return 0
+func (s *RecordField) MemorySize() MemorySize {
+	return s.memorySize
 }
 
 func (s *RecordField) Index() int {

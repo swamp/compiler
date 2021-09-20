@@ -15,15 +15,16 @@ import (
 
 type CustomTypeVariantField struct {
 	index        uint
-	memoryOffset uint
+	memoryOffset MemoryOffset
+	memorySize   MemorySize
 }
 
-func (c *CustomTypeVariantField) MemoryOffset() uint {
-	return c.index*4 + 1 // todo
+func (c *CustomTypeVariantField) MemoryOffset() MemoryOffset {
+	return c.memoryOffset
 }
 
-func (c *CustomTypeVariantField) MemorySize() uint {
-	return 3
+func (c *CustomTypeVariantField) MemorySize() MemorySize {
+	return c.memorySize
 }
 
 type CustomTypeVariant struct {
@@ -34,6 +35,8 @@ type CustomTypeVariant struct {
 	parent               dtype.Type
 	inCustomType         *CustomTypeAtom
 	references           []*CustomTypeVariantReference
+	debugMemorySize      MemorySize
+	debugMemoryAlign     MemoryAlign
 }
 
 func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant, parameterTypes []dtype.Type) *CustomTypeVariant {

@@ -21,7 +21,7 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 	constructor *decorated.CustomTypeVariantConstructor, genContext *generateContext) error {
 	variant := constructor.CustomTypeVariant()
 	unionMemorySize := variant.InCustomType().MemorySize()
-	if uint(target.Size) != unionMemorySize {
+	if uint(target.Size) != uint(unionMemorySize) {
 		return fmt.Errorf("internal error, target size is not exactly right")
 	}
 
@@ -31,7 +31,7 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 		variantField := variant.Fields()[index]
 		log.Printf("constructor %d %v field:%v", index, arg, variantField)
 		fieldTarget := assembler_sp.TargetStackPosRange{
-			Pos:  assembler_sp.TargetStackPos(uint(target.Pos) + variantField.MemoryOffset()),
+			Pos:  assembler_sp.TargetStackPos(uint(target.Pos) + uint(variantField.MemoryOffset())),
 			Size: assembler_sp.StackRange(variantField.MemorySize()),
 		}
 		argRegErr := generateExpression(code, fieldTarget, arg, genContext)

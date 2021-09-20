@@ -69,7 +69,7 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 }
 
 func handleBinaryOperatorBooleanResult(code *assembler_sp.Code, operator *decorated.BooleanOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	target := genContext.context.stackMemory.Allocate(SizeofSwampBool, AlignOfSwampBool, "booleanOperatorTarget")
+	target := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampBool), uint32(dectype.AlignOfSwampBool), "booleanOperatorTarget")
 	if err := generateBinaryOperatorBooleanResult(code, target, operator, genContext); err != nil {
 		return assembler_sp.SourceStackPosRange{}, err
 	}
