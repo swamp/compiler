@@ -45,6 +45,10 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		parameterReferenceName := t.Identifier().Name()
 
 		return genContext.context.scopeVariables.FindVariable(parameterReferenceName)
+	case *decorated.CaseConsequenceParameterReference:
+		parameterReferenceName := t.Identifier().Name()
+
+		return genContext.context.scopeVariables.FindVariable(parameterReferenceName)
 	case *decorated.FunctionReference:
 		return handleFunctionReference(code, t, genContext.context.stackMemory, genContext.context.constants)
 	case *decorated.FunctionCall:
@@ -61,6 +65,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handleArithmeticMultiple(code, t, genContext)
 	case *decorated.CurryFunction:
 		return handleCurry(code, t, genContext)
+	case *decorated.RecordLookups:
+		return handleRecordLookup(code, t, genContext)
 	}
 
 	panic(fmt.Errorf("generate_sp_withSource: unknown node %T %v %v", expr, expr, genContext))

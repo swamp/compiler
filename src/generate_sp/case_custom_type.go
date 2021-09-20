@@ -1,6 +1,8 @@
 package generate_sp
 
 import (
+	"log"
+
 	"github.com/swamp/compiler/src/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -28,12 +30,18 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 
 		consequencesCode := assembler_sp.NewCode()
 
-		var parameters []assembler_sp.SourceStackPosRange
-
-		for _, param := range consequence.Parameters() {
+		fields := consequence.VariantReference().CustomTypeVariant().Fields()
+		for index, param := range consequence.Parameters() {
+			field := fields[index]
 			consequenceLabelVariableName := param.Identifier().Name()
-			paramVariable := allocateVariable(genContext.context.scopeVariables, genContext.context.stackMemory, consequenceLabelVariableName, param.Type())
-			parameters = append(parameters, paramVariable)
+
+			paramVariable := assembler_sp.SourceStackPosRange{
+				Pos:  assembler_sp.SourceStackPos(uint(testVar.Pos) + uint(field.MemoryOffset())),
+				Size: assembler_sp.SourceStackRange(field.MemorySize()),
+			}
+			consequenceContext.context.scopeVariables.DefineVariable(consequenceLabelVariableName, paramVariable)
+
+			log.Printf("allocate %v %v\n", paramVariable, param.Type())
 		}
 
 		labelVariableName := assembler_sp.VariableName(

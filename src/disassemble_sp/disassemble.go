@@ -442,7 +442,7 @@ func Disassemble(octets []byte) []string {
 
 		log.Printf("disasembling :%s (%02x)\n", instruction_sp.OpcodeToMnemonic(cmd), cmd)
 		args := decodeOpcode(cmd, s)
-		line := fmt.Sprintf("%02x: %v", startPc.Value(), args)
+		line := fmt.Sprintf("%04x: %v", startPc.Value(), args)
 		lines = append(lines, line)
 	}
 

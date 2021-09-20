@@ -14,7 +14,7 @@ type ProgramCounter struct {
 }
 
 func (p ProgramCounter) String() string {
-	return fmt.Sprintf("@%02x", p.position)
+	return fmt.Sprintf("@%04x", p.position)
 }
 
 func NewProgramCounter(position uint16) ProgramCounter {

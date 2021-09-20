@@ -25,7 +25,7 @@ func (c *CaseConsequence) InternalEnumIndex() uint8 {
 }
 
 func (c *CaseConsequence) String() string {
-	return fmt.Sprintf("[casecon %v %v %v]", c.caseValue, c.label)
+	return fmt.Sprintf("[casecon %v %v]", c.caseValue, c.label)
 }
 
 type Case struct {

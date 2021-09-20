@@ -14,9 +14,10 @@ import (
 )
 
 type CustomTypeVariantField struct {
-	index        uint
-	memoryOffset MemoryOffset
-	memorySize   MemorySize
+	index         uint
+	memoryOffset  MemoryOffset
+	memorySize    MemorySize
+	parameterType dtype.Type
 }
 
 func (c *CustomTypeVariantField) MemoryOffset() MemoryOffset {
@@ -47,14 +48,38 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 	}
 
 	var fields []*CustomTypeVariantField
+
+	pos := MemoryOffset(1) // Leave room for the custom type identifier
+
 	for index, paramType := range parameterTypes {
 		if paramType == nil {
 			panic("paramtype is nil")
 		}
-		field := &CustomTypeVariantField{
-			index:        uint(index),
-			memoryOffset: 0,
+
+		_, wasLocalType := paramType.(*LocalType)
+		var memorySize MemorySize
+		var memoryAlign MemoryAlign
+
+		if wasLocalType {
+			memorySize = 0
+			memoryAlign = 0
+		} else {
+			memorySize, memoryAlign = GetMemorySizeAndAlignment(paramType)
+			rest := pos % MemoryOffset(memoryAlign)
+			if rest != 0 {
+				pos += MemoryOffset(uint(memoryAlign) - uint(rest))
+			}
 		}
+
+		field := &CustomTypeVariantField{
+			index:         uint(index),
+			memoryOffset:  pos,
+			memorySize:    memorySize,
+			parameterType: paramType,
+		}
+
+		pos += MemoryOffset(memorySize)
+
 		fields = append(fields, field)
 	}
 	return &CustomTypeVariant{index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes, parameterFields: fields}
