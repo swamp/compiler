@@ -7,6 +7,7 @@ import (
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/opcode_sp_type"
 )
 
 func generateList(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
@@ -23,8 +24,8 @@ func generateList(code *assembler_sp.Code, target assembler_sp.TargetStackPosRan
 	}
 	primitive, _ := list.Type().(*dectype.PrimitiveAtom)
 	firstPrimitiveType := primitive.GenericTypes()[0]
-	itemSize, _ := dectype.GetMemorySizeAndAlignment(firstPrimitiveType)
-	code.ListLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize))
+	itemSize, itemAlign := dectype.GetMemorySizeAndAlignment(firstPrimitiveType)
+	code.ListLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize), opcode_sp_type.MemoryAlign(itemAlign))
 	return nil
 }
 

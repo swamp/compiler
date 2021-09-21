@@ -38,7 +38,7 @@ __externalfn coreListFoldl 3
 __externalfn coreListFoldlStop 3
 
 
-map : (a -> b) -> List a -> List b
+
 map x y =
     __asm callexternal 00 coreListMap 01 02
 
@@ -114,7 +114,6 @@ concat lst =
     __asm callexternal 00 coreListConcat 01
 
 
-isEmpty : List a -> Bool
 isEmpty lst =
     __asm callexternal 00 coreListIsEmpty 01
 
@@ -124,7 +123,6 @@ range start end =
     __asm callexternal 00 coreListRange 01 02
 
 
-length : List a -> Int
 length lst =
     __asm callexternal 00 coreListLength 01
 
@@ -157,6 +155,9 @@ head lst =
 
 const listCode = `
 __externalvarfn head : List a -> Maybe a
+__externalvarfn map : (a -> b) -> List a -> List b
+__externalvarfn isEmpty : List a -> Bool
+__externalvarfn length : List a -> Int
 `
 
 const mathCode = `

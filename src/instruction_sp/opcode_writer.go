@@ -17,6 +17,7 @@ type OpcodeWriter interface {
 	// StackPositionRange(r opcode_sp_type.StackPositionRange)
 	SourceStackPositionRange(r opcode_sp_type.SourceStackPositionRange)
 	StackRange(r opcode_sp_type.StackRange)
+	MemoryAlign(r opcode_sp_type.MemoryAlign)
 	TargetFieldOffset(r opcode_sp_type.TargetFieldOffset)
 
 	DeltaPC(pc opcode_sp_type.DeltaPC)

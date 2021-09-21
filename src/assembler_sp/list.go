@@ -5,14 +5,19 @@
 
 package assembler_sp
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/swamp/compiler/src/opcode_sp_type"
+)
 
 type ListLiteral struct {
-	target   TargetStackPos
-	itemSize StackRange
-	values   []SourceStackPos
+	target    TargetStackPos
+	itemSize  StackRange
+	itemAlign opcode_sp_type.MemoryAlign
+	values    []SourceStackPos
 }
 
 func (o *ListLiteral) String() string {
-	return fmt.Sprintf("[list %v (%d) <= %v]", o.target, o.itemSize, o.values)
+	return fmt.Sprintf("[list %v (%d, %d) <= %v]", o.target, o.itemSize, o.itemAlign, o.values)
 }

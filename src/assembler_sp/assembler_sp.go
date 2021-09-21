@@ -90,13 +90,13 @@ func (c *Code) UnaryOperator(target TargetStackPos, a SourceStackPos, operator i
 	c.addStatement(o)
 }
 
-func (c *Code) ListLiteral(target TargetStackPos, values []SourceStackPos, itemSize StackRange) {
-	o := &ListLiteral{target: target, values: values, itemSize: itemSize}
+func (c *Code) ListLiteral(target TargetStackPos, values []SourceStackPos, itemSize StackRange, itemAlign opcode_sp_type.MemoryAlign) {
+	o := &ListLiteral{target: target, values: values, itemSize: itemSize, itemAlign: itemAlign}
 	c.addStatement(o)
 }
 
-func (c *Code) ArrayLiteral(target TargetStackPos, values []SourceStackPos, itemSize StackRange) {
-	o := &ArrayLiteral{target: target, values: values, itemSize: itemSize}
+func (c *Code) ArrayLiteral(target TargetStackPos, values []SourceStackPos, itemSize StackRange, itemAlign opcode_sp_type.MemoryAlign) {
+	o := &ArrayLiteral{target: target, values: values, itemSize: itemSize, itemAlign: itemAlign}
 	c.addStatement(o)
 }
 
@@ -305,7 +305,7 @@ func writeList(stream *opcode_sp.Stream, listLiteral *ListLiteral) {
 		registers = append(registers, sourceStackPosition(argument))
 	}
 
-	stream.CreateList(targetStackPosition(listLiteral.target), stackRange(listLiteral.itemSize), registers)
+	stream.CreateList(targetStackPosition(listLiteral.target), stackRange(listLiteral.itemSize), listLiteral.itemAlign, registers)
 }
 
 func writeLoadInteger(stream *opcode_sp.Stream, loadInteger *LoadInteger) {
@@ -331,7 +331,7 @@ func writeCreateArray(stream *opcode_sp.Stream, arrayLiteral *ArrayLiteral) {
 		registers = append(registers, sourceStackPosition(argument))
 	}
 
-	stream.CreateArray(targetStackPosition(arrayLiteral.target), stackRange(arrayLiteral.itemSize), registers)
+	stream.CreateArray(targetStackPosition(arrayLiteral.target), stackRange(arrayLiteral.itemSize), arrayLiteral.itemAlign, registers)
 }
 
 func writeCallExternal(stream *opcode_sp.Stream, call *CallExternal) {

@@ -106,6 +106,10 @@ func (s *OpcodeInStream) readItemSize() opcode_sp_type.StackRange {
 	return opcode_sp_type.StackRange(s.readUint16())
 }
 
+func (s *OpcodeInStream) readAlign() opcode_sp_type.MemoryAlign {
+	return opcode_sp_type.MemoryAlign(s.readUint8())
+}
+
 func (s *OpcodeInStream) readLabel() *opcode_sp_type.Label {
 	delta := uint16(s.readUint8())
 	resultingPosition := s.programCounter().Add(delta)
@@ -250,17 +254,19 @@ func disassembleLoadZeroMemoryPointer(s *OpcodeInStream) *instruction_sp.LoadZer
 func disassembleCreateList(s *OpcodeInStream) *instruction_sp.CreateList {
 	destination := s.readTargetStackPosition()
 	itemSize := s.readItemSize()
+	memoryAlign := s.readAlign()
 	arguments := s.readSourceStackPositions()
 
-	return instruction_sp.NewCreateList(destination, itemSize, arguments)
+	return instruction_sp.NewCreateList(destination, itemSize, memoryAlign, arguments)
 }
 
 func disassembleCreateArray(s *OpcodeInStream) *instruction_sp.CreateArray {
 	destination := s.readTargetStackPosition()
 	itemSize := s.readItemSize()
+	memoryAlign := s.readAlign()
 	arguments := s.readSourceStackPositions()
 
-	return instruction_sp.NewCreateArray(destination, itemSize, arguments)
+	return instruction_sp.NewCreateArray(destination, itemSize, memoryAlign, arguments)
 }
 
 func disassembleCall(s *OpcodeInStream) *instruction_sp.Call {

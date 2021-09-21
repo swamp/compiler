@@ -221,7 +221,8 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						return decorated.NewInternalError(err)
 					}
 				} else {
-					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String()); err != nil {
+					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign); err != nil {
 						return decorated.NewInternalError(err)
 					}
 				}

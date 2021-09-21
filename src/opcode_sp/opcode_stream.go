@@ -73,6 +73,13 @@ func (s *OpCodeStream) SourceStackRange(r opcode_sp_type.SourceStackRange) {
 	s.WriteUint16(uint16(r))
 }
 
+func (s *OpCodeStream) MemoryAlign(r opcode_sp_type.MemoryAlign) {
+	if uint(r) == 0 {
+		panic("not allowed for it to be zero range")
+	}
+	s.Write(uint8(r))
+}
+
 func (s *OpCodeStream) SourceStackPositionRange(r opcode_sp_type.SourceStackPositionRange) {
 	s.StackPosition(r.Position)
 	s.SourceStackRange(r.Range)

@@ -65,15 +65,15 @@ func (s *Stream) SetEnum(destination opcode_sp_type.TargetStackPosition,
 }
 
 func (s *Stream) CreateList(destination opcode_sp_type.TargetStackPosition,
-	itemSize opcode_sp_type.StackRange, arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CreateList {
-	c := instruction_sp.NewCreateList(destination, itemSize, arguments)
+	itemSize opcode_sp_type.StackRange, itemAlign opcode_sp_type.MemoryAlign, arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CreateList {
+	c := instruction_sp.NewCreateList(destination, itemSize, itemAlign, arguments)
 	s.addInstruction(c)
 	return c
 }
 
 func (s *Stream) CreateArray(destination opcode_sp_type.TargetStackPosition,
-	itemSize opcode_sp_type.StackRange, arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CreateArray {
-	c := instruction_sp.NewCreateArray(destination, itemSize, arguments)
+	itemSize opcode_sp_type.StackRange, itemAlign opcode_sp_type.MemoryAlign, arguments []opcode_sp_type.SourceStackPosition) *instruction_sp.CreateArray {
+	c := instruction_sp.NewCreateArray(destination, itemSize, itemAlign, arguments)
 	s.addInstruction(c)
 	return c
 }

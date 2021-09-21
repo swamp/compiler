@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"strings"
+
+	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 type PackageConstants struct {
@@ -104,7 +106,7 @@ const (
 )
 
 func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName string,
-	opcodesPointer SourceDynamicMemoryPosRange) (*Constant, error) {
+	opcodesPointer SourceDynamicMemoryPosRange, returnOctetSize dectype.MemorySize, returnAlignSize dectype.MemoryAlign) (*Constant, error) {
 	var swampFuncStruct [SizeofSwampFunc]byte
 
 	fullyQualifiedStringPointer := c.AllocateStringOctets(uniqueFullyQualifiedFunctionName)
@@ -116,10 +118,11 @@ func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionNa
 	binary.LittleEndian.PutUint64(swampFuncStruct[24:32], uint64(opcodesPointer.Position))
 	binary.LittleEndian.PutUint64(swampFuncStruct[32:40], uint64(opcodesPointer.Size))
 
-	binary.LittleEndian.PutUint64(swampFuncStruct[40:48], uint64(0)) // returnOctetSize
+	binary.LittleEndian.PutUint64(swampFuncStruct[40:48], uint64(returnOctetSize)) // returnOctetSize
+	binary.LittleEndian.PutUint64(swampFuncStruct[48:56], uint64(returnAlignSize)) // returnAlign
 
-	binary.LittleEndian.PutUint64(swampFuncStruct[48:56], uint64(fullyQualifiedStringPointer.Position)) // debugName
-	binary.LittleEndian.PutUint64(swampFuncStruct[56:64], uint64(0))                                    // typeIndex
+	binary.LittleEndian.PutUint64(swampFuncStruct[56:64], uint64(fullyQualifiedStringPointer.Position)) // debugName
+	binary.LittleEndian.PutUint64(swampFuncStruct[64:72], uint64(0))                                    // typeIndex
 
 	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], "function Struct for:"+uniqueFullyQualifiedFunctionName)
 
@@ -179,13 +182,13 @@ func (c *PackageConstants) FetchOpcodes(functionConstant *Constant) []byte {
 	return c.dynamicMapper.Read(readOpcodeSection)
 }
 
-func (c *PackageConstants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunctionName string) (*Constant, error) {
+func (c *PackageConstants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunctionName string, returnSize dectype.MemorySize, returnAlign dectype.MemoryAlign) (*Constant, error) {
 	pointer := SourceDynamicMemoryPosRange{
 		Position: 0,
 		Size:     0,
 	}
 
-	return c.AllocateFunctionStruct(uniqueFullyQualifiedFunctionName, pointer)
+	return c.AllocateFunctionStruct(uniqueFullyQualifiedFunctionName, pointer, returnSize, returnAlign)
 }
 
 func (c *PackageConstants) AllocatePrepareExternalFunctionConstant(uniqueFullyQualifiedFunctionName string, returnValue SourceStackPosRange, parameters []SourceStackPosRange) (*Constant, error) {
