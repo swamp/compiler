@@ -11,11 +11,11 @@ import (
 )
 
 func ParseAnnotation(p ParseStream, ident *ast.VariableIdentifier,
-	isExternal bool, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
+	isExternal bool, isExternalVarFunction bool, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
 	typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
 	t, tErr := parseTypeReferenceFunc(p, ident.Symbol().FetchIndentation(), typeParameterContext, precedingComments)
 	if tErr != nil {
 		return nil, tErr
 	}
-	return ast.NewAnnotation(ident, t, isExternal, precedingComments), nil
+	return ast.NewAnnotation(ident, t, isExternal, isExternalVarFunction, precedingComments), nil
 }

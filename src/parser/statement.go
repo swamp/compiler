@@ -23,6 +23,13 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 		keywordSymbol, keywordSymbolErr = p.stream.tokenizer.ParseVariableSymbol()
 	}
 
+	_, isExternalVarFunction := keywordSymbol.(token.ExternalVarFunction)
+	if isExternalVarFunction {
+		p.stream.eatOneSpace("after external")
+		keywordSymbol, keywordSymbolErr = p.stream.tokenizer.ParseVariableSymbol()
+		isExternalFunction = true
+	}
+
 	variableSymbol, wasVariableSymbol := keywordSymbol.(token.VariableSymbolToken)
 	if !wasVariableSymbol {
 		return nil, parerr.NewUnknownStatement(variableSymbol)
@@ -37,6 +44,6 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 		keywordImport := token.NewKeyword(variableSymbol.Raw(), token.Import, variableSymbol.SourceFileReference)
 		return parseImport(p.stream, keywordImport, 0, precedingComments)
 	default:
-		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, isExternalFunction, precedingComments)
+		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, isExternalFunction, isExternalVarFunction, precedingComments)
 	}
 }

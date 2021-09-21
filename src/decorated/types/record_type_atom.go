@@ -109,6 +109,8 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		case *CustomTypeReference:
 			log.Printf("this is : %T %v (%v)", it.Type(), it.HumanReadable(), t.TypeGenerator().HumanReadable())
 			return GetMemorySizeAndAlignment(it.Type())
+		default:
+			panic(fmt.Errorf("what kind of invoker type is this: %T %v", t.TypeGenerator()))
 		}
 
 	case *CustomTypeAtom:
@@ -126,7 +128,7 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 func GetMemorySizeAndAlignment(p dtype.Type) (MemorySize, MemoryAlign) {
 	memorySize, memoryAlign := GetMemorySizeAndAlignmentInternal(p)
 	if memorySize == 0 || memoryAlign == 0 {
-		panic("can not be correct size and align")
+		panic(fmt.Errorf("can not be correct size and align %T %v", p, p))
 	}
 
 	return memorySize, memoryAlign

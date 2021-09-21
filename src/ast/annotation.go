@@ -12,13 +12,14 @@ import (
 )
 
 type Annotation struct {
-	symbol            *VariableIdentifier
-	annotatedType     Type
-	precedingComments *MultilineComment
-	isExternal        bool
+	symbol                *VariableIdentifier
+	annotatedType         Type
+	precedingComments     *MultilineComment
+	isExternal            bool
+	isExternalVarFunction bool
 }
 
-func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, isExternal bool,
+func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, isExternal bool, isExternalVarFunction bool,
 	precedingComments *MultilineComment) *Annotation {
 	if annotatedType == nil {
 		panic("must set annotated type")
@@ -26,7 +27,7 @@ func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, i
 
 	return &Annotation{
 		symbol: variableIdentifier, annotatedType: annotatedType,
-		isExternal: isExternal, precedingComments: precedingComments,
+		isExternal: isExternal, isExternalVarFunction: isExternalVarFunction, precedingComments: precedingComments,
 	}
 }
 
@@ -44,6 +45,10 @@ func (d *Annotation) Identifier() *VariableIdentifier {
 
 func (d *Annotation) IsExternal() bool {
 	return d.isExternal
+}
+
+func (d *Annotation) IsExternalVarFunction() bool {
+	return d.isExternalVarFunction
 }
 
 func (d *Annotation) FetchPositionLength() token.SourceFileReference {

@@ -93,6 +93,9 @@ func generateConstant(code *assembler_sp.Code, target assembler_sp.TargetStackPo
 func allocMemoryForType(stackMemory *assembler_sp.StackMemoryMapper, typeToAlloc dtype.Type,
 	debugString string) assembler_sp.TargetStackPosRange {
 	memorySize, alignment := dectype.GetMemorySizeAndAlignment(typeToAlloc)
+	if uint(memorySize) == 0 || uint(alignment) == 0 {
+		panic(fmt.Errorf("can not allocate zero memory or align for type %T %v", typeToAlloc, typeToAlloc))
+	}
 	return stackMemory.Allocate(uint(memorySize), uint32(alignment), debugString)
 }
 
@@ -152,6 +155,9 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 		functionConstants = append(functionConstants, preparedFuncConstant)
 		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 		if maybeFunction != nil {
+			if maybeFunction.Annotation().Annotation().IsExternal() {
+				continue
+			}
 			if verboseFlag >= verbosity.Mid {
 				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}

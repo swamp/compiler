@@ -12,7 +12,7 @@ import (
 )
 
 func checkAndParseAnnotationOrDefinition(stream ParseStream, variableSymbol token.VariableSymbolToken,
-	isExternalFunction bool, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
+	isExternalFunction bool, isExternalVarFunction bool, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
 	variableIdentifier := ast.NewVariableIdentifier(variableSymbol)
 	_, spaceBeforeAnnotationOrDefinitionErr := stream.eatOneSpace("space after annotation or definition")
 	if spaceBeforeAnnotationOrDefinitionErr != nil {
@@ -24,7 +24,7 @@ func checkAndParseAnnotationOrDefinition(stream ParseStream, variableSymbol toke
 		if spaceAfterColonErr != nil {
 			return nil, spaceAfterColonErr
 		}
-		return ParseAnnotation(stream, variableIdentifier, isExternalFunction, precedingComments)
+		return ParseAnnotation(stream, variableIdentifier, isExternalFunction, isExternalVarFunction, precedingComments)
 	}
 
 	return parseDefinition(stream, variableIdentifier, precedingComments)

@@ -7,11 +7,12 @@ package assembler_sp
 
 import "fmt"
 
-type CallExternal struct {
+type CallExternalWithSizes struct {
 	function       SourceStackPos
 	newBasePointer TargetStackPos
+	sizes          []VariableArgumentPosSize
 }
 
-func (o *CallExternal) String() string {
-	return fmt.Sprintf("[callExternal %v %v]", o.newBasePointer, o.function)
+func (o *CallExternalWithSizes) String() string {
+	return fmt.Sprintf("[callExternalWithSizes %v %v %v]", o.newBasePointer, o.function, o.sizes)
 }

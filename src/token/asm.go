@@ -59,3 +59,24 @@ func (s ExternalFunctionToken) String() string {
 func (s ExternalFunctionToken) FetchPositionLength() SourceFileReference {
 	return s.SourceFileReference
 }
+
+// Keyword :
+type ExternalVarFunction struct {
+	SourceFileReference
+}
+
+func NewExternalVarFunction(startPosition SourceFileReference) ExternalVarFunction {
+	return ExternalVarFunction{SourceFileReference: startPosition}
+}
+
+func (s ExternalVarFunction) Type() Type {
+	return ExternalFunction
+}
+
+func (s ExternalVarFunction) String() string {
+	return fmt.Sprintf("[externalvarfn]")
+}
+
+func (s ExternalVarFunction) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
+}

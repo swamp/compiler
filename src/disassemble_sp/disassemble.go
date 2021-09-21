@@ -87,6 +87,13 @@ func (s *OpcodeInStream) readCount() int {
 	return int(s.readUint8())
 }
 
+func (s *OpcodeInStream) readArgOffsetSize() opcode_sp_type.ArgOffsetSize {
+	return opcode_sp_type.ArgOffsetSize{
+		Offset: s.readUint16(),
+		Size:   s.readUint16(),
+	}
+}
+
 func (s *OpcodeInStream) readInt32() int32 {
 	return int32(s.readUint32())
 }
@@ -270,6 +277,18 @@ func disassembleCallExternal(s *OpcodeInStream) *instruction_sp.CallExternal {
 	return instruction_sp.NewCallExternal(newStackPointer, functionRegister)
 }
 
+func disassembleCallExternalWithSizes(s *OpcodeInStream) *instruction_sp.CallExternalWithSizes {
+	newStackPointer := s.readTargetStackPosition()
+	functionRegister := s.readSourceStackPosition()
+	count := s.readCount()
+	targetArgs := make([]opcode_sp_type.ArgOffsetSize, count)
+	for i := 0; i < count; i++ {
+		targetArgs[i] = s.readArgOffsetSize()
+	}
+
+	return instruction_sp.NewCallExternalWithSizes(newStackPointer, functionRegister, targetArgs)
+}
+
 func disassembleCurry(s *OpcodeInStream) *instruction_sp.Curry {
 	destination := s.readTargetStackPosition()
 	typeIDConstant := s.readTypeIDConstant()
@@ -385,6 +404,8 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleCall(s)
 	case instruction_sp.CmdCallExternal:
 		return disassembleCallExternal(s)
+	case instruction_sp.CmdCallExternalWithSizes:
+		return disassembleCallExternalWithSizes(s)
 	case instruction_sp.CmdTailCall:
 		return disassembleTailCall(s)
 	case instruction_sp.CmdCurry:
@@ -439,7 +460,7 @@ func Disassemble(octets []byte) []string {
 		startPc := s.programCounter()
 		cmd := s.readCommand()
 
-		//log.Printf("disasembling :%s (%02x)\n", instruction_sp.OpcodeToMnemonic(cmd), cmd)
+		// log.Printf("disasembling :%s (%02x)\n", instruction_sp.OpcodeToMnemonic(cmd), cmd)
 		args := decodeOpcode(cmd, s)
 		line := fmt.Sprintf("%04x: %v", startPc.Value(), args)
 		lines = append(lines, line)

@@ -188,9 +188,21 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 				isExternal := maybeFunction.Annotation().Annotation().IsExternal()
 				if isExternal {
+					hasLocalTypes := decorated.TypeHasLocalTypes(maybeFunction.ForcedFunctionType())
 					parameterCount := len(maybeFunction.Parameters())
 					paramPosRanges := make([]assembler_sp.SourceStackPosRange, parameterCount)
 					pos := uint(0)
+
+					if hasLocalTypes {
+						returnPosRange := assembler_sp.SourceStackPosRange{
+							Pos:  assembler_sp.SourceStackPos(0),
+							Size: assembler_sp.SourceStackRange(0),
+						}
+						if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
+							return decorated.NewInternalError(err)
+						}
+						continue
+					}
 					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
 					returnPosRange := assembler_sp.SourceStackPosRange{
 						Pos:  assembler_sp.SourceStackPos(pos),

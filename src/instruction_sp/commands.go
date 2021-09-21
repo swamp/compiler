@@ -73,6 +73,7 @@ const (
 	CmdLoadZeroMemoryPointer Commands = 0x26
 	CmdCopyMemory            Commands = 0x27
 	CmdSetEnum               Commands = 0x28
+	CmdCallExternalWithSizes Commands = 0x29
 )
 
 func OpcodeToMnemonic(cmd Commands) string {
@@ -82,6 +83,7 @@ func OpcodeToMnemonic(cmd Commands) string {
 		CmdBranchFalse:           "bne",
 		CmdJump:                  "jmp",
 		CmdCall:                  "call",
+		CmdCallExternalWithSizes: "callvar",
 		CmdReturn:                "ret",
 		CmdCallExternal:          "ecall",
 		CmdTailCall:              "tcall",

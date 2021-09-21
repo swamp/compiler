@@ -2,6 +2,7 @@ package generate_sp
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -10,11 +11,12 @@ import (
 
 func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	functionType := dectype.Unalias(call.FunctionExpression().Type())
-	functionAtom, wasFunctionAtom := functionType.(*dectype.FunctionAtom)
+	log.Printf("COMPLETE FUNCTION %v\n", call.CompleteCalledFunctionType().HumanReadable())
 
-	if !wasFunctionAtom {
-		return assembler_sp.SourceStackPosRange{}, fmt.Errorf("this is not a function atom %T", functionType)
+	functionAtom := dectype.UnaliasWithResolveInvoker(call.CompleteCalledFunctionType()).(*dectype.FunctionAtom)
+
+	if decorated.TypeHasLocalTypes(functionAtom) {
+		panic(fmt.Errorf("we can not call functions that has local types %v", functionAtom))
 	}
 
 	fn := call.FunctionExpression()
@@ -23,10 +25,15 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		return assembler_sp.SourceStackPosRange{}, functionGenErr
 	}
 
-	returnValue := allocMemoryForType(genContext.context.stackMemory, functionAtom.ReturnType(), "returnValue")
+	invokedReturnType := dectype.UnaliasWithResolveInvoker(functionAtom.ReturnType())
+	returnValue := allocMemoryForType(genContext.context.stackMemory, invokedReturnType, "returnValue")
+	if uint(returnValue.Size) == 0 {
+		panic(fmt.Errorf("how can it have zero size in return? %v", returnValue))
+	}
 	arguments := make([]assembler_sp.TargetStackPosRange, len(call.Arguments()))
 	for index, arg := range call.Arguments() {
 		arguments[index] = allocMemoryForType(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
+		log.Printf("argument: %d: pos:%d %T %v\n", index, arguments[index].Pos, arg, arg)
 	}
 
 	for index, arg := range call.Arguments() {
@@ -57,11 +64,24 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 			*/
 		}
 
-		arguments = append(arguments, argReg)
+		// arguments = append(arguments, argReg)
 	}
 
 	if call.IsExternal() {
-		code.CallExternal(functionRegister.Pos, returnValue.Pos)
+		functionValue := fn.(*decorated.FunctionReference)
+		if functionValue.FunctionValue().Annotation().Annotation().IsExternalVarFunction() {
+			sizes := make([]assembler_sp.VariableArgumentPosSize, len(arguments)+1)
+			startVariableArgumentPos := uint(returnValue.Pos)
+			sizes[0].Offset = 0
+			sizes[0].Size = uint16(returnValue.Size)
+			for index, argument := range arguments {
+				sizes[index+1].Offset = uint16(uint(argument.Pos) - startVariableArgumentPos)
+				sizes[index+1].Size = uint16(argument.Size)
+			}
+			code.CallExternalWithSizes(functionRegister.Pos, returnValue.Pos, sizes)
+		} else {
+			code.CallExternal(functionRegister.Pos, returnValue.Pos)
+		}
 	} else {
 		code.Call(functionRegister.Pos, returnValue.Pos)
 	}
@@ -74,6 +94,9 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, call *decorated.FunctionCall,
 	genContext *generateContext) error {
 	posRange, err := handleFunctionCall(code, call, genContext)
+	if err != nil {
+		return err
+	}
 
 	code.CopyMemory(target.Pos, posRange)
 

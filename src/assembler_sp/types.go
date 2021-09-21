@@ -72,6 +72,11 @@ func (t TargetStackPos) String() string {
 
 type TargetFieldOffset uint16
 
+type VariableArgumentPosSize struct {
+	Offset uint16
+	Size   uint16
+}
+
 type SourceStackPosAndRangeToLocalOffset struct {
 	PosRange     SourceStackPosRange
 	TargetOffset TargetFieldOffset

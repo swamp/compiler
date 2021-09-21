@@ -45,6 +45,11 @@ func (s *OpCodeStream) WriteUint16(v uint16) {
 	s.octets = append(s.octets, b[:]...)
 }
 
+func (s *OpCodeStream) ArgOffsetSize(r opcode_sp_type.ArgOffsetSize) {
+	s.WriteUint16(r.Offset)
+	s.WriteUint16(r.Size)
+}
+
 func (s *OpCodeStream) StackPosition(r opcode_sp_type.SourceStackPosition) {
 	s.WriteUint32(uint32(r))
 }

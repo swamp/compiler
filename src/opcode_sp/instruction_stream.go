@@ -105,6 +105,12 @@ func (s *Stream) CallExternal(target opcode_sp_type.TargetStackPosition, functio
 	return c
 }
 
+func (s *Stream) CallExternalWithSizes(target opcode_sp_type.TargetStackPosition, function opcode_sp_type.SourceStackPosition, argSizes []opcode_sp_type.ArgOffsetSize) *instruction_sp.CallExternalWithSizes {
+	c := instruction_sp.NewCallExternalWithSizes(target, function, argSizes)
+	s.addInstruction(c)
+	return c
+}
+
 func (s *Stream) Curry(target opcode_sp_type.TargetStackPosition, typeIDConstant uint16, function opcode_sp_type.SourceStackPosition,
 	arguments opcode_sp_type.SourceStackPositionRange) *instruction_sp.Curry {
 	c := instruction_sp.NewCurry(target, typeIDConstant, function, arguments)

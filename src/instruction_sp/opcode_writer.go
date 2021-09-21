@@ -24,6 +24,7 @@ type OpcodeWriter interface {
 	LabelWithOffset(l *opcode_sp_type.Label, offset *opcode_sp_type.Label)
 	EnumValue(v uint8)
 	Count(c int)
+	ArgOffsetSize(opcode_sp_type.ArgOffsetSize)
 	TypeIDConstant(c uint16)
 	Command(cmd Commands)
 }

@@ -34,6 +34,8 @@ func (t *Tokenizer) ParseSpecialKeyword(pos token.PositionToken) (token.Token, T
 		return parseAsm(t, t.MakeSourceFileReference(pos))
 	case "externalfn":
 		return token.NewExternalFunctionToken(t.MakeSourceFileReference(pos)), nil
+	case "externalvarfn":
+		return token.NewExternalVarFunction(t.MakeSourceFileReference(pos)), nil
 	}
 
 	return nil, NewInternalError(fmt.Errorf("not a starting keyword"))

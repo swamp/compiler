@@ -29,6 +29,11 @@ func (r SourceStackPosition) String() string {
 	return fmt.Sprintf("%v", uint32(r))
 }
 
+type ArgOffsetSize struct {
+	Offset uint16
+	Size   uint16
+}
+
 type StackPositionRange struct {
 	Position StackPosition
 	Range    StackRange

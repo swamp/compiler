@@ -155,6 +155,10 @@ head lst =
     __asm callexternal 00 coreListHead 01
 `
 
+const listCode = `
+__externalvarfn head : List a -> Maybe a
+`
+
 const mathCode = `
 __externalfn remainderBy : Int -> Int -> Int
 __externalfn sin : Fixed -> Fixed
@@ -308,10 +312,7 @@ set index item array =
 `
 
 const maybeCode = `
-__externalfn coreMaybeWithDefault 2
-withDefault : a -> Maybe a -> a
-withDefault default maybe =
-    __asm callexternal 00 coreMaybeWithDefault 01 02
+__externalfn withDefault : a -> Maybe a -> a
 `
 
 const tupleCode = `
@@ -427,13 +428,19 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 		return nil, mathModuleErr
 	}
 	importModules = append(importModules, mathModule)
+	listModule, listModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "List", listCode)
+	if listModuleErr != nil {
+		return nil, listModuleErr
+	}
+	importModules = append(importModules, listModule)
 
+	maybeModule, maybeModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Maybe", maybeCode)
+	if maybeModuleErr != nil {
+		return nil, maybeModuleErr
+	}
+	importModules = append(importModules, maybeModule)
 	/*
-		listModule, listModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "List", listContent)
-		if listModuleErr != nil {
-			return nil, listModuleErr
-		}
-		importModules = append(importModules, listModule)
+
 
 		tupleModule, tupleModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Tuple", tupleCode)
 		if tupleModuleErr != nil {
@@ -471,11 +478,7 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 		}
 		importModules = append(importModules, arrayModule)
 
-		maybeModule, maybeModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Maybe", maybeCode)
-		if maybeModuleErr != nil {
-			return nil, maybeModuleErr
-		}
-		importModules = append(importModules, maybeModule)
+
 
 		debugModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Debug", debugCode)
 		if arrayModuleErr != nil {
