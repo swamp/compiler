@@ -188,9 +188,9 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 				isExternal := maybeFunction.Annotation().Annotation().IsExternal()
 				if isExternal {
+					var paramPosRanges []assembler_sp.SourceStackPosRange
 					hasLocalTypes := decorated.TypeHasLocalTypes(maybeFunction.ForcedFunctionType())
-					parameterCount := len(maybeFunction.Parameters())
-					paramPosRanges := make([]assembler_sp.SourceStackPosRange, parameterCount)
+					// parameterCount := len(maybeFunction.Parameters())
 					pos := uint(0)
 
 					if hasLocalTypes {
@@ -198,6 +198,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 							Pos:  assembler_sp.SourceStackPos(0),
 							Size: assembler_sp.SourceStackRange(0),
 						}
+						paramPosRanges = make([]assembler_sp.SourceStackPosRange, len(maybeFunction.Parameters()))
 						if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
 							return decorated.NewInternalError(err)
 						}
@@ -212,17 +213,32 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 					pos += uint(returnSize)
 
 					for index, param := range maybeFunction.Parameters() {
+						unaliased := dectype.Unalias(maybeFunction.Parameters()[index].Type())
+						if dectype.IsAny(unaliased) {
+							typeIndexPosRange := assembler_sp.SourceStackPosRange{
+								Pos:  assembler_sp.SourceStackPos(pos),
+								Size: assembler_sp.SourceStackRange(dectype.SizeofSwampInt),
+							}
+							paramPosRanges = append(paramPosRanges, typeIndexPosRange)
+							pos += uint(typeIndexPosRange.Size)
+						}
 						size, _ := dectype.GetMemorySizeAndAlignment(param.Type())
-						paramPosRanges[index].Pos = assembler_sp.SourceStackPos(pos)
-						paramPosRanges[index].Size = assembler_sp.SourceStackRange(size)
+						posRange := assembler_sp.SourceStackPosRange{
+							Pos:  assembler_sp.SourceStackPos(pos),
+							Size: assembler_sp.SourceStackRange(size),
+						}
+						paramPosRanges = append(paramPosRanges, posRange)
 						pos += uint(size)
+
 					}
 					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
 						return decorated.NewInternalError(err)
 					}
 				} else {
 					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
-					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign); err != nil {
+					parameterCount := uint(len(maybeFunction.Parameters()))
+
+					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, 0); err != nil {
 						return decorated.NewInternalError(err)
 					}
 				}

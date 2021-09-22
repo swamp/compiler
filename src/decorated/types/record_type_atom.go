@@ -99,6 +99,8 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 				return SizeofSwampInt, AlignOfSwampInt
 			case "String":
 				return Sizeof64BitPointer, Alignof64BitPointer
+			case "Any":
+				return Sizeof64BitPointer, Alignof64BitPointer
 			}
 			panic(fmt.Errorf("do not know primitive atom of %v %T", p, unaliased))
 		}
@@ -119,6 +121,8 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		return Sizeof64BitPointer, Alignof64BitPointer
 	case *TupleTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
+	case *LocalType:
+		return 0, 0
 	default:
 		panic(fmt.Errorf("calc: do not know memory size of %v %T", p, unaliased))
 	}

@@ -30,41 +30,44 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	if uint(returnValue.Size) == 0 {
 		panic(fmt.Errorf("how can it have zero size in return? %v", returnValue))
 	}
-	arguments := make([]assembler_sp.TargetStackPosRange, len(call.Arguments()))
+	// arguments := make([]assembler_sp.TargetStackPosRange, len(call.Arguments()))
+	var arguments []assembler_sp.TargetStackPosRange
+	originalParameters := call.FunctionExpression().(*decorated.FunctionReference).FunctionValue().Parameters()
 	for index, arg := range call.Arguments() {
-		arguments[index] = allocMemoryForType(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
+		functionArgType := originalParameters[index].Type()
+		functionArgTypeUnalias := dectype.Unalias(functionArgType)
+		isAny := dectype.IsAny(functionArgTypeUnalias)
+		if isAny { // arg.NeedsTypeId() {
+			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "typeid")
+			arguments = append(arguments, anySourcePosGen)
+		} else {
+			log.Printf("wasn't any %T %v\n", functionArgTypeUnalias, functionArgTypeUnalias)
+		}
+		arguments = append(arguments, allocMemoryForType(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index)))
 		log.Printf("argument: %d: pos:%d %T %v\n", index, arguments[index].Pos, arg, arg)
 	}
 
+	argumentIndex := 0
 	for index, arg := range call.Arguments() {
-		functionArgType := functionAtom.FunctionParameterTypes()[index]
+		functionArgType := originalParameters[index].Type()
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 
-		argReg := arguments[index]
+		isAny := dectype.IsAny(functionArgTypeUnalias)
+		if isAny { // arg.NeedsTypeId() {
+			typeID, err := genContext.lookup.Lookup(arg.Type())
+			if err != nil {
+				return assembler_sp.SourceStackPosRange{}, err
+			}
+			code.LoadInteger(arguments[argumentIndex].Pos, int32(typeID))
+			argumentIndex++
+		}
+
+		argReg := arguments[argumentIndex]
 		argRegErr := generateExpression(code, argReg, arg, genContext)
 		if argRegErr != nil {
 			return assembler_sp.SourceStackPosRange{}, argRegErr
 		}
-
-		isAny := dectype.IsAny(functionArgTypeUnalias)
-		if isAny { // arg.NeedsTypeId() {
-			/*
-				constant, err := generateTypeIdConstant(arg.Type(), genContext)
-				if err != nil {
-					return err
-				}
-
-				tempAnyConstructor := genContext.context.AllocateTempVariable("anyConstructor")
-				code.Constructor(tempAnyConstructor, []assembler_sp.SourceVariable{constant, argReg})
-
-				argReg = tempAnyConstructor
-
-				tempVariables = append(tempVariables, tempAnyConstructor)
-
-			*/
-		}
-
-		// arguments = append(arguments, argReg)
+		argumentIndex++
 	}
 
 	if call.IsExternal() {

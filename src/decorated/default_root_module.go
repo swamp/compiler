@@ -342,31 +342,14 @@ third tuple =
 `
 
 const debugCode = `
-__externalfn coreDebugLog 1
-log : String -> String
-log output =
-    __asm callexternal 00 coreDebugLog 01
-
-
-__externalfn coreDebugToString 1
-toString : Any -> String
-toString output =
-    __asm callexternal 00 coreDebugToString 01
-
+__externalfn log : String -> String
+__externalvarfn logRecord : Any -> String
+__externalvarfn toString : Any -> String
 `
 
 const intCode = `
-__externalfn coreIntToFixed 1
-toFixed : Int -> Fixed
-toFixed a =
-    __asm callexternal 00 coreIntToFixed 01
-
-
-__externalfn coreFixedToInt 1
-round : Fixed -> Int
-round a =
-    __asm callexternal 00 coreFixedToInt 01
-
+__externalfn toFixed : Int -> Fixed
+__externalfn round : Fixed -> Int
 `
 
 const charCode = `
@@ -440,6 +423,19 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 		return nil, maybeModuleErr
 	}
 	importModules = append(importModules, maybeModule)
+
+	intModule, intModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Int", intCode)
+	if intModuleErr != nil {
+		return nil, intModuleErr
+	}
+	importModules = append(importModules, intModule)
+
+	debugModule, debugModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Debug", debugCode)
+	if debugModuleErr != nil {
+		return nil, debugModuleErr
+	}
+	importModules = append(importModules, debugModule)
+
 	/*
 
 
@@ -455,11 +451,6 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 		}
 		importModules = append(importModules, blobModule)
 
-		intModule, intModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Int", intCode)
-		if intModuleErr != nil {
-			return nil, intModuleErr
-		}
-		importModules = append(importModules, intModule)
 
 		charModule, charModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Char", charCode)
 		if charModuleErr != nil {
@@ -481,11 +472,6 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 
 
 
-		debugModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Debug", debugCode)
-		if arrayModuleErr != nil {
-			return nil, arrayModuleErr
-		}
-		importModules = append(importModules, debugModule)
 	*/
 
 	return importModules, nil

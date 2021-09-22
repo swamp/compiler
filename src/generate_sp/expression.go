@@ -116,6 +116,9 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 	case *decorated.LetVariableReference:
 		return generateLetVariableReference(code, target, e, genContext.context)
 
+	case *decorated.FunctionReference:
+		return generateFunctionReference(code, target, e, genContext.context.constants)
+
 	case *decorated.CaseConsequenceParameterReference:
 		return generateLocalConsequenceParameterReference(code, target, e, genContext.context)
 

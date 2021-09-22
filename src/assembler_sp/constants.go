@@ -106,14 +106,15 @@ const (
 )
 
 func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName string,
-	opcodesPointer SourceDynamicMemoryPosRange, returnOctetSize dectype.MemorySize, returnAlignSize dectype.MemoryAlign) (*Constant, error) {
+	opcodesPointer SourceDynamicMemoryPosRange, returnOctetSize dectype.MemorySize,
+	returnAlignSize dectype.MemoryAlign, parameterCount uint, parameterOctetSize dectype.MemorySize) (*Constant, error) {
 	var swampFuncStruct [SizeofSwampFunc]byte
 
 	fullyQualifiedStringPointer := c.AllocateStringOctets(uniqueFullyQualifiedFunctionName)
 
 	binary.LittleEndian.PutUint32(swampFuncStruct[0:4], uint32(0))
-	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(0))  // parameterCount
-	binary.LittleEndian.PutUint64(swampFuncStruct[16:24], uint64(0)) // parameters octet size
+	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(parameterCount))      // parameterCount
+	binary.LittleEndian.PutUint64(swampFuncStruct[16:24], uint64(parameterOctetSize)) // parameters octet size
 
 	binary.LittleEndian.PutUint64(swampFuncStruct[24:32], uint64(opcodesPointer.Position))
 	binary.LittleEndian.PutUint64(swampFuncStruct[32:40], uint64(opcodesPointer.Size))
@@ -137,6 +138,9 @@ func (c *PackageConstants) AllocateExternalFunctionStruct(uniqueFullyQualifiedFu
 	var swampFuncStruct [SizeofSwampExternalFunc]byte
 
 	fullyQualifiedStringPointer := c.AllocateStringOctets(uniqueFullyQualifiedFunctionName)
+	if len(parameters) == 0 {
+		panic(fmt.Errorf("not allowed to have zero paramters for %v", uniqueFullyQualifiedFunctionName))
+	}
 
 	binary.LittleEndian.PutUint32(swampFuncStruct[0:4], uint32(1))                  // external type
 	binary.LittleEndian.PutUint64(swampFuncStruct[8:16], uint64(len(parameters)))   // parameterCount
@@ -182,13 +186,16 @@ func (c *PackageConstants) FetchOpcodes(functionConstant *Constant) []byte {
 	return c.dynamicMapper.Read(readOpcodeSection)
 }
 
-func (c *PackageConstants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunctionName string, returnSize dectype.MemorySize, returnAlign dectype.MemoryAlign) (*Constant, error) {
+func (c *PackageConstants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunctionName string,
+	returnSize dectype.MemorySize, returnAlign dectype.MemoryAlign,
+	parameterCount uint, parameterOctetSize dectype.MemorySize) (*Constant, error) {
 	pointer := SourceDynamicMemoryPosRange{
 		Position: 0,
 		Size:     0,
 	}
 
-	return c.AllocateFunctionStruct(uniqueFullyQualifiedFunctionName, pointer, returnSize, returnAlign)
+	return c.AllocateFunctionStruct(uniqueFullyQualifiedFunctionName, pointer, returnSize, returnAlign,
+		parameterCount, parameterOctetSize)
 }
 
 func (c *PackageConstants) AllocatePrepareExternalFunctionConstant(uniqueFullyQualifiedFunctionName string, returnValue SourceStackPosRange, parameters []SourceStackPosRange) (*Constant, error) {

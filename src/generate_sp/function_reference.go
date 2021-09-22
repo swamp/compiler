@@ -29,9 +29,9 @@ func handleFunctionReference(code *assembler_sp.Code,
 }
 
 func generateFunctionReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	getVar *decorated.FunctionReference, context *assembler_sp.Context) error {
+	getVar *decorated.FunctionReference, constants *assembler_sp.PackageConstants) error {
 	varName := assembler_sp.VariableName(getVar.Identifier().Name())
-	functionConstant := context.Constants().FindFunction(varName)
+	functionConstant := constants.FindFunction(varName)
 	code.LoadZeroMemoryPointer(target.Pos, functionConstant.PosRange().Position)
 	return nil
 }

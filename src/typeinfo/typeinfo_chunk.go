@@ -19,6 +19,11 @@ type InfoType interface {
 	HumanReadable() string
 }
 
+type (
+	MemoryOffset uint16
+	MemorySize   uint16
+)
+
 type Type struct {
 	index int
 }
@@ -184,6 +189,7 @@ func (t *TypeRefType) HumanReadable() string {
 type ListType struct {
 	Type
 	itemType InfoType
+	itemSize MemorySize
 }
 
 func (t *ListType) String() string {
@@ -197,6 +203,7 @@ func (t *ListType) HumanReadable() string {
 type ArrayType struct {
 	Type
 	itemType InfoType
+	itemSize MemorySize
 }
 
 func (t *ArrayType) String() string {
@@ -226,8 +233,9 @@ func (t *AliasType) HumanReadableExpanded() string {
 }
 
 type RecordField struct {
-	name      string
-	fieldType InfoType
+	name         string
+	fieldType    InfoType
+	memoryOffset MemoryOffset
 }
 
 func (t RecordField) String() string {
@@ -263,9 +271,23 @@ func (t *RecordType) HumanReadable() string {
 	return fmt.Sprintf("{ %v }", fieldsToHumanReadable(t.fields))
 }
 
+type VariantField struct {
+	index        uint
+	memoryOffset MemoryOffset
+	fieldType    InfoType
+}
+
+func (t VariantField) String() string {
+	return fmt.Sprintf("variantfield %d: %v", t.index, t.fieldType.Ref())
+}
+
+func (t VariantField) HumanReadable() string {
+	return fmt.Sprintf("%d: %v", t.index, t.fieldType.HumanReadable())
+}
+
 type Variant struct {
-	name           string
-	parameterTypes []InfoType
+	name   string
+	fields []VariantField
 }
 
 func Refs(types []InfoType) string {
@@ -287,11 +309,11 @@ func Refs(types []InfoType) string {
 }
 
 func (t Variant) String() string {
-	return fmt.Sprintf("variant %s parameters:%v", t.name, Refs(t.parameterTypes))
+	return fmt.Sprintf("variant %s parameters:%v", t.name, t.fields)
 }
 
 func (t Variant) HumanReadable() string {
-	return fmt.Sprintf("%s%s", t.name, typesToHumanReadable(t.parameterTypes, ", "))
+	return fmt.Sprintf("%s%s", t.name, t.fields)
 }
 
 type CustomType struct {
@@ -346,17 +368,30 @@ func (t *FunctionType) HumanReadable() string {
 	return fmt.Sprintf("( %v )", typesToHumanReadable(t.parameterTypes, " -> "))
 }
 
+type TupleTypeField struct {
+	memoryOffset MemoryOffset
+	fieldType    InfoType
+}
+
+func (t TupleTypeField) String() string {
+	return fmt.Sprintf("tuplefield %s %v", t.fieldType.Ref())
+}
+
+func (t TupleTypeField) HumanReadable() string {
+	return fmt.Sprintf("%s : %v", t.fieldType.HumanReadable())
+}
+
 type TupleType struct {
 	Type
-	parameterTypes []InfoType
+	fields []TupleTypeField
 }
 
 func (t *TupleType) String() string {
-	return fmt.Sprintf("tuple params:%v", Refs(t.parameterTypes))
+	return fmt.Sprintf("tuple params:%v", t.fields)
 }
 
 func (t *TupleType) HumanReadable() string {
-	return fmt.Sprintf("( %v )", typesToHumanReadable(t.parameterTypes, ", "))
+	return fmt.Sprintf("( %v )", t.fields)
 }
 
 type Chunk struct {
@@ -376,15 +411,15 @@ func customsAreSame(custom *CustomType, other *CustomType) bool {
 			return false
 		}
 
-		if len(variant.parameterTypes) != len(otherVariant.parameterTypes) {
+		if len(variant.fields) != len(otherVariant.fields) {
 			return false
 		}
-		for paramIndex, parameterType := range variant.parameterTypes {
-			otherParameterType := otherVariant.parameterTypes[paramIndex]
+		for paramIndex, parameterType := range variant.fields {
+			otherParameterType := otherVariant.fields[paramIndex].fieldType
 			if otherParameterType == nil {
 				return false
 			}
-			if parameterType.Index() != otherParameterType.Index() {
+			if parameterType.fieldType.Index() != otherParameterType.Index() {
 				return false
 			}
 		}
@@ -463,14 +498,14 @@ func functionsAreSame(fn *FunctionType, other *FunctionType) bool {
 }
 
 func tuplesAreSame(fn *TupleType, other *TupleType) bool {
-	if len(other.parameterTypes) != len(fn.parameterTypes) {
+	if len(other.fields) != len(fn.fields) {
 		return false
 	}
 
-	for paramIndex, parameterType := range fn.parameterTypes {
-		otherParamType := other.parameterTypes[paramIndex]
+	for paramIndex, parameterType := range fn.fields {
+		otherParamType := other.fields[paramIndex].fieldType
 
-		if parameterType.Index() != otherParamType.Index() {
+		if parameterType.fieldType.Index() != otherParamType.Index() {
 			return false
 		}
 	}
@@ -675,9 +710,24 @@ func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, erro
 			return nil, consumeErr
 		}
 
+		if len(variant.ParameterTypes()) != len(variant.Fields()) {
+			panic("illegal custom type parametercount field count")
+		}
+
+		var fields []VariantField
+
+		for index, field := range variant.Fields() {
+			newFields := VariantField{
+				index:        uint(index),
+				fieldType:    consumedTypes[index],
+				memoryOffset: MemoryOffset(field.MemoryOffset()),
+			}
+			fields = append(fields, newFields)
+		}
+
 		consumedVariants = append(consumedVariants, Variant{
-			name:           variant.Name().Name(),
-			parameterTypes: consumedTypes,
+			name:   variant.Name().Name(),
+			fields: fields,
 		})
 	}
 
@@ -712,8 +762,9 @@ func (c *Chunk) consumeRecord(record *dectype.RecordAtom) (*RecordType, error) {
 			return nil, err
 		}
 		recordField := RecordField{
-			name:      field.Name(),
-			fieldType: consumeFieldType,
+			name:         field.Name(),
+			memoryOffset: MemoryOffset(field.MemoryOffset()),
+			fieldType:    consumeFieldType,
 		}
 		fields = append(fields, recordField)
 	}
@@ -765,22 +816,26 @@ func (c *Chunk) consumeFunction(fn *dectype.FunctionAtom) (*FunctionType, error)
 }
 
 func (c *Chunk) consumeTuple(fn *dectype.TupleTypeAtom) (*TupleType, error) {
-	var types []InfoType
+	var tupleFields []TupleTypeField
 
-	for _, paramType := range fn.ParameterTypes() {
-		consumeType, err := c.Consume(paramType)
+	for _, field := range fn.Fields() {
+		consumeType, err := c.Consume(field.Type())
 		if err != nil {
 			return nil, err
 		}
 		if consumeType == nil {
 			return nil, fmt.Errorf("this should not be needed")
 		}
-		types = append(types, consumeType)
+		tupleField := TupleTypeField{
+			memoryOffset: MemoryOffset(field.MemoryOffset()),
+			fieldType:    consumeType,
+		}
+		tupleFields = append(tupleFields, tupleField)
 	}
 
 	proposedNewTuple := &TupleType{
-		Type:           Type{},
-		parameterTypes: types,
+		Type:   Type{},
+		fields: tupleFields,
 	}
 
 	indexRecord := c.doWeHaveTuple(proposedNewTuple)
@@ -806,9 +861,12 @@ func (c *Chunk) consumeArray(genericTypes []dtype.Type) (InfoType, error) {
 		return nil, err
 	}
 
+	memorySize, _ := dectype.GetMemorySizeAndAlignmentInternal(itemType)
+
 	proposedNewArray := &ArrayType{
 		Type:     Type{},
 		itemType: consumedType,
+		itemSize: MemorySize(memorySize),
 	}
 
 	indexArray := c.doWeHaveArray(proposedNewArray)
@@ -836,9 +894,12 @@ func (c *Chunk) consumeList(genericTypes []dtype.Type) (InfoType, error) {
 		return nil, nil
 	}
 
+	memorySize, _ := dectype.GetMemorySizeAndAlignmentInternal(itemType)
+
 	proposedNewList := &ListType{
 		Type:     Type{},
 		itemType: consumedType,
+		itemSize: MemorySize(memorySize),
 	}
 
 	indexArray := c.doWeHaveList(proposedNewList)
