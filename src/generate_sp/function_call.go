@@ -40,8 +40,6 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		if isAny { // arg.NeedsTypeId() {
 			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "typeid")
 			arguments = append(arguments, anySourcePosGen)
-		} else {
-			log.Printf("wasn't any %T %v\n", functionArgTypeUnalias, functionArgTypeUnalias)
 		}
 		arguments = append(arguments, allocMemoryForType(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index)))
 		log.Printf("argument: %d: pos:%d %T %v\n", index, arguments[index].Pos, arg, arg)

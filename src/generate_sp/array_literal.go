@@ -26,3 +26,13 @@ func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 	code.ArrayLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize), opcode_sp_type.MemoryAlign(itemAlign))
 	return nil
 }
+
+func handleArray(code *assembler_sp.Code,
+	array *decorated.ArrayLiteral, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := genContext.context.stackMemory.Allocate(uint(dectype.Sizeof64BitPointer), uint32(dectype.Alignof64BitPointer), "listLiteral")
+	if err := generateArray(code, posRange, array, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
+}

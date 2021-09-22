@@ -263,53 +263,14 @@ toString2d size blob =
 `
 
 const arrayCode = `
-__externalfn coreArrayFromList 1
-fromList : List a -> Array a
-fromList list =
-    __asm callexternal 00 coreArrayFromList 01
-
-
-__externalfn coreArrayToList 1
-toList : Array a -> List a
-toList list =
-    __asm callexternal 00 coreArrayToList 01
-
-
-__externalfn coreArraySlice 3
-slice : Int -> Int -> Array a -> Array a
-slice startIndex endIndex array =
-    __asm callexternal 00 coreArraySlice 01 02 03
-
-
-__externalfn coreArrayRepeat 2
-repeat : Int -> a -> Array a
-repeat count item =
-    __asm callexternal 00 coreArrayRepeat 01 02
-
-
-__externalfn coreArrayLength 1
-length : Array a -> Int
-length lst =
-    __asm callexternal 00 coreArrayLength 01
-
-
-__externalfn coreArrayGet 2
-get : Int -> Array a -> Maybe a
-get index array =
-    __asm callexternal 00 coreArrayGet 01 02
-
-
-__externalfn coreArrayGrab 2
-grab : Int -> Array a -> a
-grab index array =
-    __asm callexternal 00 coreArrayGrab 01 02
-
-
-__externalfn coreArraySet 3
-set : Int -> a -> Array a -> Array a
-set index item array =
-    __asm callexternal 00 coreArraySet 01 02 03
-
+__externalvarfn fromList : List a -> Array a
+__externalvarfn toList : Array a -> List a
+__externalvarfn slice : Int -> Int -> Array a -> Array a
+__externalvarfn repeat : Int -> a -> Array a
+__externalvarfn length : Array a -> Int
+__externalvarfn get : Int -> Array a -> Maybe a
+__externalvarfn grab : Int -> Array a -> a
+__externalvarfn set : Int -> a -> Array a -> Array a
 `
 
 const maybeCode = `
@@ -343,7 +304,7 @@ third tuple =
 
 const debugCode = `
 __externalfn log : String -> String
-__externalvarfn logRecord : Any -> String
+__externalvarfn logAny : Any -> String
 __externalvarfn toString : Any -> String
 `
 
@@ -436,6 +397,12 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 	}
 	importModules = append(importModules, debugModule)
 
+	arrayModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Array", arrayCode)
+	if arrayModuleErr != nil {
+		return nil, arrayModuleErr
+	}
+	importModules = append(importModules, arrayModule)
+
 	/*
 
 
@@ -463,15 +430,6 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 			return nil, typeIdErr
 		}
 		importModules = append(importModules, typeId)
-
-		arrayModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Array", arrayCode)
-		if arrayModuleErr != nil {
-			return nil, arrayModuleErr
-		}
-		importModules = append(importModules, arrayModule)
-
-
-
 	*/
 
 	return importModules, nil

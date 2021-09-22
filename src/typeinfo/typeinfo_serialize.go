@@ -158,6 +158,7 @@ func writeRecord(writer io.Writer, record *RecordType) error {
 	if err := writeTypeID(writer, SwtiTypeRecord); err != nil {
 		return err
 	}
+
 	if err := writeCount(writer, len(record.fields)); err != nil {
 		return err
 	}
@@ -304,21 +305,21 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 }
 
 func writeVersion(writer io.Writer) error {
-	const major byte = 0
-	const minor byte = 1
-	const patch byte = 6
+	const (
+		major byte = 0
+		minor byte = 1
+		patch byte = 7
+	)
 
 	if err := writeUint8(writer, major); err != nil {
 		return err
 	}
+
 	if err := writeUint8(writer, minor); err != nil {
 		return err
 	}
-	if err := writeUint8(writer, patch); err != nil {
-		return err
-	}
 
-	return nil
+	return writeUint8(writer, patch)
 }
 
 func Serialize(c *Chunk, writer io.Writer) error {

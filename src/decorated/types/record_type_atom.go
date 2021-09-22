@@ -89,6 +89,8 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 				{
 					return Sizeof64BitPointer, Alignof64BitPointer
 				}
+			case "Array":
+				return Sizeof64BitPointer, Alignof64BitPointer
 			case "Bool":
 				return SizeofSwampBool, AlignOfSwampBool
 			case "Int":
@@ -102,7 +104,7 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 			case "Any":
 				return Sizeof64BitPointer, Alignof64BitPointer
 			}
-			panic(fmt.Errorf("do not know primitive atom of %v %T", p, unaliased))
+			panic(fmt.Errorf("do not know primitive atom of '%s' %v %T", name, p, unaliased))
 		}
 	case *InvokerType:
 		switch it := t.TypeGenerator().(type) {

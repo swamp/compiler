@@ -6,6 +6,7 @@ import (
 	"github.com/swamp/compiler/src/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 func allocateVariable(scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName string, variableType dtype.Type) assembler_sp.SourceStackPosRange {
@@ -103,4 +104,14 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 	code.Copy(consequencesBlockCode)
 
 	return nil
+}
+
+func handleCaseCustomType(code *assembler_sp.Code,
+	caseCustomType *decorated.CaseCustomType, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := genContext.context.stackMemory.Allocate(uint(dectype.Sizeof64BitPointer), uint32(dectype.Alignof64BitPointer), "caseCustomTypeLiteral")
+	if err := generateCaseCustomType(code, posRange, caseCustomType, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
 }

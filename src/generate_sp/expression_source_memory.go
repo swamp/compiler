@@ -59,6 +59,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handleRecordConstructorSortedAssignments(code, t, genContext)
 	case *decorated.ListLiteral:
 		return handleList(code, t, genContext)
+	case *decorated.ArrayLiteral:
+		return handleArray(code, t, genContext)
 	case *decorated.BooleanOperator:
 		return handleBinaryOperatorBooleanResult(code, t, genContext)
 	case *decorated.ArithmeticOperator:
@@ -69,6 +71,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handleRecordLookup(code, t, genContext)
 	case *decorated.TupleLiteral:
 		return handleTuple(code, t, genContext)
+	case *decorated.CaseCustomType:
+		return handleCaseCustomType(code, t, genContext)
 	}
 
 	panic(fmt.Errorf("generate_sp_withSource: unknown node %T %v %v", expr, expr, genContext))
