@@ -8,7 +8,6 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -186,7 +185,6 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			unknownType := named.Expression()
 			maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 			if maybeFunction != nil {
-				log.Printf("processing function %v\n", maybeFunction.Annotation().Identifier())
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 				isExternal := maybeFunction.Annotation().Annotation().IsExternal()
 				if isExternal {
@@ -273,6 +271,8 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			allExternalFunctions = append(allExternalFunctions, fakeFunc)
 		}
 	}
+
+	constants.DynamicMemory().DebugOutput()
 
 	if verboseFlag >= verbosity.Mid {
 		var assemblerOutput string

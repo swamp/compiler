@@ -201,6 +201,14 @@ func disassembleStringBinaryOperator(cmd instruction_sp.Commands, s *OpcodeInStr
 	return instruction_sp.NewBinaryOperator(cmd, destination, a, b)
 }
 
+func disassembleEnumBinaryOperator(cmd instruction_sp.Commands, s *OpcodeInStream) *instruction_sp.BinaryOperator {
+	destination := s.readTargetStackPosition()
+	a := s.readSourceStackPosition()
+	b := s.readSourceStackPosition()
+
+	return instruction_sp.NewBinaryOperator(cmd, destination, a, b)
+}
+
 func disassembleBitwiseOperator(cmd instruction_sp.Commands, s *OpcodeInStream) *instruction_sp.BinaryOperator {
 	destination := s.readTargetStackPosition()
 	a := s.readSourceStackPosition()
@@ -450,6 +458,10 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleStringBinaryOperator(cmd, s)
 	case instruction_sp.CmdStringNotEqual:
 		return disassembleStringBinaryOperator(cmd, s)
+	case instruction_sp.CmdEnumEqual:
+		return disassembleEnumBinaryOperator(cmd, s)
+	case instruction_sp.CmdEnumNotEqual:
+		return disassembleEnumBinaryOperator(cmd, s)
 	}
 
 	panic(fmt.Sprintf("swamp disassembler: unknown opcode:%v", cmd))

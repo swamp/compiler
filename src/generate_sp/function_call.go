@@ -2,7 +2,6 @@ package generate_sp
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -11,8 +10,6 @@ import (
 
 func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	log.Printf("COMPLETE FUNCTION %v\n", call.CompleteCalledFunctionType().HumanReadable())
-
 	functionAtom := dectype.UnaliasWithResolveInvoker(call.CompleteCalledFunctionType()).(*dectype.FunctionAtom)
 
 	if decorated.TypeHasLocalTypes(functionAtom) {
@@ -42,7 +39,6 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 			arguments = append(arguments, anySourcePosGen)
 		}
 		arguments = append(arguments, allocMemoryForType(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index)))
-		log.Printf("argument: %d: pos:%d %T %v\n", index, arguments[index].Pos, arg, arg)
 	}
 
 	argumentIndex := 0

@@ -2,14 +2,12 @@ package generate_sp
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
 func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, expr decorated.Expression, genContext *generateContext) error {
-	log.Printf("generate expression %v %T", expr.FetchPositionLength().ToReferenceString(), expr)
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)

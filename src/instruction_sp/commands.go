@@ -103,6 +103,8 @@ func OpcodeToMnemonic(cmd Commands) string {
 		CmdIntGreaterOrEqual:     "cpgei",
 		CmdStringEqual:           "cpeqs",
 		CmdStringNotEqual:        "cpnes",
+		CmdEnumEqual:             "cpeqe",
+		CmdEnumNotEqual:          "cpnee",
 		CmdIntBitwiseAnd:         "andi",
 		CmdIntBitwiseOr:          "ori",
 		CmdIntBitwiseXor:         "xori",

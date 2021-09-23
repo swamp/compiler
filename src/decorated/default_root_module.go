@@ -48,10 +48,7 @@ map2 x y z =
     __asm callexternal 00 coreListMap2 01 02 03
 
 
-__externalfn coreListIndexedMap 2
-indexedMap : (Int -> a -> b) -> List a -> List b
-indexedMap x y =
-    __asm callexternal 00 coreListIndexedMap 01 02
+
 
 
 any : (a -> Bool) -> List a -> Bool
@@ -159,6 +156,9 @@ __externalvarfn map : (a -> b) -> List a -> List b
 __externalvarfn isEmpty : List a -> Bool
 __externalvarfn length : List a -> Int
 __externalvarfn foldl : (a -> b -> b) -> b -> List a -> b
+__externalvarfn foldlstop : (a -> b -> Maybe b) -> b -> List a -> b
+__externalvarfn filterMap : (a -> Maybe b) -> List a -> List b
+__externalvarfn indexedMap : (Int -> a -> b) -> List a -> List b
 `
 
 const mathCode = `

@@ -5,7 +5,8 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, guardExpr *decorated.Guard, genContext *generateContext) error {
+func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, guardExpr *decorated.Guard,
+	genContext *generateContext) error {
 	type codeItem struct {
 		ConditionVariable     assembler_sp.SourceStackPosRange
 		ConditionCode         *assembler_sp.Code
@@ -67,4 +68,15 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 	code.Copy(defaultCode)
 
 	return nil
+}
+
+func handleGuard(code *assembler_sp.Code, guardExpr *decorated.Guard,
+	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	targetPosRange := allocMemoryForType(genContext.context.stackMemory, guardExpr.Type(), "guard target")
+
+	if err := generateGuard(code, targetPosRange, guardExpr, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(targetPosRange), nil
 }

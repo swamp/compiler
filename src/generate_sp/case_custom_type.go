@@ -1,8 +1,6 @@
 package generate_sp
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -41,8 +39,6 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 				Size: assembler_sp.SourceStackRange(field.MemorySize()),
 			}
 			consequenceContext.context.scopeVariables.DefineVariable(consequenceLabelVariableName, paramVariable)
-
-			log.Printf("allocate %v %v\n", paramVariable, param.Type())
 		}
 
 		labelVariableName := assembler_sp.VariableName(

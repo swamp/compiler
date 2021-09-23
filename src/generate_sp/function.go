@@ -1,8 +1,6 @@
 package generate_sp
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -19,7 +17,6 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 	unaliasedReturnType := dectype.UnaliasWithResolveInvoker(functionType.ReturnType())
-	log.Printf("generating code for: %v %T %v\n", fullyQualifiedVariableName, unaliasedReturnType, unaliasedReturnType)
 	returnValueSourcePointer := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, "__return", unaliasedReturnType)
 	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 

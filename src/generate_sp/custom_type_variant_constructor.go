@@ -24,8 +24,8 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 
 	smashedVariant := smashedCustomType.FindVariant(constructor.CustomTypeVariant().Name().Name())
 	unionMemorySize, _ := dectype.GetMemorySizeAndAlignment(constructor.Type())
-	if uint(target.Size) != uint(unionMemorySize) {
-		return fmt.Errorf("internal error, target size is not exactly right")
+	if smashedVariant.Name().Name() != "Nothing" && uint(target.Size) != uint(unionMemorySize) {
+		return fmt.Errorf("internal error, target size is not exactly right, target is:%v and unionMemorySize is:%v", target.Size, unionMemorySize)
 	}
 
 	code.SetEnum(target.Pos, uint8(constructor.CustomTypeVariant().Index()))

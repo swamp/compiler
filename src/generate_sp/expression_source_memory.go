@@ -23,6 +23,13 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 
 			return targetToSourceStackPosRange(intStorage), nil
 		}
+	case *decorated.FixedLiteral:
+		{
+			fixedStorage := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "fixedLiteral:"+t.String())
+			code.LoadInteger(fixedStorage.Pos, t.Value())
+
+			return targetToSourceStackPosRange(fixedStorage), nil
+		}
 	case *decorated.CharacterLiteral:
 		{
 			runeStorage := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampRune), uint32(dectype.AlignOfSwampRune), "runeLiteral"+t.String())
@@ -83,6 +90,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handlePipeLeft(code, t, genContext)
 	case *decorated.PipeRightOperator:
 		return handlePipeRight(code, t, genContext)
+	case *decorated.Guard:
+		return handleGuard(code, t, genContext)
 	}
 
 	panic(fmt.Errorf("generate_sp_withSource: unknown node %T %v %v", expr, expr, genContext))

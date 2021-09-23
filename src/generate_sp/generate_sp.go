@@ -191,7 +191,5 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 		}
 	}
 
-	moduleContext.constants.DynamicMemory().DebugOutput()
-
 	return moduleContext.constants, functionConstants, nil
 }
