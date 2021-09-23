@@ -30,8 +30,12 @@ func handleFunctionReference(code *assembler_sp.Code,
 
 func generateFunctionReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	getVar *decorated.FunctionReference, constants *assembler_sp.PackageConstants) error {
-	varName := assembler_sp.VariableName(getVar.Identifier().Name())
+	ident := getVar.NameReference().FullyQualifiedName()
+	varName := assembler_sp.VariableName(ident)
 	functionConstant := constants.FindFunction(varName)
+	if functionConstant == nil {
+		panic(fmt.Errorf("can not find function:%v", varName))
+	}
 	code.LoadZeroMemoryPointer(target.Pos, functionConstant.PosRange().Position)
 	return nil
 }

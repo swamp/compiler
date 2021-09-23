@@ -87,7 +87,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		code.Call(functionRegister.Pos, returnValue.Pos)
 	}
 
-	genContext.context.stackMemory.Set(arguments[0].Pos)
+	genContext.context.stackMemory.Set(returnValue.Pos + assembler_sp.TargetStackPos(returnValue.Size))
 
 	return targetToSourceStackPosRange(returnValue), nil
 }

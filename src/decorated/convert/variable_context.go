@@ -37,6 +37,14 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 		scoped, wasScoped := name.(*ast.VariableIdentifierScoped)
 		if wasScoped {
 			moduleRef = decorated.NewModuleReference(scoped.ModuleReference(), module)
+		} else {
+			path := module.FullyQualifiedModuleName().Path()
+			var astModuleRef *ast.ModuleReference
+
+			if path != nil {
+				astModuleRef = ast.NewModuleReference(path.Parts())
+				moduleRef = decorated.NewModuleReference(astModuleRef, module)
+			}
 		}
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
@@ -68,7 +76,12 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 
 	def.SetReferenced()
 
-	someReference, err := ReferenceFromVariable(name, def.Expression(), nil)
+	var inModule *decorated.Module
+	moduleDef := def.ModuleDefinition()
+	if moduleDef != nil {
+		inModule = moduleDef.OwnedByModule()
+	}
+	someReference, err := ReferenceFromVariable(name, def.Expression(), inModule)
 	if err != nil {
 		return nil, err
 	}

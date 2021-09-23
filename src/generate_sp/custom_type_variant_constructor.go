@@ -6,6 +6,7 @@ import (
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 func customTypeVariantConstructor() {
@@ -19,8 +20,10 @@ func customTypeVariantConstructor() {
 
 func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	constructor *decorated.CustomTypeVariantConstructor, genContext *generateContext) error {
-	variant := constructor.CustomTypeVariant()
-	unionMemorySize := variant.InCustomType().MemorySize()
+	smashedCustomType := constructor.Type().(*dectype.CustomTypeAtom)
+
+	smashedVariant := smashedCustomType.FindVariant(constructor.CustomTypeVariant().Name().Name())
+	unionMemorySize, _ := dectype.GetMemorySizeAndAlignment(constructor.Type())
 	if uint(target.Size) != uint(unionMemorySize) {
 		return fmt.Errorf("internal error, target size is not exactly right")
 	}
@@ -28,7 +31,7 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 	code.SetEnum(target.Pos, uint8(constructor.CustomTypeVariant().Index()))
 
 	for index, arg := range constructor.Arguments() {
-		variantField := variant.Fields()[index]
+		variantField := smashedVariant.Fields()[index]
 		fieldTarget := assembler_sp.TargetStackPosRange{
 			Pos:  assembler_sp.TargetStackPos(uint(target.Pos) + uint(variantField.MemoryOffset())),
 			Size: assembler_sp.StackRange(variantField.MemorySize()),

@@ -11,7 +11,7 @@ import (
 func generateRecordConstructorSortedAssignmentsHelper(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	recordType *dectype.RecordAtom, sortedAssignments []*decorated.RecordLiteralAssignment, genContext *generateContext) error {
 	if uint(target.Size) != uint(recordType.MemorySize()) {
-		return fmt.Errorf("wrong target size for record constructor")
+		return fmt.Errorf("wrong target size for record constructor %v vs %v", target.Size, recordType.MemorySize())
 	}
 
 	for index, assignment := range sortedAssignments {

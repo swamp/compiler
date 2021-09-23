@@ -110,6 +110,16 @@ func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, s
 
 */
 
+func defToFunctionReference(def *decorated.NamedDecoratedExpression, ident ast.ScopedOrNormalVariableIdentifier) *decorated.FunctionReference {
+	lookupExpression := def.Expression()
+	functionValue, _ := lookupExpression.(*decorated.FunctionValue)
+
+	fromModule := def.ModuleDefinition().OwnedByModule()
+	moduleRef := decorated.NewModuleReference(ast.NewModuleReference(fromModule.FullyQualifiedModuleName().Path().Parts()), fromModule)
+	nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, ident)
+	return decorated.NewFunctionReference(nameWithModuleRef, functionValue)
+}
+
 func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context *VariableContext) (*ast.FunctionCall, decorated.Expression, []decorated.Expression, decshared.DecoratedError) {
 	var arguments []decorated.Expression
 	var functionExpression decorated.Expression
@@ -134,10 +144,8 @@ func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context 
 		if def == nil {
 			return nil, nil, nil, decorated.NewInternalError(fmt.Errorf("couldn't find %v", t))
 		}
-		lookupExpression := def.Expression()
-		functionValue, _ := lookupExpression.(*decorated.FunctionValue)
-		nameWithModuleRef := decorated.NewNamedDefinitionReference(nil, t)
-		functionReference := decorated.NewFunctionReference(nameWithModuleRef, functionValue)
+
+		functionReference := defToFunctionReference(def, t)
 		functionExpression = functionReference
 		leftAstCall = ast.NewFunctionCall(functionReference, nil)
 	case *ast.VariableIdentifierScoped:
@@ -145,11 +153,7 @@ func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context 
 		if def == nil {
 			return nil, nil, nil, decorated.NewInternalError(fmt.Errorf("couldn't find %v", t))
 		}
-		lookupExpression := def.Expression()
-		functionValue, _ := lookupExpression.(*decorated.FunctionValue)
-		decoratedModuleReference := decorated.NewModuleReference(t.ModuleReference(), def.ModuleDefinition().OwnedByModule())
-		nameWithModuleRef := decorated.NewNamedDefinitionReference(decoratedModuleReference, t)
-		functionReference := decorated.NewFunctionReference(nameWithModuleRef, functionValue)
+		functionReference := defToFunctionReference(def, t)
 		functionExpression = functionReference
 		leftAstCall = ast.NewFunctionCall(functionReference, nil)
 	}

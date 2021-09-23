@@ -1,9 +1,12 @@
 package generate_sp
 
 import (
+	"log"
+
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 	swamppack "github.com/swamp/pack/lib"
@@ -14,7 +17,10 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
 
-	returnValueSourcePointer := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, "__return", f.ForcedFunctionType().ReturnType())
+	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
+	unaliasedReturnType := dectype.UnaliasWithResolveInvoker(functionType.ReturnType())
+	log.Printf("generating code for: %v %T %v\n", fullyQualifiedVariableName, unaliasedReturnType, unaliasedReturnType)
+	returnValueSourcePointer := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, "__return", unaliasedReturnType)
 	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 
 	for _, parameter := range f.Parameters() {

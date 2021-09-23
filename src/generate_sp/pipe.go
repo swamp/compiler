@@ -20,3 +20,23 @@ func generatePipeRight(code *assembler_sp.Code, target assembler_sp.TargetStackP
 	}
 	return nil
 }
+
+func handlePipeRight(code *assembler_sp.Code, operator *decorated.PipeRightOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := allocMemoryForType(genContext.context.stackMemory, operator.GenerateRight().Type(), "pipeRight")
+
+	if err := generatePipeRight(code, posRange, operator, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
+}
+
+func handlePipeLeft(code *assembler_sp.Code, operator *decorated.PipeLeftOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := allocMemoryForType(genContext.context.stackMemory, operator.GenerateLeft().Type(), "pipeLeft")
+
+	if err := generatePipeLeft(code, posRange, operator, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
+}
