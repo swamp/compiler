@@ -45,7 +45,7 @@ func CheckUnused(world *loader.Package) {
 	}
 }
 
-func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
+func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
 	statInfo, statErr := os.Stat(mainSourceFile)
 	if statErr != nil {
 		return nil, statErr
@@ -63,7 +63,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				compiledPackage, err := CompileAndLink(typeInformationChunk, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag)
+				compiledPackage, err := CompileAndLink(typeInformationChunk, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, showAssembler, verboseFlag)
 				if err != nil {
 					return packages, err
 				}
@@ -159,7 +159,7 @@ type CoreFunctionInfo struct {
 	ParamCount uint
 }
 
-func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, showAssembler bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	gen := generate_sp.NewGenerator()
 
 	var allFunctions []*assembler_sp.Constant
@@ -272,9 +272,11 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		}
 	}
 
-	constants.DynamicMemory().DebugOutput()
-
 	if verboseFlag >= verbosity.Mid {
+		constants.DynamicMemory().DebugOutput()
+	}
+
+	if verboseFlag >= verbosity.Mid || showAssembler {
 		var assemblerOutput string
 
 		for _, f := range allFunctions {
@@ -326,13 +328,14 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 	return compiledPackage, nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, name string, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, name string,
+	filename string, outputFilename string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
 	if compileErr != nil {
 		return nil, compileErr
 	}
 
-	if err := GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, verboseFlag); err != nil {
+	if err := GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, showAssembler, verboseFlag); err != nil {
 		return compiledPackage, err
 	}
 

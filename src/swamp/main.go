@@ -31,7 +31,7 @@ var Version string
 func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, assembler bool, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
 	filenameToCompile := fileOrDirectory
 
-	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, verbosity)
+	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, assembler, verbosity)
 }
 
 func buildCommandLineNoOutput(fileOrDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
