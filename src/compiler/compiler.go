@@ -8,6 +8,7 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -185,6 +186,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			unknownType := named.Expression()
 			maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 			if maybeFunction != nil {
+				log.Printf("processing function %v\n", maybeFunction.Annotation().Identifier())
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 				isExternal := maybeFunction.Annotation().Annotation().IsExternal()
 				if isExternal {
@@ -204,7 +206,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						}
 						continue
 					}
-					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.Type())
 					returnPosRange := assembler_sp.SourceStackPosRange{
 						Pos:  assembler_sp.SourceStackPos(pos),
 						Size: assembler_sp.SourceStackRange(returnSize),
@@ -235,7 +237,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						return decorated.NewInternalError(err)
 					}
 				} else {
-					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.Type())
 					parameterCount := uint(len(maybeFunction.Parameters()))
 
 					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, 0); err != nil {

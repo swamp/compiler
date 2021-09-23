@@ -28,6 +28,19 @@ func booleanToBinaryIntOperatorType(operatorType decorated.BooleanOperatorType) 
 	return 0
 }
 
+func booleanToBinaryEnumOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
+	switch operatorType {
+	case decorated.BooleanEqual:
+		return instruction_sp.BinaryOperatorBooleanEnumEqual
+	case decorated.BooleanNotEqual:
+		return instruction_sp.BinaryOperatorBooleanEnumNotEqual
+	default:
+		panic(fmt.Errorf("not allowed enum operator type"))
+	}
+
+	return 0
+}
+
 func booleanToBinaryStringOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
 	switch operatorType {
 	case decorated.BooleanEqual:
@@ -53,7 +66,15 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 	unaliasedTypeLeft := dectype.UnaliasWithResolveInvoker(operator.Left().Type())
 	foundPrimitive, _ := unaliasedTypeLeft.(*dectype.PrimitiveAtom)
 	if foundPrimitive == nil {
-		panic("not implemented binary operator boolean")
+		foundCustomType, _ := unaliasedTypeLeft.(*dectype.CustomTypeAtom)
+		if foundCustomType == nil {
+			panic(fmt.Errorf("not implemented binary operator boolean %v", unaliasedTypeLeft.HumanReadable()))
+		} else {
+			// unaliasedTypeRight := dectype.UnaliasWithResolveInvoker(operator.Right().Type())
+			opcodeBinaryOperator := booleanToBinaryEnumOperatorType(operator.OperatorType())
+			code.EnumBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+			//			panic(fmt.Errorf("not implemented yet %v", unaliasedTypeRight))
+		}
 	} else if foundPrimitive.AtomName() == "String" {
 		opcodeBinaryOperator := booleanToBinaryStringOperatorType(operator.OperatorType())
 		code.StringBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)

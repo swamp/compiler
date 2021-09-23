@@ -29,6 +29,8 @@ const (
 	BinaryOperatorArithmeticFixedMultiply
 	BinaryOperatorBooleanStringEqual
 	BinaryOperatorBooleanStringNotEqual
+	BinaryOperatorBooleanEnumEqual
+	BinaryOperatorBooleanEnumNotEqual
 )
 
 // BinaryOperatorToOpCode converts from the type of binary operator to the actual opcode instruction.
@@ -78,6 +80,18 @@ func BinaryStringOperatorToOpCode(operator BinaryOperatorType) Commands {
 		return CmdStringEqual
 	case BinaryOperatorBooleanStringNotEqual:
 		return CmdStringNotEqual
+	}
+
+	panic("swamp opcodes: unknown string binary operator")
+}
+
+// BinaryEnumOperatorToOpCode converts from the type of binary operator to the actual opcode instruction.
+func BinaryEnumOperatorToOpCode(operator BinaryOperatorType) Commands {
+	switch operator {
+	case BinaryOperatorBooleanEnumEqual:
+		return CmdEnumEqual
+	case BinaryOperatorBooleanEnumNotEqual:
+		return CmdEnumNotEqual
 	}
 
 	panic("swamp opcodes: unknown string binary operator")

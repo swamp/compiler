@@ -7,7 +7,7 @@ package opcode_sp_type
 
 import "fmt"
 
-type DeltaPC uint8
+type DeltaPC uint16
 
 type ProgramCounter struct {
 	position uint16
@@ -36,8 +36,8 @@ func (p ProgramCounter) IsAfter(other ProgramCounter) bool {
 func (p ProgramCounter) Delta(after ProgramCounter) (DeltaPC, error) {
 	delta := int(after.position) - int(p.position)
 
-	if delta < 0 || delta > 0xff {
-		return DeltaPC(0), fmt.Errorf("illegal jump. Jumping forward %d, but maximum is 255. Please split your code into separate functions.", delta)
+	if delta < 0 || delta > 0xffff {
+		return DeltaPC(0), fmt.Errorf("illegal jump. Jumping forward %d, but maximum is 65535. Please split your code into separate functions.", delta)
 	}
 
 	return DeltaPC(delta), nil

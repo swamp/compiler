@@ -42,3 +42,13 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 
 	return nil
 }
+
+func handleCustomTypeVariantConstructor(code *assembler_sp.Code,
+	customTypeVariantConstructor *decorated.CustomTypeVariantConstructor, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := allocMemoryForType(genContext.context.stackMemory, customTypeVariantConstructor.CustomTypeVariant().InCustomType(), "variant constructor target")
+	if err := generateCustomTypeVariantConstructor(code, posRange, customTypeVariantConstructor, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
+}

@@ -182,6 +182,15 @@ func (s *Stream) StringBinaryOperator(destination opcode_sp_type.TargetStackPosi
 	return c
 }
 
+func (s *Stream) EnumBinaryOperator(destination opcode_sp_type.TargetStackPosition,
+	operatorType instruction_sp.BinaryOperatorType, a opcode_sp_type.SourceStackPosition,
+	b opcode_sp_type.SourceStackPosition) *instruction_sp.BinaryOperator {
+	opcode := instruction_sp.BinaryEnumOperatorToOpCode(operatorType)
+	c := instruction_sp.NewBinaryOperator(opcode, destination, a, b)
+	s.addInstruction(c)
+	return c
+}
+
 func (s *Stream) MemoryCopy(destination opcode_sp_type.TargetStackPosition,
 	a opcode_sp_type.SourceStackPositionRange) *instruction_sp.MemoryCopy {
 	c := instruction_sp.NewMemoryCopy(destination, a)

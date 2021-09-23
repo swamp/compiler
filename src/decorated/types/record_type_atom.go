@@ -86,16 +86,18 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 			name := t.PrimitiveName().Name()
 			switch name {
 			case "List":
-				{
-					return Sizeof64BitPointer, Alignof64BitPointer
-				}
+				return Sizeof64BitPointer, Alignof64BitPointer
 			case "Array":
+				return Sizeof64BitPointer, Alignof64BitPointer
+			case "Blob":
 				return Sizeof64BitPointer, Alignof64BitPointer
 			case "Bool":
 				return SizeofSwampBool, AlignOfSwampBool
 			case "Int":
 				return SizeofSwampInt, AlignOfSwampInt
 			case "Fixed":
+				return SizeofSwampInt, AlignOfSwampInt
+			case "TypeRef":
 				return SizeofSwampInt, AlignOfSwampInt
 			case "Char":
 				return SizeofSwampInt, AlignOfSwampInt
@@ -120,6 +122,8 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	case *CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	case *FunctionAtom:
+		return Sizeof64BitPointer, Alignof64BitPointer
+	case *UnmanagedType:
 		return Sizeof64BitPointer, Alignof64BitPointer
 	case *TupleTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()

@@ -158,6 +158,7 @@ __externalvarfn head : List a -> Maybe a
 __externalvarfn map : (a -> b) -> List a -> List b
 __externalvarfn isEmpty : List a -> Bool
 __externalvarfn length : List a -> Int
+__externalvarfn foldl : (a -> b -> b) -> b -> List a -> b
 `
 
 const mathCode = `
@@ -177,89 +178,20 @@ __externalfn mod : Int -> Int -> Int
 `
 
 const blobCode = `
-__externalfn coreBlobIsEmpty 1
-isEmpty : Blob -> Bool
-isEmpty x =
-    __asm callexternal 00 coreBlobIsEmpty 01
-
-
-__externalfn coreBlobFromList 1
-fromList : List Int -> Blob
-fromList x =
-    __asm callexternal 00 coreBlobFromList 01
-
-
-__externalfn coreBlobToList 1
-toList : Blob -> List Int
-toList x =
-    __asm callexternal 00 coreBlobToList 01
-
-
-__externalfn coreBlobMap 2
-map : (Int -> Int) -> Blob -> Blob
-map fn blob =
-    __asm callexternal 00 coreBlobMap 01 02
-
-
-__externalfn coreBlobIndexedMap 2
-indexedMap : (Int -> Int -> Int) -> Blob -> Blob
-indexedMap fn blob =
-    __asm callexternal 00 coreBlobIndexedMap 01 02
-
-
-__externalfn coreBlobFilterIndexedMap 2
-filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
-filterIndexedMap fn blob =
-    __asm callexternal 00 coreBlobFilterIndexedMap 01 02
-
-
-__externalfn coreBlobLength 1
-length : Blob -> Int
-length blob =
-    __asm callexternal 00 coreBlobLength 01
-
-
-__externalfn coreBlobGet 2
-get : Int -> Blob -> Maybe Int
-get index blob =
-    __asm callexternal 00 coreBlobGet 01 02
-
-
-__externalfn coreBlobGrab 2
-grab : Int -> Blob -> Int
-grab index blob =
-    __asm callexternal 00 coreBlobGrab 01 02
-
-
-__externalfn coreBlobGet2d 3
-get2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Maybe Int
-get2d position size blob =
-    __asm callexternal 00 coreBlobGet2d 01 02 03
-
-
-__externalfn coreBlobGrab2d 3
-grab2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Int
-grab2d position size blob =
-    __asm callexternal 00 coreBlobGrab2d 01 02 03
-
-
-__externalfn coreBlobSet 3
-set : Int -> Int -> Blob -> Blob
-set index item blob =
-    __asm callexternal 00 coreBlobSet 01 02 03
-
-
-__externalfn coreBlobSet2d 4
-set2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Int -> Blob -> Blob
-set2d position size item blob =
-    __asm callexternal 00 coreBlobSet2d 01 02 03 04
-
-
-__externalfn coreBlobToString2d 2
-toString2d : { width : Int, height : Int } -> Blob -> String
-toString2d size blob =
-    __asm callexternal 00 coreBlobToString2d 01 02
-
+-- __externalfn isEmpty : Blob -> Bool
+-- __externalfn fromList : List Int -> Blob
+-- __externalfn toList : Blob -> List Int
+__externalfn map : (Int -> Int) -> Blob -> Blob
+__externalfn indexedMap : (Int -> Int -> Int) -> Blob -> Blob
+__externalfn filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
+-- __externalfn length : Blob -> Int
+-- __externalfn get : Int -> Blob -> Maybe Int
+-- __externalfn grab : Int -> Blob -> Int
+__externalfn get2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Maybe Int
+-- __externalfn grab2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Int
+-- __externalfn set : Int -> Int -> Blob -> Blob
+-- __externalfn set2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Int -> Blob -> Blob
+__externalfn toString2d : { width : Int, height : Int } -> Blob -> String
 `
 
 const arrayCode = `
@@ -314,23 +246,9 @@ __externalfn round : Fixed -> Int
 `
 
 const charCode = `
-__externalfn coreCharOrd 1
-ord : Char -> Int
-ord a =
-    __asm callexternal 00 coreCharOrd 01
-
-
-__externalfn coreCharToCode 1
-toCode : Char -> Int
-toCode a =
-    __asm callexternal 00 coreCharToCode 01
-
-
-__externalfn coreCharFromCode 1
-fromCode : Int -> Char
-fromCode a =
-    __asm callexternal 00 coreCharFromCode 01
-
+__externalfn ord : Char -> Int
+__externalfn toCode : Char -> Int
+__externalfn fromCode : Int -> Char
 `
 
 const typeIdCode = `
@@ -403,6 +321,17 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 	}
 	importModules = append(importModules, arrayModule)
 
+	blobModule, blobModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Blob", blobCode)
+	if blobModuleErr != nil {
+		return nil, blobModuleErr
+	}
+	importModules = append(importModules, blobModule)
+
+	charModule, charModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Char", charCode)
+	if charModuleErr != nil {
+		return nil, charModuleErr
+	}
+	importModules = append(importModules, charModule)
 	/*
 
 
@@ -412,18 +341,9 @@ func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.M
 		}
 		importModules = append(importModules, tupleModule)
 
-		blobModule, blobModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Blob", blobCode)
-		if blobModuleErr != nil {
-			return nil, blobModuleErr
-		}
-		importModules = append(importModules, blobModule)
 
 
-		charModule, charModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Char", charCode)
-		if charModuleErr != nil {
-			return nil, charModuleErr
-		}
-		importModules = append(importModules, charModule)
+
 
 		typeId, typeIdErr := compileToGlobal(targetModule, globalPrimitiveModule, "TypeRef", typeIdCode)
 		if typeIdErr != nil {

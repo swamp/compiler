@@ -139,7 +139,7 @@ func (c *PackageConstants) AllocateExternalFunctionStruct(uniqueFullyQualifiedFu
 
 	fullyQualifiedStringPointer := c.AllocateStringOctets(uniqueFullyQualifiedFunctionName)
 	if len(parameters) == 0 {
-		panic(fmt.Errorf("not allowed to have zero paramters for %v", uniqueFullyQualifiedFunctionName))
+		// panic(fmt.Errorf("not allowed to have zero paramters for %v", uniqueFullyQualifiedFunctionName))
 	}
 
 	binary.LittleEndian.PutUint32(swampFuncStruct[0:4], uint32(1))                  // external type

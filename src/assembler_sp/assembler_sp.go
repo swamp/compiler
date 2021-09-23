@@ -85,6 +85,11 @@ func (c *Code) StringBinaryOperator(target TargetStackPos, a SourceStackPos, b S
 	c.addStatement(o)
 }
 
+func (c *Code) EnumBinaryOperator(target TargetStackPos, a SourceStackPos, b SourceStackPos, operator instruction_sp.BinaryOperatorType) {
+	o := &EnumBinaryOperator{target: target, a: a, b: b, operator: operator}
+	c.addStatement(o)
+}
+
 func (c *Code) UnaryOperator(target TargetStackPos, a SourceStackPos, operator instruction_sp.UnaryOperatorType) {
 	o := &UnaryOperator{target: target, a: a, operator: operator}
 	c.addStatement(o)
@@ -257,6 +262,10 @@ func writeStringBinaryOperator(stream *opcode_sp.Stream, operator *StringBinaryO
 	stream.StringBinaryOperator(targetStackPosition(operator.target), operator.operator, sourceStackPosition(operator.a), sourceStackPosition(operator.b))
 }
 
+func writeEnumBinaryOperator(stream *opcode_sp.Stream, operator *EnumBinaryOperator) {
+	stream.EnumBinaryOperator(targetStackPosition(operator.target), operator.operator, sourceStackPosition(operator.a), sourceStackPosition(operator.b))
+}
+
 func writeCopyMemory(stream *opcode_sp.Stream, operator *CopyMemory) {
 	stream.MemoryCopy(targetStackPosition(operator.target), sourceStackPositionRange(operator.source))
 }
@@ -406,6 +415,8 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeIntBinaryOperator(opStream, t)
 	case *StringBinaryOperator:
 		writeStringBinaryOperator(opStream, t)
+	case *EnumBinaryOperator:
+		writeEnumBinaryOperator(opStream, t)
 	case *CopyMemory:
 		writeCopyMemory(opStream, t)
 	case *LoadZeroMemoryPointer:

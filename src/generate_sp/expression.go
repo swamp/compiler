@@ -9,7 +9,7 @@ import (
 )
 
 func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, expr decorated.Expression, genContext *generateContext) error {
-	log.Printf("generate expression %T %v", expr, expr)
+	log.Printf("generate expression %v %T", expr.FetchPositionLength().ToReferenceString(), expr)
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)

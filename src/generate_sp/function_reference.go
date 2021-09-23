@@ -11,8 +11,8 @@ func handleFunctionReference(code *assembler_sp.Code,
 	t *decorated.FunctionReference,
 	stackMemory *assembler_sp.StackMemoryMapper,
 	constants *assembler_sp.PackageConstants) (assembler_sp.SourceStackPosRange, error) {
-	ident := t.Identifier()
-	functionReferenceName := assembler_sp.VariableName(ident.Name())
+	ident := t.NameReference().FullyQualifiedName()
+	functionReferenceName := assembler_sp.VariableName(ident)
 	foundConstant := constants.FindFunction(functionReferenceName)
 	if foundConstant == nil {
 		/*
@@ -22,7 +22,7 @@ func handleFunctionReference(code *assembler_sp.Code,
 			return targetToSourceStackPosRange(targetPosRange), nil
 
 		*/
-		return assembler_sp.SourceStackPosRange{}, fmt.Errorf("couldn't find function reference '%s' %v", functionReferenceName, t)
+		return assembler_sp.SourceStackPosRange{}, fmt.Errorf("%v couldn't find function reference '%s' %v", t.FetchPositionLength().ToReferenceString(), functionReferenceName, t)
 	}
 
 	return constantToSourceStackPosRange(code, stackMemory, foundConstant)

@@ -74,6 +74,10 @@ const (
 	CmdCopyMemory            Commands = 0x27
 	CmdSetEnum               Commands = 0x28
 	CmdCallExternalWithSizes Commands = 0x29
+
+	// enum operator
+	CmdEnumEqual    Commands = 0x2a
+	CmdEnumNotEqual Commands = 0x2b
 )
 
 func OpcodeToMnemonic(cmd Commands) string {

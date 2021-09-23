@@ -57,6 +57,10 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handleRecordLiteral(code, t, genContext)
 	case *decorated.RecordConstructorFromParameters:
 		return handleRecordConstructorSortedAssignments(code, t, genContext)
+	case *decorated.RecordConstructorFromRecord:
+		return generateExpressionWithSourceVar(code, t.Expression(), genContext, debugName)
+	case *decorated.CustomTypeVariantConstructor:
+		return handleCustomTypeVariantConstructor(code, t, genContext)
 	case *decorated.ListLiteral:
 		return handleList(code, t, genContext)
 	case *decorated.ArrayLiteral:
@@ -65,6 +69,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handleBinaryOperatorBooleanResult(code, t, genContext)
 	case *decorated.ArithmeticOperator:
 		return handleArithmeticMultiple(code, t, genContext)
+	case *decorated.LogicalOperator:
+		return handleLogical(code, t, genContext)
 	case *decorated.CurryFunction:
 		return handleCurry(code, t, genContext)
 	case *decorated.RecordLookups:
