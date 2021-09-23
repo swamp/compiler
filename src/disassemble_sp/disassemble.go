@@ -111,14 +111,14 @@ func (s *OpcodeInStream) readAlign() opcode_sp_type.MemoryAlign {
 }
 
 func (s *OpcodeInStream) readLabel() *opcode_sp_type.Label {
-	delta := uint16(s.readUint8())
+	delta := s.readUint16()
 	resultingPosition := s.programCounter().Add(delta)
 
 	return opcode_sp_type.NewLabelDefined("", resultingPosition)
 }
 
 func (s *OpcodeInStream) readLabelOffset(offset opcode_sp_type.ProgramCounter) *opcode_sp_type.Label {
-	delta := uint16(s.readUint8())
+	delta := s.readUint16()
 	resultingPosition := offset.Add(delta)
 
 	return opcode_sp_type.NewLabelDefined("offset", resultingPosition)

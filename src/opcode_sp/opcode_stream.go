@@ -118,11 +118,11 @@ func (s *OpCodeStream) programCounter() opcode_sp_type.ProgramCounter {
 }
 
 func (s *OpCodeStream) DeltaPC(pc opcode_sp_type.DeltaPC) {
-	s.Write(uint8(pc))
+	s.WriteUint16(uint16(pc))
 }
 
 func (s *OpCodeStream) addLabelInject(inject *LabelInject) {
-	s.DeltaPC(0xff)
+	s.DeltaPC(0xffff)
 	s.labelInjects = append(s.labelInjects, inject)
 }
 

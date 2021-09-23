@@ -6,6 +6,7 @@
 package opcode_sp
 
 import (
+	"encoding/binary"
 	"fmt"
 
 	"github.com/swamp/compiler/src/opcode_sp_type"
@@ -24,7 +25,7 @@ func (o *OctetBlock) Octets() []uint8 {
 }
 
 func (o *OctetBlock) Replace(pos opcode_sp_type.ProgramCounter, v opcode_sp_type.DeltaPC) {
-	o.octets[pos.Value()] = uint8(v)
+	binary.LittleEndian.PutUint16(o.octets[pos.Value():pos.Value()+2], uint16(v))
 }
 
 func (o *OctetBlock) FixUpLabelInject(r *LabelInject) error {
