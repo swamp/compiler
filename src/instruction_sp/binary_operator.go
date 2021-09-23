@@ -33,6 +33,25 @@ const (
 	BinaryOperatorBooleanEnumNotEqual
 )
 
+type PatternMatchingType uint8
+
+const (
+	PatternMatchingTypeInt PatternMatchingType = iota
+	PatternMatchingTypeString
+)
+
+// BinaryOperatorToOpCode converts from the type of binary operator to the actual opcode instruction.
+func PatternMatchingTypeToOpCode(matchingType PatternMatchingType) Commands {
+	switch matchingType {
+	case PatternMatchingTypeInt:
+		return CmdPatternMatchingInt
+	case PatternMatchingTypeString:
+		return CmdPatternMatchingString
+	}
+
+	panic("swamp opcodes: unknown pattern matching type")
+}
+
 // BinaryOperatorToOpCode converts from the type of binary operator to the actual opcode instruction.
 func BinaryOperatorToOpCode(operator BinaryOperatorType) Commands {
 	switch operator {

@@ -110,6 +110,11 @@ func (c *Code) CaseEnum(test SourceStackPos, consequences []*CaseConsequence, de
 	c.addStatement(o)
 }
 
+func (c *Code) CasePatternMatchingInt(test SourceStackPos, consequences []*CaseConsequencePatternMatchingInt, defaultConsequence *Label) {
+	o := &CasePatternMatchingInt{test: test, consequences: consequences, defaultConsequence: defaultConsequence}
+	c.addStatement(o)
+}
+
 func (c *Code) CopyConstant(target TargetStackPos, source SourceDynamicMemoryPos) {
 	o := &CopyConstant{target: target, source: source}
 	c.addStatement(o)
@@ -307,6 +312,23 @@ func writeCase(stream *opcode_sp.Stream, caseExpr *Case) {
 	stream.EnumCase(sourceStackPosition(caseExpr.test), opLabels)
 }
 
+func writeCasePatternMatchingInt(stream *opcode_sp.Stream, caseExpr *CasePatternMatchingInt) {
+	var opLabels []instruction_sp.EnumCasePatternMatchingIntJump
+
+	for _, consequence := range caseExpr.consequences {
+		label := consequence.label.OpLabel()
+
+		caseJump := instruction_sp.NewEnumCasePatternMatchingIntJump(consequence.ConstantInteger(), label)
+		opLabels = append(opLabels, caseJump)
+	}
+
+	defaultCons := caseExpr.defaultConsequence
+
+	defaultLabel := defaultCons.OpLabel()
+
+	stream.PatternMatchingInt(sourceStackPosition(caseExpr.test), opLabels, defaultLabel)
+}
+
 func writeList(stream *opcode_sp.Stream, listLiteral *ListLiteral) {
 	var registers []opcode_sp_type.SourceStackPosition
 
@@ -381,6 +403,8 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeJump(opStream, t)
 	case *Case:
 		writeCase(opStream, t)
+	case *CasePatternMatchingInt:
+		writeCasePatternMatchingInt(opStream, t)
 	case *ListLiteral:
 		writeList(opStream, t)
 	case *LoadInteger:

@@ -46,7 +46,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateCaseCustomType(code, target, e, genContext)
 
 	case *decorated.CaseForPatternMatching:
-		return generateCasePatternMatching(code, target, e, genContext)
+		return generateCasePatternMatchingMultiple(code, target, e, genContext)
 
 	case *decorated.RecordLiteral:
 		return generateRecordLiteral(code, target, e, genContext)

@@ -339,6 +339,46 @@ func disassembleEnumCase(s *OpcodeInStream) *instruction_sp.EnumCase {
 	return instruction_sp.NewEnumCase(source, jumps)
 }
 
+/*
+	var matchingType instruction_sp.PatternMatchingType
+	switch cmd {
+	case instruction_sp.CmdPatternMatchingInt:
+		matchingType = instruction_sp.PatternMatchingTypeInt
+	case instruction_sp.CmdPatternMatchingString:
+		matchingType = instruction_sp.PatternMatchingTypeString
+	default:
+		panic(fmt.Errorf("unknown matching type %v", cmd))
+	}
+*/
+func disassemblePatternMatchingInt(cmd instruction_sp.Commands, s *OpcodeInStream) *instruction_sp.PatternMatchingInt {
+	source := s.readSourceStackPosition()
+	count := s.readCount()
+
+	var jumps []instruction_sp.EnumCasePatternMatchingIntJump
+
+	var lastLabel *opcode_sp_type.Label
+
+	for i := 0; i < count; i++ {
+		matchInteger := s.readInt32()
+
+		var label *opcode_sp_type.Label
+
+		if lastLabel != nil {
+			label = s.readLabelOffset(lastLabel.DefinedProgramCounter())
+		} else {
+			label = s.readLabel()
+		}
+
+		lastLabel = label
+		jump := instruction_sp.NewEnumCasePatternMatchingIntJump(matchInteger, label)
+		jumps = append(jumps, jump)
+	}
+
+	defaultLabel := s.readLabelOffset(lastLabel.DefinedProgramCounter())
+
+	return instruction_sp.NewPatternMatchingInt(source, jumps, defaultLabel)
+}
+
 func disassembleMemoryCopy(s *OpcodeInStream) *instruction_sp.MemoryCopy {
 	destination := s.readTargetStackPosition()
 	source := s.readSourceStackPositionRange()
@@ -412,6 +452,10 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleCreateArray(s)
 	case instruction_sp.CmdEnumCase:
 		return disassembleEnumCase(s)
+	case instruction_sp.CmdPatternMatchingInt:
+		return disassemblePatternMatchingInt(cmd, s)
+	case instruction_sp.CmdPatternMatchingString:
+		panic("not implemented")
 	case instruction_sp.CmdCopyMemory:
 		return disassembleMemoryCopy(s)
 	case instruction_sp.CmdCall:

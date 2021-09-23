@@ -78,6 +78,10 @@ const (
 	// enum operator
 	CmdEnumEqual    Commands = 0x2a
 	CmdEnumNotEqual Commands = 0x2b
+
+	// pattern matching
+	CmdPatternMatchingInt    Commands = 0x2c
+	CmdPatternMatchingString Commands = 0x2d
 )
 
 func OpcodeToMnemonic(cmd Commands) string {
@@ -125,6 +129,8 @@ func OpcodeToMnemonic(cmd Commands) string {
 		CmdLoadZeroMemoryPointer: "ldz",
 		CmdSetEnum:               "lde",
 		CmdLoadRune:              "ldr",
+		CmdPatternMatchingInt:    "jmppmi",
+		CmdPatternMatchingString: "jmppms",
 	}
 
 	mnemonic, found := names[cmd]
