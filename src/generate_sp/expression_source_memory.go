@@ -86,6 +86,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handleTuple(code, t, genContext)
 	case *decorated.CaseCustomType:
 		return handleCaseCustomType(code, t, genContext)
+	case *decorated.CaseForPatternMatching:
+		return handleCasePatternMatchingMultiple(code, t, genContext)
 	case *decorated.PipeLeftOperator:
 		return handlePipeLeft(code, t, genContext)
 	case *decorated.PipeRightOperator:

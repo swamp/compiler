@@ -100,8 +100,9 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 	return nil
 }
 
-func generateCasePatternMatchingMultiple(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, caseExpr *decorated.CaseForPatternMatching, genContext *generateContext) error {
-	matchType := dectype.UnaliasWithResolveInvoker(caseExpr.Type())
+func generateCasePatternMatchingMultiple(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
+	caseExpr *decorated.CaseForPatternMatching, genContext *generateContext) error {
+	matchType := dectype.UnaliasWithResolveInvoker(caseExpr.ComparisonType())
 	primitiveAtom, wasPrimitiveAtom := matchType.(*dectype.PrimitiveAtom)
 	if !wasPrimitiveAtom {
 		panic(fmt.Errorf("must have primitive atom"))
@@ -124,5 +125,15 @@ func generateCasePatternMatchingMultiple(code *assembler_sp.Code, target assembl
 		return generateCasePatternMatchingInt(code, target, caseExpr, matchingType, genContext)
 	}
 
-	panic("not supported")
+	panic(fmt.Errorf("not supported pattern matching type %v", caseExpr.Type()))
+}
+
+func handleCasePatternMatchingMultiple(code *assembler_sp.Code,
+	caseExpr *decorated.CaseForPatternMatching, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := allocMemoryForType(genContext.context.stackMemory, caseExpr.Type(), "casePatternMatchingResult")
+	if err := generateCasePatternMatchingMultiple(code, posRange, caseExpr, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
 }

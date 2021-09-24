@@ -248,7 +248,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 
 	var constants *assembler_sp.PackageConstants
 	for _, module := range compiledPackage.AllModules() {
-		if verboseFlag >= verbosity.Mid {
+		if verboseFlag >= verbosity.High {
 			fmt.Printf("============================================== generating for module %v\n", module)
 		}
 

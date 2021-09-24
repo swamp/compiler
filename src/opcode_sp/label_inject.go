@@ -14,7 +14,10 @@ type LabelInject struct {
 	offsetLabel          *opcode_sp_type.Label
 }
 
-const OctetSizeOfLabel = 2
+const (
+	OctetSizeOfLabel       = 2
+	OctetSizeOfOffsetLabel = 1
+)
 
 func NewLabelInject(l *opcode_sp_type.Label, positionInStream opcode_sp_type.ProgramCounter) *LabelInject {
 	return &LabelInject{
