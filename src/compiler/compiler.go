@@ -8,6 +8,7 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -188,6 +189,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 				isExternal := maybeFunction.Annotation().Annotation().IsExternal()
 				if isExternal {
+					log.Printf("FUNC:%v\n", maybeFunction.Annotation().Type().HumanReadable())
 					var paramPosRanges []assembler_sp.SourceStackPosRange
 					hasLocalTypes := decorated.TypeHasLocalTypes(maybeFunction.ForcedFunctionType())
 					// parameterCount := len(maybeFunction.Parameters())
@@ -204,7 +206,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						}
 						continue
 					}
-					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.Type())
+					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
 					returnPosRange := assembler_sp.SourceStackPosRange{
 						Pos:  assembler_sp.SourceStackPos(pos),
 						Size: assembler_sp.SourceStackRange(returnSize),
@@ -235,7 +237,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						return decorated.NewInternalError(err)
 					}
 				} else {
-					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.Type())
+					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
 					parameterCount := uint(len(maybeFunction.Parameters()))
 
 					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, 0); err != nil {

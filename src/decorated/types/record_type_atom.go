@@ -77,7 +77,7 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	if p == nil {
 		panic(fmt.Errorf("nil is not allowed"))
 	}
-	unaliased := Unalias(p)
+	unaliased := UnaliasWithResolveInvoker(p)
 	switch t := unaliased.(type) {
 	case *RecordAtom:
 		return t.MemorySize(), t.MemoryAlignment()
