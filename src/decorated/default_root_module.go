@@ -206,7 +206,7 @@ __externalvarfn length : Array a -> Int
 `
 
 const maybeCode = `
-__externalfn withDefault : a -> Maybe a -> a
+__externalvarexfn withDefault : a -> Maybe a -> a
 `
 
 const tupleCode = `
