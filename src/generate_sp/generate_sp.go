@@ -152,11 +152,14 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 
 	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
+		_, isConstant := unknownType.(*decorated.Constant)
+		if isConstant {
+			continue
+		}
 		fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 		preparedFuncConstant := moduleContext.Constants().FindFunction(assembler_sp.VariableName(fullyQualifiedName.String()))
 		if preparedFuncConstant == nil {
-			// panic(fmt.Errorf("could not find function that should have been prepared %v", fullyQualifiedName))
-			continue
+			panic(fmt.Errorf("could not find function that should have been prepared %v", fullyQualifiedName))
 		}
 		functionConstants = append(functionConstants, preparedFuncConstant)
 		maybeFunction, _ := unknownType.(*decorated.FunctionValue)

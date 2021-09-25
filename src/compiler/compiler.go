@@ -296,7 +296,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		return decorated.NewInternalError(typeInformationErr)
 	}
 
-	if verboseFlag >= verbosity.Low {
+	if verboseFlag >= verbosity.High {
 		fmt.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
 		typeInformationChunk.DebugOutput()
 	}
