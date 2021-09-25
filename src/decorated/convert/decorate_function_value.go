@@ -86,7 +86,7 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationSta
 	}
 
 	var decoratedExpression decorated.Expression
-	if !annotation.Annotation().IsExternal() {
+	if !annotation.Annotation().IsSomeKindOfExternal() {
 		subVariableContext := createVariableContextFromParameters(context, parameters, forcedFunctionType, functionName)
 		functionValueExpression := potentialFunc.Expression()
 		convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)

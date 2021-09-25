@@ -50,6 +50,12 @@ func (s *OpCodeStream) ArgOffsetSize(r opcode_sp_type.ArgOffsetSize) {
 	s.WriteUint16(r.Size)
 }
 
+func (s *OpCodeStream) ArgOffsetSizeAlign(r opcode_sp_type.ArgOffsetSizeAlign) {
+	s.WriteUint16(r.Offset)
+	s.WriteUint16(r.Size)
+	s.Write(r.Align)
+}
+
 func (s *OpCodeStream) StackPosition(r opcode_sp_type.SourceStackPosition) {
 	s.WriteUint32(uint32(r))
 }

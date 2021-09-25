@@ -36,6 +36,12 @@ type ArgOffsetSize struct {
 	Size   uint16
 }
 
+type ArgOffsetSizeAlign struct {
+	Offset uint16
+	Size   uint16
+	Align  uint8
+}
+
 type StackPositionRange struct {
 	Position StackPosition
 	Range    StackRange

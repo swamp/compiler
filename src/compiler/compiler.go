@@ -8,7 +8,6 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -187,9 +186,8 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 			if maybeFunction != nil {
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
-				isExternal := maybeFunction.Annotation().Annotation().IsExternal()
+				isExternal := maybeFunction.Annotation().Annotation().IsSomeKindOfExternal()
 				if isExternal {
-					log.Printf("FUNC:%v\n", maybeFunction.Annotation().Type().HumanReadable())
 					var paramPosRanges []assembler_sp.SourceStackPosRange
 					hasLocalTypes := decorated.TypeHasLocalTypes(maybeFunction.ForcedFunctionType())
 					// parameterCount := len(maybeFunction.Parameters())

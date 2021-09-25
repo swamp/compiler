@@ -12,10 +12,6 @@ import (
 )
 
 func (p *Parser) parsePrefix(t token.Token, startIndentation int) (ast.Expression, parerr.ParseError) {
-	if asmToken, isAsm := t.(token.AsmToken); isAsm {
-		return parseAsm(p.stream, asmToken)
-	}
-
 	// ---------------------------------------------------------------
 	// Keywords
 	// ---------------------------------------------------------------

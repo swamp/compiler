@@ -99,6 +99,15 @@ func allocMemoryForType(stackMemory *assembler_sp.StackMemoryMapper, typeToAlloc
 	return stackMemory.Allocate(uint(memorySize), uint32(alignment), debugString)
 }
 
+func allocMemoryForTypeEx(stackMemory *assembler_sp.StackMemoryMapper, typeToAlloc dtype.Type,
+	debugString string) (assembler_sp.TargetStackPosRange, dectype.MemoryAlign) {
+	memorySize, alignment := dectype.GetMemorySizeAndAlignment(typeToAlloc)
+	if uint(memorySize) == 0 || uint(alignment) == 0 {
+		panic(fmt.Errorf("can not allocate zero memory or align for type %T %v", typeToAlloc, typeToAlloc))
+	}
+	return stackMemory.Allocate(uint(memorySize), uint32(alignment), debugString), alignment
+}
+
 func generateRecurCall(code *assembler_sp.Code, call *decorated.RecurCall, genContext *generateContext) error {
 	code.Recur()
 
@@ -159,7 +168,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 		functionConstants = append(functionConstants, preparedFuncConstant)
 		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 		if maybeFunction != nil {
-			if maybeFunction.Annotation().Annotation().IsExternal() {
+			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
@@ -168,7 +177,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 
 			rootContext := moduleContext.MakeFunctionContext()
 
-			if maybeFunction.Annotation().Annotation().IsExternal() {
+			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
 				continue
 			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,

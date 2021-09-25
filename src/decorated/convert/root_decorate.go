@@ -178,7 +178,7 @@ func (g *RootStatementHandler) handleNamedFunctionValue(d DecorateStream, assign
 
 func (g *RootStatementHandler) handleAnnotation(d DecorateStream, declaration *ast.Annotation) (*decorated.AnnotationStatement, decshared.DecoratedError) {
 	if g.localAnnotation != nil {
-		if !g.localAnnotation.Annotation().IsExternal() {
+		if !g.localAnnotation.Annotation().IsSomeKindOfExternal() {
 			return nil, decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
 		}
 	}
@@ -191,7 +191,7 @@ func (g *RootStatementHandler) handleAnnotation(d DecorateStream, declaration *a
 	}
 
 	functionAtom := annotationStatement.Type().(*dectype.FunctionTypeReference).FunctionAtom()
-	if declaration.IsExternal() {
+	if declaration.IsSomeKindOfExternal() {
 		annotatedType := g.localAnnotation.Type()
 		if annotatedType == nil {
 			return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))

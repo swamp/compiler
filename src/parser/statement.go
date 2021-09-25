@@ -17,17 +17,22 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 		return nil, keywordSymbolErr
 	}
 
-	_, isExternalFunction := keywordSymbol.(token.ExternalFunctionToken)
-	if isExternalFunction {
-		p.stream.eatOneSpace("after external")
-		keywordSymbol, keywordSymbolErr = p.stream.tokenizer.ParseVariableSymbol()
+	annotationFunctionType := token.AnnotationFunctionTypeNormal
+	switch keywordSymbol.(type) {
+	case token.ExternalFunctionToken:
+		annotationFunctionType = token.AnnotationFunctionTypeExternal
+	case token.ExternalVarFunction:
+		annotationFunctionType = token.AnnotationFunctionTypeExternalVar
+	case token.ExternalVarExFunction:
+		annotationFunctionType = token.AnnotationFunctionTypeExternalVarEx
 	}
 
-	_, isExternalVarFunction := keywordSymbol.(token.ExternalVarFunction)
-	if isExternalVarFunction {
-		p.stream.eatOneSpace("after external")
+	if annotationFunctionType != token.AnnotationFunctionTypeNormal {
+		_, spaceErr := p.stream.tokenizer.EatOneSpace()
+		if spaceErr != nil {
+			return nil, spaceErr
+		}
 		keywordSymbol, keywordSymbolErr = p.stream.tokenizer.ParseVariableSymbol()
-		isExternalFunction = true
 	}
 
 	variableSymbol, wasVariableSymbol := keywordSymbol.(token.VariableSymbolToken)
@@ -44,6 +49,6 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 		keywordImport := token.NewKeyword(variableSymbol.Raw(), token.Import, variableSymbol.SourceFileReference)
 		return parseImport(p.stream, keywordImport, 0, precedingComments)
 	default:
-		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, isExternalFunction, isExternalVarFunction, precedingComments)
+		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, annotationFunctionType, precedingComments)
 	}
 }

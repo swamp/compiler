@@ -8,14 +8,15 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
+	"github.com/swamp/compiler/src/token"
 )
 
 func ParseAnnotation(p ParseStream, ident *ast.VariableIdentifier,
-	isExternal bool, isExternalVarFunction bool, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
+	annotationFunctionType token.AnnotationFunctionType, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
 	typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
 	t, tErr := parseTypeReferenceFunc(p, ident.Symbol().FetchIndentation(), typeParameterContext, precedingComments)
 	if tErr != nil {
 		return nil, tErr
 	}
-	return ast.NewAnnotation(ident, t, isExternal, isExternalVarFunction, precedingComments), nil
+	return ast.NewAnnotation(ident, t, annotationFunctionType, precedingComments), nil
 }

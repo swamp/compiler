@@ -26,6 +26,7 @@ type OpcodeWriter interface {
 	EnumValue(v uint8)
 	Count(c int)
 	ArgOffsetSize(opcode_sp_type.ArgOffsetSize)
+	ArgOffsetSizeAlign(align opcode_sp_type.ArgOffsetSizeAlign)
 	TypeIDConstant(c uint16)
 	Command(cmd Commands)
 }

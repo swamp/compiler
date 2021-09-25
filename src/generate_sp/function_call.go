@@ -23,12 +23,13 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	}
 
 	invokedReturnType := dectype.UnaliasWithResolveInvoker(functionAtom.ReturnType())
-	returnValue := allocMemoryForType(genContext.context.stackMemory, invokedReturnType, "returnValue")
+	returnValue, returnValueAlign := allocMemoryForTypeEx(genContext.context.stackMemory, invokedReturnType, "returnValue")
 	if uint(returnValue.Size) == 0 {
 		panic(fmt.Errorf("how can it have zero size in return? %v", returnValue))
 	}
 	// arguments := make([]assembler_sp.TargetStackPosRange, len(call.Arguments()))
 	var arguments []assembler_sp.TargetStackPosRange
+	var argumentsAlign []dectype.MemoryAlign
 	originalParameters := call.FunctionExpression().(*decorated.FunctionReference).FunctionValue().Parameters()
 	for index, arg := range call.Arguments() {
 		functionArgType := originalParameters[index].Type()
@@ -38,7 +39,9 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "typeid")
 			arguments = append(arguments, anySourcePosGen)
 		}
-		arguments = append(arguments, allocMemoryForType(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index)))
+		argPosRange, align := allocMemoryForTypeEx(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
+		arguments = append(arguments, argPosRange)
+		argumentsAlign = append(argumentsAlign, align)
 	}
 
 	argumentIndex := 0
@@ -76,6 +79,18 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 				sizes[index+1].Size = uint16(argument.Size)
 			}
 			code.CallExternalWithSizes(functionRegister.Pos, returnValue.Pos, sizes)
+		} else if functionValue.FunctionValue().Annotation().Annotation().IsExternalVarExFunction() {
+			sizes := make([]assembler_sp.VariableArgumentPosSizeAlign, len(arguments)+1)
+			startVariableArgumentPos := uint(returnValue.Pos)
+			sizes[0].Offset = 0
+			sizes[0].Size = uint16(returnValue.Size)
+			sizes[0].Align = uint8(returnValueAlign)
+			for index, argument := range arguments {
+				sizes[index+1].Offset = uint16(uint(argument.Pos) - startVariableArgumentPos)
+				sizes[index+1].Size = uint16(argument.Size)
+				sizes[index+1].Align = uint8(argumentsAlign[index])
+			}
+			code.CallExternalWithSizesAndAlign(functionRegister.Pos, returnValue.Pos, sizes)
 		} else {
 			code.CallExternal(functionRegister.Pos, returnValue.Pos)
 		}

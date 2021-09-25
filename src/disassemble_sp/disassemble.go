@@ -94,6 +94,14 @@ func (s *OpcodeInStream) readArgOffsetSize() opcode_sp_type.ArgOffsetSize {
 	}
 }
 
+func (s *OpcodeInStream) readArgOffsetSizeAlign() opcode_sp_type.ArgOffsetSizeAlign {
+	return opcode_sp_type.ArgOffsetSizeAlign{
+		Offset: s.readUint16(),
+		Size:   s.readUint16(),
+		Align:  s.readUint8(),
+	}
+}
+
 func (s *OpcodeInStream) readInt32() int32 {
 	return int32(s.readUint32())
 }
@@ -303,6 +311,18 @@ func disassembleCallExternalWithSizes(s *OpcodeInStream) *instruction_sp.CallExt
 	return instruction_sp.NewCallExternalWithSizes(newStackPointer, functionRegister, targetArgs)
 }
 
+func disassembleCallExternalWithSizesAlign(s *OpcodeInStream) *instruction_sp.CallExternalWithSizesAlign {
+	newStackPointer := s.readTargetStackPosition()
+	functionRegister := s.readSourceStackPosition()
+	count := s.readCount()
+	targetArgs := make([]opcode_sp_type.ArgOffsetSizeAlign, count)
+	for i := 0; i < count; i++ {
+		targetArgs[i] = s.readArgOffsetSizeAlign()
+	}
+
+	return instruction_sp.NewCallExternalWithSizesAlign(newStackPointer, functionRegister, targetArgs)
+}
+
 func disassembleCurry(s *OpcodeInStream) *instruction_sp.Curry {
 	destination := s.readTargetStackPosition()
 	typeIDConstant := s.readTypeIDConstant()
@@ -464,6 +484,8 @@ func decodeOpcode(cmd instruction_sp.Commands, s *OpcodeInStream) opcode_sp.Inst
 		return disassembleCallExternal(s)
 	case instruction_sp.CmdCallExternalWithSizes:
 		return disassembleCallExternalWithSizes(s)
+	case instruction_sp.CmdCallExternalWithSizesAlign:
+		return disassembleCallExternalWithSizesAlign(s)
 	case instruction_sp.CmdTailCall:
 		return disassembleTailCall(s)
 	case instruction_sp.CmdCurry:

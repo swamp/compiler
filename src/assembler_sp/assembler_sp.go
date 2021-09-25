@@ -199,6 +199,11 @@ func (c *Code) CallExternalWithSizes(function SourceStackPos, newBasePointer Tar
 	c.addStatement(o)
 }
 
+func (c *Code) CallExternalWithSizesAndAlign(function SourceStackPos, newBasePointer TargetStackPos, sizes []VariableArgumentPosSizeAlign) {
+	o := &CallExternalWithSizesAlign{function: function, newBasePointer: newBasePointer, sizes: sizes}
+	c.addStatement(o)
+}
+
 func (c *Code) Curry(target TargetStackPos, typeIDConstant uint16, function SourceStackPos, startArgument SourceStackPosRange) {
 	o := &Curry{target: target, typeIDConstant: typeIDConstant, function: function, arguments: startArgument}
 	c.addStatement(o)
@@ -218,6 +223,18 @@ func argOffsetSizes(args []VariableArgumentPosSize) []opcode_sp_type.ArgOffsetSi
 		offsetSizes[index] = opcode_sp_type.ArgOffsetSize{
 			Offset: arg.Offset,
 			Size:   arg.Size,
+		}
+	}
+	return offsetSizes
+}
+
+func argOffsetSizesAlign(args []VariableArgumentPosSizeAlign) []opcode_sp_type.ArgOffsetSizeAlign {
+	offsetSizes := make([]opcode_sp_type.ArgOffsetSizeAlign, len(args))
+	for index, arg := range args {
+		offsetSizes[index] = opcode_sp_type.ArgOffsetSizeAlign{
+			Offset: arg.Offset,
+			Size:   arg.Size,
+			Align:  arg.Align,
 		}
 	}
 	return offsetSizes
@@ -373,6 +390,10 @@ func writeCallExternalWithSizes(stream *opcode_sp.Stream, call *CallExternalWith
 	stream.CallExternalWithSizes(targetStackPosition(call.newBasePointer), sourceStackPosition(call.function), argOffsetSizes(call.sizes))
 }
 
+func writeCallExternalWithSizesAndAlign(stream *opcode_sp.Stream, call *CallExternalWithSizesAlign) {
+	stream.CallExternalWithSizesAndAlign(targetStackPosition(call.newBasePointer), sourceStackPosition(call.function), argOffsetSizesAlign(call.sizes))
+}
+
 func writeCall(stream *opcode_sp.Stream, call *Call) {
 	stream.Call(targetStackPosition(call.newBasePointer), sourceStackPosition(call.function))
 }
@@ -433,6 +454,8 @@ func handleStatement(cmd CodeCommand, opStream *opcode_sp.Stream) {
 		writeCallExternal(opStream, t)
 	case *CallExternalWithSizes:
 		writeCallExternalWithSizes(opStream, t)
+	case *CallExternalWithSizesAlign:
+		writeCallExternalWithSizesAndAlign(opStream, t)
 	case *Curry:
 		writeCurry(opStream, t)
 	case *IntBinaryOperator:

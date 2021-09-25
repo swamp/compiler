@@ -7,6 +7,15 @@ package token
 
 import "fmt"
 
+type AnnotationFunctionType uint8
+
+const (
+	AnnotationFunctionTypeNormal AnnotationFunctionType = iota
+	AnnotationFunctionTypeExternal
+	AnnotationFunctionTypeExternalVar
+	AnnotationFunctionTypeExternalVarEx
+)
+
 // VariableSymbolToken :
 type VariableSymbolToken struct {
 	SourceFileReference

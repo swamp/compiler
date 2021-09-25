@@ -77,6 +77,12 @@ type VariableArgumentPosSize struct {
 	Size   uint16
 }
 
+type VariableArgumentPosSizeAlign struct {
+	Offset uint16
+	Size   uint16
+	Align  uint8
+}
+
 type SourceStackPosAndRangeToLocalOffset struct {
 	PosRange     SourceStackPosRange
 	TargetOffset TargetFieldOffset

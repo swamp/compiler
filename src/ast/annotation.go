@@ -12,14 +12,13 @@ import (
 )
 
 type Annotation struct {
-	symbol                *VariableIdentifier
-	annotatedType         Type
-	precedingComments     *MultilineComment
-	isExternal            bool
-	isExternalVarFunction bool
+	symbol                 *VariableIdentifier
+	annotatedType          Type
+	precedingComments      *MultilineComment
+	annotationFunctionType token.AnnotationFunctionType
 }
 
-func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, isExternal bool, isExternalVarFunction bool,
+func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, annotationFunctionType token.AnnotationFunctionType,
 	precedingComments *MultilineComment) *Annotation {
 	if annotatedType == nil {
 		panic("must set annotated type")
@@ -27,7 +26,7 @@ func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, i
 
 	return &Annotation{
 		symbol: variableIdentifier, annotatedType: annotatedType,
-		isExternal: isExternal, isExternalVarFunction: isExternalVarFunction, precedingComments: precedingComments,
+		annotationFunctionType: annotationFunctionType, precedingComments: precedingComments,
 	}
 }
 
@@ -43,12 +42,22 @@ func (d *Annotation) Identifier() *VariableIdentifier {
 	return d.symbol
 }
 
-func (d *Annotation) IsExternal() bool {
-	return d.isExternal
+func (d *Annotation) IsSomeKindOfExternal() bool {
+	return d.annotationFunctionType == token.AnnotationFunctionTypeExternal ||
+		d.annotationFunctionType == token.AnnotationFunctionTypeExternalVar ||
+		d.annotationFunctionType == token.AnnotationFunctionTypeExternalVarEx
+}
+
+func (d *Annotation) IsNormalExternal() bool {
+	return d.annotationFunctionType == token.AnnotationFunctionTypeExternal
 }
 
 func (d *Annotation) IsExternalVarFunction() bool {
-	return d.isExternalVarFunction
+	return d.annotationFunctionType == token.AnnotationFunctionTypeExternalVar
+}
+
+func (d *Annotation) IsExternalVarExFunction() bool {
+	return d.annotationFunctionType == token.AnnotationFunctionTypeExternalVarEx
 }
 
 func (d *Annotation) FetchPositionLength() token.SourceFileReference {
