@@ -1019,8 +1019,6 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenConstant(t, builder)
 	case *decorated.ExternalFunctionDeclaration:
 		return nil // TODO: decorate external
-	case *decorated.AsmConstant:
-		return nil // TODO: decorate asm constant
 	case *decorated.ConstantReference:
 		return addSemanticTokenConstantReference(t, builder)
 

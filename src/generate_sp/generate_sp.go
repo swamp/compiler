@@ -78,13 +78,6 @@ func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperato
 	panic("illegal unaryoperator")
 }
 
-func generateAsm(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, asm *decorated.AsmConstant, context *Context) error {
-	// compileErr := asmcompile.CompileToCodeAndContext(asm.Asm().Asm(), code, context)
-	// return compileErr
-
-	return nil
-}
-
 func generateConstant(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	constant *decorated.Constant, context *generateContext) error {
 	return generateExpression(code, target, constant.Expression(), context)

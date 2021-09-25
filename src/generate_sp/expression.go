@@ -123,9 +123,6 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 	case *decorated.ConsOperator:
 		return generateListCons(code, target, e, genContext)
 
-	case *decorated.AsmConstant:
-		return generateAsm(code, target, e, genContext.context)
-
 	case *decorated.RecordConstructorFromRecord:
 		return generateExpression(code, target, e.Expression(), genContext)
 

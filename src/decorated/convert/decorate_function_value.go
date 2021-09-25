@@ -108,16 +108,6 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationSta
 
 		checkForNoLint := "a" // CheckForNoLint(comments)
 		if checkForNoLint != "unused" {
-			for _, functionVariable := range subVariableContext.InternalLookups() {
-				if !functionVariable.WasReferenced() {
-					_, isAssemblerFunction := potentialFunc.Expression().(*ast.Asm)
-					if !isAssemblerFunction {
-						// err := decorated.NewUnusedVariable(functionVariable, potentialFunc)
-						// TODO: ADD THIS AS ERROR
-						// d.AddDecoratedError(err)
-					}
-				}
-			}
 		} else {
 			// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
 		}
