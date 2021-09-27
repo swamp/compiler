@@ -12,7 +12,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
 	functionAtom := dectype.UnaliasWithResolveInvoker(call.CompleteCalledFunctionType()).(*dectype.FunctionAtom)
 
-	if decorated.TypeHasLocalTypes(functionAtom) {
+	if decorated.TypeIsTemplateHasLocalTypes(functionAtom) {
 		panic(fmt.Errorf("we can not call functions that has local types %v", functionAtom))
 	}
 
@@ -34,8 +34,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	for index, arg := range call.Arguments() {
 		functionArgType := originalParameters[index].Type()
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
-		isAny := dectype.IsAny(functionArgTypeUnalias)
-		if isAny { // arg.NeedsTypeId() {
+		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
+		if needsTypeId {
 			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "typeid")
 			arguments = append(arguments, anySourcePosGen)
 		}
@@ -49,8 +49,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		functionArgType := originalParameters[index].Type()
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 
-		isAny := dectype.IsAny(functionArgTypeUnalias)
-		if isAny { // arg.NeedsTypeId() {
+		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
+		if needsTypeId {
 			typeID, err := genContext.lookup.Lookup(arg.Type())
 			if err != nil {
 				return assembler_sp.SourceStackPosRange{}, err

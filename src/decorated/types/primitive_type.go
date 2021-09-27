@@ -22,6 +22,28 @@ func IsAny(checkType dtype.Type) bool {
 	return primitive.AtomName() == "Any"
 }
 
+func ArgumentNeedsTypeIdInsertedBefore(p dtype.Type) bool {
+	return IsAny(p)
+}
+
+func IsAnyOrFunctionWithAnyMatching(p dtype.Type) bool {
+	if IsAny(p) {
+		return true
+	}
+
+	unalias := UnaliasWithResolveInvoker(p)
+	functionAtom, wasFunctionAtom := unalias.(*FunctionAtom)
+	if wasFunctionAtom {
+		for _, param := range functionAtom.FunctionParameterTypes() {
+			_, isAnyMatching := param.(*AnyMatchingTypes)
+			if isAnyMatching {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func IsAtomAny(checkType dtype.Atom) bool {
 	primitive, wasPrimitive := checkType.(*PrimitiveAtom)
 	if !wasPrimitive {

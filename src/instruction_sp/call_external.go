@@ -30,5 +30,5 @@ func (c *CallExternal) Write(writer OpcodeWriter) error {
 }
 
 func (c *CallExternal) String() string {
-	return fmt.Sprintf("callexternal %v %v", c.newBasePointer, c.function)
+	return fmt.Sprintf("%s %v %v", OpcodeToMnemonic(CmdCallExternal), c.newBasePointer, c.function)
 }

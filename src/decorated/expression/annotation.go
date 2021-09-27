@@ -21,24 +21,24 @@ type AnnotationStatement struct {
 	hasLocalTypes bool
 }
 
-func TypeHasLocalTypes(p dtype.Type) bool {
+func TypeIsTemplateHasLocalTypes(p dtype.Type) bool {
 	unalias := dectype.UnaliasWithResolveInvoker(p)
 	switch t := unalias.(type) {
 	case *dectype.CustomTypeAtom:
 		for _, variant := range t.Variants() {
-			if TypesHasLocalTypes(variant.ParameterTypes()) {
+			if TypesIsTemplateHasLocalTypes(variant.ParameterTypes()) {
 				return true
 			}
 		}
 	case *dectype.FunctionAtom:
-		if TypesHasLocalTypes(t.FunctionParameterTypes()) {
+		if TypesIsTemplateHasLocalTypes(t.FunctionParameterTypes()) && !dectype.IsAnyOrFunctionWithAnyMatching(t) {
 			return true
 		}
 	case *dectype.InvokerType:
-		if TypeHasLocalTypes(t.TypeGenerator()) {
+		if TypeIsTemplateHasLocalTypes(t.TypeGenerator()) {
 			return true
 		}
-		if TypesHasLocalTypes(t.Params()) {
+		if TypesIsTemplateHasLocalTypes(t.Params()) {
 			return true
 		}
 	case *dectype.LocalType:
@@ -48,9 +48,9 @@ func TypeHasLocalTypes(p dtype.Type) bool {
 	return false
 }
 
-func TypesHasLocalTypes(p []dtype.Type) bool {
+func TypesIsTemplateHasLocalTypes(p []dtype.Type) bool {
 	for _, x := range p {
-		if TypeHasLocalTypes(x) {
+		if TypeIsTemplateHasLocalTypes(x) {
 			return true
 		}
 	}

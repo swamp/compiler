@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/swamp/compiler/src/ast"
@@ -115,7 +114,6 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		case *PrimitiveTypeReference:
 			return Sizeof64BitPointer, Alignof64BitPointer
 		case *CustomTypeReference:
-			log.Printf("this is : %T %v (%v)", it.Type(), it.HumanReadable(), t.TypeGenerator().HumanReadable())
 			return GetMemorySizeAndAlignment(it.Type())
 		default:
 			panic(fmt.Errorf("what kind of invoker type is this: %T %v", t.TypeGenerator()))

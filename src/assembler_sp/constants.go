@@ -102,12 +102,12 @@ func (c *PackageConstants) AllocateResourceNameConstant(name string) *Constant {
 
 const (
 	SizeofSwampFunc         = 9 * 8
-	SizeofSwampExternalFunc = 16 * 8
+	SizeofSwampExternalFunc = 17 * 8
 )
 
 func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName string,
 	opcodesPointer SourceDynamicMemoryPosRange, returnOctetSize dectype.MemorySize,
-	returnAlignSize dectype.MemoryAlign, parameterCount uint, parameterOctetSize dectype.MemorySize) (*Constant, error) {
+	returnAlignSize dectype.MemoryAlign, parameterCount uint, parameterOctetSize dectype.MemorySize, typeIndex uint) (*Constant, error) {
 	var swampFuncStruct [SizeofSwampFunc]byte
 
 	fullyQualifiedStringPointer := c.AllocateStringOctets(uniqueFullyQualifiedFunctionName)
@@ -123,7 +123,7 @@ func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionNa
 	binary.LittleEndian.PutUint64(swampFuncStruct[48:56], uint64(returnAlignSize)) // returnAlign
 
 	binary.LittleEndian.PutUint64(swampFuncStruct[56:64], uint64(fullyQualifiedStringPointer.Position)) // debugName
-	binary.LittleEndian.PutUint64(swampFuncStruct[64:72], uint64(0))                                    // typeIndex
+	binary.LittleEndian.PutUint64(swampFuncStruct[64:72], uint64(typeIndex))                            // typeIndex
 
 	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], "function Struct for:"+uniqueFullyQualifiedFunctionName)
 
@@ -158,7 +158,7 @@ func (c *PackageConstants) AllocateExternalFunctionStruct(uniqueFullyQualifiedFu
 
 	binary.LittleEndian.PutUint64(swampFuncStruct[120:128], uint64(fullyQualifiedStringPointer.Position)) // debugName
 
-	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], "external function Struct for:"+uniqueFullyQualifiedFunctionName)
+	funcPointer := c.dynamicMapper.Write(swampFuncStruct[:], fmt.Sprintf("external function Struct for: '%s' param Count: %d", uniqueFullyQualifiedFunctionName, len(parameters)))
 
 	newConstant := NewExternalFunctionReferenceConstantWithDebug("fn", uniqueFullyQualifiedFunctionName, funcPointer)
 	c.constants = append(c.constants, newConstant)
@@ -188,14 +188,14 @@ func (c *PackageConstants) FetchOpcodes(functionConstant *Constant) []byte {
 
 func (c *PackageConstants) AllocatePrepareFunctionConstant(uniqueFullyQualifiedFunctionName string,
 	returnSize dectype.MemorySize, returnAlign dectype.MemoryAlign,
-	parameterCount uint, parameterOctetSize dectype.MemorySize) (*Constant, error) {
+	parameterCount uint, parameterOctetSize dectype.MemorySize, typeId uint) (*Constant, error) {
 	pointer := SourceDynamicMemoryPosRange{
 		Position: 0,
 		Size:     0,
 	}
 
 	return c.AllocateFunctionStruct(uniqueFullyQualifiedFunctionName, pointer, returnSize, returnAlign,
-		parameterCount, parameterOctetSize)
+		parameterCount, parameterOctetSize, typeId)
 }
 
 func (c *PackageConstants) AllocatePrepareExternalFunctionConstant(uniqueFullyQualifiedFunctionName string, returnValue SourceStackPosRange, parameters []SourceStackPosRange) (*Constant, error) {

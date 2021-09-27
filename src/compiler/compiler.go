@@ -8,6 +8,7 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -159,6 +160,14 @@ type CoreFunctionInfo struct {
 	ParamCount uint
 }
 
+func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype.MemoryOffset {
+	rest := dectype.MemoryAlign(uint32(offset) % uint32(memoryAlign))
+	if rest != 0 {
+		offset += dectype.MemoryOffset(memoryAlign - rest)
+	}
+	return offset
+}
+
 func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, showAssembler bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	gen := generate_sp.NewGenerator()
 
@@ -189,10 +198,10 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 				isExternal := maybeFunction.Annotation().Annotation().IsSomeKindOfExternal()
 				if isExternal {
 					var paramPosRanges []assembler_sp.SourceStackPosRange
-					hasLocalTypes := decorated.TypeHasLocalTypes(maybeFunction.ForcedFunctionType())
+					hasLocalTypes := decorated.TypeIsTemplateHasLocalTypes(maybeFunction.ForcedFunctionType())
 					// parameterCount := len(maybeFunction.Parameters())
-					pos := uint(0)
-
+					pos := dectype.MemoryOffset(0)
+					log.Printf("this has local types:'%s'\n", named.FullyQualifiedVariableName())
 					if hasLocalTypes {
 						returnPosRange := assembler_sp.SourceStackPosRange{
 							Pos:  assembler_sp.SourceStackPos(0),
@@ -210,25 +219,28 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						Size: assembler_sp.SourceStackRange(returnSize),
 					}
 
-					pos += uint(returnSize)
+					pos += dectype.MemoryOffset(returnSize)
 
+					log.Printf("generating for function:'%s'\n", named.FullyQualifiedVariableName())
 					for index, param := range maybeFunction.Parameters() {
 						unaliased := dectype.Unalias(maybeFunction.Parameters()[index].Type())
-						if dectype.IsAny(unaliased) {
+						if dectype.ArgumentNeedsTypeIdInsertedBefore(unaliased) {
+							pos = align(pos, dectype.AlignOfSwampInt)
 							typeIndexPosRange := assembler_sp.SourceStackPosRange{
 								Pos:  assembler_sp.SourceStackPos(pos),
 								Size: assembler_sp.SourceStackRange(dectype.SizeofSwampInt),
 							}
 							paramPosRanges = append(paramPosRanges, typeIndexPosRange)
-							pos += uint(typeIndexPosRange.Size)
+							pos += dectype.MemoryOffset(typeIndexPosRange.Size)
 						}
-						size, _ := dectype.GetMemorySizeAndAlignment(param.Type())
+						size, alignment := dectype.GetMemorySizeAndAlignment(param.Type())
+						pos = align(pos, alignment)
 						posRange := assembler_sp.SourceStackPosRange{
 							Pos:  assembler_sp.SourceStackPos(pos),
 							Size: assembler_sp.SourceStackRange(size),
 						}
 						paramPosRanges = append(paramPosRanges, posRange)
-						pos += uint(size)
+						pos += dectype.MemoryOffset(size)
 
 					}
 					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
@@ -238,7 +250,12 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
 					parameterCount := uint(len(maybeFunction.Parameters()))
 
-					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, 0); err != nil {
+					functionTypeIndex, lookupErr := typeInformationChunk.Lookup(maybeFunction.ForcedFunctionType())
+					if lookupErr != nil {
+						return decorated.NewInternalError(lookupErr)
+					}
+
+					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, 0, uint(functionTypeIndex)); err != nil {
 						return decorated.NewInternalError(err)
 					}
 				}
