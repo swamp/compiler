@@ -121,6 +121,8 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 
 	case *CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
+	case *CustomTypeVariant:
+		return t.debugMemorySize, t.debugMemoryAlign
 	case *FunctionAtom:
 		return Sizeof64BitPointer, Alignof64BitPointer
 	case *UnmanagedType:

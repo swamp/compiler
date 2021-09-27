@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
@@ -22,7 +23,18 @@ type InfoType interface {
 type (
 	MemoryOffset uint16
 	MemorySize   uint16
+	MemoryAlign  uint8
 )
+
+type MemoryInfo struct {
+	MemorySize  MemorySize
+	MemoryAlign MemoryAlign
+}
+
+type MemoryOffsetInfo struct {
+	MemoryOffset MemoryOffset
+	MemoryInfo   MemoryInfo
+}
 
 type Type struct {
 	index int
@@ -188,8 +200,9 @@ func (t *TypeRefType) HumanReadable() string {
 
 type ListType struct {
 	Type
-	itemType InfoType
-	itemSize MemorySize
+	itemType  InfoType
+	itemSize  MemorySize
+	itemAlign MemoryAlign
 }
 
 func (t *ListType) String() string {
@@ -202,8 +215,9 @@ func (t *ListType) HumanReadable() string {
 
 type ArrayType struct {
 	Type
-	itemType InfoType
-	itemSize MemorySize
+	itemType  InfoType
+	itemSize  MemorySize
+	itemAlign MemoryAlign
 }
 
 func (t *ArrayType) String() string {
@@ -233,9 +247,9 @@ func (t *AliasType) HumanReadableExpanded() string {
 }
 
 type RecordField struct {
-	name         string
-	fieldType    InfoType
-	memoryOffset MemoryOffset
+	name             string
+	fieldType        InfoType
+	memoryOffsetInfo MemoryOffsetInfo
 }
 
 func (t RecordField) String() string {
@@ -248,7 +262,8 @@ func (t RecordField) HumanReadable() string {
 
 type RecordType struct {
 	Type
-	fields []RecordField
+	fields     []RecordField
+	memoryInfo MemoryInfo
 }
 
 func (t *RecordType) String() string {
@@ -273,7 +288,7 @@ func (t *RecordType) HumanReadable() string {
 
 type VariantField struct {
 	index        uint
-	memoryOffset MemoryOffset
+	memoryOffset MemoryOffsetInfo
 	fieldType    InfoType
 }
 
@@ -286,8 +301,9 @@ func (t VariantField) HumanReadable() string {
 }
 
 type Variant struct {
-	name   string
-	fields []VariantField
+	name       string
+	fields     []VariantField
+	memoryInfo MemoryInfo
 }
 
 func Refs(types []InfoType) string {
@@ -318,8 +334,9 @@ func (t Variant) HumanReadable() string {
 
 type CustomType struct {
 	Type
-	name     string
-	variants []Variant
+	name       string
+	variants   []Variant
+	memoryInfo MemoryInfo
 }
 
 func (t *CustomType) String() string {
@@ -369,8 +386,8 @@ func (t *FunctionType) HumanReadable() string {
 }
 
 type TupleTypeField struct {
-	memoryOffset MemoryOffset
-	fieldType    InfoType
+	memoryOffsetInfo MemoryOffsetInfo
+	fieldType        InfoType
 }
 
 func (t TupleTypeField) String() string {
@@ -383,7 +400,8 @@ func (t TupleTypeField) HumanReadable() string {
 
 type TupleType struct {
 	Type
-	fields []TupleTypeField
+	fields     []TupleTypeField
+	memoryInfo MemoryInfo
 }
 
 func (t *TupleType) String() string {
@@ -717,17 +735,28 @@ func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, erro
 		var fields []VariantField
 
 		for index, field := range variant.Fields() {
+			var memInfo MemoryOffsetInfo
+			if !decorated.TypeIsTemplateHasLocalTypes(field.Type()) {
+				memInfo = memoryOffsetInfo(field.MemoryOffset(), field.Type())
+			}
+
 			newFields := VariantField{
 				index:        uint(index),
 				fieldType:    consumedTypes[index],
-				memoryOffset: MemoryOffset(field.MemoryOffset()),
+				memoryOffset: memInfo,
 			}
 			fields = append(fields, newFields)
 		}
 
+		memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(variant)
+
 		consumedVariants = append(consumedVariants, Variant{
 			name:   variant.Name().Name(),
 			fields: fields,
+			memoryInfo: MemoryInfo{
+				MemorySize:  MemorySize(memorySize),
+				MemoryAlign: MemoryAlign(memoryAlign),
+			},
 		})
 	}
 
@@ -736,10 +765,15 @@ func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, erro
 		panic("custom name must be set here")
 	}
 
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignment(custom)
 	proposedNewCustom := &CustomType{
 		Type:     Type{},
 		name:     customName,
 		variants: consumedVariants,
+		memoryInfo: MemoryInfo{
+			MemorySize:  MemorySize(memorySize),
+			MemoryAlign: MemoryAlign(memoryAlign),
+		},
 	}
 
 	indexCustom := c.doWeHaveCustom(proposedNewCustom)
@@ -753,6 +787,17 @@ func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, erro
 	return proposedNewCustom, nil
 }
 
+func memoryOffsetInfo(offset dectype.MemoryOffset, p dtype.Type) MemoryOffsetInfo {
+	size, align := dectype.GetMemorySizeAndAlignment(p)
+	return MemoryOffsetInfo{
+		MemoryOffset: MemoryOffset(offset),
+		MemoryInfo: MemoryInfo{
+			MemorySize:  MemorySize(size),
+			MemoryAlign: MemoryAlign(align),
+		},
+	}
+}
+
 func (c *Chunk) consumeRecord(record *dectype.RecordAtom) (*RecordType, error) {
 	var fields []RecordField
 
@@ -762,16 +807,22 @@ func (c *Chunk) consumeRecord(record *dectype.RecordAtom) (*RecordType, error) {
 			return nil, err
 		}
 		recordField := RecordField{
-			name:         field.Name(),
-			memoryOffset: MemoryOffset(field.MemoryOffset()),
-			fieldType:    consumeFieldType,
+			name:             field.Name(),
+			memoryOffsetInfo: memoryOffsetInfo(field.MemoryOffset(), field.Type()),
+			fieldType:        consumeFieldType,
 		}
 		fields = append(fields, recordField)
 	}
 
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignment(record)
+
 	proposedNewRecord := &RecordType{
 		Type:   Type{},
 		fields: fields,
+		memoryInfo: MemoryInfo{
+			MemorySize:  MemorySize(memorySize),
+			MemoryAlign: MemoryAlign(memoryAlign),
+		},
 	}
 
 	indexRecord := c.doWeHaveRecord(proposedNewRecord)
@@ -827,15 +878,21 @@ func (c *Chunk) consumeTuple(fn *dectype.TupleTypeAtom) (*TupleType, error) {
 			return nil, fmt.Errorf("this should not be needed")
 		}
 		tupleField := TupleTypeField{
-			memoryOffset: MemoryOffset(field.MemoryOffset()),
-			fieldType:    consumeType,
+			memoryOffsetInfo: memoryOffsetInfo(field.MemoryOffset(), field.Type()),
+			fieldType:        consumeType,
 		}
 		tupleFields = append(tupleFields, tupleField)
 	}
 
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignment(fn)
+
 	proposedNewTuple := &TupleType{
 		Type:   Type{},
 		fields: tupleFields,
+		memoryInfo: MemoryInfo{
+			MemorySize:  MemorySize(memorySize),
+			MemoryAlign: MemoryAlign(memoryAlign),
+		},
 	}
 
 	indexRecord := c.doWeHaveTuple(proposedNewTuple)
@@ -861,12 +918,13 @@ func (c *Chunk) consumeArray(genericTypes []dtype.Type) (InfoType, error) {
 		return nil, err
 	}
 
-	memorySize, _ := dectype.GetMemorySizeAndAlignmentInternal(itemType)
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(itemType)
 
 	proposedNewArray := &ArrayType{
-		Type:     Type{},
-		itemType: consumedType,
-		itemSize: MemorySize(memorySize),
+		Type:      Type{},
+		itemType:  consumedType,
+		itemSize:  MemorySize(memorySize),
+		itemAlign: MemoryAlign(memoryAlign),
 	}
 
 	indexArray := c.doWeHaveArray(proposedNewArray)
@@ -894,12 +952,13 @@ func (c *Chunk) consumeList(genericTypes []dtype.Type) (InfoType, error) {
 		return nil, nil
 	}
 
-	memorySize, _ := dectype.GetMemorySizeAndAlignmentInternal(itemType)
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(itemType)
 
 	proposedNewList := &ListType{
-		Type:     Type{},
-		itemType: consumedType,
-		itemSize: MemorySize(memorySize),
+		Type:      Type{},
+		itemType:  consumedType,
+		itemSize:  MemorySize(memorySize),
+		itemAlign: MemoryAlign(memoryAlign),
 	}
 
 	indexArray := c.doWeHaveList(proposedNewList)

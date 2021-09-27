@@ -139,7 +139,10 @@ func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFully
 	}
 
 	memorySize, memoryAlign := calculateTotalSizeAndAlignment(variants)
-
+	memorySize++
+	if memoryAlign == 0 {
+		memoryAlign = 1
+	}
 	return &CustomTypeAtom{
 		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
 		genericLocalTypeNames: genericLocalTypeNames, variants: variants, nameToField: nameToField,

@@ -28,6 +28,10 @@ func (c *CustomTypeVariantField) MemorySize() MemorySize {
 	return c.memorySize
 }
 
+func (c *CustomTypeVariantField) Type() dtype.Type {
+	return c.parameterType
+}
+
 type CustomTypeVariant struct {
 	index                int
 	astCustomTypeVariant *ast.CustomTypeVariant
@@ -50,7 +54,7 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 	var fields []*CustomTypeVariantField
 
 	pos := MemoryOffset(1) // Leave room for the custom type identifier
-
+	var biggestMemoryAlign MemoryAlign
 	for index, paramType := range parameterTypes {
 		if paramType == nil {
 			panic("paramtype is nil")
@@ -71,6 +75,10 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 			}
 		}
 
+		if memoryAlign > biggestMemoryAlign {
+			biggestMemoryAlign = memoryAlign
+		}
+
 		field := &CustomTypeVariantField{
 			index:         uint(index),
 			memoryOffset:  pos,
@@ -82,7 +90,17 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 
 		fields = append(fields, field)
 	}
-	return &CustomTypeVariant{index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes, parameterFields: fields}
+	if biggestMemoryAlign > 0 {
+		rest := pos % MemoryOffset(biggestMemoryAlign)
+		if rest != 0 {
+			pos += MemoryOffset(uint(biggestMemoryAlign) - uint(rest))
+		}
+	}
+
+	return &CustomTypeVariant{
+		index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes,
+		parameterFields: fields, debugMemorySize: MemorySize(pos), debugMemoryAlign: biggestMemoryAlign,
+	}
 }
 
 func (s *CustomTypeVariant) AttachToCustomType(c *CustomTypeAtom) {
