@@ -2,6 +2,9 @@ package assembler_sp
 
 import (
 	"fmt"
+	"log"
+
+	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 type ZeroMemoryPointer uint32
@@ -14,6 +17,14 @@ type StackMemoryMapper struct {
 
 func NewStackMemoryMapper(maxOctetSize uint) *StackMemoryMapper {
 	return &StackMemoryMapper{maxOctetSize: maxOctetSize}
+}
+
+func (m *StackMemoryMapper) AlignUpForMax() {
+	rest := m.position % uint32(dectype.Alignof64BitPointer)
+	if rest != 0 {
+		m.position += uint32(dectype.Alignof64BitPointer) - rest
+	}
+	log.Printf("Aligning for call %d\n", m.position)
 }
 
 func (m *StackMemoryMapper) Allocate(octetSize uint, align uint32, debugString string) TargetStackPosRange {

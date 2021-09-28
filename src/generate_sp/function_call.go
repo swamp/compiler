@@ -22,6 +22,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		return assembler_sp.SourceStackPosRange{}, functionGenErr
 	}
 
+	genContext.context.stackMemory.AlignUpForMax()
+
 	invokedReturnType := dectype.UnaliasWithResolveInvoker(functionAtom.ReturnType())
 	returnValue, returnValueAlign := allocMemoryForTypeEx(genContext.context.stackMemory, invokedReturnType, "returnValue")
 	if uint(returnValue.Size) == 0 {
