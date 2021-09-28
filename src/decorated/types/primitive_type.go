@@ -22,8 +22,19 @@ func IsAny(checkType dtype.Type) bool {
 	return primitive.AtomName() == "Any"
 }
 
+func IsTypeRef(checkType dtype.Type) bool {
+	unliased := UnaliasWithResolveInvoker(checkType)
+	primitive, wasPrimitive := unliased.(*PrimitiveAtom)
+	if !wasPrimitive {
+		return false
+	}
+
+	return primitive.AtomName() == "TypeRef"
+}
+
 func ArgumentNeedsTypeIdInsertedBefore(p dtype.Type) bool {
-	return IsAny(p)
+	unaliased := UnaliasWithResolveInvoker(p)
+	return IsAny(unaliased)
 }
 
 func IsAnyOrFunctionWithAnyMatching(p dtype.Type) bool {

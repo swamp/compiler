@@ -2,6 +2,7 @@ package generate_sp
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -40,6 +41,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		if needsTypeId {
 			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "typeid")
 			arguments = append(arguments, anySourcePosGen)
+			argumentsAlign = append(argumentsAlign, dectype.AlignOfSwampInt)
 		}
 		argPosRange, align := allocMemoryForTypeEx(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
 		arguments = append(arguments, argPosRange)
@@ -52,13 +54,26 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 
 		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
-		if needsTypeId {
+		if needsTypeId || dectype.IsTypeRef(functionArgTypeUnalias) {
+			log.Printf("arg.Type() %T\n", arg.Type())
 			typeID, err := genContext.lookup.Lookup(arg.Type())
 			if err != nil {
 				return assembler_sp.SourceStackPosRange{}, err
 			}
+			if dectype.IsTypeRef(functionArgTypeUnalias) {
+				unaliased := dectype.UnaliasWithResolveInvoker(functionArgTypeUnalias)
+				primitiveAtom, _ := unaliased.(*dectype.PrimitiveAtom)
+				typeID, err = genContext.lookup.Lookup(primitiveAtom.GenericTypes()[0])
+				if err != nil {
+					return assembler_sp.SourceStackPosRange{}, err
+				}
+			}
+
 			code.LoadInteger(arguments[argumentIndex].Pos, int32(typeID))
 			argumentIndex++
+			if dectype.IsTypeRef(functionArgTypeUnalias) {
+				continue
+			}
 		}
 
 		argReg := arguments[argumentIndex]

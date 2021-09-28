@@ -109,16 +109,6 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 			}
 			panic(fmt.Errorf("do not know primitive atom of '%s' %v %T", name, p, unaliased))
 		}
-	case *InvokerType:
-		switch it := t.TypeGenerator().(type) {
-		case *PrimitiveTypeReference:
-			return Sizeof64BitPointer, Alignof64BitPointer
-		case *CustomTypeReference:
-			return GetMemorySizeAndAlignment(it.Type())
-		default:
-			panic(fmt.Errorf("what kind of invoker type is this: %T %v", t.TypeGenerator()))
-		}
-
 	case *CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	case *CustomTypeVariant:
