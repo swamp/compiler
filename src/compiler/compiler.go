@@ -224,7 +224,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 					log.Printf("generating for function:'%s'\n", named.FullyQualifiedVariableName())
 					for index, param := range maybeFunction.Parameters() {
 						unaliased := dectype.Unalias(maybeFunction.Parameters()[index].Type())
-						if dectype.ArgumentNeedsTypeIdInsertedBefore(unaliased) || dectype.IsTypeRef(unaliased) {
+						if dectype.ArgumentNeedsTypeIdInsertedBefore(unaliased) || dectype.IsTypeIdRef(unaliased) {
 							pos = align(pos, dectype.AlignOfSwampInt)
 							typeIndexPosRange := assembler_sp.SourceStackPosRange{
 								Pos:  assembler_sp.SourceStackPos(pos),
@@ -232,7 +232,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 							}
 							paramPosRanges = append(paramPosRanges, typeIndexPosRange)
 							pos += dectype.MemoryOffset(typeIndexPosRange.Size)
-							if dectype.IsTypeRef(unaliased) {
+							if dectype.IsTypeIdRef(unaliased) {
 								continue
 							}
 						}

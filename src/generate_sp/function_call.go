@@ -54,16 +54,17 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 
 		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
-		if needsTypeId || dectype.IsTypeRef(functionArgTypeUnalias) {
+		if needsTypeId || dectype.IsTypeIdRef(arg.Type()) {
 			log.Printf("arg.Type() %T\n", arg.Type())
 			typeID, err := genContext.lookup.Lookup(arg.Type())
 			if err != nil {
 				return assembler_sp.SourceStackPosRange{}, err
 			}
-			if dectype.IsTypeRef(functionArgTypeUnalias) {
-				unaliased := dectype.UnaliasWithResolveInvoker(functionArgTypeUnalias)
+			if dectype.IsTypeIdRef(arg.Type()) {
+				unaliased := dectype.UnaliasWithResolveInvoker(arg.Type())
 				primitiveAtom, _ := unaliased.(*dectype.PrimitiveAtom)
-				typeID, err = genContext.lookup.Lookup(primitiveAtom.GenericTypes()[0])
+				pointingToType := primitiveAtom.GenericTypes()[0]
+				typeID, err = genContext.lookup.Lookup(pointingToType)
 				if err != nil {
 					return assembler_sp.SourceStackPosRange{}, err
 				}
@@ -71,7 +72,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 
 			code.LoadInteger(arguments[argumentIndex].Pos, int32(typeID))
 			argumentIndex++
-			if dectype.IsTypeRef(functionArgTypeUnalias) {
+			if dectype.IsTypeIdRef(functionArgTypeUnalias) {
 				continue
 			}
 		}
