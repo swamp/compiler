@@ -8,7 +8,6 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -183,7 +182,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	}
 
 	for _, module := range compiledPackage.AllModules() {
-		if verboseFlag >= verbosity.Mid {
+		if verboseFlag >= verbosity.High {
 			fmt.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())
 		}
 	}
@@ -201,7 +200,6 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 					hasLocalTypes := decorated.TypeIsTemplateHasLocalTypes(maybeFunction.ForcedFunctionType())
 					// parameterCount := len(maybeFunction.Parameters())
 					pos := dectype.MemoryOffset(0)
-					log.Printf("this has local types:'%s'\n", named.FullyQualifiedVariableName())
 					if hasLocalTypes {
 						returnPosRange := assembler_sp.SourceStackPosRange{
 							Pos:  assembler_sp.SourceStackPos(0),
@@ -221,7 +219,6 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 
 					pos += dectype.MemoryOffset(returnSize)
 
-					log.Printf("generating for function:'%s'\n", named.FullyQualifiedVariableName())
 					for index, param := range maybeFunction.Parameters() {
 						unaliased := dectype.Unalias(maybeFunction.Parameters()[index].Type())
 						if dectype.ArgumentNeedsTypeIdInsertedBefore(unaliased) || dectype.IsTypeIdRef(unaliased) {
@@ -293,7 +290,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	}
 
 	if verboseFlag >= verbosity.Mid || showAssembler {
-		constants.DynamicMemory().DebugOutput()
+		// constants.DynamicMemory().DebugOutput()
 	}
 
 	if verboseFlag >= verbosity.Mid || showAssembler {

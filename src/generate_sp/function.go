@@ -43,7 +43,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		return nil, resolveErr
 	}
 
-	if verboseFlag >= verbosity.Mid {
+	if verboseFlag >= verbosity.High {
 		code.PrintOut()
 	}
 

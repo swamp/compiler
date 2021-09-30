@@ -147,8 +147,7 @@ func (s *OpCodeStream) Count(c int) {
 }
 
 func (s *OpCodeStream) TypeIDConstant(c uint16) {
-	s.Write(uint8(c >> 8))
-	s.Write(uint8(c & 0xff))
+	s.WriteUint16(c)
 }
 
 func (s *OpCodeStream) Command(cmd instruction_sp.Commands) {

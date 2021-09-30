@@ -2,7 +2,6 @@ package assembler_sp
 
 import (
 	"fmt"
-	"log"
 
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
@@ -24,7 +23,6 @@ func (m *StackMemoryMapper) AlignUpForMax() {
 	if rest != 0 {
 		m.position += uint32(dectype.Alignof64BitPointer) - rest
 	}
-	log.Printf("Aligning for call %d\n", m.position)
 }
 
 func (m *StackMemoryMapper) Allocate(octetSize uint, align uint32, debugString string) TargetStackPosRange {

@@ -2,7 +2,6 @@ package generate_sp
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -55,7 +54,6 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 
 		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
 		if needsTypeId || dectype.IsTypeIdRef(arg.Type()) {
-			log.Printf("arg.Type() %T\n", arg.Type())
 			typeID, err := genContext.lookup.Lookup(arg.Type())
 			if err != nil {
 				return assembler_sp.SourceStackPosRange{}, err

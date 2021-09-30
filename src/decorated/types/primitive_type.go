@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -31,9 +30,6 @@ func IsTypeIdRef(checkType dtype.Type) bool {
 	}
 
 	wasTypeRef := primitive.AtomName() == "TypeRef"
-	if wasTypeRef {
-		log.Printf("atomname: %s\n", primitive.AtomName())
-	}
 
 	return wasTypeRef
 }
@@ -78,9 +74,6 @@ type PrimitiveAtom struct {
 
 func NewPrimitiveType(name *ast.TypeIdentifier, genericTypes []dtype.Type) *PrimitiveAtom {
 	for _, generic := range genericTypes {
-		if name.Name() == "TypeRef" {
-			log.Printf("found typeref'\n")
-		}
 		if generic == nil {
 			panic("not allowed to be nil generic")
 		}
