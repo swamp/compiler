@@ -139,7 +139,9 @@ func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFully
 	}
 
 	memorySize, memoryAlign := calculateTotalSizeAndAlignment(variants)
-	memorySize++
+	if memorySize == 0 {
+		memorySize = 1
+	}
 	if memoryAlign == 0 {
 		memoryAlign = 1
 	}
