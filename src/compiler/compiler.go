@@ -290,7 +290,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	}
 
 	if verboseFlag >= verbosity.Mid || showAssembler {
-		// constants.DynamicMemory().DebugOutput()
+		constants.DynamicMemory().DebugOutput()
 	}
 
 	if verboseFlag >= verbosity.Mid || showAssembler {
