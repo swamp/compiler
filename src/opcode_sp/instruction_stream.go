@@ -125,9 +125,9 @@ func (s *Stream) CallExternalWithSizesAndAlign(target opcode_sp_type.TargetStack
 	return c
 }
 
-func (s *Stream) Curry(target opcode_sp_type.TargetStackPosition, typeIDConstant uint16, function opcode_sp_type.SourceStackPosition,
+func (s *Stream) Curry(target opcode_sp_type.TargetStackPosition, typeIDConstant uint16, firstParameterAlign opcode_sp_type.MemoryAlign, function opcode_sp_type.SourceStackPosition,
 	arguments opcode_sp_type.SourceStackPositionRange) *instruction_sp.Curry {
-	c := instruction_sp.NewCurry(target, typeIDConstant, function, arguments)
+	c := instruction_sp.NewCurry(target, typeIDConstant, firstParameterAlign, function, arguments)
 	s.addInstruction(c)
 	return c
 }

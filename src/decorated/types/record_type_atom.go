@@ -185,7 +185,7 @@ func NewRecordType(info *ast.Record, fields []*RecordField, genericTypes []dtype
 		nameToField[name] = field
 	}
 
-	memorySize, memoryAlign := calculateFieldOffsetsAndRecordMemorySizeAndAlign(fields)
+	memorySize, memoryAlign := calculateFieldOffsetsAndRecordMemorySizeAndAlign(sortedFields)
 
 	return &RecordAtom{
 		sortedFields: sortedFields, record: info, parsedOrderFields: fields,

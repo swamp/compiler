@@ -18,6 +18,10 @@ func NewStackMemoryMapper(maxOctetSize uint) *StackMemoryMapper {
 	return &StackMemoryMapper{maxOctetSize: maxOctetSize}
 }
 
+func (m *StackMemoryMapper) Tell() TargetStackPos {
+	return TargetStackPos(m.position)
+}
+
 func (m *StackMemoryMapper) AlignUpForMax() {
 	rest := m.position % uint32(dectype.Alignof64BitPointer)
 	if rest != 0 {

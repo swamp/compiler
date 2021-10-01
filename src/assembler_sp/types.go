@@ -28,6 +28,8 @@ type ZeroMemoryRange uint16
 
 type StackPosOffset uint32
 
+type MemoryAlign uint8
+
 type StackPosAndRange struct {
 	Pos         StackPos
 	Size        StackRange

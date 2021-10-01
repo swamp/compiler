@@ -180,7 +180,7 @@ __externalfn mod : Int -> Int -> Int
 const blobCode = `
 __externalfn map : (Int -> Int) -> Blob -> Blob
 __externalfn indexedMap : (Int -> Int -> Int) -> Blob -> Blob
-__externalfn filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
+__externalvarfn filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
 __externalfn toString2d : { width : Int, height : Int } -> Blob -> String
 __externalfn get2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Maybe Int
 -- __externalfn isEmpty : Blob -> Bool

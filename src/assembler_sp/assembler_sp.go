@@ -204,8 +204,8 @@ func (c *Code) CallExternalWithSizesAndAlign(function SourceStackPos, newBasePoi
 	c.addStatement(o)
 }
 
-func (c *Code) Curry(target TargetStackPos, typeIDConstant uint16, function SourceStackPos, startArgument SourceStackPosRange) {
-	o := &Curry{target: target, typeIDConstant: typeIDConstant, function: function, arguments: startArgument}
+func (c *Code) Curry(target TargetStackPos, typeIDConstant uint16, firstParameterAlign MemoryAlign, function SourceStackPos, startArgument SourceStackPosRange) {
+	o := &Curry{target: target, typeIDConstant: typeIDConstant, firstParameterAlign: firstParameterAlign, function: function, arguments: startArgument}
 	c.addStatement(o)
 }
 
@@ -215,6 +215,10 @@ func targetStackPosition(pos TargetStackPos) opcode_sp_type.TargetStackPosition 
 
 func sourceStackPosition(pos SourceStackPos) opcode_sp_type.SourceStackPosition {
 	return opcode_sp_type.SourceStackPosition(pos)
+}
+
+func convertAlign(assemblerAlign MemoryAlign) opcode_sp_type.MemoryAlign {
+	return opcode_sp_type.MemoryAlign(assemblerAlign)
 }
 
 func argOffsetSizes(args []VariableArgumentPosSize) []opcode_sp_type.ArgOffsetSize {
@@ -403,7 +407,7 @@ func writeRecur(stream *opcode_sp.Stream, call *Recur) {
 }
 
 func writeCurry(stream *opcode_sp.Stream, call *Curry) {
-	stream.Curry(targetStackPosition(call.target), call.typeIDConstant, sourceStackPosition(call.function), sourceStackPositionRange(call.arguments))
+	stream.Curry(targetStackPosition(call.target), call.typeIDConstant, convertAlign(call.firstParameterAlign), sourceStackPosition(call.function), sourceStackPositionRange(call.arguments))
 }
 
 func writeReturn(stream *opcode_sp.Stream) {

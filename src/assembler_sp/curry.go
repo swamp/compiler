@@ -8,12 +8,13 @@ package assembler_sp
 import "fmt"
 
 type Curry struct {
-	target         TargetStackPos
-	typeIDConstant uint16
-	function       SourceStackPos
-	arguments      SourceStackPosRange
+	target              TargetStackPos
+	typeIDConstant      uint16
+	firstParameterAlign MemoryAlign
+	function            SourceStackPos
+	arguments           SourceStackPosRange
 }
 
 func (o *Curry) String() string {
-	return fmt.Sprintf("[curry %v (%v) <= %v (%v)]", o.target, o.typeIDConstant, o.function, o.arguments)
+	return fmt.Sprintf("[curry type:%v align:%v (%v) <= %v (%v)]", o.target, o.typeIDConstant, o.firstParameterAlign, o.function, o.arguments)
 }

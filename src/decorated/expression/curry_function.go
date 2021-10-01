@@ -29,6 +29,10 @@ func (c *CurryFunction) ArgumentsToSave() []Expression {
 	return c.argumentsToSave
 }
 
+func (c *CurryFunction) FunctionAtom() *dectype.FunctionAtom {
+	return c.curryFunctionType
+}
+
 func (c *CurryFunction) FunctionValue() Expression {
 	return c.functionValueExpression
 }

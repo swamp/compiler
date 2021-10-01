@@ -326,10 +326,11 @@ func disassembleCallExternalWithSizesAlign(s *OpcodeInStream) *instruction_sp.Ca
 func disassembleCurry(s *OpcodeInStream) *instruction_sp.Curry {
 	destination := s.readTargetStackPosition()
 	typeIDConstant := s.readTypeIDConstant()
+	firstParameterAlign := s.readAlign()
 	functionRegister := s.readSourceStackPosition()
 	arguments := s.readSourceStackPositionRange()
 
-	return instruction_sp.NewCurry(destination, typeIDConstant, functionRegister, arguments)
+	return instruction_sp.NewCurry(destination, typeIDConstant, firstParameterAlign, functionRegister, arguments)
 }
 
 func disassembleEnumCase(s *OpcodeInStream) *instruction_sp.EnumCase {
