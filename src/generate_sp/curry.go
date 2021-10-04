@@ -38,6 +38,10 @@ func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		arguments[index] = allocMemoryForType(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
 	}
 
+	if len(call.ArgumentsToSave()) == 0 {
+		return fmt.Errorf("you must have arguments to save to create a curry function")
+	}
+
 	_, firstAlign := dectype.GetMemorySizeAndAlignment(call.ArgumentsToSave()[0].Type())
 
 	for index, arg := range call.ArgumentsToSave() {
