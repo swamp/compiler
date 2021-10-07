@@ -33,18 +33,23 @@ main x =
 func TestIfStatement(t *testing.T) {
 	testGenerate(t,
 		`
-main : String -> Bool
+main : String -> Int
 main name =
     if name == "Rebecca" then
         let
             x = "Rebecca"
+            y = let
+                a = 3
+            in
+            a
+            z = 99
         in
-        True
+        y
     else
         let
             x = "3"
         in
-        False
+        33
 
 `, `
 

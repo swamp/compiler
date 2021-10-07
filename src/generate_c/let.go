@@ -12,11 +12,18 @@ func typeNameString(t dtype.Type) string {
 	return t.HumanReadable()
 }
 
-func generateLet(let *decorated.Let, writer io.Writer, indentation int) error {
+func generateLet(let *decorated.Let, writer io.Writer, returnString string, indentation int) error {
 	for _, assignment := range let.Assignments() {
+		assignmentHasOwnReturn := expressionHasOwnReturn(assignment.Expression())
+		assignmentReturnPrefix := "ccc"
 		if len(assignment.LetVariables()) == 1 {
 			firstVar := assignment.LetVariables()[0]
-			fmt.Fprintf(writer, "%s%v %v = ", indentationString(indentation+1), typeNameString(firstVar.Type()), firstVar.Name().Name())
+			if assignmentHasOwnReturn {
+				fmt.Fprintf(writer, "%s%v %v;", indentationString(indentation+1), typeNameString(firstVar.Type()), firstVar.Name().Name())
+				assignmentReturnPrefix = fmt.Sprintf("%v = ", firstVar.Name().Name())
+			} else {
+				fmt.Fprintf(writer, "%s%v %v = ", indentationString(indentation+1), typeNameString(firstVar.Type()), firstVar.Name().Name())
+			}
 		} else {
 			//tupleType := assignment.Expression().Type().(*dectype.TupleTypeAtom)
 			//for index, tupleField := range tupleType.Fields() {
@@ -24,7 +31,7 @@ func generateLet(let *decorated.Let, writer io.Writer, indentation int) error {
 			//}
 		}
 
-		sourceErr := generateExpression(assignment.Expression(), writer, indentation)
+		sourceErr := generateExpression(assignment.Expression(), writer, assignmentReturnPrefix, indentation)
 		if sourceErr != nil {
 			return sourceErr
 		}
@@ -33,10 +40,10 @@ func generateLet(let *decorated.Let, writer io.Writer, indentation int) error {
 	}
 
 	if !expressionHasOwnReturn(let.Consequence()) {
-		fmt.Fprintf(writer, "return ")
+		fmt.Fprintf(writer, "%s%s", indentationString(indentation+1), returnString)
 	}
 
-	codeErr := generateExpression(let.Consequence(), writer, indentation+1)
+	codeErr := generateExpression(let.Consequence(), writer, returnString, indentation+1)
 	if codeErr != nil {
 		return codeErr
 	}

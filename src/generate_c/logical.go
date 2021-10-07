@@ -19,7 +19,7 @@ func logicalOperatorToCCode(operatorType decorated.LogicalOperatorType) string {
 
 func generateLogical(operator *decorated.LogicalOperator, writer io.Writer, indentation int) error {
 	fmt.Fprintf(writer, "(")
-	leftErr := generateExpression(operator.Left(), writer, indentation)
+	leftErr := generateExpression(operator.Left(), writer, "", indentation)
 	if leftErr != nil {
 		return leftErr
 	}
@@ -27,7 +27,7 @@ func generateLogical(operator *decorated.LogicalOperator, writer io.Writer, inde
 	comparisonString := logicalOperatorToCCode(operator.OperatorType())
 	fmt.Fprintf(writer, " "+comparisonString+" ")
 
-	rightErr := generateExpression(operator.Right(), writer, indentation)
+	rightErr := generateExpression(operator.Right(), writer, "", indentation)
 	if rightErr != nil {
 		return rightErr
 	}

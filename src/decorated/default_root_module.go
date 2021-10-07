@@ -158,7 +158,7 @@ __externalvarfn length : List a -> Int
 __externalvarexfn foldl : (a -> b -> b) -> b -> List a -> b
 __externalvarexfn foldlstop : (a -> b -> Maybe b) -> b -> List a -> b
 __externalvarexfn filterMap : (a -> Maybe b) -> List a -> List b
-__externalvarexfn indexedMap : (Int -> a -> b) -> List a -> List b
+__externalvarfn indexedMap : (Int -> a -> b) -> List a -> List b
 `
 
 const mathCode = `

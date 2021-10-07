@@ -255,7 +255,14 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						return decorated.NewInternalError(lookupErr)
 					}
 
-					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, 0, uint(functionTypeIndex)); err != nil {
+					pos := dectype.MemoryOffset(0)
+					for _, param := range maybeFunction.Parameters() {
+						paramSize, paramAlign := dectype.GetMemorySizeAndAlignment(param.Type())
+						pos = align(pos, paramAlign)
+						pos += dectype.MemoryOffset(paramSize)
+					}
+					parameterOctetSize := dectype.MemorySize(pos)
+					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, parameterOctetSize, uint(functionTypeIndex)); err != nil {
 						return decorated.NewInternalError(err)
 					}
 				}

@@ -7,10 +7,10 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func generateExpression(expr decorated.Expression, writer io.Writer, indentation int) error {
+func generateExpression(expr decorated.Expression, writer io.Writer, returnPrefix string, indentation int) error {
 	switch e := expr.(type) {
 	case *decorated.Let:
-		return generateLet(e, writer, indentation)
+		return generateLet(e, writer, returnPrefix, indentation)
 
 	/*
 		case *decorated.ArithmeticOperator:
@@ -36,7 +36,7 @@ func generateExpression(expr decorated.Expression, writer io.Writer, indentation
 	case *decorated.BooleanOperator:
 		return generateBinaryOperatorBooleanResult(e, writer, indentation)
 	case *decorated.If:
-		return generateIf(e, writer, indentation)
+		return generateIf(e, writer, returnPrefix, indentation)
 		/*
 			case *decorated.PipeLeftOperator:
 				return generatePipeLeft(code, target, e, genContext)

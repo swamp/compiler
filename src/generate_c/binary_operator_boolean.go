@@ -54,12 +54,12 @@ func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, wr
 
 	if isStringComparison {
 		fmt.Fprintf(writer, "strcmp(")
-		leftErr := generateExpression(operator.Left(), writer, indentation)
+		leftErr := generateExpression(operator.Left(), writer, "", indentation)
 		if leftErr != nil {
 			return leftErr
 		}
 		fmt.Fprintf(writer, ", ")
-		rightErr := generateExpression(operator.Right(), writer, indentation)
+		rightErr := generateExpression(operator.Right(), writer, "", indentation)
 		if rightErr != nil {
 			return rightErr
 		}
@@ -69,7 +69,7 @@ func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, wr
 		return nil
 	}
 
-	leftErr := generateExpression(operator.Left(), writer, indentation)
+	leftErr := generateExpression(operator.Left(), writer, "", indentation)
 	if leftErr != nil {
 		return leftErr
 	}
@@ -90,7 +90,7 @@ func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, wr
 		panic(fmt.Errorf("what operator is this for %v", foundPrimitive.AtomName()))
 	}
 
-	rightErr := generateExpression(operator.Right(), writer, indentation)
+	rightErr := generateExpression(operator.Right(), writer, "", indentation)
 	if rightErr != nil {
 		return rightErr
 	}

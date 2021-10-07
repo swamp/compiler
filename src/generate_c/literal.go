@@ -23,6 +23,10 @@ func generateCharacterLiteral(ch *decorated.CharacterLiteral, writer io.Writer, 
 }
 
 func generateBoolLiteral(boolean *decorated.BooleanLiteral, writer io.Writer, indentation int) error {
-	fmt.Fprintf(writer, "%t", boolean.Value())
+	str := "True"
+	if boolean.Value() {
+		str = "False"
+	}
+	fmt.Fprintf(writer, "%s", str)
 	return nil
 }

@@ -20,7 +20,7 @@ func expressionHasOwnReturn(e decorated.Expression) bool {
 }
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
-	f *decorated.FunctionValue, writer io.Writer, indentation int,
+	f *decorated.FunctionValue, writer io.Writer, returnString string, indentation int,
 	verboseFlag verbosity.Verbosity) error {
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 
@@ -40,10 +40,10 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 
 	shouldInsertReturn := !expressionHasOwnReturn(f.Expression())
 	if shouldInsertReturn {
-		fmt.Fprintf(writer, "return ")
+		fmt.Fprintf(writer, returnString)
 	}
 
-	if genErr := generateExpression(f.Expression(), writer, indentation+1); genErr != nil {
+	if genErr := generateExpression(f.Expression(), writer, "return ", indentation+1); genErr != nil {
 		return genErr
 	}
 	if shouldInsertReturn {

@@ -46,7 +46,7 @@ typedef uint8_t Bool;
 			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
 				continue
 			}
-			genFuncErr := generateFunction(fullyQualifiedName, maybeFunction, writer, 0, verboseFlag)
+			genFuncErr := generateFunction(fullyQualifiedName, maybeFunction, writer, "return ", 0, verboseFlag)
 			if genFuncErr != nil {
 				return genFuncErr
 			}
