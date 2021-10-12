@@ -13,21 +13,21 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/swamp/compiler/src/assembler_sp"
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	swampdisasm_sp "github.com/swamp/compiler/src/disassemble_sp"
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/file"
-	"github.com/swamp/compiler/src/generate"
+	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/solution"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
-
-	swampdisasm "github.com/swamp/disassembler/lib"
 )
 
 func CheckUnused(world *loader.Package) {
@@ -45,7 +45,7 @@ func CheckUnused(world *loader.Package) {
 	}
 }
 
-func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
+func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
 	statInfo, statErr := os.Stat(mainSourceFile)
 	if statErr != nil {
 		return nil, statErr
@@ -63,7 +63,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				compiledPackage, err := CompileAndLink(typeInformationChunk, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, verboseFlag)
+				compiledPackage, err := CompileAndLink(typeInformationChunk, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, showAssembler, verboseFlag)
 				if err != nil {
 					return packages, err
 				}
@@ -159,12 +159,20 @@ type CoreFunctionInfo struct {
 	ParamCount uint
 }
 
-func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
-	gen := generate.NewGenerator()
+func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype.MemoryOffset {
+	rest := dectype.MemoryAlign(uint32(offset) % uint32(memoryAlign))
+	if rest != 0 {
+		offset += dectype.MemoryOffset(memoryAlign - rest)
+	}
+	return offset
+}
 
-	var allFunctions []*generate.Function
+func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, showAssembler bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+	gen := generate_sp.NewGenerator()
 
-	var allExternalFunctions []*generate.ExternalFunction
+	var allFunctions []*assembler_sp.Constant
+
+	var allExternalFunctions []*generate_sp.ExternalFunction
 
 	fakeMod := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(nil), nil)
 
@@ -174,22 +182,107 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	}
 
 	for _, module := range compiledPackage.AllModules() {
-		if verboseFlag >= verbosity.Mid {
+		if verboseFlag >= verbosity.High {
 			fmt.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())
 		}
 	}
 
+	packageConstants := assembler_sp.NewPackageConstants()
 	for _, module := range compiledPackage.AllModules() {
-		if verboseFlag >= verbosity.Mid {
+		for _, named := range module.LocalDefinitions().Definitions() {
+			unknownType := named.Expression()
+			maybeFunction, _ := unknownType.(*decorated.FunctionValue)
+			if maybeFunction != nil {
+				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
+				isExternal := maybeFunction.Annotation().Annotation().IsSomeKindOfExternal()
+				if isExternal {
+					var paramPosRanges []assembler_sp.SourceStackPosRange
+					hasLocalTypes := decorated.TypeIsTemplateHasLocalTypes(maybeFunction.ForcedFunctionType())
+					// parameterCount := len(maybeFunction.Parameters())
+					pos := dectype.MemoryOffset(0)
+					if hasLocalTypes {
+						returnPosRange := assembler_sp.SourceStackPosRange{
+							Pos:  assembler_sp.SourceStackPos(0),
+							Size: assembler_sp.SourceStackRange(0),
+						}
+						paramPosRanges = make([]assembler_sp.SourceStackPosRange, len(maybeFunction.Parameters()))
+						if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
+							return decorated.NewInternalError(err)
+						}
+						continue
+					}
+					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					returnPosRange := assembler_sp.SourceStackPosRange{
+						Pos:  assembler_sp.SourceStackPos(pos),
+						Size: assembler_sp.SourceStackRange(returnSize),
+					}
+
+					pos += dectype.MemoryOffset(returnSize)
+
+					for index, param := range maybeFunction.Parameters() {
+						unaliased := dectype.Unalias(maybeFunction.Parameters()[index].Type())
+						if dectype.ArgumentNeedsTypeIdInsertedBefore(unaliased) || dectype.IsTypeIdRef(unaliased) {
+							pos = align(pos, dectype.AlignOfSwampInt)
+							typeIndexPosRange := assembler_sp.SourceStackPosRange{
+								Pos:  assembler_sp.SourceStackPos(pos),
+								Size: assembler_sp.SourceStackRange(dectype.SizeofSwampInt),
+							}
+							paramPosRanges = append(paramPosRanges, typeIndexPosRange)
+							pos += dectype.MemoryOffset(typeIndexPosRange.Size)
+							if dectype.IsTypeIdRef(unaliased) {
+								continue
+							}
+						}
+						size, alignment := dectype.GetMemorySizeAndAlignment(param.Type())
+						pos = align(pos, alignment)
+						posRange := assembler_sp.SourceStackPosRange{
+							Pos:  assembler_sp.SourceStackPos(pos),
+							Size: assembler_sp.SourceStackRange(size),
+						}
+						paramPosRanges = append(paramPosRanges, posRange)
+						pos += dectype.MemoryOffset(size)
+
+					}
+					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
+						return decorated.NewInternalError(err)
+					}
+				} else {
+					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					parameterCount := uint(len(maybeFunction.Parameters()))
+
+					functionTypeIndex, lookupErr := typeInformationChunk.Lookup(maybeFunction.ForcedFunctionType())
+					if lookupErr != nil {
+						return decorated.NewInternalError(lookupErr)
+					}
+
+					pos := dectype.MemoryOffset(0)
+					for _, param := range maybeFunction.Parameters() {
+						paramSize, paramAlign := dectype.GetMemorySizeAndAlignment(param.Type())
+						pos = align(pos, paramAlign)
+						pos += dectype.MemoryOffset(paramSize)
+					}
+					parameterOctetSize := dectype.MemorySize(pos)
+					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, parameterOctetSize, uint(functionTypeIndex)); err != nil {
+						return decorated.NewInternalError(err)
+					}
+				}
+			}
+		}
+	}
+
+	var constants *assembler_sp.PackageConstants
+	for _, module := range compiledPackage.AllModules() {
+		if verboseFlag >= verbosity.High {
 			fmt.Printf("============================================== generating for module %v\n", module)
 		}
 
 		context := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
 
-		functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, verboseFlag)
+		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, packageConstants, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}
+		constants = createdConstants
 
 		allFunctions = append(allFunctions, functions...)
 		externalFunctions := module.ExternalFunctions()
@@ -198,18 +291,25 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod,
 				ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.AstExternalFunction.FunctionName(),
 					token.SourceFileReference{}, 0))) //nolint:exhaustivestruct
-			fakeFunc := generate.NewExternalFunction(fakeName, 0, externalFunction.AstExternalFunction.ParameterCount())
+			fakeFunc := generate_sp.NewExternalFunction(fakeName, 0, externalFunction.AstExternalFunction.ParameterCount())
 			allExternalFunctions = append(allExternalFunctions, fakeFunc)
 		}
 	}
 
-	if verboseFlag >= verbosity.Mid {
+	if verboseFlag >= verbosity.Mid || showAssembler {
+		constants.DynamicMemory().DebugOutput()
+	}
+
+	if verboseFlag >= verbosity.Mid || showAssembler {
 		var assemblerOutput string
 
 		for _, f := range allFunctions {
-			lines := swampdisasm.Disassemble(f.Opcodes())
+			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
+				opcodes := constants.FetchOpcodes(f)
+				lines := swampdisasm_sp.Disassemble(opcodes)
 
-			assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
+				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
+			}
 		}
 
 		fmt.Println(assemblerOutput)
@@ -220,12 +320,15 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		return decorated.NewInternalError(typeInformationErr)
 	}
 
-	if verboseFlag >= verbosity.Low {
+	if verboseFlag >= verbosity.High {
 		fmt.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
 		typeInformationChunk.DebugOutput()
 	}
 
-	packed, packedErr := generate.Pack(allFunctions, allExternalFunctions, typeInformationOctets, typeInformationChunk)
+	constants.Finalize()
+	dynamicMemoryOctets := constants.DynamicMemory().Octets()
+
+	packed, packedErr := generate_sp.Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)
 	if packedErr != nil {
 		return decorated.NewInternalError(packedErr)
 	}
@@ -250,13 +353,14 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 	return compiledPackage, nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, name string, filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, name string,
+	filename string, outputFilename string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
 	if compileErr != nil {
 		return nil, compileErr
 	}
 
-	if err := GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, verboseFlag); err != nil {
+	if err := GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, showAssembler, verboseFlag); err != nil {
 		return compiledPackage, err
 	}
 

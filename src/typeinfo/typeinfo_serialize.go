@@ -62,25 +62,19 @@ func writeTypeRef(writer io.Writer, infoType InfoType) error {
 	return writeUint16(writer, infoType.Index())
 }
 
-func writeTypeRefs(writer io.Writer, infoTypes []InfoType) error {
-	if err := writeCount(writer, len(infoTypes)); err != nil {
-		return err
-	}
-
-	for _, infoType := range infoTypes {
-		if err := writeTypeRef(writer, infoType); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func writeList(writer io.Writer, list *ListType) error {
 	if err := writeTypeID(writer, SwtiTypeList); err != nil {
 		return err
 	}
-	return writeTypeRef(writer, list.itemType)
+	if err := writeTypeRef(writer, list.itemType); err != nil {
+		return err
+	}
+
+	if err := writeMemoryInfo(writer, list.itemSize, list.itemAlign); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func writeUnmanaged(writer io.Writer, unmanaged *UnmanagedType) error {
@@ -102,12 +96,20 @@ func writeTuple(writer io.Writer, tuple *TupleType) error {
 	if err := writeTypeID(writer, SwtiTypeTuple); err != nil {
 		return err
 	}
-	if err := writeCount(writer, len(tuple.parameterTypes)); err != nil {
+
+	if err := writeMemoryInfo(writer, tuple.memoryInfo.MemorySize, tuple.memoryInfo.MemoryAlign); err != nil {
 		return err
 	}
 
-	for _, parameterType := range tuple.parameterTypes {
-		if err := writeTypeRef(writer, parameterType); err != nil {
+	if err := writeCount(writer, len(tuple.fields)); err != nil {
+		return err
+	}
+
+	for _, field := range tuple.fields {
+		if err := writeMemoryOffsetInfo(writer, field.memoryOffsetInfo); err != nil {
+			return err
+		}
+		if err := writeTypeRef(writer, field.fieldType); err != nil {
 			return err
 		}
 	}
@@ -119,7 +121,15 @@ func writeArray(writer io.Writer, array *ArrayType) error {
 	if err := writeTypeID(writer, SwtiTypeArray); err != nil {
 		return err
 	}
-	return writeTypeRef(writer, array.itemType)
+	if err := writeTypeRef(writer, array.itemType); err != nil {
+		return err
+	}
+
+	if err := writeMemoryInfo(writer, array.itemSize, array.itemAlign); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func write16BitCount(writer io.Writer, count int) error {
@@ -141,16 +151,63 @@ func writeName(writer io.Writer, name string) error {
 	return err
 }
 
+func writeMemoryOffset(writer io.Writer, offset MemoryOffset) error {
+	return writeUint16(writer, int(offset))
+}
+
+func writeMemorySize(writer io.Writer, size MemorySize) error {
+	if size == 0 {
+		//	panic(fmt.Errorf("illegal memory size"))
+	}
+	return writeUint16(writer, int(size))
+}
+
+func writeMemoryAlign(writer io.Writer, align MemoryAlign) error {
+	if align == 0 {
+		// panic(fmt.Errorf("illegal memory align"))
+	}
+	return writeUint8(writer, uint8(align))
+}
+
+func writeMemoryInfo(writer io.Writer, size MemorySize, align MemoryAlign) error {
+	if err := writeMemorySize(writer, size); err != nil {
+		return err
+	}
+	if err := writeMemoryAlign(writer, align); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeMemoryOffsetInfo(writer io.Writer, info MemoryOffsetInfo) error {
+	if err := writeMemoryOffset(writer, info.MemoryOffset); err != nil {
+		return err
+	}
+	if err := writeMemoryInfo(writer, info.MemoryInfo.MemorySize, info.MemoryInfo.MemoryAlign); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func writeRecord(writer io.Writer, record *RecordType) error {
 	if err := writeTypeID(writer, SwtiTypeRecord); err != nil {
+		return err
+	}
+
+	if err := writeMemoryInfo(writer, record.memoryInfo.MemorySize, record.memoryInfo.MemoryAlign); err != nil {
 		return err
 	}
 	if err := writeCount(writer, len(record.fields)); err != nil {
 		return err
 	}
-
 	for _, field := range record.fields {
 		if err := writeName(writer, field.name); err != nil {
+			return err
+		}
+
+		if err := writeMemoryOffsetInfo(writer, field.memoryOffsetInfo); err != nil {
 			return err
 		}
 
@@ -195,6 +252,39 @@ func writeFunction(writer io.Writer, fn *FunctionType) error {
 	return nil
 }
 
+func writeCustomTypeVariantField(writer io.Writer, variantField VariantField) error {
+	if err := writeTypeRef(writer, variantField.fieldType); err != nil {
+		return err
+	}
+
+	if err := writeMemoryOffsetInfo(writer, variantField.memoryOffset); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeCustomTypeVariant(writer io.Writer, variant *Variant) error {
+	if err := writeName(writer, variant.name); err != nil {
+		return err
+	}
+
+	if err := writeMemoryInfo(writer, variant.memoryInfo.MemorySize, variant.memoryInfo.MemoryAlign); err != nil {
+		return err
+	}
+
+	if err := writeCount(writer, len(variant.fields)); err != nil {
+		return err
+	}
+	for _, variantField := range variant.fields {
+		if err := writeCustomTypeVariantField(writer, variantField); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func writeCustom(writer io.Writer, custom *CustomType) error {
 	if err := writeTypeID(writer, SwtiTypeCustom); err != nil {
 		return err
@@ -203,7 +293,12 @@ func writeCustom(writer io.Writer, custom *CustomType) error {
 	if len(custom.name) == 0 {
 		panic("Name must be set")
 	}
+
 	if err := writeName(writer, custom.name); err != nil {
+		return err
+	}
+
+	if err := writeMemoryInfo(writer, custom.memoryInfo.MemorySize, custom.memoryInfo.MemoryAlign); err != nil {
 		return err
 	}
 
@@ -212,11 +307,7 @@ func writeCustom(writer io.Writer, custom *CustomType) error {
 	}
 
 	for _, variant := range custom.variants {
-		if err := writeName(writer, variant.name); err != nil {
-			return err
-		}
-
-		if err := writeTypeRefs(writer, variant.parameterTypes); err != nil {
+		if err := writeCustomTypeVariant(writer, &variant); err != nil {
 			return err
 		}
 	}
@@ -271,21 +362,21 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 }
 
 func writeVersion(writer io.Writer) error {
-	const major byte = 0
-	const minor byte = 1
-	const patch byte = 6
+	const (
+		major byte = 0
+		minor byte = 1
+		patch byte = 8
+	)
 
 	if err := writeUint8(writer, major); err != nil {
 		return err
 	}
+
 	if err := writeUint8(writer, minor); err != nil {
 		return err
 	}
-	if err := writeUint8(writer, patch); err != nil {
-		return err
-	}
 
-	return nil
+	return writeUint8(writer, patch)
 }
 
 func Serialize(c *Chunk, writer io.Writer) error {

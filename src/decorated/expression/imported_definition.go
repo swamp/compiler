@@ -64,6 +64,10 @@ func (d *ImportedDefinition) IsInternal() bool {
 	return d.OwnedByModule().IsInternal()
 }
 
+func (d *ImportedDefinition) IsExternal() bool {
+	return d.referencedDefinition.IsExternal()
+}
+
 func (d *ImportedDefinition) WasReferenced() bool {
 	return d.wasReferenced
 }

@@ -228,7 +228,7 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 }
 
 func fillContextFromTuples(context *TypeParameterContextOther, original *TupleTypeAtom, other *TupleTypeAtom) (*TupleTypeAtom, error) {
-	var converted []dtype.Type
+	var converted []*TupleTypeField
 
 	if len(original.parameterTypes) < len(other.parameterTypes) {
 		return nil, fmt.Errorf("too few parameter types")
@@ -244,7 +244,8 @@ func fillContextFromTuples(context *TypeParameterContextOther, original *TupleTy
 			panic("converted was nil")
 		}
 
-		converted = append(converted, convertedType)
+		field := NewTupleTypeField(index, convertedType)
+		converted = append(converted, field)
 	}
 
 	for index := len(other.parameterTypes); index < len(original.parameterTypes); index++ {
@@ -256,7 +257,8 @@ func fillContextFromTuples(context *TypeParameterContextOther, original *TupleTy
 		if convertedType == nil {
 			panic(fmt.Sprintf("conversion is not working %v %T", originalParam, originalParam))
 		}
-		converted = append(converted, convertedType)
+		field := NewTupleTypeField(index, convertedType)
+		converted = append(converted, field)
 	}
 
 	return NewTupleTypeAtom(original.astTupleType, converted), nil

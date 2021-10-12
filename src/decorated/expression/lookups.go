@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -26,6 +27,18 @@ func (l LookupField) Index() int {
 
 func (l LookupField) Identifier() *ast.VariableIdentifier {
 	return l.reference.ident
+}
+
+func (l LookupField) RecordTypeFieldReference() *RecordTypeFieldReference {
+	return l.reference
+}
+
+func (l LookupField) MemoryOffset() dectype.MemoryOffset {
+	return l.reference.recordTypeField.MemoryOffset()
+}
+
+func (l LookupField) MemorySize() dectype.MemorySize {
+	return l.reference.recordTypeField.MemorySize()
 }
 
 func NewLookupField(reference *RecordTypeFieldReference) LookupField {

@@ -12,17 +12,22 @@ import (
 )
 
 type Annotation struct {
-	symbol            *VariableIdentifier
-	annotatedType     Type
-	precedingComments *MultilineComment
+	symbol                 *VariableIdentifier
+	annotatedType          Type
+	precedingComments      *MultilineComment
+	annotationFunctionType token.AnnotationFunctionType
 }
 
-func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, precedingComments *MultilineComment) *Annotation {
+func NewAnnotation(variableIdentifier *VariableIdentifier, annotatedType Type, annotationFunctionType token.AnnotationFunctionType,
+	precedingComments *MultilineComment) *Annotation {
 	if annotatedType == nil {
 		panic("must set annotated type")
 	}
 
-	return &Annotation{symbol: variableIdentifier, annotatedType: annotatedType, precedingComments: precedingComments}
+	return &Annotation{
+		symbol: variableIdentifier, annotatedType: annotatedType,
+		annotationFunctionType: annotationFunctionType, precedingComments: precedingComments,
+	}
 }
 
 func (d *Annotation) CommentBlock() *MultilineComment {
@@ -35,6 +40,24 @@ func (d *Annotation) AnnotatedType() Type {
 
 func (d *Annotation) Identifier() *VariableIdentifier {
 	return d.symbol
+}
+
+func (d *Annotation) IsSomeKindOfExternal() bool {
+	return d.annotationFunctionType == token.AnnotationFunctionTypeExternal ||
+		d.annotationFunctionType == token.AnnotationFunctionTypeExternalVar ||
+		d.annotationFunctionType == token.AnnotationFunctionTypeExternalVarEx
+}
+
+func (d *Annotation) IsNormalExternal() bool {
+	return d.annotationFunctionType == token.AnnotationFunctionTypeExternal
+}
+
+func (d *Annotation) IsExternalVarFunction() bool {
+	return d.annotationFunctionType == token.AnnotationFunctionTypeExternalVar
+}
+
+func (d *Annotation) IsExternalVarExFunction() bool {
+	return d.annotationFunctionType == token.AnnotationFunctionTypeExternalVarEx
 }
 
 func (d *Annotation) FetchPositionLength() token.SourceFileReference {

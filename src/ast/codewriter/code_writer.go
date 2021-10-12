@@ -337,10 +337,6 @@ func writeIf(letExpression *ast.IfExpression, colorer coloring.Colorer, indentat
 	WriteExpression(letExpression.Alternative(), colorer, indentation+1)
 }
 
-func writeAsm(asm *ast.Asm, colorer coloring.Colorer, indentation int) {
-	colorer.KeywordString(asm.Asm())
-}
-
 func writeBinaryOperator(binaryOperator *ast.BinaryOperator, colorer coloring.Colorer, indentation int) {
 	WriteExpression(binaryOperator.Left(), colorer, 0)
 	colorer.OneSpace()
@@ -553,10 +549,6 @@ func writeExpressionAsTerm(expression ast.Expression, colorer coloring.Colorer, 
 
 func WriteExpression(expression ast.Expression, colorer coloring.Colorer, indentation int) {
 	switch t := expression.(type) {
-	case *ast.Asm:
-		{
-			writeAsm(t, colorer, indentation)
-		}
 	case *ast.BinaryOperator:
 		{
 			writeBinaryOperator(t, colorer, indentation)

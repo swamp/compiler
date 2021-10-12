@@ -42,36 +42,62 @@ func (s AsmToken) FetchPositionLength() SourceFileReference {
 // Keyword :
 type ExternalFunctionToken struct {
 	SourceFileReference
-	functionName   string
-	parameterCount uint
-	raw            string
-	commentToken   IndentationReport
 }
 
-func NewExternalFunctionToken(raw string, functionName string, parameterCount uint, commentToken IndentationReport, startPosition SourceFileReference) ExternalFunctionToken {
-	return ExternalFunctionToken{raw: raw, functionName: functionName, parameterCount: parameterCount, commentToken: commentToken, SourceFileReference: startPosition}
-}
-
-func (s ExternalFunctionToken) Raw() string {
-	return s.raw
+func NewExternalFunctionToken(startPosition SourceFileReference) ExternalFunctionToken {
+	return ExternalFunctionToken{SourceFileReference: startPosition}
 }
 
 func (s ExternalFunctionToken) Type() Type {
 	return ExternalFunction
 }
 
-func (s ExternalFunctionToken) ExternalFunction() string {
-	return s.functionName
-}
-
-func (s ExternalFunctionToken) ParameterCount() uint {
-	return s.parameterCount
-}
-
 func (s ExternalFunctionToken) String() string {
-	return fmt.Sprintf("[externalfn %v %d]", s.functionName, s.parameterCount)
+	return fmt.Sprintf("[externalfn]")
 }
 
 func (s ExternalFunctionToken) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
+}
+
+// Keyword :
+type ExternalVarFunction struct {
+	SourceFileReference
+}
+
+func NewExternalVarFunction(startPosition SourceFileReference) ExternalVarFunction {
+	return ExternalVarFunction{SourceFileReference: startPosition}
+}
+
+func (s ExternalVarFunction) Type() Type {
+	return ExternalFunction
+}
+
+func (s ExternalVarFunction) String() string {
+	return fmt.Sprintf("[externalvarfn]")
+}
+
+func (s ExternalVarFunction) FetchPositionLength() SourceFileReference {
+	return s.SourceFileReference
+}
+
+// Keyword :
+type ExternalVarExFunction struct {
+	SourceFileReference
+}
+
+func NewExternalVarExFunction(startPosition SourceFileReference) ExternalVarExFunction {
+	return ExternalVarExFunction{SourceFileReference: startPosition}
+}
+
+func (s ExternalVarExFunction) Type() Type {
+	return ExternalFunction
+}
+
+func (s ExternalVarExFunction) String() string {
+	return fmt.Sprintf("[externalvarfn]")
+}
+
+func (s ExternalVarExFunction) FetchPositionLength() SourceFileReference {
 	return s.SourceFileReference
 }

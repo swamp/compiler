@@ -35,6 +35,17 @@ func NewNamedDecoratedExpression(fullyQualifiedName string, mDef ModuleDef,
 	}
 }
 
+func NewNamedEmpty(fullyQualifiedName string, mDef ModuleDef) *NamedDecoratedExpression {
+	if fullyQualifiedName == "" {
+		panic("must have qualified name")
+	}
+
+	return &NamedDecoratedExpression{
+		fullyQualifiedName: fullyQualifiedName, mDef: mDef,
+		expression: nil, wasReferenced: false,
+	}
+}
+
 func (n *NamedDecoratedExpression) FullyQualifiedName() string {
 	return n.fullyQualifiedName
 }

@@ -61,6 +61,18 @@ func (d *ModuleDefinitions) AddDecoratedExpression(identifier *ast.VariableIdent
 	return nil
 }
 
+func (d *ModuleDefinitions) AddEmptyExternalDefinition(identifier *ast.VariableIdentifier) error {
+	existingDeclare := d.FindDefinitionExpression(identifier)
+	if existingDeclare != nil {
+		return fmt.Errorf("sorry, '%v' already declared", existingDeclare)
+	}
+
+	def := NewModuleDefinition(d, identifier, nil)
+	d.definitions[identifier.Name()] = def
+
+	return nil
+}
+
 func (t *ModuleDefinitions) DebugString() string {
 	s := "Module LocalDefinitions:\n"
 	for _, definition := range t.definitions {

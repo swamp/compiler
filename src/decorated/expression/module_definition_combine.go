@@ -50,6 +50,9 @@ func (d *ModuleDefinitionsCombine) FindScopedDefinitionExpression(identifier *as
 	foundDef := referencedModule.exposedDefinitions.FindDefinition(identifier.AstVariableReference())
 	if foundDef == nil {
 		log.Printf("couldn't find definition in module %v\n%v\n", identifier, foundModule)
+		for _, definition := range foundModule.ReferencedModule().localDefinitions.Definitions() {
+			log.Printf("def:%v\n", definition)
+		}
 		return nil
 	}
 

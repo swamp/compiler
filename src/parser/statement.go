@@ -17,14 +17,22 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 		return nil, keywordSymbolErr
 	}
 
-	externalFunction, isExternalFunction := keywordSymbol.(token.ExternalFunctionToken)
-	if isExternalFunction {
-		return parseExternalFunction(p.stream, externalFunction)
+	annotationFunctionType := token.AnnotationFunctionTypeNormal
+	switch keywordSymbol.(type) {
+	case token.ExternalFunctionToken:
+		annotationFunctionType = token.AnnotationFunctionTypeExternal
+	case token.ExternalVarFunction:
+		annotationFunctionType = token.AnnotationFunctionTypeExternalVar
+	case token.ExternalVarExFunction:
+		annotationFunctionType = token.AnnotationFunctionTypeExternalVarEx
 	}
 
-	asm, isAsm := keywordSymbol.(token.AsmToken)
-	if isAsm {
-		return parseAsm(p.stream, asm)
+	if annotationFunctionType != token.AnnotationFunctionTypeNormal {
+		_, spaceErr := p.stream.tokenizer.EatOneSpace()
+		if spaceErr != nil {
+			return nil, spaceErr
+		}
+		keywordSymbol, keywordSymbolErr = p.stream.tokenizer.ParseVariableSymbol()
 	}
 
 	variableSymbol, wasVariableSymbol := keywordSymbol.(token.VariableSymbolToken)
@@ -41,6 +49,6 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 		keywordImport := token.NewKeyword(variableSymbol.Raw(), token.Import, variableSymbol.SourceFileReference)
 		return parseImport(p.stream, keywordImport, 0, precedingComments)
 	default:
-		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, precedingComments)
+		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, annotationFunctionType, precedingComments)
 	}
 }

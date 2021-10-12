@@ -28,10 +28,10 @@ import (
 
 var Version string
 
-func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
+func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, assembler bool, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
 	filenameToCompile := fileOrDirectory
 
-	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, verbosity)
+	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, assembler, verbosity)
 }
 
 func buildCommandLineNoOutput(fileOrDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
@@ -117,6 +117,7 @@ type BuildCmd struct {
 	DisableStyle bool   `help:"disable enforcing of style" default:"false"`
 	Output       string `help:"output directory" type:"existingdir" short:"o" default:"."`
 	Verbosity    int    `help:"verbose output" type:"counter" short:"v"`
+	Assembler    bool   `help:"output assembler" short:"s" default:"false"`
 	Modules      string
 }
 
@@ -127,7 +128,7 @@ func (c *BuildCmd) Run() error {
 
 	c.Path = filepath.ToSlash(c.Path)
 
-	compiledPackages, err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, verbosity.Verbosity(c.Verbosity))
+	compiledPackages, err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, c.Assembler, verbosity.Verbosity(c.Verbosity))
 	if err != nil {
 		return err
 	}

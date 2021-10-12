@@ -28,12 +28,23 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 }
 
 func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression decorated.Expression, module *decorated.Module) (decorated.Expression, decshared.DecoratedError) {
+	if expression == nil {
+		panic("reference from variable can not be nil")
+	}
 	switch t := expression.(type) {
 	case *decorated.FunctionValue:
 		var moduleRef *decorated.ModuleReference
 		scoped, wasScoped := name.(*ast.VariableIdentifierScoped)
 		if wasScoped {
 			moduleRef = decorated.NewModuleReference(scoped.ModuleReference(), module)
+		} else {
+			path := module.FullyQualifiedModuleName().Path()
+			var astModuleRef *ast.ModuleReference
+
+			if path != nil {
+				astModuleRef = ast.NewModuleReference(path.Parts())
+				moduleRef = decorated.NewModuleReference(astModuleRef, module)
+			}
 		}
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
@@ -65,7 +76,12 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 
 	def.SetReferenced()
 
-	someReference, err := ReferenceFromVariable(name, def.Expression(), nil)
+	var inModule *decorated.Module
+	moduleDef := def.ModuleDefinition()
+	if moduleDef != nil {
+		inModule = moduleDef.OwnedByModule()
+	}
+	someReference, err := ReferenceFromVariable(name, def.Expression(), inModule)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +129,12 @@ func (c *VariableContext) FindScopedNamedDecoratedExpression(name *ast.VariableI
 		return nil
 	}
 
-	def := decorated.NewNamedDecoratedExpression(mDef.FullyQualifiedVariableName().String(), mDef, mDef.Expression())
+	var def *decorated.NamedDecoratedExpression
+	if mDef.IsExternal() {
+		def = decorated.NewNamedEmpty(mDef.FullyQualifiedVariableName().String(), mDef)
+	} else {
+		def = decorated.NewNamedDecoratedExpression(mDef.FullyQualifiedVariableName().String(), mDef, mDef.Expression())
+	}
 
 	return def
 }

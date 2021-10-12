@@ -25,6 +25,14 @@ func (r *NamedDefinitionReference) AstIdentifier() ast.ScopedOrNormalVariableIde
 	return r.ident
 }
 
+func (r *NamedDefinitionReference) FullyQualifiedName() string {
+	if r.optionalModuleReference != nil {
+		return r.optionalModuleReference.module.fullyQualifiedModuleName.String() + "." + r.ident.Symbol().Name()
+	}
+
+	return r.ident.Name()
+}
+
 func (r *NamedDefinitionReference) String() string {
 	return "named definition reference"
 }

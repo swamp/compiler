@@ -28,6 +28,10 @@ func (c *TupleLiteral) Type() dtype.Type {
 	return c.tupleType
 }
 
+func (c *TupleLiteral) TupleType() *dectype.TupleTypeAtom {
+	return c.tupleType
+}
+
 func (c *TupleLiteral) AstTupleLiteral() *ast.TupleLiteral {
 	return c.astLiteral
 }

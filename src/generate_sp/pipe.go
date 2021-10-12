@@ -1,0 +1,42 @@
+package generate_sp
+
+import (
+	"github.com/swamp/compiler/src/assembler_sp"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
+)
+
+func generatePipeLeft(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.PipeLeftOperator, genContext *generateContext) error {
+	leftErr := generateExpression(code, target, operator.GenerateLeft(), genContext)
+	if leftErr != nil {
+		return leftErr
+	}
+	return nil
+}
+
+func generatePipeRight(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.PipeRightOperator, genContext *generateContext) error {
+	leftErr := generateExpression(code, target, operator.GenerateRight(), genContext)
+	if leftErr != nil {
+		return leftErr
+	}
+	return nil
+}
+
+func handlePipeRight(code *assembler_sp.Code, operator *decorated.PipeRightOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := allocMemoryForType(genContext.context.stackMemory, operator.GenerateRight().Type(), "pipeRight")
+
+	if err := generatePipeRight(code, posRange, operator, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
+}
+
+func handlePipeLeft(code *assembler_sp.Code, operator *decorated.PipeLeftOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := allocMemoryForType(genContext.context.stackMemory, operator.GenerateLeft().Type(), "pipeLeft")
+
+	if err := generatePipeLeft(code, posRange, operator, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
+}

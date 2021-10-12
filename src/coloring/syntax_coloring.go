@@ -116,7 +116,7 @@ func colorKeyword(t token.Keyword) string {
 }
 
 func colorExternalFunction(t token.ExternalFunctionToken) string {
-	return color.HiBlackString(t.Raw())
+	return color.HiBlackString("__externalfn") // t.Raw())
 }
 
 func colorAsm(t token.AsmToken) string {

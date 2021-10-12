@@ -13,13 +13,35 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type CustomTypeVariantField struct {
+	index         uint
+	memoryOffset  MemoryOffset
+	memorySize    MemorySize
+	parameterType dtype.Type
+}
+
+func (c *CustomTypeVariantField) MemoryOffset() MemoryOffset {
+	return c.memoryOffset
+}
+
+func (c *CustomTypeVariantField) MemorySize() MemorySize {
+	return c.memorySize
+}
+
+func (c *CustomTypeVariantField) Type() dtype.Type {
+	return c.parameterType
+}
+
 type CustomTypeVariant struct {
 	index                int
 	astCustomTypeVariant *ast.CustomTypeVariant
 	parameterTypes       []dtype.Type
+	parameterFields      []*CustomTypeVariantField
 	parent               dtype.Type
 	inCustomType         *CustomTypeAtom
 	references           []*CustomTypeVariantReference
+	debugMemorySize      MemorySize
+	debugMemoryAlign     MemoryAlign
 }
 
 func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant, parameterTypes []dtype.Type) *CustomTypeVariant {
@@ -28,7 +50,57 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 			panic("paramtype is nil")
 		}
 	}
-	return &CustomTypeVariant{index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes}
+
+	var fields []*CustomTypeVariantField
+
+	pos := MemoryOffset(1) // Leave room for the custom type identifier
+	var biggestMemoryAlign MemoryAlign
+	for index, paramType := range parameterTypes {
+		if paramType == nil {
+			panic("paramtype is nil")
+		}
+
+		_, wasLocalType := paramType.(*LocalType)
+		var memorySize MemorySize
+		var memoryAlign MemoryAlign
+
+		if wasLocalType {
+			memorySize = 0
+			memoryAlign = 0
+		} else {
+			memorySize, memoryAlign = GetMemorySizeAndAlignment(paramType)
+			rest := pos % MemoryOffset(memoryAlign)
+			if rest != 0 {
+				pos += MemoryOffset(uint(memoryAlign) - uint(rest))
+			}
+		}
+
+		if memoryAlign > biggestMemoryAlign {
+			biggestMemoryAlign = memoryAlign
+		}
+
+		field := &CustomTypeVariantField{
+			index:         uint(index),
+			memoryOffset:  pos,
+			memorySize:    memorySize,
+			parameterType: paramType,
+		}
+
+		pos += MemoryOffset(memorySize)
+
+		fields = append(fields, field)
+	}
+	if biggestMemoryAlign > 0 {
+		rest := pos % MemoryOffset(biggestMemoryAlign)
+		if rest != 0 {
+			pos += MemoryOffset(uint(biggestMemoryAlign) - uint(rest))
+		}
+	}
+
+	return &CustomTypeVariant{
+		index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes,
+		parameterFields: fields, debugMemorySize: MemorySize(pos), debugMemoryAlign: biggestMemoryAlign,
+	}
 }
 
 func (s *CustomTypeVariant) AttachToCustomType(c *CustomTypeAtom) {
@@ -46,6 +118,10 @@ func (s *CustomTypeVariant) AstCustomTypeVariant() *ast.CustomTypeVariant {
 
 func (s *CustomTypeVariant) FetchPositionLength() token.SourceFileReference {
 	return s.astCustomTypeVariant.FetchPositionLength()
+}
+
+func (s *CustomTypeVariant) Fields() []*CustomTypeVariantField {
+	return s.parameterFields
 }
 
 func (s *CustomTypeVariant) InCustomType() *CustomTypeAtom {

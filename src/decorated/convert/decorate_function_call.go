@@ -112,9 +112,7 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 		return decorated.NewCurryFunction(call, curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions), nil
 	}
 
-	returnType := completeCalledFunctionType.ReturnType()
-
-	return decorated.NewFunctionCall(call, functionValueExpression, returnType, decoratedEncounteredArgumentExpressions), nil
+	return decorated.NewFunctionCall(call, functionValueExpression, completeCalledFunctionType, decoratedEncounteredArgumentExpressions), nil
 }
 
 func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {

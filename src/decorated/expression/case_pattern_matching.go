@@ -77,6 +77,10 @@ func (i *CaseForPatternMatching) Type() dtype.Type {
 	return firstCase.Expression().Type()
 }
 
+func (i *CaseForPatternMatching) ComparisonType() dtype.Type {
+	return i.test.Type()
+}
+
 func (i *CaseForPatternMatching) AstCasePatternMatching() *ast.CaseForPatternMatching {
 	return i.astCase
 }

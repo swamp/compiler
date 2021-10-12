@@ -20,6 +20,16 @@ type RecordAtom struct {
 	sortedFields      []*RecordField
 	genericTypes      []dtype.Type
 	record            *ast.Record
+	memorySize        MemorySize
+	memoryAlign       MemoryAlign
+}
+
+func (s *RecordAtom) MemorySize() MemorySize {
+	return s.memorySize
+}
+
+func (s *RecordAtom) MemoryAlignment() MemoryAlign {
+	return s.memoryAlign
 }
 
 func (s *RecordAtom) GenericTypes() []dtype.Type {
@@ -50,6 +60,110 @@ func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
 	return s.record.FetchPositionLength()
 }
 
+const (
+	Sizeof64BitPointer  MemorySize  = 8
+	Alignof64BitPointer MemoryAlign = 8
+	SizeofSwampInt      MemorySize  = 4
+	SizeofSwampRune     MemorySize  = 4
+	SizeofSwampBool     MemorySize  = 1
+
+	AlignOfSwampBool = MemoryAlign(SizeofSwampBool)
+	AlignOfSwampRune = MemoryAlign(SizeofSwampRune)
+	AlignOfSwampInt  = MemoryAlign(SizeofSwampInt)
+)
+
+func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
+	if p == nil {
+		panic(fmt.Errorf("nil is not allowed"))
+	}
+	unaliased := UnaliasWithResolveInvoker(p)
+	switch t := unaliased.(type) {
+	case *RecordAtom:
+		return t.MemorySize(), t.MemoryAlignment()
+	case *PrimitiveAtom:
+		{
+			name := t.PrimitiveName().Name()
+			switch name {
+			case "List":
+				return Sizeof64BitPointer, Alignof64BitPointer
+			case "Array":
+				return Sizeof64BitPointer, Alignof64BitPointer
+			case "Blob":
+				return Sizeof64BitPointer, Alignof64BitPointer
+			case "Bool":
+				return SizeofSwampBool, AlignOfSwampBool
+			case "Int":
+				return SizeofSwampInt, AlignOfSwampInt
+			case "Fixed":
+				return SizeofSwampInt, AlignOfSwampInt
+			case "ResourceName": // Resource names are translated to integers
+				return SizeofSwampInt, AlignOfSwampInt
+			case "TypeRef":
+				return SizeofSwampInt, AlignOfSwampInt
+			case "Char":
+				return SizeofSwampInt, AlignOfSwampInt
+			case "String":
+				return Sizeof64BitPointer, Alignof64BitPointer
+			case "Any":
+				return Sizeof64BitPointer, Alignof64BitPointer
+			}
+			panic(fmt.Errorf("do not know primitive atom of '%s' %v %T", name, p, unaliased))
+		}
+	case *CustomTypeAtom:
+		return t.MemorySize(), t.MemoryAlignment()
+	case *CustomTypeVariant:
+		return t.debugMemorySize, t.debugMemoryAlign
+	case *FunctionAtom:
+		return Sizeof64BitPointer, Alignof64BitPointer
+	case *UnmanagedType:
+		return Sizeof64BitPointer, Alignof64BitPointer
+	case *TupleTypeAtom:
+		return t.MemorySize(), t.MemoryAlignment()
+	case *LocalType:
+		return 0, 0
+	default:
+		panic(fmt.Errorf("calc: do not know memory size of %v %T", p, unaliased))
+	}
+	panic(fmt.Errorf("calcsize: do not know memory size of %v %T", p, unaliased))
+}
+
+func GetMemorySizeAndAlignment(p dtype.Type) (MemorySize, MemoryAlign) {
+	memorySize, memoryAlign := GetMemorySizeAndAlignmentInternal(p)
+	if memorySize == 0 || memoryAlign == 0 {
+		panic(fmt.Errorf("can not be correct size and align %T %v", p, p))
+	}
+
+	return memorySize, memoryAlign
+}
+
+func calculateFieldOffsetsAndRecordMemorySizeAndAlign(fields []*RecordField) (MemorySize, MemoryAlign) {
+	offset := MemoryOffset(0)
+	maxMemoryAlign := MemoryAlign(0)
+
+	for _, field := range fields {
+		memorySize, memoryAlign := GetMemorySizeAndAlignment(field.fieldType)
+		rest := MemoryAlign(uint32(offset) % uint32(memoryAlign))
+		if rest != 0 {
+			offset += MemoryOffset(memoryAlign - rest)
+		}
+		if memoryAlign > maxMemoryAlign {
+			maxMemoryAlign = memoryAlign
+		}
+
+		field.memoryOffset = offset
+		field.memorySize = memorySize
+
+		offset += MemoryOffset(memorySize)
+	}
+
+	rest := MemoryAlign(uint32(offset) % uint32(maxMemoryAlign))
+	if rest != 0 {
+		offset += MemoryOffset(maxMemoryAlign - rest)
+	}
+
+	return MemorySize(offset), maxMemoryAlign
+}
+
 type ByFieldName []*RecordField
 
 func (a ByFieldName) Len() int           { return len(a) }
@@ -71,9 +185,12 @@ func NewRecordType(info *ast.Record, fields []*RecordField, genericTypes []dtype
 		nameToField[name] = field
 	}
 
+	memorySize, memoryAlign := calculateFieldOffsetsAndRecordMemorySizeAndAlign(sortedFields)
+
 	return &RecordAtom{
 		sortedFields: sortedFields, record: info, parsedOrderFields: fields,
 		nameToField: nameToField, genericTypes: genericTypes,
+		memorySize: memorySize, memoryAlign: memoryAlign,
 	}
 }
 

@@ -19,6 +19,7 @@ type ModuleDef interface {
 	OwnedByModule() *Module
 	WasReferenced() bool
 	IsInternal() bool
+	IsExternal() bool
 }
 
 type ModuleDefinition struct {
@@ -31,6 +32,12 @@ type ModuleDefinition struct {
 func NewModuleDefinition(createdIn *ModuleDefinitions, identifier *ast.VariableIdentifier, expr Expression) *ModuleDefinition {
 	return &ModuleDefinition{
 		createdIn: createdIn, localIdentifier: identifier, expr: expr,
+	}
+}
+
+func NewModuleDefinitionExternal(createdIn *ModuleDefinitions, identifier *ast.VariableIdentifier) *ModuleDefinition {
+	return &ModuleDefinition{
+		createdIn: createdIn, localIdentifier: identifier, expr: nil,
 	}
 }
 
@@ -63,6 +70,10 @@ func (d *ModuleDefinition) Expression() Expression {
 
 func (d *ModuleDefinition) IsInternal() bool {
 	return d.OwnedByModule().IsInternal()
+}
+
+func (d *ModuleDefinition) IsExternal() bool {
+	return d.expr == nil
 }
 
 func (d *ModuleDefinition) MarkAsReferenced() {

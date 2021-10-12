@@ -486,8 +486,6 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:
 		return append(tokens, expandChildNodesRecordLookups(t)...)
-	case *AsmConstant:
-		return tokens
 	case *dectype.LocalType:
 		return tokens
 	case *dectype.AnyMatchingTypes:

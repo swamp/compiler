@@ -45,7 +45,27 @@ func decorateConstant(d DecorateStream, nameIdent *ast.VariableIdentifier, astCo
 	return decorated.NewConstant(nameIdent, astConstant, decoratedExpression, localCommentBlock), nil
 }
 
-func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier, functionValue *ast.FunctionValue, expectedType dtype.Type, annotation *decorated.AnnotationStatement, localCommentBlock *ast.MultilineComment) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
+func convertAnnotationToFunctionValue(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier,
+	functionValue *ast.FunctionValue, expectedType dtype.Type, annotation *decorated.AnnotationStatement,
+	localCommentBlock *ast.MultilineComment) (*decorated.FunctionValue, decshared.DecoratedError) {
+	foundFunctionType := DerefFunctionType(annotation.Type())
+	if foundFunctionType == nil {
+		return nil, decorated.NewExpectedFunctionType(expectedType, functionValue)
+	}
+
+	decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, functionValue, foundFunctionType, nameIdent, context, localCommentBlock)
+	if decoratedFunctionErr != nil {
+		return nil, decoratedFunctionErr
+	}
+
+	d.AddDefinition(nameIdent, decoratedFunction)
+
+	return decoratedFunction, nil
+}
+
+func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, nameIdent *ast.VariableIdentifier,
+	functionValue *ast.FunctionValue, expectedType dtype.Type, annotation *decorated.AnnotationStatement,
+	localCommentBlock *ast.MultilineComment) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 	name := nameIdent.Name()
 	localName := name
 	verboseFlag := false
@@ -57,23 +77,10 @@ func decorateNamedFunctionValue(d DecorateStream, context *VariableContext, name
 		return nil, decorated.NewInternalError(err)
 	}
 
-	var decoratedExpression decorated.Expression
-
-	foundFunctionType := DerefFunctionType(annotation.Type())
-	if foundFunctionType == nil {
-		return nil, decorated.NewExpectedFunctionType(expectedType, functionValue)
+	decoratedFunctionValue, err := convertAnnotationToFunctionValue(d, context, nameIdent, functionValue, expectedType, annotation, localCommentBlock)
+	if err != nil {
+		return nil, err
 	}
 
-	decoratedFunction, decoratedFunctionErr := DecorateFunctionValue(d, annotation, functionValue, foundFunctionType, nameIdent, context, localCommentBlock)
-	if decoratedFunctionErr != nil {
-		return nil, decoratedFunctionErr
-	}
-
-	verboseFlag = false
-	if verboseFlag {
-		fmt.Printf(">>>>>>>>>>>>>> %v = %v\n", localName, decoratedExpression)
-	}
-	d.AddDefinition(nameIdent, decoratedFunction)
-
-	return decorated.NewNamedFunctionValue(nameIdent, decoratedFunction), nil
+	return decorated.NewNamedFunctionValue(nameIdent, decoratedFunctionValue), nil
 }
