@@ -35,6 +35,8 @@ func generateFixedLiteral(code *assembler_sp.Code, target assembler_sp.TargetSta
 
 func generateResourceNameLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	resourceName *decorated.ResourceNameLiteral, context *assembler_sp.PackageConstants) error {
+	constant := context.AllocateResourceNameConstant(resourceName.Value())
+	code.LoadInteger(target.Pos, int32(constant.ResourceID()))
 	return nil
 }
 

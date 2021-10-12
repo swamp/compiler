@@ -325,6 +325,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		typeInformationChunk.DebugOutput()
 	}
 
+	constants.Finalize()
 	dynamicMemoryOctets := constants.DynamicMemory().Octets()
 
 	packed, packedErr := generate_sp.Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)

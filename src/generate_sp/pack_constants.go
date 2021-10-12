@@ -18,6 +18,7 @@ func PackLedger(constants []*assembler_sp.Constant) ([]byte, error) {
 	}
 
 	var entryOctets [8]byte
+
 	binary.LittleEndian.PutUint32(entryOctets[0:4], uint32(0))
 	binary.LittleEndian.PutUint32(entryOctets[4:8], uint32(0))
 	octets = append(octets, entryOctets[:]...)

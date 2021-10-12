@@ -17,13 +17,15 @@ const (
 	ConstantTypeResourceName
 	ConstantTypeFunction
 	ConstantTypeFunctionExternal
+	ConstantTypeResourceNameChunk
 )
 
 type Constant struct {
-	constantType ConstantType
-	str          string
-	source       SourceDynamicMemoryPosRange
-	debugString  string
+	constantType   ConstantType
+	str            string
+	source         SourceDynamicMemoryPosRange
+	debugString    string
+	resourceNameId uint
 }
 
 func (v *Constant) ConstantType() ConstantType {
@@ -38,6 +40,10 @@ func (v *Constant) PosRange() SourceDynamicMemoryPosRange {
 	return v.source
 }
 
+func (v *Constant) ResourceID() uint {
+	return v.resourceNameId
+}
+
 func (v *Constant) FunctionReferenceFullyQualifiedName() string {
 	return v.str
 }
@@ -46,8 +52,8 @@ func NewStringConstant(debugString string, str string, source SourceDynamicMemor
 	return &Constant{constantType: ConstantTypeString, str: str, source: source, debugString: debugString}
 }
 
-func NewResourceNameConstant(debugString string, str string, source SourceDynamicMemoryPosRange) *Constant {
-	return &Constant{constantType: ConstantTypeResourceName, str: str, source: source, debugString: debugString}
+func NewResourceNameConstant(resourceNameId uint, str string, source SourceDynamicMemoryPosRange) *Constant {
+	return &Constant{constantType: ConstantTypeResourceName, str: str, source: source, debugString: "resourceName:" + str, resourceNameId: resourceNameId}
 }
 
 func NewFunctionReferenceConstantWithDebug(debugString string, uniqueFullyQualifiedName string, source SourceDynamicMemoryPosRange) *Constant {

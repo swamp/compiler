@@ -10,11 +10,13 @@ import (
 )
 
 type PackageConstants struct {
-	constants         []*Constant
-	functions         []*Constant
-	externalFunctions []*Constant
-	strings           []*Constant
-	dynamicMapper     *DynamicMemoryMapper
+	constants             []*Constant
+	functions             []*Constant
+	externalFunctions     []*Constant
+	strings               []*Constant
+	resourceNames         []*Constant
+	dynamicMapper         *DynamicMemoryMapper
+	someConstantIDCounter uint
 }
 
 func NewPackageConstants() *PackageConstants {
@@ -36,6 +38,30 @@ func (c *PackageConstants) String() string {
 
 func (c *PackageConstants) Constants() []*Constant {
 	return c.constants
+}
+
+func (c *PackageConstants) Finalize() {
+	if len(c.resourceNames) == 0 {
+		return
+	}
+	pointerArea := c.dynamicMapper.Allocate(uint(int(dectype.Sizeof64BitPointer)*len(c.resourceNames)), uint32(dectype.Alignof64BitPointer), "Resource name chunk")
+	for index, resourceName := range c.resourceNames {
+		writePosition := pointerArea.Position + SourceDynamicMemoryPos(index*int(dectype.Sizeof64BitPointer))
+		binary.LittleEndian.PutUint64(c.dynamicMapper.memory[writePosition:writePosition+SourceDynamicMemoryPos(dectype.Sizeof64BitPointer)], uint64(resourceName.PosRange().Position))
+	}
+
+	var resourceNameChunkOctets [16]byte
+	binary.LittleEndian.PutUint64(resourceNameChunkOctets[0:8], uint64(pointerArea.Position))
+	binary.LittleEndian.PutUint64(resourceNameChunkOctets[8:16], uint64(len(c.resourceNames)))
+	resourceNameChunkPointer := c.dynamicMapper.Write(resourceNameChunkOctets[:], "ResourceNameChunk struct (character-pointer-pointer, resourceNameCount)")
+
+	c.constants = append(c.constants, &Constant{
+		constantType:   ConstantTypeResourceNameChunk,
+		str:            "",
+		source:         resourceNameChunkPointer,
+		debugString:    "resource name chunk",
+		resourceNameId: 0,
+	})
 }
 
 func (c *PackageConstants) DynamicMemory() *DynamicMemoryMapper {
@@ -74,31 +100,22 @@ func (c *PackageConstants) AllocateStringConstant(s string) *Constant {
 	return newConstant
 }
 
-func intValue(memory *DynamicMemoryMapper, pos SourceDynamicMemoryPos) int32 {
-	posRange := SourceDynamicMemoryPosRange{
-		Position: pos,
-		Size:     4,
-	}
-	return int32(binary.LittleEndian.Uint32(memory.Read(posRange)))
-}
-
-/*
-func (c *PackageConstants) AllocateResourceNameConstant(name string) *Constant {
-	for _, constant := range c.constants {
-		if constant.constantType == ConstantTypeResourceName {
-			if constant.str == name {
-				return constant
-			}
+func (c *PackageConstants) AllocateResourceNameConstant(s string) *Constant {
+	for _, resourceNameConstant := range c.resourceNames {
+		if resourceNameConstant.str == s {
+			return resourceNameConstant
 		}
 	}
+
+	stringOctetsPointer := c.AllocateStringOctets(s)
+
+	newConstant := NewResourceNameConstant(c.someConstantIDCounter, s, stringOctetsPointer)
 	c.someConstantIDCounter++
-	newConstant := NewResourceNameConstant(c.someConstantIDCounter, name)
 	c.constants = append(c.constants, newConstant)
+	c.resourceNames = append(c.resourceNames, newConstant)
 
 	return newConstant
 }
-
-*/
 
 const (
 	SizeofSwampFunc         = 9 * 8

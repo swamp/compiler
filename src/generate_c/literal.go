@@ -12,6 +12,11 @@ func generateIntLiteral(integer *decorated.IntegerLiteral, writer io.Writer, ind
 	return nil
 }
 
+func generateFixedLiteral(integer *decorated.FixedLiteral, writer io.Writer, indentation int) error {
+	fmt.Fprintf(writer, "%d", integer.Value())
+	return nil
+}
+
 func generateStringLiteral(str *decorated.StringLiteral, writer io.Writer, indentation int) error {
 	fmt.Fprintf(writer, "\"%s\"", str.Value())
 	return nil

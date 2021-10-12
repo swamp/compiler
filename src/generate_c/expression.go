@@ -68,12 +68,12 @@ func generateExpression(expr decorated.Expression, writer io.Writer, returnPrefi
 		return generateStringLiteral(e, writer, indentation)
 	case *decorated.IntegerLiteral:
 		return generateIntLiteral(e, writer, indentation)
+	case *decorated.FixedLiteral:
+		return generateFixedLiteral(e, writer, indentation)
 		/*
-			case *decorated.FixedLiteral:
-				return generateFixedLiteral(code, target, e)
-
 			case *decorated.ResourceNameLiteral:
 				return generateResourceNameLiteral(code, target, e, genContext.context.Constants())
+
 		*/
 	case *decorated.BooleanLiteral:
 		return generateBoolLiteral(e, writer, indentation)

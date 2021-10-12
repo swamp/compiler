@@ -49,7 +49,7 @@ func writeTypeInfo(writer io.Writer, payload []byte) error {
 	return writeChunkHeader(writer, packetIcon, name, payload)
 }
 
-func writeDynamicMemory(writer io.Writer, payload []byte) error {
+func writeConstantMemory(writer io.Writer, payload []byte) error {
 	name := raff.FourOctets{'d', 'm', 'e', '0'}
 	packetIcon := raff.FourOctets{0xF0, 0x9F, 0x92, 0xBB}
 	return writeChunkHeader(writer, packetIcon, name, payload)
@@ -61,7 +61,7 @@ func writeLedger(writer io.Writer, payload []byte) error {
 	return writeChunkHeader(writer, packetIcon, name, payload)
 }
 
-func Pack(ledger []byte, dynamicMemory []byte, typeInfo []byte) ([]byte, error) {
+func Pack(ledger []byte, constantMemory []byte, typeInfo []byte) ([]byte, error) {
 	var buf bytes.Buffer
 
 	if err := raff.WriteHeader(&buf); err != nil {
@@ -76,7 +76,7 @@ func Pack(ledger []byte, dynamicMemory []byte, typeInfo []byte) ([]byte, error) 
 		return nil, writeErr
 	}
 
-	if writeErr := writeDynamicMemory(&buf, dynamicMemory); writeErr != nil {
+	if writeErr := writeConstantMemory(&buf, constantMemory); writeErr != nil {
 		return nil, writeErr
 	}
 

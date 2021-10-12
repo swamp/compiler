@@ -96,13 +96,13 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 				return SizeofSwampInt, AlignOfSwampInt
 			case "Fixed":
 				return SizeofSwampInt, AlignOfSwampInt
+			case "ResourceName": // Resource names are translated to integers
+				return SizeofSwampInt, AlignOfSwampInt
 			case "TypeRef":
 				return SizeofSwampInt, AlignOfSwampInt
 			case "Char":
 				return SizeofSwampInt, AlignOfSwampInt
 			case "String":
-				return Sizeof64BitPointer, Alignof64BitPointer
-			case "ResourceName":
 				return Sizeof64BitPointer, Alignof64BitPointer
 			case "Any":
 				return Sizeof64BitPointer, Alignof64BitPointer
