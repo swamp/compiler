@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 	"path/filepath"
+	"strings"
 
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -88,10 +88,14 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 		}
 
 		rootNamespace := dectype.MakePackageRootModuleNameFromString(packageRootModuleNameString)
+		dependencyFilePrefix = filepath.ToSlash(dependencyFilePrefix)
 		if !file.IsDir(dependencyFilePrefix) {
-			full, _ := filepath.Abs(dependencyFilePrefix)
+			full, err := filepath.Abs(dependencyFilePrefix)
+			if err != nil {
+				return decorated.NewInternalError(fmt.Errorf("could not do abs of '%w'", err))
+			}
 			full = filepath.ToSlash(full)
-			return decorated.NewInternalError(fmt.Errorf("could not find directory '%v' '%v' ('%v' '%v')", full, dependencyFilePrefix, swampDirectory, packagePath))
+			return decorated.NewInternalError(fmt.Errorf("could not find slashed directory '%v' '%v' ('%v' '%v')", full, dependencyFilePrefix, swampDirectory, packagePath))
 		}
 		_, moduleErr := r.ReadLibraryModule(ModuleTypeFromMapped(packagePath.Mapped), world, repository, dependencyFilePrefix, rootNamespace, documentProvider, configuration)
 		if moduleErr != nil {

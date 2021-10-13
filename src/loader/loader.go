@@ -44,6 +44,7 @@ func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verb
 		return "", "", decorated.NewInternalError(fmt.Errorf("loader wants relative paths, can not use absolute ones '%s'", relativeModuleName))
 	}
 	fullPath := path.Join(l.rootPath, relativePath)
+	fullPath = filepath.ToSlash(fullPath)
 	completeFilename, completeFilenameErr := filepath.Abs(fullPath)
 	if completeFilenameErr != nil {
 		return "", "", decorated.NewInternalError(completeFilenameErr)

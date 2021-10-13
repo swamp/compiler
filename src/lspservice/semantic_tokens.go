@@ -1003,8 +1003,11 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticToken(&t.BinaryOperator, builder)
 	case *decorated.PipeLeftOperator:
 		return addSemanticToken(&t.BinaryOperator, builder)
-	case *decorated.PipeRightOperator:
-		return addSemanticToken(&t.BinaryOperator, builder)
+	case *decorated.PipeRightOperator: // TODO: must do a proper implementation of pipe right
+		{
+			addSemanticToken(t.BinaryOperator.Right(), builder)
+			addSemanticToken(t.BinaryOperator.Left(), builder)
+		}
 	case *decorated.BitwiseOperator:
 		return addSemanticToken(&t.BinaryOperator, builder)
 	case *decorated.BooleanOperator:
