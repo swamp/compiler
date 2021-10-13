@@ -806,9 +806,11 @@ func addSemanticTokenNamedDefinitionReference(named *decorated.NamedDefinitionRe
 }
 
 func addSemanticTokenFunctionReference(functionReference *decorated.FunctionReference, builder *SemanticBuilder) error {
-	if err := addSemanticTokenNamedDefinitionReference(functionReference.NameReference(), builder); err != nil {
-		return err
-	}
+	/*
+		if err := addSemanticTokenNamedDefinitionReference(functionReference.NameReference(), builder); err != nil {
+			return err
+		}
+	*/
 
 	if err := builder.EncodeSymbol(functionReference.Identifier().FetchPositionLength().Range, "function", nil); err != nil {
 		return err
