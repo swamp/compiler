@@ -180,10 +180,11 @@ func (s *CustomTypeAtom) IsVariantEqual(otherVariant *CustomTypeVariant) error {
 			for index, variantParam := range variant.parameterTypes {
 				otherParam := otherVariant.parameterTypes[index]
 				compatibleErr := CompatibleTypes(variantParam, otherParam)
-				if compatibleErr == nil {
-					return nil
+				if compatibleErr != nil {
+					return compatibleErr
 				}
 			}
+			return nil
 		}
 	}
 
@@ -201,7 +202,7 @@ func (u *CustomTypeAtom) IsEqual(other_ dtype.Atom) error {
 	}
 	for index, variant := range u.variants {
 		otherParam := otherParams[index]
-		if variant.Name() != otherParam.Name() {
+		if variant.Name().Name() != otherParam.Name().Name() {
 			return fmt.Errorf("not same variants %v %v", variant, otherParam)
 		}
 		types := variant.ParameterTypes()
@@ -212,7 +213,7 @@ func (u *CustomTypeAtom) IsEqual(other_ dtype.Atom) error {
 
 		for index, resolveType := range types {
 			if err := CompatibleTypes(resolveType, otherTypes[index]); err != nil {
-				return err
+				return fmt.Errorf("wrong in custom type '%s' variant: '%s' parameter:\n%v\nvs\n%v\n%w", u.Name(), variant.Name().Name(), resolveType, otherTypes[index], err)
 			}
 		}
 	}

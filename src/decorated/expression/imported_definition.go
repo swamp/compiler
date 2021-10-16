@@ -22,6 +22,9 @@ func NewImportedDefinition(createdBy *ImportedModule, identifier *ast.VariableId
 	if referencedDefinition == nil {
 		panic("not allowed")
 	}
+	if createdBy == nil {
+		// panic("need createdBy")
+	}
 	return &ImportedDefinition{
 		createdBy: createdBy, localIdentifier: identifier, referencedDefinition: referencedDefinition,
 	}

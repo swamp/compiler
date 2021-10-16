@@ -28,13 +28,22 @@ type UnusedImportWarning struct {
 }
 
 func NewUnusedImportWarning(definition *ImportedModule, description string) *UnusedImportWarning {
+	if definition == nil {
+		//		panic("must have definition")
+	}
 	return &UnusedImportWarning{definition: definition, description: description}
 }
 
 func (e *UnusedImportWarning) Warning() string {
+	if e.definition == nil {
+		return fmt.Sprintf("unused import (%v)", e.description)
+	}
 	return fmt.Sprintf("unused import %v (%v)", e.definition.ModuleName().ModuleName(), e.description)
 }
 
 func (e *UnusedImportWarning) FetchPositionLength() token.SourceFileReference {
+	if e.definition == nil {
+		return token.SourceFileReference{}
+	}
 	return e.definition.ModuleName().FetchPositionLength()
 }
