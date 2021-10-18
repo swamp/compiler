@@ -31,6 +31,7 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 	if expression == nil {
 		panic("reference from variable can not be nil")
 	}
+	//log.Printf("checking variable-like '%v'\n", name)
 	switch t := expression.(type) {
 	case *decorated.FunctionValue:
 		var moduleRef *decorated.ModuleReference
@@ -48,14 +49,19 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 		}
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
+		//log.Printf("was function value '%v'\n", nameWithModuleRef)
 		return functionReference, nil
 	case *decorated.FunctionParameterDefinition:
+		//log.Printf("was parameter definition '%v'\n", name)
 		return decorated.NewFunctionParameterReference(name, t), nil
 	case *decorated.LetVariable:
+		//log.Printf("was let variable '%v'\n", name)
 		return decorated.NewLetVariableReference(name, t), nil
 	case *decorated.CaseConsequenceParameterForCustomType:
+		//log.Printf("was case consequence '%v'\n", name)
 		return decorated.NewCaseConsequenceParameterReference(name, t), nil
 	case *decorated.Constant:
+		//log.Printf("was constant '%v'\n", name)
 		var moduleRef *decorated.ModuleReference
 		scoped, wasScoped := name.(*ast.VariableIdentifierScoped)
 		if wasScoped {
@@ -64,6 +70,7 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
 		return decorated.NewConstantReference(nameWithModuleRef, t), nil
 	default:
+		log.Printf("NO IDEA '%v'\n", name)
 		return nil, decorated.NewInternalError(fmt.Errorf("what to do with '%v' => %T", name, t))
 	}
 }
@@ -71,6 +78,7 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression, decshared.DecoratedError) {
 	def := c.FindNamedDecoratedExpression(name)
 	if def == nil {
+		log.Printf("tried to resolve variable %v in %v\n", name, c)
 		return nil, decorated.NewUnknownVariable(name)
 	}
 

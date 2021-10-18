@@ -54,6 +54,16 @@ func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expre
 			return nil, identifiersErr
 		}
 
+		for _, checkIdentifier := range identifiers {
+			for _, existingAssignment := range assignments {
+				for _, existingIdentifier := range existingAssignment.Identifiers() {
+					if checkIdentifier.Name() == existingIdentifier.Name() {
+						return nil, parerr.NewExpectedUniqueLetIdentifier(checkIdentifier.FetchPositionLength())
+					}
+				}
+			}
+		}
+
 		if expectedAssignErr := p.eatAssign(); expectedAssignErr != nil {
 			return nil, expectedAssignErr
 		}

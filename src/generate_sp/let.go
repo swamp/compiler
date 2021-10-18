@@ -16,7 +16,9 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 
 		if len(assignment.LetVariables()) == 1 {
 			firstVar := assignment.LetVariables()[0]
-			genContext.context.scopeVariables.DefineVariable(firstVar.Name().Name(), sourceVar)
+			if err := genContext.context.scopeVariables.DefineVariable(firstVar.Name().Name(), sourceVar); err != nil {
+				return err
+			}
 		} else {
 			tupleType := assignment.Expression().Type().(*dectype.TupleTypeAtom)
 			for index, tupleField := range tupleType.Fields() {
@@ -26,7 +28,9 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 					Size: assembler_sp.SourceStackRange(tupleField.MemorySize()),
 				}
 
-				genContext.context.scopeVariables.DefineVariable(variable.Name().Name(), fieldSourcePosRange)
+				if err := genContext.context.scopeVariables.DefineVariable(variable.Name().Name(), fieldSourcePosRange); err != nil {
+					return err
+				}
 			}
 		}
 	}

@@ -17,18 +17,20 @@ func NewFunctionVariablesWithParent(parent *ScopeVariables) *ScopeVariables {
 	return &ScopeVariables{nameToVariable: make(map[string]*VariableImpl), parent: parent}
 }
 
-func (c *ScopeVariables) DefineVariable(name string, posRange SourceStackPosRange) {
+func (c *ScopeVariables) DefineVariable(name string, posRange SourceStackPosRange) error {
 	if uint(posRange.Size) == 0 {
-		panic(fmt.Errorf("octet size zero is not allowed for allocate stack memory"))
+		return fmt.Errorf("octet size zero is not allowed for allocate stack memory")
 	}
 	_, alreadyHas := c.nameToVariable[name]
 	if alreadyHas {
-		panic("cannot define variable again")
+		return fmt.Errorf("cannot define variable again '%s'", name)
 	}
 
 	v := NewVariable(VariableName(name), posRange)
 
 	c.nameToVariable[name] = v
+
+	return nil
 }
 
 func (c *ScopeVariables) FindVariable(name string) (SourceStackPosRange, error) {

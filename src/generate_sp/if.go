@@ -42,3 +42,14 @@ func generateIf(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange
 
 	return nil
 }
+
+func handleIf(code *assembler_sp.Code, guardExpr *decorated.If,
+	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	targetPosRange := allocMemoryForType(genContext.context.stackMemory, guardExpr.Type(), "if target")
+
+	if err := generateIf(code, targetPosRange, guardExpr, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(targetPosRange), nil
+}

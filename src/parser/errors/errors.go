@@ -456,6 +456,22 @@ func (e ExpectedInKeyword) FetchPositionLength() token.SourceFileReference {
 	return e.sourceReference
 }
 
+type ExpectedUniqueLetIdentifier struct {
+	sourceReference token.SourceFileReference
+}
+
+func NewExpectedUniqueLetIdentifier(sourceReference token.SourceFileReference) ExpectedUniqueLetIdentifier {
+	return ExpectedUniqueLetIdentifier{sourceReference: sourceReference}
+}
+
+func (e ExpectedUniqueLetIdentifier) Error() string {
+	return fmt.Sprintf("expected unique let identifier %v", e.sourceReference)
+}
+
+func (e ExpectedUniqueLetIdentifier) FetchPositionLength() token.SourceFileReference {
+	return e.sourceReference
+}
+
 type MissingElseExpression struct {
 	other ParseError
 }

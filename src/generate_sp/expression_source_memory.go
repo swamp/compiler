@@ -94,6 +94,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handlePipeRight(code, t, genContext)
 	case *decorated.Guard:
 		return handleGuard(code, t, genContext)
+	case *decorated.If:
+		return handleIf(code, t, genContext)
 	}
 
 	panic(fmt.Errorf("generate_sp_withSource: unknown node %T %v %v", expr, expr, genContext))

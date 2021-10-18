@@ -119,7 +119,7 @@ func (c *PackageConstants) AllocateResourceNameConstant(s string) *Constant {
 
 const (
 	SizeofSwampFunc         = 9 * 8
-	SizeofSwampExternalFunc = 17 * 8
+	SizeofSwampExternalFunc = 18 * 8
 )
 
 func (c *PackageConstants) AllocateFunctionStruct(uniqueFullyQualifiedFunctionName string,

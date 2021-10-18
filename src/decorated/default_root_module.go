@@ -183,7 +183,12 @@ __externalfn indexedMap : (Int -> Int -> Int) -> Blob -> Blob
 __externalvarfn filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
 __externalfn toString2d : { width : Int, height : Int } -> Blob -> String
 __externalfn get2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Maybe Int
+__externalfn slice2d : { x : Int, y : Int } -> { width : Int, height : Int } -> { width : Int, height : Int } -> Blob -> Blob
+__externalfn fill2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Int -> { width : Int, height : Int } -> Blob -> Blob
+__externalfn member : Int -> Blob -> Bool
+__externalfn any : (Int -> Bool) -> Blob -> Bool
 __externalfn fromArray : Array Int -> Blob
+__externalfn make : Int -> Blob
 -- __externalfn isEmpty : Blob -> Bool
 -- __externalfn fromList : List Int -> Blob
 -- __externalfn toList : Blob -> List Int

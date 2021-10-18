@@ -6,11 +6,14 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func allocateVariable(scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName string, variableType dtype.Type) assembler_sp.SourceStackPosRange {
+func allocateVariable(scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName string, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
 	targetPosRange := allocMemoryForType(stackMemory, variableType, "variable:"+variableName)
 	sourcePosRange := targetToSourceStackPosRange(targetPosRange)
-	scopeVariables.DefineVariable(variableName, sourcePosRange)
-	return sourcePosRange
+	if err := scopeVariables.DefineVariable(variableName, sourcePosRange); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return sourcePosRange, nil
 }
 
 func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, caseExpr *decorated.CaseCustomType, genContext *generateContext) error {
@@ -37,7 +40,9 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 				Pos:  assembler_sp.SourceStackPos(uint(testVar.Pos) + uint(field.MemoryOffset())),
 				Size: assembler_sp.SourceStackRange(field.MemorySize()),
 			}
-			consequenceContext.context.scopeVariables.DefineVariable(consequenceLabelVariableName, paramVariable)
+			if err := consequenceContext.context.scopeVariables.DefineVariable(consequenceLabelVariableName, paramVariable); err != nil {
+				return err
+			}
 		}
 
 		labelVariableName := assembler_sp.VariableName(
