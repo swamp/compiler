@@ -38,7 +38,6 @@ func MakeDocumentURIFromLocalPath(s string) DocumentURI {
 	return DocumentURI(u.String())
 }
 
-
 func isWindowsDrivePrefix(path string) bool {
 	if len(path) < 3 {
 		return false
@@ -61,13 +60,13 @@ func (s DocumentURI) ToLocalFilePath() (string, error) {
 
 	if fullUrl.Scheme != "file" {
 		panic("must have file prefix")
-	} 
+	}
 
 	pathOnly := fullUrl.Path
 
 	if isWindowsDriveURI(pathOnly) {
 		pathOnly = strings.ToUpper(string(fullUrl.Path[1])) + fullUrl.Path[2:]
-	}	
+	}
 
 	return pathOnly, nil
 }
@@ -97,7 +96,6 @@ func MakeSourceFileDocumentFromLocalPath(localPath string) *SourceFileDocument {
 	return MakeSourceFileDocumentFromURI(MakeDocumentURIFromLocalPath(localPath))
 }
 
-
 func MakeSourceFileDocumentFromURI(uri DocumentURI) *SourceFileDocument {
 	return &SourceFileDocument{
 		uri,
@@ -116,7 +114,9 @@ func (s SourceFileReference) ToCompleteReferenceString() string {
 	if s.Document != nil {
 		uri = s.Document.Uri
 	}
-	return fmt.Sprintf("%v:%d:%d - %d:%d:", uri, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
+
+	localPath, _ := uri.ToLocalFilePath()
+	return fmt.Sprintf("%v:%d:%d - %d:%d:", localPath, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
 }
 
 func (s SourceFileReference) String() string {

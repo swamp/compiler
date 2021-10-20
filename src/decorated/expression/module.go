@@ -8,6 +8,7 @@ package decorated
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -151,7 +152,7 @@ func (m *Module) AddReference(ref *ModuleReference) {
 }
 
 func (m *Module) AddWarning(warning decshared.DecoratedWarning) {
-	log.Printf("%s Warning: '%v' ", warning.FetchPositionLength().ToCompleteReferenceString(), warning.Warning())
+	fmt.Fprintf(os.Stderr, "%s Warning: '%v'\n", warning.FetchPositionLength().ToCompleteReferenceString(), warning.Warning())
 	m.warnings = append(m.warnings, warning)
 }
 
