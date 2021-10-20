@@ -2,12 +2,14 @@ package generate_sp
 
 import (
 	"github.com/swamp/compiler/src/assembler_sp"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
 type Context struct {
 	constants      *assembler_sp.PackageConstants
 	scopeVariables *assembler_sp.ScopeVariables
 	stackMemory    *assembler_sp.StackMemoryMapper
+	inFunction     *decorated.FunctionValue
 }
 
 func NewContext(packageConstants *assembler_sp.PackageConstants) *Context {
@@ -21,6 +23,7 @@ func NewContext(packageConstants *assembler_sp.PackageConstants) *Context {
 func (c *Context) MakeScopeContext() *Context {
 	newContext := &Context{
 		constants:      c.constants,
+		inFunction:     c.inFunction,
 		scopeVariables: assembler_sp.NewFunctionVariablesWithParent(c.scopeVariables),
 		stackMemory:    c.stackMemory,
 	}
@@ -28,9 +31,10 @@ func (c *Context) MakeScopeContext() *Context {
 	return newContext
 }
 
-func (c *Context) MakeFunctionContext() *Context {
+func (c *Context) MakeFunctionContext(inFunction *decorated.FunctionValue) *Context {
 	newContext := &Context{
 		constants:      c.constants,
+		inFunction:     inFunction,
 		scopeVariables: assembler_sp.NewFunctionVariables(),
 		stackMemory:    assembler_sp.NewStackMemoryMapper(32 * 1024),
 	}

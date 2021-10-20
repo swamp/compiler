@@ -408,7 +408,7 @@ func disassembleMemoryCopy(s *OpcodeInStream) *instruction_sp.MemoryCopy {
 }
 
 func disassembleTailCall(s *OpcodeInStream) *instruction_sp.TailCall {
-	return nil
+	return instruction_sp.NewTailCall()
 }
 
 func disassembleReturn(s *OpcodeInStream) *instruction_sp.Return {

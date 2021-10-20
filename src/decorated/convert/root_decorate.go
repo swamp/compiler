@@ -7,7 +7,6 @@ package decorator
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
@@ -300,7 +299,6 @@ func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decor
 
 func (g *RootStatementHandler) compileFunctionExpression(preparedFunctionNamedValue *decorated.NamedFunctionValue) decshared.DecoratedError {
 	preparedFunctionValue := preparedFunctionNamedValue.Value()
-	log.Printf("DEFINING: %v\n", preparedFunctionNamedValue.FunctionName().String())
 	return g.defineNamedFunctionValue(g.decorateStream, preparedFunctionValue)
 }
 

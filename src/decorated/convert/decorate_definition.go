@@ -6,8 +6,6 @@
 package decorator
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -43,35 +41,4 @@ func decorateConstant(d DecorateStream, nameIdent *ast.VariableIdentifier, astCo
 	}
 
 	return decorated.NewConstant(nameIdent, astConstant, decoratedExpression, localCommentBlock), nil
-}
-
-func defineExpressionInNamedFunctionValueHelper(d DecorateStream, context *VariableContext,
-	targetPreparedFunctionValue *decorated.FunctionValue) decshared.DecoratedError {
-	decoratedFunctionErr := DefineExpressionInPreparedFunctionValue(d, targetPreparedFunctionValue, context)
-	if decoratedFunctionErr != nil {
-		return decoratedFunctionErr
-	}
-
-	return nil
-}
-
-func defineExpressionInNamedFunctionValue(d DecorateStream, targetPreparedFunctionValue *decorated.FunctionValue, context *VariableContext, nameIdent *ast.VariableIdentifier,
-	functionValue *ast.FunctionValue, expectedType dtype.Type) decshared.DecoratedError {
-	name := nameIdent.Name()
-	localName := name
-	verboseFlag := false
-	if verboseFlag {
-		fmt.Printf("######### RootDefinition: %v = %v\n", localName, functionValue)
-	}
-	if expectedType == nil {
-		err := fmt.Errorf("expected type can not be nil:%v %v", localName, functionValue)
-		return decorated.NewInternalError(err)
-	}
-
-	err := defineExpressionInNamedFunctionValueHelper(d, context, targetPreparedFunctionValue)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

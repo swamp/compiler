@@ -5,6 +5,10 @@
 
 package instruction_sp
 
+import (
+	"fmt"
+)
+
 type TailCall struct{}
 
 func NewTailCall() *TailCall {
@@ -15,4 +19,8 @@ func (c *TailCall) Write(writer OpcodeWriter) error {
 	writer.Command(CmdTailCall)
 
 	return nil
+}
+
+func (c *TailCall) String() string {
+	return fmt.Sprintf("%v", OpcodeToMnemonic(CmdTailCall))
 }

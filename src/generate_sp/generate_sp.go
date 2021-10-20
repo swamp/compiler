@@ -171,7 +171,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
-			rootContext := moduleContext.MakeFunctionContext()
+			rootContext := moduleContext.MakeFunctionContext(maybeFunction)
 
 			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
 				continue

@@ -8,6 +8,14 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
+func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype.MemoryOffset {
+	rest := dectype.MemoryAlign(uint32(offset) % uint32(memoryAlign))
+	if rest != 0 {
+		offset += dectype.MemoryOffset(memoryAlign - rest)
+	}
+	return offset
+}
+
 func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
 	functionAtom := dectype.UnaliasWithResolveInvoker(call.CompleteCalledFunctionType()).(*dectype.FunctionAtom)
@@ -17,9 +25,23 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	}
 
 	fn := call.FunctionExpression()
-	functionRegister, functionGenErr := generateExpressionWithSourceVar(code, fn, genContext, "functioncall")
-	if functionGenErr != nil {
-		return assembler_sp.SourceStackPosRange{}, functionGenErr
+
+	insideFunction := genContext.context.inFunction
+
+	callExpressionFunctionValue, expressionIsFunctionValue := fn.(*decorated.FunctionReference)
+	callSelf := false
+	if expressionIsFunctionValue {
+		callSelf = insideFunction == callExpressionFunctionValue.FunctionValue()
+	}
+
+	var functionRegister assembler_sp.SourceStackPosRange
+
+	if !callSelf {
+		var functionGenErr error
+		functionRegister, functionGenErr = generateExpressionWithSourceVar(code, fn, genContext, "functioncall")
+		if functionGenErr != nil {
+			return assembler_sp.SourceStackPosRange{}, functionGenErr
+		}
 	}
 
 	genContext.context.stackMemory.AlignUpForMax()
@@ -116,7 +138,22 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 			code.CallExternal(functionRegister.Pos, returnValue.Pos)
 		}
 	} else {
-		code.Call(functionRegister.Pos, returnValue.Pos)
+		if callSelf {
+			returnSize, _ := dectype.GetMemorySizeAndAlignment(insideFunction.ForcedFunctionType().ReturnType())
+			pos := dectype.MemoryOffset(returnSize)
+			pos = align(pos, argumentsAlign[0])
+			firstArgumentStackPosition := assembler_sp.TargetStackPos(pos)
+			lastArgument := arguments[len(arguments)-1]
+			octetsToCopy := int(lastArgument.Pos) + int(lastArgument.Size) - int(arguments[0].Pos)
+			sourcePosRange := assembler_sp.SourceStackPosRange{
+				Pos:  assembler_sp.SourceStackPos(arguments[0].Pos),
+				Size: assembler_sp.SourceStackRange(octetsToCopy),
+			}
+			code.CopyMemory(firstArgumentStackPosition, sourcePosRange)
+			code.Recur()
+		} else {
+			code.Call(functionRegister.Pos, returnValue.Pos)
+		}
 	}
 
 	genContext.context.stackMemory.Set(returnValue.Pos + assembler_sp.TargetStackPos(returnValue.Size))
