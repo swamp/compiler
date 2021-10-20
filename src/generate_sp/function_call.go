@@ -32,7 +32,12 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 	// arguments := make([]assembler_sp.TargetStackPosRange, len(call.Arguments()))
 	var arguments []assembler_sp.TargetStackPosRange
 	var argumentsAlign []dectype.MemoryAlign
-	originalParameters := call.FunctionExpression().(*decorated.FunctionReference).FunctionValue().Parameters()
+	callFnReference := call.FunctionExpression().(*decorated.FunctionReference)
+	callFn := callFnReference.FunctionValue()
+	originalParameters := callFn.Parameters()
+	if len(originalParameters) < len(call.Arguments()) {
+		panic(fmt.Errorf("wrong parameters %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))
+	}
 	for index, arg := range call.Arguments() {
 		functionArgType := originalParameters[index].Type()
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)

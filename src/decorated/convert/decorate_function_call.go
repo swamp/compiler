@@ -14,21 +14,6 @@ import (
 )
 
 func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
-	/* TODO: SUpport recur again
-	functionExpressionIdentifier, wasIdentifier := call.FunctionExpression().(*ast.VariableIdentifier)
-
-	if wasIdentifier && functionExpressionIdentifier.Name() == "recur" {
-		fakeIdent := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", token.SourceFileReference{}, 0))
-		namedDef, resolveErr := context.ResolveVariable(fakeIdent)
-		if resolveErr != nil {
-			return nil, resolveErr
-		}
-		functionReference := decorated.NewFunctionReference(functionExpressionIdentifier, namedDef.(*decorated.FunctionExpression))
-		return functionReference, nil
-	}
-
-	*/
-
 	decoratedExpression, functionErr := DecorateExpression(d, call.FunctionExpression(), context)
 	if functionErr != nil {
 		return nil, functionErr

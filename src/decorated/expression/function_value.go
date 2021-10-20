@@ -63,14 +63,20 @@ type FunctionValue struct {
 	annotation          *AnnotationStatement
 }
 
-func NewFunctionValue(annotation *AnnotationStatement, astFunction *ast.FunctionValue, forcedFunctionType dectype.FunctionTypeLike, parameters []*FunctionParameterDefinition, decoratedExpression Expression, commentBlock *ast.MultilineComment) *FunctionValue {
+func NewPrepareFunctionValue(annotation *AnnotationStatement, astFunction *ast.FunctionValue, forcedFunctionType dectype.FunctionTypeLike, parameters []*FunctionParameterDefinition, commentBlock *ast.MultilineComment) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
+	if forcedFunctionType == nil {
+		panic("must provide forced function type")
+	}
+	return &FunctionValue{annotation: annotation, astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock, sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference}
+}
 
-	sourceFileReference := token.MakeInclusiveSourceFileReference(astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
-
-	return &FunctionValue{annotation: annotation, astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: decoratedExpression, commentBlock: commentBlock, sourceFileReference: sourceFileReference}
+func (f *FunctionValue) DefineExpression(decoratedExpression Expression) {
+	f.sourceFileReference = token.MakeInclusiveSourceFileReference(
+		f.astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
+	f.decoratedExpression = decoratedExpression
 }
 
 func (f *FunctionValue) AstFunctionValue() *ast.FunctionValue {

@@ -1,6 +1,7 @@
 package decorated
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 
@@ -31,6 +32,9 @@ type Token interface {
 
 func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
 	var tokens []TypeOrToken
+	if fn.Expression() == nil {
+		panic(fmt.Errorf("a function must have an expression %v", fn.FetchPositionLength().ToCompleteReferenceString()))
+	}
 	tokens = append(tokens, expandChildNodes(fn.Expression())...)
 	for _, parameter := range fn.Parameters() {
 		tokens = append(tokens, expandChildNodes(parameter)...)

@@ -6,6 +6,9 @@
 package deccy
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -45,6 +48,19 @@ func (d *Decorator) ModuleDefinitions() *decorated.ModuleDefinitions {
 
 func (d *Decorator) AddDeclaration(identifier *ast.VariableIdentifier, ofType dtype.Type) error {
 	return d.module.Declarations().AddDeclaration(identifier, ofType)
+}
+
+func (d *Decorator) FindNamedFunctionValue(identifier *ast.VariableIdentifier) *decorated.FunctionValue {
+	definition := d.module.LocalDefinitions().FindDefinitionExpression(identifier)
+	if definition == nil {
+		log.Fatalf("couldn't find expression %v", identifier)
+	}
+	findNamedFunction, wasNamedFunction := definition.Expression().(*decorated.FunctionValue)
+	if !wasNamedFunction {
+		panic(fmt.Errorf("this was not a function value"))
+	}
+
+	return findNamedFunction
 }
 
 func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decorated.Expression) error {

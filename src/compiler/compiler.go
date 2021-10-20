@@ -241,7 +241,6 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						}
 						paramPosRanges = append(paramPosRanges, posRange)
 						pos += dectype.MemoryOffset(size)
-
 					}
 					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
 						return decorated.NewInternalError(err)

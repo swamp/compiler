@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
@@ -63,7 +64,7 @@ func (g *RootStatementHandler) functionAnnotation(annotation *ast.Annotation, co
 	}
 	checkedType, _ := convertedType.(dtype.Type)
 	if checkedType != nil {
-		g.decorateStream.AddDeclaration(annotation.Identifier(), checkedType)
+		// g.decorateStream.AddDeclaration(annotation.Identifier(), checkedType)
 	}
 	return g.AnnotateFunc(annotation, convertedType)
 }
@@ -152,31 +153,83 @@ func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream, consta
 	return namedConstant, nil
 }
 
-func (g *RootStatementHandler) handleNamedFunctionValue(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
+func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) []*decorated.FunctionParameterDefinition {
+	var parameters []*decorated.FunctionParameterDefinition
+	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
+	identifiers := functionValue.Parameters()
+	for index, parameterType := range functionParameterTypes {
+		identifier := identifiers[index]
+		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)
+		parameters = append(parameters, argDef)
+	}
+	return parameters
+}
+
+func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 	if g.localAnnotation == nil {
 		return nil, decorated.NewMustHaveAnnotationJustBeforeThisDefinition(assignment)
 	}
 	if g.localAnnotation.Identifier().Name() != assignment.Identifier().Name() {
 		return nil, decorated.NewAnnotationMismatch(g.localAnnotation.Identifier(), assignment)
 	}
+
+	/*
+		forcedFunctionTypeLike := targetFunctionValue.ForcedFunctionType()
+
+		potentialFunc := targetFunctionValue.AstFunctionValue()
+
+		if err := checkParameterCount(forcedFunctionType, potentialFunc); err != nil {
+			return err
+		}
+
+		_, expectedReturnType := forcedFunctionType.ParameterAndReturn()
+
+		if len(functionParameterTypes) == 0 {
+			log.Printf("no input parameters, is this a constant? %v", targetFunctionValue.AstFunctionValue())
+		}
+
+	*/
+
 	name := assignment.Identifier()
-	expr := assignment.FunctionValue()
 	annotatedType := g.localAnnotation.Type()
 	if annotatedType == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 	}
-	variableContext := d.NewVariableContext()
-	namedFunctionValue, decoratedExpressionErr := decorateNamedFunctionValue(d, variableContext, name, expr, annotatedType, g.localAnnotation, g.localCommentBlock)
-	if decoratedExpressionErr != nil {
-		return nil, decoratedExpressionErr
+
+	foundFunctionType := DerefFunctionType(annotatedType)
+	if foundFunctionType == nil {
+		return nil, decorated.NewInternalError(fmt.Errorf("expected function type"))
 	}
+	forcedFunctionType := DerefFunctionTypeLike(foundFunctionType)
+	if forcedFunctionType == nil {
+		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", assignment))
+	}
+
+	parameters := createParameterDefinitions(forcedFunctionType, assignment.FunctionValue())
+
+	preparedFunctionValue := decorated.NewPrepareFunctionValue(g.localAnnotation, assignment.FunctionValue(), foundFunctionType, parameters, g.localCommentBlock)
 	g.localComments = nil
 	g.localAnnotation = nil
+
+	d.AddDefinition(name, preparedFunctionValue)
+
+	namedFunctionValue := decorated.NewNamedFunctionValue(name, preparedFunctionValue)
 
 	return namedFunctionValue, nil
 }
 
-func (g *RootStatementHandler) handleAnnotation(d DecorateStream, declaration *ast.Annotation) (*decorated.AnnotationStatement, decshared.DecoratedError) {
+func (g *RootStatementHandler) defineNamedFunctionValue(d DecorateStream, target *decorated.FunctionValue) decshared.DecoratedError {
+	variableContext := d.NewVariableContext()
+
+	decoratedExpressionErr := DefineExpressionInPreparedFunctionValue(d, target, variableContext)
+	if decoratedExpressionErr != nil {
+		return decoratedExpressionErr
+	}
+
+	return nil
+}
+
+func (g *RootStatementHandler) declareAnnotation(d DecorateStream, declaration *ast.Annotation) (*decorated.AnnotationStatement, decshared.DecoratedError) {
 	if g.localAnnotation != nil {
 		if !g.localAnnotation.Annotation().IsSomeKindOfExternal() {
 			return nil, decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
@@ -196,24 +249,26 @@ func (g *RootStatementHandler) handleAnnotation(d DecorateStream, declaration *a
 		if annotatedType == nil {
 			return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 		}
-		variableContext := d.NewVariableContext()
 		var parameters []*ast.VariableIdentifier
 		parameterTypes, _ := functionAtom.ParameterAndReturn()
 		for index := range parameterTypes {
 			s := fmt.Sprintf("var%d", index)
 			parameters = append(parameters, ast.NewVariableIdentifier(token.NewVariableSymbolToken(s, token.SourceFileReference{}, 0)))
 		}
+
 		dummyExpression := ast.NewExternalFunctionExpression(functionAtom.FetchPositionLength())
 		functionValue := ast.NewFunctionValue(token.VariableSymbolToken{}, parameters, dummyExpression, nil)
-		converted, convertedErr := convertAnnotationToFunctionValue(d, variableContext,
-			annotationStatement.Identifier(), functionValue, annotationStatement.Type(),
-			annotationStatement, nil)
-		if convertedErr != nil {
-			return nil, convertedErr
-		}
+		parameterDefinitions := createParameterDefinitions(functionAtom, functionValue)
+		preparedFunctionValue := decorated.NewPrepareFunctionValue(annotationStatement, functionValue, functionAtom, parameterDefinitions, nil)
+		// convertedErr := g.declareNamedFunctionValue(d, assi)
+		//if convertedErr != nil {
+		//return nil, convertedErr
+		//}
 
-		d.AddDefinition(declaration.Identifier(), converted)
+		d.AddDefinition(declaration.Identifier(), preparedFunctionValue)
+		preparedFunctionValue.DefineExpression(annotationStatement) // HACK SO IT HAS AN EXPRESSION
 	}
+	g.localAnnotation = annotationStatement
 
 	return annotationStatement, nil
 }
@@ -225,22 +280,28 @@ func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decor
 	case *ast.CustomType:
 		return g.handleCustomTypeStatement(v)
 	case *ast.Annotation:
-		return g.handleAnnotation(g.decorateStream, v)
+		return g.declareAnnotation(g.decorateStream, v)
 	case *ast.FunctionValueNamedDefinition:
-		return g.handleNamedFunctionValue(g.decorateStream, v)
-	case *ast.Import:
-		return g.handleImport(g.decorateStream, v)
+		return g.declareNamedFunctionValue(g.decorateStream, v)
 	case *ast.ExternalFunction:
 		return g.handleExternalFunction(g.decorateStream, v)
 	case *ast.MultilineComment:
 		return g.handleMultilineComment(g.decorateStream, v)
 	case *ast.SingleLineComment:
 		return g.handleSinglelineComment(g.decorateStream, v)
+	case *ast.Import:
+		return g.handleImport(g.decorateStream, v)
 	case *ast.ConstantDefinition:
 		return g.handleConstantDefinition(g.decorateStream, v)
 	default:
 		return nil, decorated.NewUnknownStatement(token.SourceFileReference{}, statement)
 	}
+}
+
+func (g *RootStatementHandler) compileFunctionExpression(preparedFunctionNamedValue *decorated.NamedFunctionValue) decshared.DecoratedError {
+	preparedFunctionValue := preparedFunctionNamedValue.Value()
+	log.Printf("DEFINING: %v\n", preparedFunctionNamedValue.FunctionName().String())
+	return g.defineNamedFunctionValue(g.decorateStream, preparedFunctionValue)
 }
 
 func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
@@ -254,6 +315,16 @@ func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]dec
 
 		if convertedStatement != nil && !reflect.ValueOf(convertedStatement).IsNil() {
 			rootNodes = append(rootNodes, convertedStatement)
+		} else {
+			panic("not allowed")
+		}
+	}
+
+	for _, statement := range rootNodes {
+		if v, ok := statement.(*decorated.NamedFunctionValue); ok {
+			if err := g.compileFunctionExpression(v); err != nil {
+				return nil, err
+			}
 		}
 	}
 

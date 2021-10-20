@@ -21,6 +21,6 @@ type DecorateStream interface {
 	NewVariableContext() *VariableContext
 	ImportModule(moduleType decorated.ModuleType, importAst *ast.Import, moduleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag verbosity.Verbosity) (*decorated.ImportStatement, decshared.DecoratedError)
 	AddExternalFunction(function *ast.ExternalFunction) (*decorated.ExternalFunctionDeclaration, decshared.DecoratedError)
-
+	FindNamedFunctionValue(identifier *ast.VariableIdentifier) *decorated.FunctionValue
 	AddDecoratedError(decoratedError decshared.DecoratedError)
 }

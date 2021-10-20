@@ -12,7 +12,6 @@ import (
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/token"
 )
 
 /*
@@ -26,20 +25,13 @@ func CheckForNoLint(commentBlock token.Comment) string {
 }
 */
 
-func createVariableContextFromParameters(context *VariableContext, parameters []*decorated.FunctionParameterDefinition, forcedFunctionType *dectype.FunctionAtom, functionName *ast.VariableIdentifier) *VariableContext {
+func createVariableContextFromParameters(context *VariableContext, parameters []*decorated.FunctionParameterDefinition) *VariableContext {
 	newVariableContext := context.MakeVariableContext()
 
 	for _, parameter := range parameters {
 		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(parameter.Identifier().Name(), nil, parameter)
-		// namedDecoratedExpression.SetReferenced()
 		newVariableContext.Add(parameter.Identifier(), namedDecoratedExpression)
 	}
-
-	self := ast.NewVariableIdentifier(token.NewVariableSymbolToken("__self", token.SourceFileReference{}, 0))
-	selfDef := decorated.NewFunctionParameterDefinition(self, forcedFunctionType)
-	namedDecoratedExpression := decorated.NewNamedDecoratedExpression(functionName.Name(), nil, selfDef)
-	namedDecoratedExpression.SetReferenced()
-	newVariableContext.Add(self, namedDecoratedExpression)
 
 	return newVariableContext
 }
@@ -61,37 +53,16 @@ func checkParameterCount(forcedFunctionType *dectype.FunctionAtom, potentialFunc
 	return nil
 }
 
-func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationStatement, potentialFunc *ast.FunctionValue, forcedFunctionTypeLike dectype.FunctionTypeLike,
-	functionName *ast.VariableIdentifier, context *VariableContext, comments *ast.MultilineComment) (*decorated.FunctionValue, decshared.DecoratedError) {
-	forcedFunctionType := DerefFunctionTypeLike(forcedFunctionTypeLike)
-	if forcedFunctionType == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", potentialFunc))
-	}
-
-	if err := checkParameterCount(forcedFunctionType, potentialFunc); err != nil {
-		return nil, err
-	}
-
-	_, expectedReturnType := forcedFunctionType.ParameterAndReturn()
-
-	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
-	identifiers := potentialFunc.Parameters()
-
-	var parameters []*decorated.FunctionParameterDefinition
-
-	for index, parameterType := range functionParameterTypes {
-		identifier := identifiers[index]
-		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)
-		parameters = append(parameters, argDef)
-	}
+func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionValue *decorated.FunctionValue, context *VariableContext) decshared.DecoratedError {
+	annotation := targetFunctionValue.Annotation()
 
 	var decoratedExpression decorated.Expression
 	if !annotation.Annotation().IsSomeKindOfExternal() {
-		subVariableContext := createVariableContextFromParameters(context, parameters, forcedFunctionType, functionName)
-		functionValueExpression := potentialFunc.Expression()
+		subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
+		functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
 		convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
 		if decoratedExpressionErr != nil {
-			return nil, decoratedExpressionErr
+			return decoratedExpressionErr
 		}
 
 		decoratedExpression = convertedDecoratedExpression
@@ -101,9 +72,10 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationSta
 			fmt.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
 		}
 
-		compatibleErr := dectype.CompatibleTypes(expectedReturnType, decoratedExpressionType)
+		compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
 		if compatibleErr != nil {
-			return nil, decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(potentialFunc, functionValueExpression, expectedReturnType, decoratedExpression.Type(), compatibleErr)
+			return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(targetFunctionValue.AstFunctionValue(),
+				functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr)
 		}
 
 		checkForNoLint := "a" // CheckForNoLint(comments)
@@ -115,5 +87,7 @@ func DecorateFunctionValue(d DecorateStream, annotation *decorated.AnnotationSta
 		decoratedExpression = annotation
 	}
 
-	return decorated.NewFunctionValue(annotation, potentialFunc, forcedFunctionTypeLike, parameters, decoratedExpression, comments), nil
+	targetFunctionValue.DefineExpression(decoratedExpression)
+
+	return nil
 }
