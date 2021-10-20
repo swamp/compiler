@@ -50,7 +50,7 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 
 		caseLabel := consequencesCode.Label(labelVariableName, "case")
 
-		caseExprErr := generateExpression(consequencesCode, target, consequence.Expression(), consequenceContext)
+		caseExprErr := generateExpression(consequencesCode, target, consequence.Expression(), false, consequenceContext)
 		if caseExprErr != nil {
 			return caseExprErr
 		}
@@ -72,7 +72,7 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 
 		decoratedDefault := caseExpr.DefaultCase()
 		defaultLabel := consequencesCode.Label("default", "default")
-		caseExprErr := generateExpression(consequencesCode, target, decoratedDefault, defaultContext)
+		caseExprErr := generateExpression(consequencesCode, target, decoratedDefault, true, defaultContext)
 		if caseExprErr != nil {
 			return caseExprErr
 		}

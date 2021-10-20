@@ -15,7 +15,7 @@ func generateTuple(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 			Size: assembler_sp.StackRange(tupleField.MemorySize()),
 		}
 
-		genErr := generateExpression(code, fieldTarget, expr, genContext)
+		genErr := generateExpression(code, fieldTarget, expr, false, genContext)
 		if genErr != nil {
 			return genErr
 		}

@@ -80,7 +80,7 @@ func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperato
 
 func generateConstant(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	constant *decorated.Constant, context *generateContext) error {
-	return generateExpression(code, target, constant.Expression(), context)
+	return generateExpression(code, target, constant.Expression(), true, context)
 }
 
 func allocMemoryForType(stackMemory *assembler_sp.StackMemoryMapper, typeToAlloc dtype.Type,

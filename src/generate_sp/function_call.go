@@ -16,7 +16,7 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 	return offset
 }
 
-func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
+func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, isLeafNode bool,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
 	functionAtom := dectype.UnaliasWithResolveInvoker(call.CompleteCalledFunctionType()).(*dectype.FunctionAtom)
 
@@ -41,6 +41,10 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		functionRegister, functionGenErr = generateExpressionWithSourceVar(code, fn, genContext, "functioncall")
 		if functionGenErr != nil {
 			return assembler_sp.SourceStackPosRange{}, functionGenErr
+		}
+	} else {
+		if !isLeafNode {
+			return assembler_sp.SourceStackPosRange{}, fmt.Errorf("call self must be on a leafNode")
 		}
 	}
 
@@ -103,7 +107,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 		}
 
 		argReg := arguments[argumentIndex]
-		argRegErr := generateExpression(code, argReg, arg, genContext)
+		argRegErr := generateExpression(code, argReg, arg, false, genContext)
 		if argRegErr != nil {
 			return assembler_sp.SourceStackPosRange{}, argRegErr
 		}
@@ -165,8 +169,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 }
 
 func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, call *decorated.FunctionCall,
-	genContext *generateContext) error {
-	posRange, err := handleFunctionCall(code, call, genContext)
+	leafNode bool, genContext *generateContext) error {
+	posRange, err := handleFunctionCall(code, call, leafNode, genContext)
 	if err != nil {
 		return err
 	}

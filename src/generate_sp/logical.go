@@ -7,13 +7,13 @@ import (
 )
 
 func generateLogical(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.LogicalOperator, genContext *generateContext) error {
-	leftErr := generateExpression(code, target, operator.Left(), genContext)
+	leftErr := generateExpression(code, target, operator.Left(), false, genContext)
 	if leftErr != nil {
 		return leftErr
 	}
 
 	codeAlternative := assembler_sp.NewCode()
-	rightErr := generateExpression(codeAlternative, target, operator.Right(), genContext)
+	rightErr := generateExpression(codeAlternative, target, operator.Right(), false, genContext)
 	if rightErr != nil {
 		return rightErr
 	}

@@ -7,7 +7,7 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, expr decorated.Expression, genContext *generateContext) error {
+func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, expr decorated.Expression, leafNode bool, genContext *generateContext) error {
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(code, target, e, genContext)
@@ -88,7 +88,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateArray(code, target, e, genContext)
 
 	case *decorated.FunctionCall:
-		return generateFunctionCall(code, target, e, genContext)
+		return generateFunctionCall(code, target, e, leafNode, genContext)
 
 	case *decorated.RecurCall:
 		return generateRecurCall(code, e, genContext)
@@ -97,7 +97,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateCurry(code, target, e, genContext)
 
 	case *decorated.StringInterpolation:
-		return generateExpression(code, target, e.Expression(), genContext)
+		return generateExpression(code, target, e.Expression(), leafNode, genContext)
 
 	case *decorated.CustomTypeVariantConstructor:
 		return generateCustomTypeVariantConstructor(code, target, e, genContext)
@@ -106,7 +106,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateConstant(code, target, e, genContext)
 
 	case *decorated.ConstantReference:
-		return generateExpression(code, target, e.Constant(), genContext)
+		return generateExpression(code, target, e.Constant(), leafNode, genContext)
 
 	case *decorated.FunctionParameterReference:
 		return generateLocalFunctionParameterReference(code, target, e, genContext.context)
@@ -124,7 +124,7 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateListCons(code, target, e, genContext)
 
 	case *decorated.RecordConstructorFromRecord:
-		return generateExpression(code, target, e.Expression(), genContext)
+		return generateExpression(code, target, e.Expression(), leafNode, genContext)
 
 	case *decorated.RecordConstructorFromParameters:
 		return generateRecordConstructorSortedAssignments(code, target, e, genContext)

@@ -59,7 +59,7 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 	case *decorated.FunctionReference:
 		return handleFunctionReference(code, t, genContext.context.stackMemory, genContext.context.constants)
 	case *decorated.FunctionCall:
-		return handleFunctionCall(code, t, genContext)
+		return handleFunctionCall(code, t, false, genContext)
 	case *decorated.RecordLiteral:
 		return handleRecordLiteral(code, t, genContext)
 	case *decorated.RecordConstructorFromParameters:

@@ -17,7 +17,7 @@ func generateRecordConstructorSortedAssignmentsHelper(code *assembler_sp.Code, t
 	for index, assignment := range sortedAssignments {
 		recordField := recordType.SortedFields()[index]
 		fieldTarget := createTargetWithMemoryOffsetAndSize(target, uint(recordField.MemoryOffset()), uint(recordField.MemorySize()))
-		genErr := generateExpression(code, fieldTarget, assignment.Expression(), genContext)
+		genErr := generateExpression(code, fieldTarget, assignment.Expression(), false, genContext)
 		if genErr != nil {
 			return genErr
 		}
@@ -62,7 +62,7 @@ func generateRecordLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 		for _, assignment := range record.SortedAssignments() {
 			recordField := recordFields[assignment.Index()]
 			fieldTarget := createTargetWithMemoryOffsetAndSize(target, uint(recordField.MemoryOffset()), uint(recordField.MemorySize()))
-			genErr := generateExpression(code, fieldTarget, assignment.Expression(), genContext)
+			genErr := generateExpression(code, fieldTarget, assignment.Expression(), false, genContext)
 			if genErr != nil {
 				return genErr
 			}

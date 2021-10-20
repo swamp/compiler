@@ -14,7 +14,7 @@ func generateIf(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange
 	consequenceCode := assembler_sp.NewCode()
 	consequenceContext2 := genContext.MakeScopeContext()
 
-	consErr := generateExpression(consequenceCode, target, ifExpr.Consequence(), consequenceContext2)
+	consErr := generateExpression(consequenceCode, target, ifExpr.Consequence(), true, consequenceContext2)
 	if consErr != nil {
 		return consErr
 	}
@@ -25,7 +25,7 @@ func generateIf(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange
 	alternativeLabel := alternativeCode.Label("", "if-alternative")
 	alternativeContext2 := genContext.MakeScopeContext()
 
-	altErr := generateExpression(alternativeCode, target, ifExpr.Alternative(), alternativeContext2)
+	altErr := generateExpression(alternativeCode, target, ifExpr.Alternative(), true, alternativeContext2)
 	if altErr != nil {
 		return altErr
 	}

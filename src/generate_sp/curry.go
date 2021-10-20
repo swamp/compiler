@@ -46,7 +46,7 @@ func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 
 	for index, arg := range call.ArgumentsToSave() {
 		argReg := arguments[index]
-		argRegErr := generateExpression(code, argReg, arg, genContext)
+		argRegErr := generateExpression(code, argReg, arg, false, genContext)
 		if argRegErr != nil {
 			return argRegErr
 		}

@@ -53,7 +53,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 		labelVariableName := assembler_sp.VariableName("a1")
 		caseLabel := consequencesCode.Label(labelVariableName, "case")
 
-		caseExprErr := generateExpression(consequencesCode, target, consequence.Expression(), consequenceContext)
+		caseExprErr := generateExpression(consequencesCode, target, consequence.Expression(), false, consequenceContext)
 		if caseExprErr != nil {
 			return caseExprErr
 		}
@@ -69,7 +69,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 
 	decoratedDefault := caseExpr.DefaultCase()
 	defaultLabel := defaultCode.Label(assembler_sp.VariableName("default"), "default")
-	caseExprErr := generateExpression(defaultCode, target, decoratedDefault, defaultContext)
+	caseExprErr := generateExpression(defaultCode, target, decoratedDefault, false, defaultContext)
 	if caseExprErr != nil {
 		return caseExprErr
 	}

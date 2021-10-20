@@ -6,7 +6,7 @@ import (
 )
 
 func generatePipeLeft(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.PipeLeftOperator, genContext *generateContext) error {
-	leftErr := generateExpression(code, target, operator.GenerateLeft(), genContext)
+	leftErr := generateExpression(code, target, operator.GenerateLeft(), false, genContext)
 	if leftErr != nil {
 		return leftErr
 	}
@@ -14,7 +14,7 @@ func generatePipeLeft(code *assembler_sp.Code, target assembler_sp.TargetStackPo
 }
 
 func generatePipeRight(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.PipeRightOperator, genContext *generateContext) error {
-	leftErr := generateExpression(code, target, operator.GenerateRight(), genContext)
+	leftErr := generateExpression(code, target, operator.GenerateRight(), false, genContext)
 	if leftErr != nil {
 		return leftErr
 	}

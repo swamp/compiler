@@ -34,7 +34,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		lookup: lookup,
 	}
 
-	genErr := generateExpression(code, returnValueTargetPointer, f.Expression(), genContext)
+	genErr := generateExpression(code, returnValueTargetPointer, f.Expression(), true, genContext)
 	if genErr != nil {
 		return nil, genErr
 	}

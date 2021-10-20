@@ -36,7 +36,7 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 			Pos:  assembler_sp.TargetStackPos(uint(target.Pos) + uint(variantField.MemoryOffset())),
 			Size: assembler_sp.StackRange(variantField.MemorySize()),
 		}
-		argRegErr := generateExpression(code, fieldTarget, arg, genContext)
+		argRegErr := generateExpression(code, fieldTarget, arg, false, genContext)
 		if argRegErr != nil {
 			log.Printf("encountered error %v", argRegErr)
 			return argRegErr
