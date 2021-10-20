@@ -151,6 +151,9 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall,
 			}
 			code.CopyMemory(firstArgumentStackPosition, sourcePosRange)
 			code.Recur()
+			// Hack to notify that there is no source information left at this point
+			returnValue.Pos = 0xffffffff
+			returnValue.Size = 0
 		} else {
 			code.Call(functionRegister.Pos, returnValue.Pos)
 		}
@@ -166,6 +169,9 @@ func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetSta
 	posRange, err := handleFunctionCall(code, call, genContext)
 	if err != nil {
 		return err
+	}
+	if posRange.Pos == 0xffffffff && posRange.Size == 0 {
+		return nil
 	}
 
 	code.CopyMemory(target.Pos, posRange)
