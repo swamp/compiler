@@ -156,10 +156,6 @@ func (p *ParseStreamImpl) readVariableIdentifier() (*ast.VariableIdentifier, par
 		return nil, variableIdentifierErr
 	}
 
-	if variableIdentifier.Name() == "ord" {
-		variableIdentifier = variableIdentifier
-	}
-
 	return variableIdentifier, nil
 }
 

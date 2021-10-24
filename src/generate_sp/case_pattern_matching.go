@@ -47,7 +47,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 			if !wasCharacterLiteral {
 				panic(fmt.Errorf("unsupported literal"))
 			}
-			intValue = int32(characterLiteral.Value())
+			intValue = characterLiteral.Value()
 		}
 
 		labelVariableName := assembler_sp.VariableName("a1")
@@ -68,7 +68,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 	defaultContext := genContext.MakeScopeContext()
 
 	decoratedDefault := caseExpr.DefaultCase()
-	defaultLabel := defaultCode.Label(assembler_sp.VariableName("default"), "default")
+	defaultLabel := defaultCode.Label("default", "default")
 	caseExprErr := generateExpression(defaultCode, target, decoratedDefault, false, defaultContext)
 	if caseExprErr != nil {
 		return caseExprErr
@@ -93,7 +93,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 		consequencesBlockCode.Copy(consequenceCode)
 	}
 
-	code.CasePatternMatchingInt(assembler_sp.SourceStackPos(testVar.Pos), consequences, defaultLabel)
+	code.CasePatternMatchingInt(testVar.Pos, consequences, defaultLabel)
 
 	code.Copy(consequencesBlockCode)
 

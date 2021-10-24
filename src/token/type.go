@@ -56,7 +56,6 @@ const (
 	As
 	Exposing
 	TypeDef
-	Asm
 	ExternalFunction
 	Let
 	In

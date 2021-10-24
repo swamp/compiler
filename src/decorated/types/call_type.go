@@ -62,9 +62,6 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 
 	// fmt.Printf("warning: not sure what to do with %T %v. Returning same type for now\n", target, target)
 
-	if originalTarget == nil {
-		panic("not sure how target could be nil")
-	}
 	return originalTarget, nil
 }
 

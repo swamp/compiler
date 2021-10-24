@@ -15,7 +15,7 @@ import (
 	"github.com/swamp/compiler/src/assembler_sp"
 	deccy "github.com/swamp/compiler/src/decorated"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
-	swampdisasm_sp "github.com/swamp/compiler/src/disassemble_sp"
+	swampdisasmsp "github.com/swamp/compiler/src/disassemble_sp"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 )
@@ -47,7 +47,7 @@ func checkGeneratedAssembler(constants *assembler_sp.PackageConstants, functions
 	var assemblerOutput string
 	for _, f := range functions {
 		opcodes := constants.FetchOpcodes(f)
-		lines := swampdisasm_sp.Disassemble(opcodes)
+		lines := swampdisasmsp.Disassemble(opcodes)
 		assemblerOutput = assemblerOutput + fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
 	}
 

@@ -119,10 +119,6 @@ func colorExternalFunction(t token.ExternalFunctionToken) string {
 	return color.HiBlackString("__externalfn") // t.Raw())
 }
 
-func colorAsm(t token.AsmToken) string {
-	return color.HiBlackString(t.Raw())
-}
-
 func colorNewLine(t token.LineDelimiterToken) string {
 	return "\n"
 }
@@ -161,8 +157,6 @@ func colorToken(t token.Token) string {
 		return colorNewLine(v)
 	case token.ExternalFunctionToken:
 		return colorExternalFunction(v)
-	case token.AsmToken:
-		return colorAsm(v)
 	case token.GuardToken:
 		return colorGuardToken(v)
 	}

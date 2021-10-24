@@ -24,11 +24,6 @@ func HasAnyMatchingTypes(types []dtype.Type) (bool, int) {
 	return false, -1
 }
 
-func IsMatchingTypes(typeQuery dtype.Type) bool {
-	_, isAnyMatching := typeQuery.(*AnyMatchingTypes)
-	return isAnyMatching
-}
-
 type AnyMatchingTypes struct {
 	astAnyMatchingType *ast.AnyMatchingType
 }

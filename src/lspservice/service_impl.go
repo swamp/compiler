@@ -22,7 +22,7 @@ type LspImpl struct {
 
 func NewLspImpl(fallbackProvider loader.DocumentProvider, configuration environment.Environment) *LspImpl {
 	return &LspImpl{
-		workspace:     loader.NewWorkspace(loader.LocalFileSystemRoot("")),
+		workspace:     loader.NewWorkspace(""),
 		documentCache: NewDocumentCache(fallbackProvider),
 		configuration: configuration,
 	}

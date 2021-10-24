@@ -19,7 +19,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	swampdisasm_sp "github.com/swamp/compiler/src/disassemble_sp"
+	swampdisasmsp "github.com/swamp/compiler/src/disassemble_sp"
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/generate_sp"
@@ -305,7 +305,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		for _, f := range allFunctions {
 			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
 				opcodes := constants.FetchOpcodes(f)
-				lines := swampdisasm_sp.Disassemble(opcodes)
+				lines := swampdisasmsp.Disassemble(opcodes)
 
 				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
 			}

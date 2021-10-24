@@ -10,36 +10,6 @@ import (
 )
 
 // Keyword :
-type AsmToken struct {
-	SourceFileReference
-	asm string
-}
-
-func NewAsmToken(asm string, startPosition SourceFileReference) AsmToken {
-	return AsmToken{asm: asm, SourceFileReference: startPosition}
-}
-
-func (s AsmToken) Type() Type {
-	return Asm
-}
-
-func (s AsmToken) Raw() string {
-	return s.asm
-}
-
-func (s AsmToken) Asm() string {
-	return s.asm
-}
-
-func (s AsmToken) String() string {
-	return fmt.Sprintf("[asm %v]", s.asm)
-}
-
-func (s AsmToken) FetchPositionLength() SourceFileReference {
-	return s.SourceFileReference
-}
-
-// Keyword :
 type ExternalFunctionToken struct {
 	SourceFileReference
 }

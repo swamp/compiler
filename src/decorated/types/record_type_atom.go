@@ -124,7 +124,6 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	default:
 		panic(fmt.Errorf("calc: do not know memory size of %v %T", p, unaliased))
 	}
-	panic(fmt.Errorf("calcsize: do not know memory size of %v %T", p, unaliased))
 }
 
 func GetMemorySizeAndAlignment(p dtype.Type) (MemorySize, MemoryAlign) {
