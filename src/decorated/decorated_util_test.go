@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	decshared "github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/decorated/decshared"
 )
 
 func testDecorateInternal(code string, useCores bool, errorsAsWarnings bool) (string, decshared.DecoratedError) {

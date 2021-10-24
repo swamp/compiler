@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
-	decshared "github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/decorated/decshared"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
