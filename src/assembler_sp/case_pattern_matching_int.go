@@ -7,8 +7,6 @@ package assembler_sp
 
 import (
 	"fmt"
-
-	"github.com/swamp/compiler/src/instruction_sp"
 )
 
 type CaseConsequencePatternMatchingInt struct {
@@ -36,9 +34,8 @@ type CasePatternMatchingInt struct {
 	test               SourceStackPos
 	consequences       []*CaseConsequencePatternMatchingInt
 	defaultConsequence *Label
-	matchingType       instruction_sp.PatternMatchingType
 }
 
 func (o *CasePatternMatchingInt) String() string {
-	return fmt.Sprintf("[casepmi %v (%d) and then jump %v (%v)]", o.test, o.matchingType, o.consequences, o.defaultConsequence)
+	return fmt.Sprintf("[casepmi %v and then jump %v (%v)]", o.test, o.consequences, o.defaultConsequence)
 }

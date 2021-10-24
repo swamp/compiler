@@ -29,6 +29,15 @@ func generateCharacterLiteral(code *assembler_sp.Code, target assembler_sp.Targe
 
 func generateTypeIdLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, typeId *decorated.TypeIdLiteral,
 	genContext *generateContext) error {
+	integerValue, err := genContext.lookup.Lookup(typeId.Type())
+	if err != nil {
+		return err
+	}
+	if target.Size != assembler_sp.StackRange(dectype.SizeofSwampInt) {
+		panic("wrong size")
+	}
+
+	code.LoadInteger(target.Pos, int32(integerValue))
 	return nil
 }
 
