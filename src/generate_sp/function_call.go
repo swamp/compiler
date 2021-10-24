@@ -62,7 +62,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 	callFn := callFnReference.FunctionValue()
 	originalParameters := callFn.Parameters()
 	if len(originalParameters) < len(call.Arguments()) {
-		panic(fmt.Errorf("wrong parameters %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))
+		panic(fmt.Errorf("wrong parameters %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))
 	}
 	for index, arg := range call.Arguments() {
 		functionArgType := originalParameters[index].Type()

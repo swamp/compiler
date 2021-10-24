@@ -37,8 +37,6 @@ func booleanToBinaryEnumOperatorType(operatorType decorated.BooleanOperatorType)
 	default:
 		panic(fmt.Errorf("not allowed enum operator type"))
 	}
-
-	return 0
 }
 
 func booleanToBinaryStringOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {

@@ -29,7 +29,7 @@ func (c *CaseConsequencePatternMatchingInt) ConstantInteger() int32 {
 }
 
 func (c *CaseConsequencePatternMatchingInt) String() string {
-	return fmt.Sprintf("[caseconpmi %v (%d) %v]", c.constantInteger, c.label)
+	return fmt.Sprintf("[caseconpmi %v (%d)]", c.constantInteger, c.label)
 }
 
 type CasePatternMatchingInt struct {

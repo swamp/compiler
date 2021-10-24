@@ -7,7 +7,6 @@ package assembler_sp
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/instruction_sp"
 )
 
@@ -29,7 +28,7 @@ func (c *CaseConsequencePatternMatchingZeroPointer) SourceDynamicMemoryPos() Sou
 }
 
 func (c *CaseConsequencePatternMatchingZeroPointer) String() string {
-	return fmt.Sprintf("[caseconpmzp %v (%d) %v]", c.zeroPointer, c.label)
+	return fmt.Sprintf("[caseconpmzp %v (%d)]", c.zeroPointer, c.label)
 }
 
 type CasePatternMatchingZeroPointer struct {
