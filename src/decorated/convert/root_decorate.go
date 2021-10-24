@@ -156,6 +156,9 @@ func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functi
 	var parameters []*decorated.FunctionParameterDefinition
 	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
 	identifiers := functionValue.Parameters()
+	if len(identifiers) < len(functionParameterTypes) {
+		panic(fmt.Errorf("no enough parameter definitions %v", functionValue))
+	}
 	for index, parameterType := range functionParameterTypes {
 		identifier := identifiers[index]
 		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)

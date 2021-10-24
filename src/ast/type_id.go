@@ -7,6 +7,7 @@ package ast
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/swamp/compiler/src/token"
 )
@@ -18,6 +19,9 @@ type TypeId struct {
 }
 
 func NewTypeId(typeIdToken token.TypeId, typeIdentifier TypeIdentifierNormalOrScoped) *TypeId {
+	if typeIdentifier == nil || reflect.ValueOf(typeIdentifier).IsNil() {
+		panic("type identifier can not be nil")
+	}
 	inclusive := token.MakeInclusiveSourceFileReference(typeIdToken.SourceFileReference, typeIdentifier.FetchPositionLength())
 	return &TypeId{typeRef: typeIdentifier, typeIdToken: typeIdToken, inclusive: inclusive}
 }
