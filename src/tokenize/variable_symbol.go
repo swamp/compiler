@@ -24,7 +24,11 @@ func (t *Tokenizer) ParseVariableSymbol() (token.VariableSymbolToken, TokenError
 	for {
 		ch := t.nextRune()
 		if !isSymbol(ch) {
-			t.unreadRune()
+			if ch == '!' {
+				a += string(ch)
+			} else {
+				t.unreadRune()
+			}
 			break
 		}
 		a += string(ch)
