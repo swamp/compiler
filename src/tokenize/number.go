@@ -16,27 +16,38 @@ import (
 // TODO: Hack. It is a bit of a hack to set the number of decimals in precision here
 const FixedDecimals = 3
 
+type ParseNumberType uint8
+
+const (
+	IntType ParseNumberType = iota
+	FixedType
+	HexType
+	BinaryType
+)
+
 func (t *Tokenizer) ParseNumber(a string) (token.NumberToken, TokenError) {
 	startPosition := t.position
 	first := false
-	isHex := false
-	isFixed := false
+	parseType := IntType
+
 	for {
 		ch := t.nextRune()
-		if isHex {
+		if parseType == HexType {
 			if !isHexDigit(ch) {
 				t.unreadRune()
 				break
 			}
 		} else if first && ch == '-' {
 			first = false
-		} else if len(a) == 1 && ch == 'x' {
-			isHex = true
+		} else if len(a) == 1 && ch == 'x' && parseType == IntType {
+			parseType = HexType
+		} else if len(a) == 1 && ch == 'b' && parseType == IntType {
+			parseType = BinaryType
 		} else if len(a) >= 1 && ch == '.' {
-			if isFixed {
+			if parseType == FixedType {
 				return token.NumberToken{}, NewInternalError(fmt.Errorf("two dots in fixed"))
 			}
-			isFixed = true
+			parseType = FixedType
 		} else if !isDigit(ch) {
 			t.unreadRune()
 			break
@@ -45,7 +56,7 @@ func (t *Tokenizer) ParseNumber(a string) (token.NumberToken, TokenError) {
 	}
 
 	total := a
-	if isFixed {
+	if parseType == FixedType {
 		parts := strings.Split(a, ".")
 		if len(parts) > 2 {
 			return token.NumberToken{}, NewInternalError(fmt.Errorf("illegal fixed value"))
@@ -74,5 +85,5 @@ func (t *Tokenizer) ParseNumber(a string) (token.NumberToken, TokenError) {
 		return token.NumberToken{}, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), ' ', ' ')
 	}
 	posLen := t.MakeSourceFileReference(startPosition)
-	return token.NewNumberToken(a, int32(integerValue), isFixed, posLen), nil
+	return token.NewNumberToken(a, int32(integerValue), parseType == FixedType, posLen), nil
 }

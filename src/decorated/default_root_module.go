@@ -190,8 +190,10 @@ __externalfn member : Int -> Blob -> Bool
 __externalfn any : (Int -> Bool) -> Blob -> Bool
 __externalfn fromArray : Array Int -> Blob
 __externalfn make : Int -> Blob
+__externalvarfn map2d : ({ x : Int, y : Int } -> Int -> a) -> { width : Int, height : Int } -> Blob -> List a
+__externalfn fromList : List Int -> Blob
 -- __externalfn isEmpty : Blob -> Bool
--- __externalfn fromList : List Int -> Blob
+-- 
 -- __externalfn toList : Blob -> List Int
 -- __externalfn length : Blob -> Int
 -- __externalfn get : Int -> Blob -> Maybe Int
