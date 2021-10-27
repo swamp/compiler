@@ -3,10 +3,10 @@ package generate_sp
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/instruction_sp"
+	"github.com/swamp/opcodes/instruction_sp"
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Expression,
@@ -19,7 +19,7 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 
 	case *decorated.TypeIdLiteral:
 		{
-			intStorage := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "typeIdLiteral:"+t.String())
+			intStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampInt), uint32(opcode_sp_type.AlignOfSwampInt), "typeIdLiteral:"+t.String())
 			integerValue, err := genContext.lookup.Lookup(t.Type())
 			if err != nil {
 				return assembler_sp.SourceStackPosRange{}, err
@@ -30,28 +30,28 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		}
 	case *decorated.IntegerLiteral:
 		{
-			intStorage := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "intLiteral:"+t.String())
+			intStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampInt), uint32(opcode_sp_type.AlignOfSwampInt), "intLiteral:"+t.String())
 			code.LoadInteger(intStorage.Pos, t.Value())
 
 			return targetToSourceStackPosRange(intStorage), nil
 		}
 	case *decorated.FixedLiteral:
 		{
-			fixedStorage := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "fixedLiteral:"+t.String())
+			fixedStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampInt), uint32(opcode_sp_type.AlignOfSwampInt), "fixedLiteral:"+t.String())
 			code.LoadInteger(fixedStorage.Pos, t.Value())
 
 			return targetToSourceStackPosRange(fixedStorage), nil
 		}
 	case *decorated.CharacterLiteral:
 		{
-			runeStorage := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampRune), uint32(dectype.AlignOfSwampRune), "runeLiteral"+t.String())
+			runeStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampRune), uint32(opcode_sp_type.AlignOfSwampRune), "runeLiteral"+t.String())
 			code.LoadRune(runeStorage.Pos, instruction_sp.ShortRune(t.Value()))
 
 			return targetToSourceStackPosRange(runeStorage), nil
 		}
 	case *decorated.BooleanLiteral:
 		{
-			boolStorage := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampBool), uint32(dectype.AlignOfSwampBool), "boolLiteral"+t.String())
+			boolStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampBool), uint32(opcode_sp_type.AlignOfSwampBool), "boolLiteral"+t.String())
 			code.LoadBool(boolStorage.Pos, t.Value())
 
 			return targetToSourceStackPosRange(boolStorage), nil

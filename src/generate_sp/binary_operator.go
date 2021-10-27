@@ -3,10 +3,11 @@ package generate_sp
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/instruction_sp"
+	"github.com/swamp/opcodes/instruction_sp"
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 func booleanToBinaryIntOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
@@ -88,7 +89,7 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 }
 
 func handleBinaryOperatorBooleanResult(code *assembler_sp.Code, operator *decorated.BooleanOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	target := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampBool), uint32(dectype.AlignOfSwampBool), "booleanOperatorTarget")
+	target := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampBool), uint32(opcode_sp_type.AlignOfSwampBool), "booleanOperatorTarget")
 	if err := generateBinaryOperatorBooleanResult(code, target, operator, genContext); err != nil {
 		return assembler_sp.SourceStackPosRange{}, err
 	}

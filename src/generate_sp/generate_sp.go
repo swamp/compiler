@@ -8,14 +8,14 @@ package generate_sp
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/instruction_sp"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
+	"github.com/swamp/opcodes/instruction_sp"
 	swamppack "github.com/swamp/pack/lib"
 )
 

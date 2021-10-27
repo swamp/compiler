@@ -3,7 +3,7 @@ package generate_sp
 import (
 	"encoding/binary"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	swamppacksp "github.com/swamp/compiler/src/swamp_pack_sp"
 )
 

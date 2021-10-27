@@ -3,9 +3,10 @@ package generate_sp
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, call *decorated.CurryFunction,
@@ -67,7 +68,7 @@ func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 
 func handleCurry(code *assembler_sp.Code, call *decorated.CurryFunction,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	targetPosRange := genContext.context.stackMemory.Allocate(uint(dectype.Sizeof64BitPointer), uint32(dectype.Alignof64BitPointer), "")
+	targetPosRange := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.Sizeof64BitPointer), uint32(opcode_sp_type.Alignof64BitPointer), "")
 
 	if err := generateCurry(code, targetPosRange, call, genContext); err != nil {
 		return assembler_sp.SourceStackPosRange{}, err

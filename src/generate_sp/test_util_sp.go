@@ -12,12 +12,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	deccy "github.com/swamp/compiler/src/decorated"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
-	swampdisasmsp "github.com/swamp/compiler/src/disassemble_sp"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
+	swampdisasmsp "github.com/swamp/disassembler/lib"
 )
 
 func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {

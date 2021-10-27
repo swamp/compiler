@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/verbosity"
 )

@@ -13,13 +13,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	swampdisasmsp "github.com/swamp/compiler/src/disassemble_sp"
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/generate_sp"
@@ -28,6 +27,8 @@ import (
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
+	swampdisasmsp "github.com/swamp/disassembler/lib"
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 func CheckUnused(world *loader.Package) {
@@ -222,10 +223,10 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 					for index, param := range maybeFunction.Parameters() {
 						unaliased := dectype.Unalias(maybeFunction.Parameters()[index].Type())
 						if dectype.ArgumentNeedsTypeIdInsertedBefore(unaliased) || dectype.IsTypeIdRef(unaliased) {
-							pos = align(pos, dectype.AlignOfSwampInt)
+							pos = align(pos, dectype.MemoryAlign(opcode_sp_type.AlignOfSwampInt))
 							typeIndexPosRange := assembler_sp.SourceStackPosRange{
 								Pos:  assembler_sp.SourceStackPos(pos),
-								Size: assembler_sp.SourceStackRange(dectype.SizeofSwampInt),
+								Size: assembler_sp.SourceStackRange(opcode_sp_type.SizeofSwampInt),
 							}
 							paramPosRanges = append(paramPosRanges, typeIndexPosRange)
 							pos += dectype.MemoryOffset(typeIndexPosRange.Size)
@@ -261,7 +262,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						pos += dectype.MemoryOffset(paramSize)
 					}
 					parameterOctetSize := dectype.MemorySize(pos)
-					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), returnSize, returnAlign, parameterCount, parameterOctetSize, uint(functionTypeIndex)); err != nil {
+					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), opcode_sp_type.MemorySize(returnSize), opcode_sp_type.MemoryAlign(returnAlign), parameterCount, opcode_sp_type.MemorySize(parameterOctetSize), uint(functionTypeIndex)); err != nil {
 						return decorated.NewInternalError(err)
 					}
 				}

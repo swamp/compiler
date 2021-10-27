@@ -12,6 +12,8 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
+
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 type RecordAtom struct {
@@ -60,18 +62,6 @@ func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
 	return s.record.FetchPositionLength()
 }
 
-const (
-	Sizeof64BitPointer  MemorySize  = 8
-	Alignof64BitPointer MemoryAlign = 8
-	SizeofSwampInt      MemorySize  = 4
-	SizeofSwampRune     MemorySize  = 4
-	SizeofSwampBool     MemorySize  = 1
-
-	AlignOfSwampBool = MemoryAlign(SizeofSwampBool)
-	AlignOfSwampRune = MemoryAlign(SizeofSwampRune)
-	AlignOfSwampInt  = MemoryAlign(SizeofSwampInt)
-)
-
 func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	if p == nil {
 		panic(fmt.Errorf("nil is not allowed"))
@@ -85,27 +75,27 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 			name := t.PrimitiveName().Name()
 			switch name {
 			case "List":
-				return Sizeof64BitPointer, Alignof64BitPointer
+				return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 			case "Array":
-				return Sizeof64BitPointer, Alignof64BitPointer
+				return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 			case "Blob":
-				return Sizeof64BitPointer, Alignof64BitPointer
+				return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 			case "Bool":
-				return SizeofSwampBool, AlignOfSwampBool
+				return MemorySize(opcode_sp_type.SizeofSwampBool), MemoryAlign(opcode_sp_type.AlignOfSwampBool)
 			case "Int":
-				return SizeofSwampInt, AlignOfSwampInt
+				return MemorySize(opcode_sp_type.SizeofSwampInt), MemoryAlign(opcode_sp_type.AlignOfSwampInt)
 			case "Fixed":
-				return SizeofSwampInt, AlignOfSwampInt
+				return MemorySize(opcode_sp_type.SizeofSwampInt), MemoryAlign(opcode_sp_type.AlignOfSwampInt)
 			case "ResourceName": // Resource names are translated to integers
-				return SizeofSwampInt, AlignOfSwampInt
+				return MemorySize(opcode_sp_type.SizeofSwampInt), MemoryAlign(opcode_sp_type.AlignOfSwampInt)
 			case "TypeRef":
-				return SizeofSwampInt, AlignOfSwampInt
+				return MemorySize(opcode_sp_type.SizeofSwampInt), MemoryAlign(opcode_sp_type.AlignOfSwampInt)
 			case "Char":
-				return SizeofSwampInt, AlignOfSwampInt
+				return MemorySize(opcode_sp_type.SizeofSwampInt), MemoryAlign(opcode_sp_type.AlignOfSwampInt)
 			case "String":
-				return Sizeof64BitPointer, Alignof64BitPointer
+				return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 			case "Any":
-				return Sizeof64BitPointer, Alignof64BitPointer
+				return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 			}
 			panic(fmt.Errorf("do not know primitive atom of '%s' %v %T", name, p, unaliased))
 		}
@@ -114,9 +104,9 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	case *CustomTypeVariant:
 		return t.debugMemorySize, t.debugMemoryAlign
 	case *FunctionAtom:
-		return Sizeof64BitPointer, Alignof64BitPointer
+		return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 	case *UnmanagedType:
-		return Sizeof64BitPointer, Alignof64BitPointer
+		return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 	case *TupleTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	case *LocalType:

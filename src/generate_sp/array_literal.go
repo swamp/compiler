@@ -3,10 +3,10 @@ package generate_sp
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/opcode_sp_type"
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
@@ -29,7 +29,7 @@ func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 
 func handleArray(code *assembler_sp.Code,
 	array *decorated.ArrayLiteral, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	posRange := genContext.context.stackMemory.Allocate(uint(dectype.Sizeof64BitPointer), uint32(dectype.Alignof64BitPointer), "listLiteral")
+	posRange := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.Sizeof64BitPointer), uint32(opcode_sp_type.Alignof64BitPointer), "listLiteral")
 	if err := generateArray(code, posRange, array, genContext); err != nil {
 		return assembler_sp.SourceStackPosRange{}, err
 	}

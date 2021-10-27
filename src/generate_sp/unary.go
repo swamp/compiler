@@ -1,9 +1,9 @@
 package generate_sp
 
 import (
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	"github.com/swamp/compiler/src/instruction_sp"
+	"github.com/swamp/opcodes/instruction_sp"
 )
 
 func bitwiseToUnaryOperatorType(operatorType decorated.BitwiseUnaryOperatorType) instruction_sp.UnaryOperatorType {

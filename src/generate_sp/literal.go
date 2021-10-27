@@ -1,15 +1,15 @@
 package generate_sp
 
 import (
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	dectype "github.com/swamp/compiler/src/decorated/types"
-	"github.com/swamp/compiler/src/instruction_sp"
+	"github.com/swamp/opcodes/instruction_sp"
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 func generateStringLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.StringLiteral,
 	constants *assembler_sp.PackageConstants) error {
-	if target.Size != assembler_sp.StackRange(dectype.Sizeof64BitPointer) {
+	if target.Size != assembler_sp.StackRange(opcode_sp_type.Sizeof64BitPointer) {
 		panic("wrong size")
 	}
 
@@ -19,7 +19,7 @@ func generateStringLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 }
 
 func generateCharacterLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.CharacterLiteral) error {
-	if target.Size != assembler_sp.StackRange(dectype.SizeofSwampInt) {
+	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
 
@@ -33,7 +33,7 @@ func generateTypeIdLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 	if err != nil {
 		return err
 	}
-	if target.Size != assembler_sp.StackRange(dectype.SizeofSwampInt) {
+	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
 
@@ -42,7 +42,7 @@ func generateTypeIdLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 }
 
 func generateIntLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, integer *decorated.IntegerLiteral) error {
-	if target.Size != assembler_sp.StackRange(dectype.SizeofSwampInt) {
+	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
 
@@ -51,7 +51,7 @@ func generateIntLiteral(code *assembler_sp.Code, target assembler_sp.TargetStack
 }
 
 func generateFixedLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, fixed *decorated.FixedLiteral) error {
-	if target.Size != assembler_sp.StackRange(dectype.SizeofSwampInt) {
+	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
 
@@ -61,7 +61,7 @@ func generateFixedLiteral(code *assembler_sp.Code, target assembler_sp.TargetSta
 
 func generateResourceNameLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	resourceName *decorated.ResourceNameLiteral, context *assembler_sp.PackageConstants) error {
-	if target.Size != assembler_sp.StackRange(dectype.SizeofSwampInt) {
+	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
 	constant := context.AllocateResourceNameConstant(resourceName.Value())
@@ -71,7 +71,7 @@ func generateResourceNameLiteral(code *assembler_sp.Code, target assembler_sp.Ta
 
 func generateBoolLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	boolLiteral *decorated.BooleanLiteral) error {
-	if target.Size != assembler_sp.StackRange(dectype.SizeofSwampBool) {
+	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampBool) {
 		panic("wrong size")
 	}
 	code.LoadBool(target.Pos, boolLiteral.Value())

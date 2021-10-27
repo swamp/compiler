@@ -3,9 +3,10 @@ package generate_sp
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/assembler_sp"
+	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype.MemoryOffset {
@@ -69,9 +70,9 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
 		if needsTypeId {
-			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(dectype.SizeofSwampInt), uint32(dectype.AlignOfSwampInt), "typeid")
+			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampInt), uint32(opcode_sp_type.AlignOfSwampInt), "typeid")
 			arguments = append(arguments, anySourcePosGen)
-			argumentsAlign = append(argumentsAlign, dectype.AlignOfSwampInt)
+			argumentsAlign = append(argumentsAlign, dectype.MemoryAlign(opcode_sp_type.AlignOfSwampInt))
 		}
 		argPosRange, align := allocMemoryForTypeEx(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
 		arguments = append(arguments, argPosRange)
