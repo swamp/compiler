@@ -73,6 +73,9 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 		if nch == '=' {
 			operatorType = token.OperatorGreaterOrEqual
 			raw += string(nch)
+		} else if nch == '>' {
+			raw += string(nch)
+			operatorType = token.OperatorBitwiseShiftRight
 		} else {
 			operatorType = token.OperatorGreater
 			t.unreadRune()
@@ -86,6 +89,9 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			} else {
 				operatorType = token.OperatorLessOrEqual
 			}
+		} else if nch == '<' {
+			raw += string(nch)
+			operatorType = token.OperatorBitwiseShiftLeft
 		} else {
 			operatorType = token.OperatorLess
 			t.unreadRune()

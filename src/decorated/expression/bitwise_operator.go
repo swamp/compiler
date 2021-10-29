@@ -20,6 +20,8 @@ const (
 	BitwiseOr BitwiseOperatorType = iota
 	BitwiseAnd
 	BitwiseXor
+	BitwiseShiftLeft
+	BitwiseShiftRight
 	BitwiseNot
 )
 

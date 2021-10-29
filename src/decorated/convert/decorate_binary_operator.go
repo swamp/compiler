@@ -68,10 +68,16 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 		return decorated.BitwiseAnd, true
 	case token.OperatorBitwiseOr:
 		return decorated.BitwiseOr, true
+	case token.OperatorUpdate:
+		return decorated.BitwiseOr, true
 	case token.OperatorBitwiseXor:
 		return decorated.BitwiseXor, true
 	case token.OperatorBitwiseNot:
 		return decorated.BitwiseNot, true
+	case token.OperatorBitwiseShiftLeft:
+		return decorated.BitwiseShiftLeft, true
+	case token.OperatorBitwiseShiftRight:
+		return decorated.BitwiseShiftRight, true
 	}
 	return 0, false
 }

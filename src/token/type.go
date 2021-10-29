@@ -29,6 +29,8 @@ const (
 	OperatorBitwiseAnd
 	OperatorBitwiseXor
 	OperatorBitwiseNot
+	OperatorBitwiseShiftLeft
+	OperatorBitwiseShiftRight
 	OperatorAppend
 	OperatorCons
 	Colon
