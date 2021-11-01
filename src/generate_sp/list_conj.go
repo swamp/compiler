@@ -3,6 +3,8 @@ package generate_sp
 import (
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
+	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
 func generateListCons(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.ConsOperator, genContext *generateContext) error {
@@ -18,7 +20,9 @@ func generateListCons(code *assembler_sp.Code, target assembler_sp.TargetStackPo
 		return rightErr
 	}
 
-	code.ListConj(target.Pos, leftVar.Pos, rightVar.Pos)
+	itemSize, itemAlign := dectype.GetMemorySizeAndAlignment(operator.Left().Type())
+
+	code.ListConj(target.Pos, leftVar.Pos, assembler_sp.StackItemSize(itemSize), opcode_sp_type.MemoryAlign(itemAlign), rightVar.Pos)
 
 	return nil
 }
