@@ -78,7 +78,7 @@ type ParseStream interface {
 	eatIn() parerr.ParseError
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// was. it symbol was detected, it is same as 'read', but returns false without any error if symbol wasn't present.
+	// was. if symbol was detected, it is same as 'read', but returns false without any error if symbol wasn't present.
 	// -----------------------------------------------------------------------------------------------------------------
 	wasDefaultSymbol() (token.RuneToken, bool)
 	wasVariableIdentifier() (*ast.VariableIdentifier, bool)

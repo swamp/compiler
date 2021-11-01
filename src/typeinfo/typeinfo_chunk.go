@@ -391,11 +391,11 @@ type TupleTypeField struct {
 }
 
 func (t TupleTypeField) String() string {
-	return fmt.Sprintf("tuplefield %s %v", t.fieldType.Ref())
+	return fmt.Sprintf("tuplefield %s", t.fieldType.Ref())
 }
 
 func (t TupleTypeField) HumanReadable() string {
-	return fmt.Sprintf("%s : %v", t.fieldType.HumanReadable())
+	return fmt.Sprintf("%v", t.fieldType.HumanReadable())
 }
 
 type TupleType struct {

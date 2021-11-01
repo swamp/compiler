@@ -47,11 +47,11 @@ func (f *ExternalFunctionValue) ForcedFunctionType() dectype.FunctionTypeLike {
 }
 
 func (f *ExternalFunctionValue) String() string {
-	return fmt.Sprintf("[externalfunction (%v) -> %v]", f.parameters)
+	return fmt.Sprintf("[externalfunction (%v) -> %v]", f.annotation, f.parameters)
 }
 
 func (f *ExternalFunctionValue) HumanReadable() string {
-	return fmt.Sprintf("[externalfunction (%v) -> %v]", f.parameters)
+	return fmt.Sprintf("[externalfunction (%v) -> %v]", f.annotation, f.parameters)
 }
 
 func (f *ExternalFunctionValue) Type() dtype.Type {

@@ -38,7 +38,7 @@ func (l *LspImpl) Compile(filename string) (*decorated.Module, error) {
 		return nil, err
 	}
 	if module == nil {
-		return nil, fmt.Errorf("module can not be nil!")
+		return nil, fmt.Errorf("module can not be nil")
 	}
 	fmt.Fprintf(os.Stderr, "COMPILE DONE!\n")
 	l.workspace.AddOrReplacePackage(world)
