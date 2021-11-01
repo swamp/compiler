@@ -64,6 +64,10 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		parameterReferenceName := t.Identifier().Name()
 
 		return genContext.context.scopeVariables.FindVariable(parameterReferenceName)
+	case *decorated.ConstantReference:
+		return generateExpressionWithSourceVar(code, t.Constant(), genContext, "constant reference")
+	case *decorated.Constant:
+		return generateExpressionWithSourceVar(code, t.Expression(), genContext, "constant")
 	case *decorated.CaseConsequenceParameterReference:
 		parameterReferenceName := t.Identifier().Name()
 
@@ -90,6 +94,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handleArithmeticMultiple(code, t, genContext)
 	case *decorated.LogicalOperator:
 		return handleLogical(code, t, genContext)
+	case *decorated.LogicalUnaryOperator:
+		return handleUnaryLogical(code, t, genContext)
 	case *decorated.BitwiseOperator:
 		return handleBitwise(code, t, genContext)
 	case *decorated.CurryFunction:
