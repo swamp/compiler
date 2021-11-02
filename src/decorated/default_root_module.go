@@ -43,13 +43,6 @@ map x y =
     __asm callexternal 00 coreListMap 01 02
 
 
-map2 : (a -> b -> c) -> List a -> List b -> List c
-map2 x y z =
-    __asm callexternal 00 coreListMap2 01 02 03
-
-
-
-
 
 any : (a -> Bool) -> List a -> Bool
 any pred coll =
@@ -153,6 +146,7 @@ head lst =
 const listCode = `
 __externalvarfn head : List a -> Maybe a
 __externalvarfn map : (a -> b) -> List a -> List b
+__externalvarfn map2 : (a -> b -> c) -> List a -> List b -> List c
 __externalvarfn isEmpty : List a -> Bool
 __externalvarfn length : List a -> Int
 __externalvarexfn foldl : (a -> b -> b) -> b -> List a -> b
