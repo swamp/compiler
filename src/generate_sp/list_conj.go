@@ -26,3 +26,12 @@ func generateListCons(code *assembler_sp.Code, target assembler_sp.TargetStackPo
 
 	return nil
 }
+
+func handleListCons(code *assembler_sp.Code, operator *decorated.ConsOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	posRange := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.Sizeof64BitPointer), uint32(opcode_sp_type.Alignof64BitPointer), "list struct pointer")
+	if err := generateListCons(code, posRange, operator, genContext); err != nil {
+		return assembler_sp.SourceStackPosRange{}, err
+	}
+
+	return targetToSourceStackPosRange(posRange), nil
+}

@@ -96,6 +96,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return handleLogical(code, t, genContext)
 	case *decorated.LogicalUnaryOperator:
 		return handleUnaryLogical(code, t, genContext)
+	case *decorated.ConsOperator:
+		return handleListCons(code, t, genContext)
 	case *decorated.BitwiseOperator:
 		return handleBitwise(code, t, genContext)
 	case *decorated.CurryFunction:

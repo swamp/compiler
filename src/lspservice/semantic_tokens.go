@@ -668,6 +668,7 @@ func addSemanticTokenLetVariableReference(letVarReference *decorated.LetVariable
 }
 
 func addSemanticTokenString(stringLiteral *decorated.StringLiteral, builder *SemanticBuilder) error {
+	log.Printf("encoding string '%v'", stringLiteral)
 	if err := builder.EncodeSymbol(stringLiteral.FetchPositionLength().Range, "string", nil); err != nil {
 		return err
 	}
@@ -689,9 +690,11 @@ func addSemanticTokenBooleanLiteral(stringLiteral *decorated.BooleanLiteral, bui
 }
 
 func addSemanticTokenStringInterpolation(stringInterpolation *decorated.StringInterpolation, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(stringInterpolation.FetchPositionLength().Range, "string", nil); err != nil {
-		return err
-	}
+	/*
+		if err := builder.EncodeSymbol(stringInterpolation.FetchPositionLength().Range, "string", nil); err != nil {
+			return err
+		}
+	*/
 	return nil
 }
 
