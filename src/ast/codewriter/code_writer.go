@@ -455,14 +455,6 @@ func writeDefinitionAssignmentConstant(definition *ast.ConstantDefinition, color
 	WriteExpression(definition.Expression(), colorer, indentation+1)
 }
 
-func writeExternalFunction(externalFunction *ast.ExternalFunction, colorer coloring.Colorer, indentation int) {
-	colorer.KeywordString("__externalfn")
-	colorer.OneSpace()
-	colorer.KeywordString(externalFunction.FunctionName())
-	colorer.OneSpace()
-	colorer.KeywordString(fmt.Sprintf("%v", externalFunction.ParameterCount()))
-}
-
 func writeImport(importStatement *ast.Import, colorer coloring.Colorer, indentation int) {
 	colorer.KeywordString("import")
 	colorer.OneSpace()
@@ -649,8 +641,7 @@ func WriteStatementUsingColorer(expression ast.Expression, colorer coloring.Colo
 		WriteAliasStatement(t, colorer, indentation)
 	case *ast.FunctionValueNamedDefinition:
 		writeDefinitionAssignment(t, colorer, indentation)
-	case *ast.ExternalFunction:
-		writeExternalFunction(t, colorer, indentation)
+
 	case *ast.Import:
 		writeImport(t, colorer, indentation)
 	case *ast.Annotation:

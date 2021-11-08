@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
-	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -24,7 +23,6 @@ import (
 	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/solution"
-	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 	swampdisasmsp "github.com/swamp/disassembler/lib"
@@ -122,10 +120,11 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	if worldDecoratorErr != nil {
 		return nil, nil, worldDecoratorErr
 	}
-	for _, rootModule := range worldDecorator.ImportModules() {
-		world.AddModule(rootModule.FullyQualifiedModuleName(), rootModule)
-	}
-
+	/*
+		for _, rootModule := range worldDecorator.ImportModules() {
+			world.AddModule(rootModule.FullyQualifiedModuleName(), rootModule)
+		}
+	*/
 	mainNamespace := dectype.MakePackageRootModuleName(nil)
 
 	rootPackage := NewPackageLoader(mainPrefix, documentProvider, mainNamespace, world, worldDecorator)
@@ -172,10 +171,6 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	gen := generate_sp.NewGenerator()
 
 	var allFunctions []*assembler_sp.Constant
-
-	var allExternalFunctions []*generate_sp.ExternalFunction
-
-	fakeMod := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(nil), nil)
 
 	err := typeinfo.GeneratePackageToChunk(compiledPackage, typeInformationChunk)
 	if err != nil {
@@ -285,15 +280,6 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		constants = createdConstants
 
 		allFunctions = append(allFunctions, functions...)
-		externalFunctions := module.ExternalFunctions()
-
-		for _, externalFunction := range externalFunctions {
-			fakeName := decorated.NewFullyQualifiedVariableName(fakeMod,
-				ast.NewVariableIdentifier(token.NewVariableSymbolToken(externalFunction.AstExternalFunction.FunctionName(),
-					token.SourceFileReference{}, 0))) //nolint:exhaustivestruct
-			fakeFunc := generate_sp.NewExternalFunction(fakeName, 0, externalFunction.AstExternalFunction.ParameterCount())
-			allExternalFunctions = append(allExternalFunctions, fakeFunc)
-		}
 	}
 
 	if verboseFlag >= verbosity.Mid || showAssembler {

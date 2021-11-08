@@ -30,6 +30,8 @@ func tryConvertToArithmeticOperator(operatorType token.Type) (decorated.Arithmet
 		return decorated.ArithmeticMultiply, true
 	case token.OperatorDivide:
 		return decorated.ArithmeticDivide, true
+	case token.OperatorRemainder:
+		return decorated.ArithmeticRemainder, true
 	}
 	return 0, false
 }

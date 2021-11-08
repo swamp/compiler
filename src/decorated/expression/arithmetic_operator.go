@@ -21,6 +21,7 @@ const (
 	ArithmeticMinus
 	ArithmeticMultiply
 	ArithmeticDivide
+	ArithmeticRemainder
 	ArithmeticAppend
 	ArithmeticCons
 	ArithmeticFixedMultiply
@@ -66,6 +67,8 @@ func arithmeticOperatorToString(t ArithmeticOperatorType) string {
 		return "MULTIPLY"
 	case ArithmeticDivide:
 		return "DIVIDE"
+	case ArithmeticRemainder:
+		return "REMAINDER"
 	case ArithmeticAppend:
 		return "APPEND"
 	case ArithmeticCons:

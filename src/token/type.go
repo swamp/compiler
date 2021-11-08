@@ -13,6 +13,7 @@ const (
 	OperatorUnaryMinus
 	OperatorMultiply
 	OperatorDivide
+	OperatorRemainder
 	OperatorPipeRight
 	OperatorPipeLeft
 	OperatorArrowRight

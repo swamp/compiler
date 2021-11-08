@@ -39,7 +39,7 @@ func (s *CustomTypeAtom) MemoryAlignment() MemoryAlign {
 }
 
 func (s *CustomTypeAtom) String() string {
-	return fmt.Sprintf("[custom-type %v]", s.variants)
+	return fmt.Sprintf("[custom-type %v %v]", s.artifactTypeName, s.variants)
 }
 
 func (s *CustomTypeAtom) HumanReadable() string {

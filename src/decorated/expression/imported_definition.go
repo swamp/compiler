@@ -50,6 +50,10 @@ func (d *ImportedDefinition) String() string {
 	return fmt.Sprintf("[imdefx %v = %v]", d.localIdentifier, d.referencedDefinition)
 }
 
+func (d *ImportedDefinition) ShortString() string {
+	return fmt.Sprintf("[imdefx %v = %v]", d.localIdentifier, d.referencedDefinition.ShortString())
+}
+
 func (d *ImportedDefinition) Definition() ModuleDef {
 	return d.referencedDefinition
 }

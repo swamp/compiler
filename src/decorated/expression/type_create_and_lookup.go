@@ -1,10 +1,13 @@
 package decorated
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/token"
 )
 
 type TypeCreateAndLookup struct {
@@ -29,7 +32,13 @@ func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.Typ
 }
 
 func (l *TypeCreateAndLookup) FindBuiltInType(s string) dtype.Type {
-	return l.localTypes.FindBuiltInType(s)
+	identifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(s, token.SourceFileReference{}, 0))
+	foundType, _, err := l.lookup.FindType(identifier)
+	if err != nil {
+		panic(fmt.Errorf("could not find %v", identifier))
+	}
+
+	return foundType
 }
 
 func (l *TypeCreateAndLookup) SourceModule() *Module {

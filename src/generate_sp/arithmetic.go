@@ -18,6 +18,8 @@ func arithmeticToBinaryOperatorType(operatorType decorated.ArithmeticOperatorTyp
 		return instruction_sp.BinaryOperatorArithmeticIntMultiply
 	case decorated.ArithmeticDivide:
 		return instruction_sp.BinaryOperatorArithmeticIntDivide
+	case decorated.ArithmeticRemainder:
+		return instruction_sp.BinaryOperatorArithmeticIntRemainder
 	case decorated.ArithmeticAppend:
 		return instruction_sp.BinaryOperatorArithmeticListAppend
 	case decorated.ArithmeticFixedMultiply:

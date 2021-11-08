@@ -26,10 +26,9 @@ func LinePaddingAfter(expression Node) int {
 		return 0
 	}
 
-	_, isExternalFn := expression.(*ExternalFunction)
 	_, isImport := expression.(*Import)
 	_, isAnnotation := expression.(*Annotation)
-	isSingleLineStatement := isExternalFn || isImport || isAnnotation
+	isSingleLineStatement := isImport || isAnnotation
 
 	lines := 1
 	if isSingleLineStatement {
@@ -44,9 +43,8 @@ func ExpectedLinePaddingAfter(expression Node) int {
 		return 0
 	}
 
-	_, isExternalFn := expression.(*ExternalFunction)
 	_, isImport := expression.(*Import)
-	dontCare := isExternalFn || isImport
+	dontCare := isImport
 
 	_, isAnnotation := expression.(*Annotation)
 	mustBeSingleLine := isAnnotation

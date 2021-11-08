@@ -74,8 +74,25 @@ type TypeError interface {
 
 
  */
+
+type UnknownType struct {
+	sourceFileReference token.SourceFileReference
+	errString           string
+}
+
+func (c *UnknownType) Error() string {
+	return c.errString
+}
+
+func (c *UnknownType) FetchPositionLength() token.SourceFileReference {
+	return c.sourceFileReference
+}
+
 func (t *ModuleTypes) AddTypeAlias(alias *dectype.Alias) TypeError {
-	t.internalAddType(alias.TypeIdentifier(), alias)
+	if err := t.internalAddType(alias.TypeIdentifier(), alias); err != nil {
+		return &UnknownType{sourceFileReference: alias.AstAlias().FetchPositionLength(), errString: err.Error()}
+	}
+
 	return nil
 }
 

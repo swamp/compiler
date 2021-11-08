@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 )
@@ -24,6 +25,15 @@ func NewModuleDefinitions(ownedByModule *Module) *ModuleDefinitions {
 		ownedByModule: ownedByModule,
 		definitions:   make(map[string]*ModuleDefinition),
 	}
+}
+
+func (d *ModuleDefinitions) CopyFrom(other *ModuleDefinitions) error {
+	for x, y := range other.definitions {
+		log.Printf("overwriting %v\n", x)
+		d.definitions[x] = y
+	}
+
+	return nil
 }
 
 func (d *ModuleDefinitions) OwnedByModule() *Module {

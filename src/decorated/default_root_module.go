@@ -202,9 +202,9 @@ __externalvarfn fromList : List a -> Array a
 __externalvarfn toList : Array a -> List a
 __externalvarfn grab : Int -> Array a -> a
 __externalvarfn length : Array a -> Int
+__externalvarfn get : Int -> Array a -> Maybe a
 -- __externalvarfn slice : Int -> Int -> Array a -> Array a
 -- __externalvarfn repeat : Int -> a -> Array a
--- __externalvarfn get : Int -> Array a -> Maybe a
 -- __externalvarfn set : Int -> a -> Array a -> Array a
 `
 
@@ -257,22 +257,28 @@ __externalfn fromCode : Int -> Char
 const typeIdCode = `
 `
 
-const globalCode = `
+const stdCode = `
+type Result a b =
+    Ok a
+    | Err b
+
 
 type Maybe a =
     Nothing
     | Just a
+
+__externalfn panic : String -> Any
 `
 
-func compileToGlobal(targetModule *decorated.Module, globalModule *decorated.Module, name string, code string) (*decorated.Module, decshared.DecoratedError) {
+func compileToModule(globalModule *decorated.Module, name string, code string) (*decorated.Module, decshared.DecoratedError) {
 	const verbose = verbosity.Low
 	const enforceStyle = true
 	const errorAsWarning = false
 
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(name, token.SourceFileReference{}, 0))
 
-	newModule, err := InternalCompileToModule(decorated.ModuleTypeNormal, nil, []*decorated.Module{globalModule, targetModule},
-		nil, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})),
+	newModule, err := InternalCompileToModule(decorated.ModuleTypeNormal, nil, globalModule,
+		dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})),
 		name, strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
 	if err != nil {
 		return nil, err
@@ -282,75 +288,76 @@ func compileToGlobal(targetModule *decorated.Module, globalModule *decorated.Mod
 
 	// moduleReference := ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})
 
-	ExposeEverythingInModule(newModule)
+	//newModule.DebugOutput("before EXPOSEEVERYTHINGINMODULE")
+	/*
+	   if exposeErr := ExposeEverythingInModule(newModule); exposeErr != nil {
+	   		return nil, exposeErr
+	   	}
+	*/
 
-	return newModule, nil
+	return newModule, err
 }
 
-func addCores(targetModule *decorated.Module, globalPrimitiveModule *decorated.Module) ([]*decorated.Module, decshared.DecoratedError) {
-	var importModules []*decorated.Module
-	mathModule, mathModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Math", mathCode)
-	if mathModuleErr != nil {
-		return nil, mathModuleErr
+func compileAndAddToModule(targetModule *decorated.Module, name string, code string) decshared.DecoratedError {
+	newModule, err := compileToModule(targetModule, name, code)
+	if err != nil {
+		return err
 	}
-	importModules = append(importModules, mathModule)
-	listModule, listModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "List", listCode)
-	if listModuleErr != nil {
-		return nil, listModuleErr
-	}
-	importModules = append(importModules, listModule)
 
-	maybeModule, maybeModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Maybe", maybeCode)
-	if maybeModuleErr != nil {
-		return nil, maybeModuleErr
-	}
-	importModules = append(importModules, maybeModule)
+	reference := newModule.FullyQualifiedModuleName().ModuleName.Path()
+	targetModule.ImportedModules().ImportModule(reference, newModule, targetModule)
 
-	intModule, intModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Int", intCode)
-	if intModuleErr != nil {
-		return nil, intModuleErr
-	}
-	importModules = append(importModules, intModule)
+	return nil
+}
 
-	debugModule, debugModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Debug", debugCode)
-	if debugModuleErr != nil {
-		return nil, debugModuleErr
+func addCores(globalPrimitiveModule *decorated.Module) decshared.DecoratedError {
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Maybe", maybeCode); maybeModuleErr != nil {
+		return maybeModuleErr
 	}
-	importModules = append(importModules, debugModule)
 
-	arrayModule, arrayModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Array", arrayCode)
-	if arrayModuleErr != nil {
-		return nil, arrayModuleErr
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Math", mathCode); maybeModuleErr != nil {
+		return maybeModuleErr
 	}
-	importModules = append(importModules, arrayModule)
 
-	blobModule, blobModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Blob", blobCode)
-	if blobModuleErr != nil {
-		return nil, blobModuleErr
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "List", listCode); maybeModuleErr != nil {
+		return maybeModuleErr
 	}
-	importModules = append(importModules, blobModule)
 
-	charModule, charModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Char", charCode)
-	if charModuleErr != nil {
-		return nil, charModuleErr
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Int", intCode); maybeModuleErr != nil {
+		return maybeModuleErr
 	}
-	importModules = append(importModules, charModule)
+
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Debug", debugCode); maybeModuleErr != nil {
+		return maybeModuleErr
+	}
+
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Array", arrayCode); maybeModuleErr != nil {
+		return maybeModuleErr
+	}
+
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Blob", blobCode); maybeModuleErr != nil {
+		return maybeModuleErr
+	}
+
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Char", charCode); maybeModuleErr != nil {
+		return maybeModuleErr
+	}
 
 	/*
-		tupleModule, tupleModuleErr := compileToGlobal(targetModule, globalPrimitiveModule, "Tuple", tupleCode)
+		tupleModule, tupleModuleErr := compileToModule(stdModule, globalPrimitiveModule, "Tuple", tupleCode)
 		if tupleModuleErr != nil {
 			return nil, listModuleErr
 		}
 		importModules = append(importModules, tupleModule)
 
-		typeId, typeIdErr := compileToGlobal(targetModule, globalPrimitiveModule, "TypeRef", typeIdCode)
+		typeId, typeIdErr := compileToModule(stdModule, globalPrimitiveModule, "TypeRef", typeIdCode)
 		if typeIdErr != nil {
 			return nil, typeIdErr
 		}
 		importModules = append(importModules, typeId)
 	*/
 
-	return importModules, nil
+	return nil
 }
 
 func createTypeIdentifier(name string) *ast.TypeIdentifier {
@@ -363,13 +370,11 @@ func addPrimitive(types *decorated.ModuleTypes, atom *dectype.PrimitiveAtom) {
 	types.InternalAddPrimitive(atom.PrimitiveName(), atom)
 }
 
-func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorated.Module, decshared.DecoratedError) {
-	var importModules []*decorated.Module
-	var copyModules []*decorated.Module
+func kickstartPrimitives() *decorated.Module {
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("root-module", token.SourceFileReference{}, 0))
 	rootPrimitiveModule := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), nil)
 	rootPrimitiveModule.MarkAsInternal()
-	globalModuleTypes := rootPrimitiveModule.LocalTypes()
+	primitiveModuleLocalTypes := rootPrimitiveModule.LocalTypes()
 
 	anyType := dectype.NewAnyType()
 	integerType := dectype.NewPrimitiveType(createTypeIdentifier("Int"), nil)
@@ -381,15 +386,15 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	blobType := dectype.NewPrimitiveType(createTypeIdentifier("Blob"), nil)
 	unmanagedType := dectype.NewPrimitiveType(createTypeIdentifier("Unmanaged"), nil)
 
-	addPrimitive(globalModuleTypes, anyType)
-	addPrimitive(globalModuleTypes, integerType)
-	addPrimitive(globalModuleTypes, fixedType)
-	addPrimitive(globalModuleTypes, resourceNameType)
-	addPrimitive(globalModuleTypes, stringType)
-	addPrimitive(globalModuleTypes, charType)
-	addPrimitive(globalModuleTypes, boolType)
-	addPrimitive(globalModuleTypes, blobType)
-	addPrimitive(globalModuleTypes, unmanagedType)
+	addPrimitive(primitiveModuleLocalTypes, anyType)
+	addPrimitive(primitiveModuleLocalTypes, integerType)
+	addPrimitive(primitiveModuleLocalTypes, fixedType)
+	addPrimitive(primitiveModuleLocalTypes, resourceNameType)
+	addPrimitive(primitiveModuleLocalTypes, stringType)
+	addPrimitive(primitiveModuleLocalTypes, charType)
+	addPrimitive(primitiveModuleLocalTypes, boolType)
+	addPrimitive(primitiveModuleLocalTypes, blobType)
+	addPrimitive(primitiveModuleLocalTypes, unmanagedType)
 
 	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.SourceFileReference{}, 0))
 
@@ -398,44 +403,49 @@ func CreateDefaultRootModule(includeCores bool) ([]*decorated.Module, []*decorat
 	localType := dectype.NewLocalType(typeParameter)
 	listType := dectype.NewPrimitiveType(listIdentifier, []dtype.Type{localType})
 
-	addPrimitive(globalModuleTypes, listType)
+	addPrimitive(primitiveModuleLocalTypes, listType)
 
 	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.SourceFileReference{}, 0))
 	arrayType := dectype.NewPrimitiveType(arrayIdentifier, []dtype.Type{localType})
 
-	addPrimitive(globalModuleTypes, arrayType)
+	addPrimitive(primitiveModuleLocalTypes, arrayType)
 
 	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.SourceFileReference{}, 0))
 	typeRefType := dectype.NewPrimitiveType(typeRefIdentifier, []dtype.Type{localType})
 
-	addPrimitive(globalModuleTypes, typeRefType)
+	addPrimitive(primitiveModuleLocalTypes, typeRefType)
 
-	const verbose = verbosity.Mid
+	ExposeEverythingInModule(rootPrimitiveModule)
 
-	const enforceStyle = true
+	return rootPrimitiveModule
+}
 
-	defaultImportName := ast.NewTypeIdentifier(token.NewTypeSymbolToken("DefaultImport", token.SourceFileReference{}, 0))
+func CreateDefaultRootModule(includeCores bool) (*decorated.Module, decshared.DecoratedError) {
+	primitiveModule := kickstartPrimitives()
 
-	globalModule, globalModuleErr := InternalCompileToModule(decorated.ModuleTypeNormal, nil, nil, nil,
-		dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(defaultImportName)})), "(internal root)",
-		strings.TrimSpace(globalCode), enforceStyle, verbose, false)
-	if globalModuleErr != nil {
-		return nil, nil, globalModuleErr
+	stdModule, stdModuleErr := compileToModule(primitiveModule, "Std", stdCode)
+	if stdModuleErr != nil {
+		return nil, stdModuleErr
 	}
-	globalModule.MarkAsInternal()
+	if err := primitiveModule.LocalTypes().CopyTypes(stdModule.LocalTypes().AllTypes()); err != nil {
+	}
+	/*
+		primitiveModule.LocalDefinitions().CopyFrom(stdModule.LocalDefinitions())
+		importModules = append(importModules, stdModule)
+	*/
+
+	ExposeEverythingInModule(primitiveModule)
 
 	if includeCores {
 		var importModulesErr decshared.DecoratedError
-		importModules, importModulesErr = addCores(rootPrimitiveModule, globalModule)
+		importModulesErr = addCores(primitiveModule)
 		if importModulesErr != nil {
 			fmt.Printf("ERROR:%v\n", importModulesErr)
-			return nil, nil, importModulesErr
+			return nil, importModulesErr
 		}
 	}
 
-	CopyModuleToModule(rootPrimitiveModule, globalModule)
-	ExposeEverythingInModule(rootPrimitiveModule)
-	copyModules = append(copyModules, rootPrimitiveModule)
+	//log.Printf("rootPrimitiveModule is finally %v\n", primitiveModule)
 
-	return copyModules, importModules, nil
+	return primitiveModule, nil
 }

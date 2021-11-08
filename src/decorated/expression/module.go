@@ -56,8 +56,13 @@ func (q *FullyQualifiedPackageVariableName) Identifier() *ast.VariableIdentifier
 	return q.identifier
 }
 
+/*
 type ExternalFunctionDeclaration struct {
 	AstExternalFunction *ast.ExternalFunction
+}
+
+func NewExternalFunctionDeclaration(astExternalFunction *ast.ExternalFunction) *ExternalFunctionDeclaration {
+	return &ExternalFunctionDeclaration{AstExternalFunction: astExternalFunction}
 }
 
 func (d *ExternalFunctionDeclaration) FetchPositionLength() token.SourceFileReference {
@@ -71,6 +76,7 @@ func (d *ExternalFunctionDeclaration) StatementString() string {
 func (d *ExternalFunctionDeclaration) String() string {
 	return "external func"
 }
+*/
 
 func ModuleTypeToString(moduleType ModuleType) string {
 	switch moduleType {
@@ -106,7 +112,7 @@ type Module struct {
 
 	program *ast.SourceFile
 
-	externalFunctions []*ExternalFunctionDeclaration
+	// externalFunctions []*ExternalFunctionDeclaration
 
 	isInternal               bool
 	sourceFileUri            *token.SourceFileDocument
@@ -230,6 +236,8 @@ func (m *Module) IsInternal() bool {
 	return m.isInternal
 }
 
+/*
+
 func (m *Module) AddExternalFunction(function *ast.ExternalFunction) *ExternalFunctionDeclaration {
 	externalFunc := &ExternalFunctionDeclaration{AstExternalFunction: function}
 	m.externalFunctions = append(m.externalFunctions, externalFunc)
@@ -240,6 +248,8 @@ func (m *Module) AddExternalFunction(function *ast.ExternalFunction) *ExternalFu
 func (m *Module) ExternalFunctions() []*ExternalFunctionDeclaration {
 	return m.externalFunctions
 }
+
+*/
 
 func (m *Module) FullyQualifiedName(identifier *ast.VariableIdentifier) *FullyQualifiedPackageVariableName {
 	if m == nil {
@@ -292,7 +302,7 @@ func (m *Module) LocalAndImportedDefinitions() *ModuleDefinitionsCombine {
 
 func (m *Module) DebugOutput(debug string) {
 	fmt.Printf("%v: \n", debug)
-	fmt.Println(m.DebugString())
+	fmt.Println(m.String())
 }
 
 func (m *Module) ShortString() string {
@@ -302,16 +312,20 @@ func (m *Module) ShortString() string {
 func (m *Module) String() string {
 	s := "------------ " + m.fullyQualifiedModuleName.String() + " ----------- \nexposed:\n"
 	s += m.exposedTypes.DebugString()
-	s += "\n"
+	s += "\nexposed definitions:\n"
 	s += m.exposedDefinitions.ShortString()
-	s += "\nmodule:\n"
-	s += m.ShortString()
-	s += "\nimported definitions:\n"
-	s += m.importedDefinitions.ShortString()
 	s += "\nimported modules:\n"
 	s += m.importedModules.String()
 	s += "\n--------------------------------\n"
 
+	s += "\nimported definitions:\n"
+	s += m.importedDefinitions.ShortString()
+
+	s += "\nlocal types:\n"
+	s += m.localTypes.DebugString()
+	s += "\nlocal definitions:\n"
+	s += m.localDefinitions.String()
+	s += "\n--------------------------------\n"
 	return s
 }
 

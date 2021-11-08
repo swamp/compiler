@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/swamp/compiler/src/ast"
@@ -139,14 +140,15 @@ func (t *ModuleReferenceDefinitions) DebugString() string {
 	keys := sortedTypeAtomKeys(t.referencedExpressions)
 	for _, key := range keys {
 		definition := t.referencedExpressions[key]
-		s += fmt.Sprintf(".. %v => %p %v\n", key, definition, definition)
+		s += fmt.Sprintf(".. %v => %v\n", key, definition.ShortString())
 	}
 
 	return s
 }
 
-func (t *ModuleReferenceDefinitions) DebugOutput() {
-	fmt.Println(t.DebugString())
+func (t *ModuleReferenceDefinitions) DebugOutput(debugString string) {
+	log.Printf("%v\n", debugString)
+	log.Printf(t.DebugString())
 }
 
 func (t *ModuleReferenceDefinitions) ShortString() string {
@@ -154,7 +156,7 @@ func (t *ModuleReferenceDefinitions) ShortString() string {
 	keys := sortedTypeAtomKeys(t.referencedExpressions)
 	for _, key := range keys {
 		definition := t.referencedExpressions[key]
-		s += fmt.Sprintf(".. %v => %v\n", key, definition.String())
+		s += fmt.Sprintf(".. %v => %v\n", key, definition.ShortString())
 	}
 	return s
 }

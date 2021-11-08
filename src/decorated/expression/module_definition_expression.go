@@ -20,6 +20,7 @@ type ModuleDef interface {
 	WasReferenced() bool
 	IsInternal() bool
 	IsExternal() bool
+	ShortString() string
 }
 
 type ModuleDefinition struct {
@@ -62,6 +63,10 @@ func (d *ModuleDefinition) FullyQualifiedVariableName() *FullyQualifiedPackageVa
 
 func (d *ModuleDefinition) String() string {
 	return fmt.Sprintf("[mdefx %v = %v]", d.localIdentifier, d.expr)
+}
+
+func (d *ModuleDefinition) ShortString() string {
+	return fmt.Sprintf("[mdefx %v = %v]", d.localIdentifier, d.expr.Type())
 }
 
 func (d *ModuleDefinition) Expression() Expression {

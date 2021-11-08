@@ -27,6 +27,7 @@ var precedences = map[token.Type]Precedence{
 	token.OperatorCons:              SUM,
 	token.OperatorDivide:            PRODUCT,
 	token.OperatorMultiply:          PRODUCT,
+	token.OperatorRemainder:         PRODUCT,
 	token.OperatorAnd:               ANDOR,
 	token.OperatorOr:                ANDOR,
 	token.OperatorBitwiseOr:         ANDOR,

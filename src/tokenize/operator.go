@@ -182,6 +182,8 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			operatorType = token.Accessor
 		case '/':
 			operatorType = token.OperatorDivide
+		case '%':
+			operatorType = token.OperatorRemainder
 		case '^':
 			operatorType = token.OperatorBitwiseXor
 		case '~':

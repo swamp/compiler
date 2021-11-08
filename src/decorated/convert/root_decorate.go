@@ -77,8 +77,8 @@ func (g *RootStatementHandler) handleAliasStatement(astAlias *ast.Alias) (*decty
 	if !wasAlias {
 		return nil, decorated.NewInternalError(fmt.Errorf("was supposed to be an alias here"))
 	}
-
-	return alias, g.typeRepo.AddTypeAlias(alias)
+	// g.typeRepo.AddTypeAlias(alias)
+	return alias, nil
 }
 
 func (g *RootStatementHandler) findTypeFromAstType(constantType ast.Type) (dtype.Type, decorated.TypeError) {
@@ -118,11 +118,6 @@ func (g *RootStatementHandler) handleImport(d DecorateStream, importAst *ast.Imp
 	}
 	packageRelative := dectype.MakePackageRelativeModuleName(importAst.ModuleName())
 	return d.ImportModule(g.parentModuletype, importAst, packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
-}
-
-func (g *RootStatementHandler) handleExternalFunction(d DecorateStream, externalFunction *ast.ExternalFunction) (*decorated.ExternalFunctionDeclaration, decshared.DecoratedError) {
-	g.localComments = nil
-	return d.AddExternalFunction(externalFunction)
 }
 
 func (g *RootStatementHandler) handleSinglelineComment(d DecorateStream, singleLineComment *ast.SingleLineComment) (*decorated.SingleLineComment, decshared.DecoratedError) {
@@ -285,8 +280,6 @@ func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decor
 		return g.declareAnnotation(g.decorateStream, v)
 	case *ast.FunctionValueNamedDefinition:
 		return g.declareNamedFunctionValue(g.decorateStream, v)
-	case *ast.ExternalFunction:
-		return g.handleExternalFunction(g.decorateStream, v)
 	case *ast.MultilineComment:
 		return g.handleMultilineComment(g.decorateStream, v)
 	case *ast.SingleLineComment:

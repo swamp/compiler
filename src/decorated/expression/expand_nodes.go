@@ -444,8 +444,6 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return expandChildNodes(&t.UnaryOperator)
 	case *FunctionName: // Should not be expanded
 		return tokens
-	case *ExternalFunctionDeclaration: // Should not be expanded
-		return tokens
 	case *LetVariableReference: // Should not be expanded
 		return tokens
 	case *LetVariable: // Should not be expanded

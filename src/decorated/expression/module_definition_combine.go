@@ -41,11 +41,14 @@ func (d *ModuleDefinitionsCombine) FindScopedDefinitionExpression(identifier *as
 	if d.importedModules == nil {
 		log.Printf("it was scoped, but I dont have any imported modules %v", identifier)
 	}
+
+	// log.Printf("looking for module '%v'\n", identifier.ModuleReference())
 	foundModule := d.importedModules.FindModule(identifier.ModuleReference())
 	if foundModule == nil {
 		log.Printf("couldn't find module %v", identifier.ModuleReference())
 		return nil
 	}
+	// log.Printf("Found referenced module '%v'\n", identifier.ModuleReference())
 	referencedModule := foundModule.referencedModule
 	foundDef := referencedModule.exposedDefinitions.FindDefinition(identifier.AstVariableReference())
 	if foundDef == nil {
