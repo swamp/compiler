@@ -34,7 +34,7 @@ func isDigit(ch rune) bool {
 }
 
 func isHexDigit(ch rune) bool {
-	return isDigit(ch) || (ch >= 'A' && ch <= 'F') //(ch >= 'a' && ch <= 'f')
+	return isDigit(ch) || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f')
 }
 
 func isSymbol(ch rune) bool {
