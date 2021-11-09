@@ -13,12 +13,12 @@ import (
 )
 
 func TestCrunch(t *testing.T) {
-	aliasModules, importModules, mErr := CreateDefaultRootModule(true)
+	rootModule, mErr := CreateDefaultRootModule(true)
 	if mErr != nil {
 		t.Fatal(mErr)
 	}
 	const verboseFlag = verbosity.None
 	if verboseFlag > verbosity.None {
-		fmt.Printf("module\n%v\n%v\n", aliasModules, importModules)
+		fmt.Printf("module\n%v\n", rootModule)
 	}
 }

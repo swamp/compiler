@@ -241,6 +241,8 @@ const debugCode = `
 __externalfn log : String -> String
 __externalvarfn logAny : Any -> String
 __externalvarfn toString : Any -> String
+__externalfn panic : String -> Any
+
 `
 
 const intCode = `
@@ -257,17 +259,16 @@ __externalfn fromCode : Int -> Char
 const typeIdCode = `
 `
 
-const stdCode = `
+/*
+TODO: Add this
 type Result a b =
     Ok a
     | Err b
-
-
+*/
+const stdCode = `
 type Maybe a =
     Nothing
     | Just a
-
-__externalfn panic : String -> Any
 `
 
 func compileToModule(globalModule *decorated.Module, name string, code string) (*decorated.Module, decshared.DecoratedError) {
@@ -277,9 +278,16 @@ func compileToModule(globalModule *decorated.Module, name string, code string) (
 
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(name, token.SourceFileReference{}, 0))
 
+	var fullyQualifiedName dectype.ArtifactFullyQualifiedModuleName
+	if name == "" {
+		fullyQualifiedName = dectype.MakeArtifactFullyQualifiedModuleName(nil)
+	} else {
+		fullyQualifiedName = dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)}))
+	}
+
 	newModule, err := InternalCompileToModule(decorated.ModuleTypeNormal, nil, globalModule,
-		dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})),
-		name, strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
+		fullyQualifiedName,
+		name+"_internal", strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +379,7 @@ func addPrimitive(types *decorated.ModuleTypes, atom *dectype.PrimitiveAtom) {
 }
 
 func kickstartPrimitives() *decorated.Module {
-	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("root-module", token.SourceFileReference{}, 0))
+	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("", token.SourceFileReference{}, 0))
 	rootPrimitiveModule := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), nil)
 	rootPrimitiveModule.MarkAsInternal()
 	primitiveModuleLocalTypes := rootPrimitiveModule.LocalTypes()
@@ -423,12 +431,14 @@ func kickstartPrimitives() *decorated.Module {
 func CreateDefaultRootModule(includeCores bool) (*decorated.Module, decshared.DecoratedError) {
 	primitiveModule := kickstartPrimitives()
 
-	stdModule, stdModuleErr := compileToModule(primitiveModule, "Std", stdCode)
+	stdModule, stdModuleErr := compileToModule(primitiveModule, "", stdCode)
 	if stdModuleErr != nil {
 		return nil, stdModuleErr
 	}
 	if err := primitiveModule.LocalTypes().CopyTypes(stdModule.LocalTypes().AllTypes()); err != nil {
+		return nil, err
 	}
+	primitiveModule.LocalDefinitions().CopyFrom(stdModule.LocalDefinitions())
 	/*
 		primitiveModule.LocalDefinitions().CopyFrom(stdModule.LocalDefinitions())
 		importModules = append(importModules, stdModule)
@@ -445,7 +455,7 @@ func CreateDefaultRootModule(includeCores bool) (*decorated.Module, decshared.De
 		}
 	}
 
-	//log.Printf("rootPrimitiveModule is finally %v\n", primitiveModule)
+	// log.Printf("rootPrimitiveModule is finally %v\n", primitiveModule)
 
 	return primitiveModule, nil
 }

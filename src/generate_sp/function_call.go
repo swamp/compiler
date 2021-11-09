@@ -21,8 +21,10 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
 	functionAtom := dectype.UnaliasWithResolveInvoker(call.CompleteCalledFunctionType()).(*dectype.FunctionAtom)
 
-	if decorated.TypeIsTemplateHasLocalTypes(functionAtom) {
-		panic(fmt.Errorf("we can not call functions that has local types %v", functionAtom))
+	isPanic := call.AstFunctionCall().FunctionExpression().String() == "panic"
+
+	if decorated.TypeIsTemplateHasLocalTypes(functionAtom) && !isPanic {
+		// panic(fmt.Errorf("we can not call functions that has local types %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), functionAtom))
 	}
 
 	fn := call.FunctionExpression()
@@ -51,8 +53,15 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 
 	genContext.context.stackMemory.AlignUpForMax()
 
-	invokedReturnType := dectype.UnaliasWithResolveInvoker(functionAtom.ReturnType())
-	returnValue, returnValueAlign := allocMemoryForTypeEx(genContext.context.stackMemory, invokedReturnType, "returnValue")
+	var returnValue assembler_sp.TargetStackPosRange
+	var returnValueAlign dectype.MemoryAlign
+	if isPanic {
+		returnValue = genContext.context.stackMemory.Allocate(uint(opcode_sp_type.Sizeof64BitPointer), uint32(opcode_sp_type.Alignof64BitPointer), "panic fake return")
+		returnValueAlign = dectype.MemoryAlign(opcode_sp_type.Alignof64BitPointer)
+	} else {
+		invokedReturnType := dectype.UnaliasWithResolveInvoker(functionAtom.ReturnType())
+		returnValue, returnValueAlign = allocMemoryForTypeEx(genContext.context.stackMemory, invokedReturnType, "returnValue")
+	}
 	if uint(returnValue.Size) == 0 {
 		panic(fmt.Errorf("how can it have zero size in return? %v", returnValue))
 	}

@@ -13,12 +13,6 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func finalizeCustomType(customType *dectype.CustomTypeAtom) {
-	for _, variant := range customType.Variants() {
-		variant.AttachToCustomType(customType)
-	}
-}
-
 func DecorateCustomType(customTypeDefinition *ast.CustomType,
 	typeRepo decorated.TypeAddAndReferenceMaker) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	var variants []*dectype.CustomTypeVariant
@@ -42,7 +36,6 @@ func DecorateCustomType(customTypeDefinition *ast.CustomType,
 	decoratedNames := AstParametersToArgumentNames(customTypeDefinition.FindAllLocalTypes())
 	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
 	s := dectype.NewCustomType(customTypeDefinition, artifactTypeName, decoratedNames, variants)
-	finalizeCustomType(s)
 
 	return s, nil
 }

@@ -22,7 +22,7 @@ func handleFunctionReference(code *assembler_sp.Code,
 			return targetToSourceStackPosRange(targetPosRange), nil
 
 		*/
-		return assembler_sp.SourceStackPosRange{}, fmt.Errorf("%v couldn't find function reference '%s' %v", t.FetchPositionLength().ToReferenceString(), functionReferenceName, t)
+		return assembler_sp.SourceStackPosRange{}, fmt.Errorf("generatesp: %v couldn't find function reference '%s' %v", t.FetchPositionLength().ToReferenceString(), functionReferenceName, t)
 	}
 
 	return constantToSourceStackPosRange(code, stackMemory, foundConstant)

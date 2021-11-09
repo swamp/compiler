@@ -122,6 +122,7 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	for _, importedSubModule := range rootModule.ImportedModules().AllModules() {
 		module.ImportedModules().ImportModule(importedSubModule.ModuleName(), importedSubModule.ReferencedModule(), module)
 	}
+	module.ImportedModules().ImportModule(rootModule.FullyQualifiedModuleName().Path(), rootModule, module)
 
 	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.LocalTypes(), module.ImportedTypes())
 	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.LocalTypes())

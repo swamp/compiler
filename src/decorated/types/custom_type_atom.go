@@ -145,10 +145,21 @@ func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFully
 	if memoryAlign == 0 {
 		memoryAlign = 1
 	}
-	return &CustomTypeAtom{
+
+	s := &CustomTypeAtom{
 		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
 		genericLocalTypeNames: genericLocalTypeNames, variants: variants, nameToField: nameToField,
 		memorySize: memorySize, memoryAlign: memoryAlign,
+	}
+
+	s.finalize()
+
+	return s
+}
+
+func (s *CustomTypeAtom) finalize() {
+	for _, variant := range s.Variants() {
+		variant.AttachToCustomType(s)
 	}
 }
 

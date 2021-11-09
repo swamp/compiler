@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
+	deccy "github.com/swamp/compiler/src/decorated"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -138,6 +139,15 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 
 	CheckUnused(world)
 
+	rootModule, err := deccy.CreateDefaultRootModule(true)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, importedRootSubModule := range rootModule.ImportedModules().AllModules() {
+		world.AddModule(importedRootSubModule.ReferencedModule().FullyQualifiedModuleName(), importedRootSubModule.ReferencedModule())
+	}
+	// world.AddModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), rootModule)
+
 	return world, libraryModule, nil
 }
 
@@ -180,6 +190,16 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.High {
 			fmt.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())
+		}
+	}
+
+	for _, module := range compiledPackage.AllModules() {
+		for _, named := range module.LocalDefinitions().Definitions() {
+			unknownType := named.Expression()
+			maybeFunction, _ := unknownType.(*decorated.FunctionValue)
+			if maybeFunction == nil {
+				// log.Printf("WHAT IS THIS!_ %T %v", unknownType, unknownType)
+			}
 		}
 	}
 
@@ -238,6 +258,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						paramPosRanges = append(paramPosRanges, posRange)
 						pos += dectype.MemoryOffset(size)
 					}
+
 					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
 						return decorated.NewInternalError(err)
 					}
@@ -261,6 +282,8 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						return decorated.NewInternalError(err)
 					}
 				}
+			} else {
+				// log.Printf("Unknown thing here:%T\n", unknownType)
 			}
 		}
 	}
