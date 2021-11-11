@@ -38,7 +38,7 @@ func (d *Decorator) Import(importStatement *decorated.ImportStatement) error {
 	return ImportModuleToModule(d.module, importStatement)
 }
 
-func (d *Decorator) TypeRepo() decorated.TypeAddAndReferenceMaker {
+func (d *Decorator) TypeReferenceMaker() decorated.TypeAddAndReferenceMaker {
 	return d.typeLookUpAndCreate
 }
 

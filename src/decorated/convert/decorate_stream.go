@@ -15,7 +15,7 @@ import (
 )
 
 type DecorateStream interface {
-	TypeRepo() decorated.TypeAddAndReferenceMaker
+	TypeReferenceMaker() decorated.TypeAddAndReferenceMaker
 	AddDefinition(identifier *ast.VariableIdentifier, expr decorated.Expression) error
 	AddDeclaration(identifier *ast.VariableIdentifier, declaredType dtype.Type) error
 	NewVariableContext() *VariableContext

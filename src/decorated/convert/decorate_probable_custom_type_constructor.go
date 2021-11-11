@@ -13,7 +13,7 @@ import (
 // decorateProbableConstructorCall needed for no parameter custom type
 // constructors
 func decorateProbableConstructorCall(d DecorateStream, call ast.TypeIdentifierNormalOrScoped) (decorated.Expression, decshared.DecoratedError) {
-	variantConstructor, err := d.TypeRepo().CreateSomeTypeReference(call)
+	variantConstructor, err := d.TypeReferenceMaker().CreateSomeTypeReference(call)
 	if err != nil {
 		return nil, err
 	}

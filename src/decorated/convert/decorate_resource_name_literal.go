@@ -13,7 +13,7 @@ import (
 )
 
 func decorateResourceName(d DecorateStream, resourceName *ast.ResourceNameLiteral) (decorated.Expression, decshared.DecoratedError) {
-	resourceNameType := d.TypeRepo().FindBuiltInType("ResourceName")
+	resourceNameType := d.TypeReferenceMaker().FindBuiltInType("ResourceName")
 	if resourceNameType == nil {
 		panic("internal error. ResourceName is an unknown type")
 	}

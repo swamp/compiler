@@ -153,6 +153,7 @@ __externalvarexfn foldl : (a -> b -> b) -> b -> List a -> b
 __externalvarexfn foldlstop : (a -> b -> Maybe b) -> b -> List a -> b
 __externalvarexfn filterMap : (a -> Maybe b) -> List a -> List b
 __externalvarfn indexedMap : (Int -> a -> b) -> List a -> List b
+__externalvarfn find : (a -> Bool) -> List a -> Maybe a
 `
 
 const mathCode = `
@@ -172,8 +173,9 @@ __externalfn mod : Int -> Int -> Int
 `
 
 const blobCode = `
-__externalfn map : (Int -> Int) -> Blob -> Blob
-__externalfn indexedMap : (Int -> Int -> Int) -> Blob -> Blob
+__externalfn mapToBlob : (Int -> Int) -> Blob -> Blob
+__externalfn indexedMapToBlob : (Int -> Int -> Int) -> Blob -> Blob
+__externalvarfn filterIndexedMap2d : ({ x : Int, y : Int } -> Int -> Maybe a) -> { width : Int, height : Int } -> Blob -> List a
 __externalvarfn filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
 __externalfn toString2d : { width : Int, height : Int } -> Blob -> String
 __externalfn get2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Maybe Int
@@ -188,8 +190,9 @@ __externalfn make : Int -> Blob
 __externalvarfn map2d : ({ x : Int, y : Int } -> Int -> a) -> { width : Int, height : Int } -> Blob -> List a
 __externalfn fromList : List Int -> Blob
 -- __externalfn isEmpty : Blob -> Bool
--- 
--- __externalfn toList : Blob -> List Int
+-- __externalvarfn map : (Int -> a) -> Blob -> List a
+-- __externalvarfn indexedMap : (Int -> Int -> a) -> Blob -> List a
+ -- __externalfn toList : Blob -> List Int
 -- __externalfn length : Blob -> Int
 -- __externalfn get : Int -> Blob -> Maybe Int
 -- __externalfn grab : Int -> Blob -> Int

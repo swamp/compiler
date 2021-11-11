@@ -282,7 +282,7 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 		if incompatibleErr != nil {
 			return nil, decorated.NewUnMatchingBooleanOperatorTypes(infix, leftExpression, rightExpression)
 		}
-		boolType := d.TypeRepo().FindBuiltInType("Bool")
+		boolType := d.TypeReferenceMaker().FindBuiltInType("Bool")
 		if boolType == nil {
 			return nil, decorated.NewTypeNotFound("Bool")
 		}
@@ -295,7 +295,7 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 		if incompatibleErr != nil {
 			return nil, decorated.NewLogicalOperatorsMustBeBoolean(infix, leftExpression, rightExpression)
 		}
-		boolType := d.TypeRepo().FindBuiltInType("Bool")
+		boolType := d.TypeReferenceMaker().FindBuiltInType("Bool")
 		if boolType == nil {
 			return nil, decorated.NewTypeNotFound("Bool")
 		}

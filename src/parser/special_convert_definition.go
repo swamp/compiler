@@ -26,6 +26,8 @@ func isConstant(expression ast.Expression) bool {
 		return true
 	case *ast.ListLiteral:
 		return true
+	case *ast.ArrayLiteral:
+		return true
 	case *ast.FixedLiteral:
 		return true
 	}

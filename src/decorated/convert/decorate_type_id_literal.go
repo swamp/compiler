@@ -14,12 +14,12 @@ import (
 )
 
 func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression, decshared.DecoratedError) {
-	typeRefType := d.TypeRepo().FindBuiltInType("TypeRef")
+	typeRefType := d.TypeReferenceMaker().FindBuiltInType("TypeRef")
 	if typeRefType == nil {
 		panic("internal error. TypeRef is an unknown type")
 	}
 
-	decoratedType, err := d.TypeRepo().CreateSomeTypeReference(typeId.TypeIdentifier())
+	decoratedType, err := d.TypeReferenceMaker().CreateSomeTypeReference(typeId.TypeIdentifier())
 	if err != nil {
 		return nil, decorated.NewInternalError(err)
 	}

@@ -18,8 +18,6 @@ import (
 )
 
 type TypeReferenceMaker interface {
-	// CreateTypeReference(typeIdentifier *ast.TypeIdentifier) (*dectype.TypeReference, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError)
-	// CreateTypeScopedReference(typeIdentifier *ast.TypeIdentifierScoped) (*dectype.TypeReferenceScoped, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError)
 	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError)
 }
 
@@ -55,28 +53,6 @@ func (q *FullyQualifiedPackageVariableName) String() string {
 func (q *FullyQualifiedPackageVariableName) Identifier() *ast.VariableIdentifier {
 	return q.identifier
 }
-
-/*
-type ExternalFunctionDeclaration struct {
-	AstExternalFunction *ast.ExternalFunction
-}
-
-func NewExternalFunctionDeclaration(astExternalFunction *ast.ExternalFunction) *ExternalFunctionDeclaration {
-	return &ExternalFunctionDeclaration{AstExternalFunction: astExternalFunction}
-}
-
-func (d *ExternalFunctionDeclaration) FetchPositionLength() token.SourceFileReference {
-	return d.AstExternalFunction.FetchPositionLength()
-}
-
-func (d *ExternalFunctionDeclaration) StatementString() string {
-	return "external func"
-}
-
-func (d *ExternalFunctionDeclaration) String() string {
-	return "external func"
-}
-*/
 
 func ModuleTypeToString(moduleType ModuleType) string {
 	switch moduleType {
@@ -235,21 +211,6 @@ func (m *Module) MarkAsInternal() {
 func (m *Module) IsInternal() bool {
 	return m.isInternal
 }
-
-/*
-
-func (m *Module) AddExternalFunction(function *ast.ExternalFunction) *ExternalFunctionDeclaration {
-	externalFunc := &ExternalFunctionDeclaration{AstExternalFunction: function}
-	m.externalFunctions = append(m.externalFunctions, externalFunc)
-
-	return externalFunc
-}
-
-func (m *Module) ExternalFunctions() []*ExternalFunctionDeclaration {
-	return m.externalFunctions
-}
-
-*/
 
 func (m *Module) FullyQualifiedName(identifier *ast.VariableIdentifier) *FullyQualifiedPackageVariableName {
 	if m == nil {

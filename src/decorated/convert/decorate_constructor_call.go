@@ -27,7 +27,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
 	}
 
-	variantConstructor, err := d.TypeRepo().CreateSomeTypeReference(call.TypeReference().SomeTypeIdentifier())
+	variantConstructor, err := d.TypeReferenceMaker().CreateSomeTypeReference(call.TypeReference().SomeTypeIdentifier())
 	if err != nil {
 		return nil, err
 	}
