@@ -175,6 +175,7 @@ __externalfn mod : Int -> Int -> Int
 const blobCode = `
 __externalfn mapToBlob : (Int -> Int) -> Blob -> Blob
 __externalfn indexedMapToBlob : (Int -> Int -> Int) -> Blob -> Blob
+__externalfn indexedMapToBlob! : (Int -> Int -> Int) -> Blob -> Blob
 __externalvarfn filterIndexedMap2d : ({ x : Int, y : Int } -> Int -> Maybe a) -> { width : Int, height : Int } -> Blob -> List a
 __externalvarfn filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
 __externalfn toString2d : { width : Int, height : Int } -> Blob -> String
