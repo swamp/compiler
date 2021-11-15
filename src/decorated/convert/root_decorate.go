@@ -147,19 +147,19 @@ func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream, consta
 	return namedConstant, nil
 }
 
-func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) []*decorated.FunctionParameterDefinition {
+func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) ([]*decorated.FunctionParameterDefinition, decshared.DecoratedError) {
 	var parameters []*decorated.FunctionParameterDefinition
 	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
 	identifiers := functionValue.Parameters()
 	if len(identifiers) < len(functionParameterTypes) {
-		panic(fmt.Errorf("no enough parameter definitions %v", functionValue))
+		return nil, decorated.NewInternalError(fmt.Errorf("no enough parameter definitions %v", functionValue))
 	}
 	for index, parameterType := range functionParameterTypes {
 		identifier := identifiers[index]
 		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)
 		parameters = append(parameters, argDef)
 	}
-	return parameters
+	return parameters, nil
 }
 
 func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
@@ -202,7 +202,10 @@ func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assig
 		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", assignment))
 	}
 
-	parameters := createParameterDefinitions(forcedFunctionType, assignment.FunctionValue())
+	parameters, parametersErr := createParameterDefinitions(forcedFunctionType, assignment.FunctionValue())
+	if parametersErr != nil {
+		return nil, parametersErr
+	}
 
 	preparedFunctionValue := decorated.NewPrepareFunctionValue(g.localAnnotation, assignment.FunctionValue(), foundFunctionType, parameters, g.localCommentBlock)
 	g.localComments = nil
@@ -255,7 +258,10 @@ func (g *RootStatementHandler) declareAnnotation(d DecorateStream, declaration *
 
 		dummyExpression := ast.NewExternalFunctionExpression(functionAtom.FetchPositionLength())
 		functionValue := ast.NewFunctionValue(token.VariableSymbolToken{}, parameters, dummyExpression, nil)
-		parameterDefinitions := createParameterDefinitions(functionAtom, functionValue)
+		parameterDefinitions, parameterDefinitionsErr := createParameterDefinitions(functionAtom, functionValue)
+		if parameterDefinitionsErr != nil {
+			return nil, parameterDefinitionsErr
+		}
 		preparedFunctionValue := decorated.NewPrepareFunctionValue(annotationStatement, functionValue, functionAtom, parameterDefinitions, nil)
 		// convertedErr := g.declareNamedFunctionValue(d, assi)
 		//if convertedErr != nil {

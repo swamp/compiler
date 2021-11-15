@@ -288,17 +288,20 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 		return context.SpecialSet(localType.identifier.Name(), otherUnchanged)
 	}
 
-	otherIsAny := IsAny(originalUnchanged)
+	otherIsAny := IsAny(other)
 	originalIsAny := IsAny(original)
 
 	if originalIsAny {
-		original = otherUnchanged
+		original = other
+	} else if otherIsAny {
+		other = original
 	}
 
 	if !otherIsAny && !originalIsAny {
 		sameType := reflect.TypeOf(original) == reflect.TypeOf(other)
 		if !sameType {
-			return nil, fmt.Errorf("not even same reflect type %T vs %T\n%v\n vs\n%v", original, other, original.HumanReadable(), other.HumanReadable())
+			checkAnyAgain := IsAny(other)
+			return nil, fmt.Errorf("not even same reflect type %T vs %T\n%v\n vs\n%v\n%v", original, other, original.HumanReadable(), other.HumanReadable(), checkAnyAgain)
 		}
 	}
 

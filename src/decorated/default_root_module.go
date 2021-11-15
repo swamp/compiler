@@ -147,6 +147,7 @@ const listCode = `
 __externalvarfn head : List a -> Maybe a
 __externalvarfn map : (a -> b) -> List a -> List b
 __externalvarfn map2 : (a -> b -> c) -> List a -> List b -> List c
+__externalvarfn concatMap : (a -> List b) -> List a -> List b
 __externalvarfn isEmpty : List a -> Bool
 __externalvarfn length : List a -> Int
 __externalvarexfn foldl : (a -> b -> b) -> b -> List a -> b
@@ -154,6 +155,8 @@ __externalvarexfn foldlstop : (a -> b -> Maybe b) -> b -> List a -> b
 __externalvarexfn filterMap : (a -> Maybe b) -> List a -> List b
 __externalvarfn indexedMap : (Int -> a -> b) -> List a -> List b
 __externalvarfn find : (a -> Bool) -> List a -> Maybe a
+__externalfn range : Int -> Int -> List Int
+__externalfn range0 : Int -> List Int
 `
 
 const mathCode = `

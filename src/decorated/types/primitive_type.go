@@ -14,12 +14,13 @@ import (
 )
 
 func IsAny(checkType dtype.Type) bool {
-	primitive, wasPrimitive := checkType.(*PrimitiveAtom)
+	unliased := UnaliasWithResolveInvoker(checkType)
+	primitive, wasPrimitive := unliased.(*PrimitiveAtom)
 	if !wasPrimitive {
 		return false
 	}
 
-	return primitive.AtomName() == "Any"
+	return primitive.PrimitiveName().Name() == "Any"
 }
 
 func IsTypeIdRef(checkType dtype.Type) bool {

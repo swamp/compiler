@@ -65,6 +65,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 	if len(originalParameters) < len(call.Arguments()) {
 		panic(fmt.Errorf("wrong parameters %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))
 	}
+
 	for index, arg := range call.Arguments() {
 		functionArgType := originalParameters[index].Type()
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
@@ -75,6 +76,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 			argumentsAlign = append(argumentsAlign, dectype.MemoryAlign(opcode_sp_type.AlignOfSwampInt))
 		}
 		argPosRange, align := allocMemoryForTypeEx(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
+
 		arguments = append(arguments, argPosRange)
 		argumentsAlign = append(argumentsAlign, align)
 	}
@@ -164,7 +166,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 		}
 	}
 
-	genContext.context.stackMemory.Set(returnValue.Pos + assembler_sp.TargetStackPos(returnValue.Size))
+	// This doesn't work for multiple recur / callself
+	// genContext.context.stackMemory.Set(returnValue.Pos + assembler_sp.TargetStackPos(returnValue.Size))
 
 	return targetToSourceStackPosRange(returnValue), nil
 }
