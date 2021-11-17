@@ -47,17 +47,19 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 	}
 
 	someTerminationFound := p.detectOneSpaceAndTermination()
-
+	currentIndentation := keywordIndentation
 	if someTerminationFound {
 		if p.maybeOneSpaceAndRightArrow() {
 
-			if _, eatErr := p.eatOneSpace("after right arrow"); eatErr != nil {
+			newIndentation, _, eatErr := p.eatContinuationReturnIndentation(currentIndentation)
+			if eatErr != nil {
 				return nil, eatErr
 			}
+			currentIndentation = newIndentation
 			var functionTypes []ast.Type
 			functionTypes = append(functionTypes, term)
 			for {
-				t, tErr := parseTypeTermReference(p, keywordIndentation, typeParameterContext, precedingComments)
+				t, tErr := parseTypeTermReference(p, currentIndentation, typeParameterContext, precedingComments)
 				if tErr != nil {
 					return nil, tErr
 				}
