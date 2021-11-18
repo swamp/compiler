@@ -152,6 +152,7 @@ __externalvarfn isEmpty : List a -> Bool
 __externalvarfn length : List a -> Int
 __externalvarexfn foldl : (a -> b -> b) -> b -> List a -> b
 __externalvarexfn foldlstop : (a -> b -> Maybe b) -> b -> List a -> b
+__externalvarexfn reduce : (a -> a -> a) -> List a -> a
 __externalvarexfn filterMap : (a -> Maybe b) -> List a -> List b
 __externalvarfn indexedMap : (Int -> a -> b) -> List a -> List b
 __externalvarfn find : (a -> Bool) -> List a -> Maybe a
@@ -264,6 +265,10 @@ __externalfn toCode : Char -> Int
 __externalfn fromCode : Int -> Char
 `
 
+const stringCode = `
+__externalfn fromInt : Int -> String
+`
+
 const typeIdCode = `
 `
 
@@ -356,6 +361,10 @@ func addCores(globalPrimitiveModule *decorated.Module) decshared.DecoratedError 
 	}
 
 	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Char", charCode); maybeModuleErr != nil {
+		return maybeModuleErr
+	}
+
+	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "String", stringCode); maybeModuleErr != nil {
 		return maybeModuleErr
 	}
 
