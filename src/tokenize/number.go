@@ -77,7 +77,9 @@ func (t *Tokenizer) ParseNumber(a string) (token.NumberToken, TokenError) {
 			decimals = strings.TrimLeft(decimals, "0")
 		}
 		total = integerPart + decimals
-
+		if total == "" {
+			total = "0"
+		}
 	}
 
 	integerValue, integerValueErr := strconv.ParseInt(total, 0, 64)

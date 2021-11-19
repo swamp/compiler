@@ -77,7 +77,7 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 	} else if foundPrimitive.AtomName() == "String" {
 		opcodeBinaryOperator := booleanToBinaryStringOperatorType(operator.OperatorType())
 		code.StringBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
-	} else if foundPrimitive.AtomName() == "Int" || foundPrimitive.AtomName() == "Char" {
+	} else if foundPrimitive.AtomName() == "Int" || foundPrimitive.AtomName() == "Char" || foundPrimitive.AtomName() == "Fixed" {
 		opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
 
 		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
