@@ -7,7 +7,6 @@ package decorator
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -253,7 +252,6 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 			return nil, decorated.NewUnExpectedListTypeForCons(infix, leftExpression, rightExpression)
 		}
 		listTypeType := listType.GenericTypes()[0]
-		log.Printf("!!! comparing %v and %v\n", leftExpression.Type().HumanReadable(), listTypeType.HumanReadable())
 		compatibleErr := dectype.CompatibleTypes(leftExpression.Type(), listTypeType)
 		if compatibleErr != nil {
 			return nil, decorated.NewUnMatchingBinaryOperatorTypes(infix, leftExpression.Type(), rightExpression.Type())
