@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -247,7 +248,17 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 	}
 
 	if infix.OperatorType() == token.OperatorCons {
-		return decorated.NewConsOperator(leftExpression, rightExpression)
+		listType, err := dectype.GetListType(rightExpression.Type())
+		if err != nil {
+			return nil, decorated.NewUnExpectedListTypeForCons(infix, leftExpression, rightExpression)
+		}
+		listTypeType := listType.GenericTypes()[0]
+		log.Printf("!!! comparing %v and %v\n", leftExpression.Type().HumanReadable(), listTypeType.HumanReadable())
+		compatibleErr := dectype.CompatibleTypes(leftExpression.Type(), listTypeType)
+		if compatibleErr != nil {
+			return nil, decorated.NewUnMatchingBinaryOperatorTypes(infix, leftExpression.Type(), rightExpression.Type())
+		}
+		return decorated.NewConsOperator(leftExpression, rightExpression, d.TypeReferenceMaker())
 	}
 
 	compatibleErr := dectype.CompatibleTypes(leftExpression.Type(), rightExpression.Type())

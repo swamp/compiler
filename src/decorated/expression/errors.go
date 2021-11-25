@@ -51,6 +51,24 @@ func (e *UnMatchingArithmeticOperatorTypes) FetchPositionLength() token.SourceFi
 	return e.typeA.FetchPositionLength()
 }
 
+type UnExpectedListTypeForCons struct {
+	typeA    Expression
+	typeB    Expression
+	operator *ast.BinaryOperator
+}
+
+func NewUnExpectedListTypeForCons(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnExpectedListTypeForCons {
+	return &UnExpectedListTypeForCons{operator: operator, typeA: typeA, typeB: typeB}
+}
+
+func (e *UnExpectedListTypeForCons) Error() string {
+	return fmt.Sprintf("expected a list for cons %v %v %v", e.operator, e.typeA, e.typeB)
+}
+
+func (e *UnExpectedListTypeForCons) FetchPositionLength() token.SourceFileReference {
+	return e.typeB.FetchPositionLength()
+}
+
 type TypeNotFound struct {
 	requestedType string
 }

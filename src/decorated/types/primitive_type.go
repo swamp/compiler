@@ -13,6 +13,16 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+func GetListType(p dtype.Type) (*PrimitiveAtom, error) {
+	unresolvedType := UnaliasWithResolveInvoker(p)
+	primitive, wasPrimitive := unresolvedType.(*PrimitiveAtom)
+	if !wasPrimitive || len(primitive.GenericTypes()) != 1 {
+		return nil, fmt.Errorf("wasnt a list type")
+	}
+
+	return primitive, nil
+}
+
 func IsAny(checkType dtype.Type) bool {
 	unliased := UnaliasWithResolveInvoker(checkType)
 	primitive, wasPrimitive := unliased.(*PrimitiveAtom)
@@ -21,6 +31,15 @@ func IsAny(checkType dtype.Type) bool {
 	}
 
 	return primitive.PrimitiveName().Name() == "Any"
+}
+
+func IsListAny(checkType dtype.Type) bool {
+	unliased := UnaliasWithResolveInvoker(checkType)
+	listAtom, err := GetListType(unliased)
+	if err != nil {
+		return false
+	}
+	return IsAny(listAtom.GenericTypes()[0])
 }
 
 func IsTypeIdRef(checkType dtype.Type) bool {

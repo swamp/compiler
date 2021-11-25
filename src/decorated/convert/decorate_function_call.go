@@ -76,15 +76,15 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 		return nil, determineErr
 	}
 
-	/*
-			/* Extra check here. Is it neccessary?
-		for index, encounteredArgumentType := range encounteredArgumentTypes {
-			expectedArgumentType := resolvedFunctionArguments[index]
-			compatibleErr := dectype.CompatibleTypes(expectedArgumentType, encounteredArgumentType)
-			if compatibleErr != nil {
-				return nil, decorated.NewFunctionArgumentTypeMismatch(errorPosLength, nil, nil, expectedArgumentType, encounteredArgumentType, fmt.Errorf("%v %v", smashedFunctionType, compatibleErr))
-			}
+	/* Extra check here. Is it neccessary?
+	expectedArgumentTypes := completeCalledFunctionType.FunctionParameterTypes()
+	for index, encounteredArgumentType := range encounteredArgumentTypes {
+		expectedArgumentType := expectedArgumentTypes[index]
+		compatibleErr := dectype.CompatibleTypes(expectedArgumentType, encounteredArgumentType)
+		if compatibleErr != nil {
+			return nil, decorated.NewFunctionArgumentTypeMismatch(call.FetchPositionLength(), nil, nil, expectedArgumentType, encounteredArgumentType, fmt.Errorf("%v %v", completeCalledFunctionType, compatibleErr))
 		}
+	}
 	*/
 
 	isCurrying := len(decoratedEncounteredArgumentExpressions) < completeCalledFunctionType.ParameterCount()-1
