@@ -58,7 +58,7 @@ func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verb
 
 	str, err := l.documentProvider.ReadDocument(completeDocumentFilename)
 	if err != nil {
-		return "", "", decorated.NewInternalError(err)
+		return "", "", decorated.NewModuleNotFoundInDocumentProvider(relativeModuleName, string(completeDocumentFilename), err)
 	}
 
 	return fullPath, str, nil

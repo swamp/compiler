@@ -851,6 +851,94 @@ func (e *UnknownStatement) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
+type UnknownModule struct {
+	moduleRef *ast.ModuleReference
+}
+
+func NewUnknownModule(moduleRef *ast.ModuleReference) *UnknownModule {
+	return &UnknownModule{moduleRef: moduleRef}
+}
+
+func (e *UnknownModule) Error() string {
+	return fmt.Sprintf("unknown module reference '%v' %v", e.moduleRef, e.FetchPositionLength().ToCompleteReferenceString())
+}
+
+func (e *UnknownModule) FetchPositionLength() token.SourceFileReference {
+	return e.moduleRef.FetchPositionLength()
+}
+
+type ModuleNotFoundInDocumentProvider struct {
+	relativeModuleName  dectype.PackageRelativeModuleName
+	localFileSystemPath string
+	err                 error
+}
+
+func NewModuleNotFoundInDocumentProvider(relativeModuleName dectype.PackageRelativeModuleName,
+	localFileSystemPath string, err error) *ModuleNotFoundInDocumentProvider {
+	return &ModuleNotFoundInDocumentProvider{
+		relativeModuleName:  relativeModuleName,
+		localFileSystemPath: localFileSystemPath, err: err,
+	}
+}
+
+func (e *ModuleNotFoundInDocumentProvider) Error() string {
+	return fmt.Sprintf("couldn't find module '%v' '%v' %v\n%v\n", e.relativeModuleName, e.localFileSystemPath, e.FetchPositionLength().ToCompleteReferenceString(), e.err)
+}
+
+func (e *ModuleNotFoundInDocumentProvider) FetchPositionLength() token.SourceFileReference {
+	return e.relativeModuleName.ModuleName.Path().FetchPositionLength()
+}
+
+type CircularDependencyDetected struct {
+	loadedModules             []dectype.PackageRelativeModuleName
+	lastModule                dectype.ArtifactFullyQualifiedModuleName
+	packageRelativeModuleName dectype.PackageRelativeModuleName
+}
+
+func NewCircularDependencyDetected(packageRelativeModuleName dectype.PackageRelativeModuleName, loadedModules []dectype.PackageRelativeModuleName, lastModule dectype.ArtifactFullyQualifiedModuleName) *CircularDependencyDetected {
+	return &CircularDependencyDetected{packageRelativeModuleName: packageRelativeModuleName, loadedModules: loadedModules, lastModule: lastModule}
+}
+
+func (e *CircularDependencyDetected) Error() string {
+	return fmt.Sprintf("Circular dependency %v %v %v", e.loadedModules, e.lastModule, e.packageRelativeModuleName.ModuleName.Path().FetchPositionLength().ToCompleteReferenceString())
+}
+
+func (e *CircularDependencyDetected) FetchPositionLength() token.SourceFileReference {
+	return e.packageRelativeModuleName.Path().FetchPositionLength()
+}
+
+type UnknownExposedType struct {
+	typeIdentifier *ast.TypeIdentifier
+}
+
+func NewUnknownExposedType(typeIdentifier *ast.TypeIdentifier) *UnknownExposedType {
+	return &UnknownExposedType{typeIdentifier: typeIdentifier}
+}
+
+func (e *UnknownExposedType) Error() string {
+	return fmt.Sprintf("unknown exposed type reference '%v' %v", e.typeIdentifier, e.FetchPositionLength().ToCompleteReferenceString())
+}
+
+func (e *UnknownExposedType) FetchPositionLength() token.SourceFileReference {
+	return e.typeIdentifier.FetchPositionLength()
+}
+
+type UnknownImportedType struct {
+	typeIdentifier *ast.TypeIdentifier
+}
+
+func NewUnknownImportedType(typeIdentifier *ast.TypeIdentifier) *UnknownImportedType {
+	return &UnknownImportedType{typeIdentifier: typeIdentifier}
+}
+
+func (e *UnknownImportedType) Error() string {
+	return fmt.Sprintf("unknown imported type reference '%v' %v", e.typeIdentifier, e.FetchPositionLength().ToCompleteReferenceString())
+}
+
+func (e *UnknownImportedType) FetchPositionLength() token.SourceFileReference {
+	return e.typeIdentifier.FetchPositionLength()
+}
+
 type UnknownVariable struct {
 	ident *ast.VariableIdentifier
 }
@@ -949,7 +1037,7 @@ func (e *MultiErrors) Error() string {
 }
 
 func (e *MultiErrors) FetchPositionLength() token.SourceFileReference {
-	return token.SourceFileReference{}
+	return e.errors[0].FetchPositionLength()
 }
 
 type UnknownAnnotationTypeReference struct {

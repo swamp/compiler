@@ -75,7 +75,7 @@ func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleTyp
 		fmt.Printf("* didn't have %v (%v), must load and parse\n", artifactFullyModuleName, packageRelativeModuleName)
 	}
 	if l.isReadingModule(packageRelativeModuleName) {
-		return nil, decorated.NewInternalError(NewCircularDependencyDetected(l.resolutionModules, artifactFullyModuleName))
+		return nil, decorated.NewCircularDependencyDetected(packageRelativeModuleName, l.resolutionModules, artifactFullyModuleName)
 	}
 	l.resolutionModules = append(l.resolutionModules, packageRelativeModuleName)
 	readModule, readModuleErr := l.moduleReader.ReadModule(moduleType, l, packageRelativeModuleName, l.moduleNamespace)
