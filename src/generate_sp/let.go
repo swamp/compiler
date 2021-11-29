@@ -1,15 +1,26 @@
 package generate_sp
 
 import (
+	"fmt"
+
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
+func generateAssemblerVariable(variable *decorated.LetVariable, assignmentIndex int, tupleIndex int) string {
+	varName := variable.Name().Name()
+	if variable.IsIgnore() {
+		varName = fmt.Sprintf("_%v_%v", assignmentIndex, tupleIndex)
+	}
+
+	return varName
+}
+
 func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, let *decorated.Let,
 	genContext *generateContext) error {
 	letContext := genContext.MakeScopeContext()
-	for _, assignment := range let.Assignments() {
+	for assignmentIndex, assignment := range let.Assignments() {
 		sourceVar, sourceErr := generateExpressionWithSourceVar(code, assignment.Expression(), letContext, "let source")
 		if sourceErr != nil {
 			return sourceErr
@@ -17,7 +28,9 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 
 		if len(assignment.LetVariables()) == 1 {
 			firstVar := assignment.LetVariables()[0]
-			if err := letContext.context.scopeVariables.DefineVariable(firstVar.Name().Name(), sourceVar); err != nil {
+			firstVarName := generateAssemblerVariable(firstVar, assignmentIndex, 0)
+
+			if err := letContext.context.scopeVariables.DefineVariable(firstVarName, sourceVar); err != nil {
 				return err
 			}
 		} else {
@@ -29,7 +42,8 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 					Size: assembler_sp.SourceStackRange(tupleField.MemorySize()),
 				}
 
-				if err := letContext.context.scopeVariables.DefineVariable(variable.Name().Name(), fieldSourcePosRange); err != nil {
+				varName := generateAssemblerVariable(variable, assignmentIndex, index)
+				if err := letContext.context.scopeVariables.DefineVariable(varName, fieldSourcePosRange); err != nil {
 					return err
 				}
 			}

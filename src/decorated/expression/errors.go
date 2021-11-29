@@ -156,6 +156,22 @@ func (e *UnusedVariable) FetchPositionLength() token.SourceFileReference {
 	return e.name.FetchPositionLength()
 }
 
+type UnusedLetVariable struct {
+	letVariable *LetVariable
+}
+
+func NewUnusedLetVariable(name *LetVariable) *UnusedLetVariable {
+	return &UnusedLetVariable{letVariable: name}
+}
+
+func (e *UnusedLetVariable) Error() string {
+	return fmt.Sprintf("unused let variable %v b%v", e.letVariable, e.letVariable.FetchPositionLength().ToCompleteReferenceString())
+}
+
+func (e *UnusedLetVariable) FetchPositionLength() token.SourceFileReference {
+	return e.letVariable.FetchPositionLength()
+}
+
 type LogicalOperatorLeftMustBeBoolean struct {
 	typeA       Expression
 	operator    *LogicalOperator

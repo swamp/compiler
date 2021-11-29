@@ -29,6 +29,10 @@ func (i *VariableIdentifier) Symbol() token.VariableSymbolToken {
 	return i.symbol
 }
 
+func (i *VariableIdentifier) IsIgnore() bool {
+	return i.symbol.IsIgnore()
+}
+
 func (i *VariableIdentifier) FetchPositionLength() token.SourceFileReference {
 	return i.symbol.SourceFileReference
 }

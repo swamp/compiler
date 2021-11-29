@@ -14,7 +14,17 @@ func (t *Tokenizer) ParseVariableSymbol() (token.VariableSymbolToken, TokenError
 
 	startPos := t.position
 	ch := t.nextRune()
-	if !isLowerCaseLetter(ch) {
+	if ch == '_' {
+		nch := t.nextRune()
+		t.unreadRune()
+		if isSymbol(nch) {
+			return token.VariableSymbolToken{}, NewExpectedVariableSymbolError(t.MakeSourceFileReference(startPos), string(ch))
+		}
+		a += string(ch)
+		return token.NewVariableSymbolToken(a, t.MakeSourceFileReference(startPos), startPos.Indentation()), nil
+	}
+
+	if !(isLowerCaseLetter(ch)) {
 		t.unreadRune()
 		return token.VariableSymbolToken{}, NewExpectedVariableSymbolError(t.MakeSourceFileReference(startPos), string(ch))
 	}

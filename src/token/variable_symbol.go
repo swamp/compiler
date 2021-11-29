@@ -35,6 +35,10 @@ func (s VariableSymbolToken) Name() string {
 	return s.raw
 }
 
+func (s VariableSymbolToken) IsIgnore() bool {
+	return s.raw == "_"
+}
+
 func (s VariableSymbolToken) Raw() string {
 	return s.raw
 }

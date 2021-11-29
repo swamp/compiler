@@ -31,7 +31,7 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 	if expression == nil {
 		panic("reference from variable can not be nil")
 	}
-	//log.Printf("checking variable-like '%v'\n", name)
+	// log.Printf("checking variable-like '%v'\n", name)
 	switch t := expression.(type) {
 	case *decorated.FunctionValue:
 		var moduleRef *decorated.ModuleReference
@@ -49,25 +49,27 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 		}
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
-		//log.Printf("was function value '%v'\n", nameWithModuleRef)
+		// log.Printf("was function value '%v'\n", nameWithModuleRef)
 		return functionReference, nil
 	case *decorated.FunctionParameterDefinition:
-		//log.Printf("was parameter definition '%v'\n", name)
+		// log.Printf("was parameter definition '%v'\n", name)
 		return decorated.NewFunctionParameterReference(name, t), nil
 	case *decorated.LetVariable:
-		//log.Printf("was let variable '%v'\n", name)
-		return decorated.NewLetVariableReference(name, t), nil
+		letVarReference := decorated.NewLetVariableReference(name, t)
+		t.AddReferee(letVarReference)
+		return letVarReference, nil
 	case *decorated.CaseConsequenceParameterForCustomType:
-		//log.Printf("was case consequence '%v'\n", name)
+		// log.Printf("was case consequence '%v'\n", name)
 		return decorated.NewCaseConsequenceParameterReference(name, t), nil
 	case *decorated.Constant:
-		//log.Printf("was constant '%v'\n", name)
+		// log.Printf("was constant '%v'\n", name)
 		var moduleRef *decorated.ModuleReference
 		scoped, wasScoped := name.(*ast.VariableIdentifierScoped)
 		if wasScoped {
 			moduleRef = decorated.NewModuleReference(scoped.ModuleReference(), module)
 		}
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
+
 		return decorated.NewConstantReference(nameWithModuleRef, t), nil
 	default:
 		log.Printf("NO IDEA '%v'\n", name)
@@ -136,6 +138,8 @@ func (c *VariableContext) FindScopedNamedDecoratedExpression(name *ast.VariableI
 	if mDef == nil {
 		return nil
 	}
+
+	mDef.MarkAsReferenced()
 
 	var def *decorated.NamedDecoratedExpression
 	if mDef.IsExternal() {

@@ -36,8 +36,16 @@ func (l *LetVariable) Name() *ast.VariableIdentifier {
 	return l.name
 }
 
+func (l *LetVariable) IsIgnore() bool {
+	return l.name.IsIgnore()
+}
+
 func (l *LetVariable) AddReferee(ref *LetVariableReference) {
 	l.references = append(l.references, ref)
+}
+
+func (l *LetVariable) WasReferenced() bool {
+	return len(l.references) > 0
 }
 
 func (l *LetVariable) References() []*LetVariableReference {

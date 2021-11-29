@@ -26,5 +26,8 @@ func decorateIdentifierScoped(d DecorateStream, ident *ast.VariableIdentifierSco
 		return nil, decorated.NewUnknownVariable(ident.AstVariableReference())
 	}
 
+	def.ModuleDefinition().MarkAsReferenced()
+	def.SetReferenced()
+
 	return ReferenceFromVariable(ident, def.Expression(), def.ModuleDefinition().OwnedByModule())
 }

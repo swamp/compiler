@@ -18,6 +18,7 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 	var decoratedAssignments []*decorated.LetAssignment
 	letVariableContext := context.MakeVariableContext()
 
+	var allLetVariables []*decorated.LetVariable
 	for _, assignment := range let.Assignments() {
 		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, assignment.Expression(), letVariableContext)
 		if decoratedExpressionErr != nil {
@@ -52,7 +53,12 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 		decoratedAssignment := decorated.NewLetAssignment(assignment, letVariables, decoratedExpression)
 		decoratedAssignments = append(decoratedAssignments, decoratedAssignment)
 
+		allLetVariables = append(allLetVariables, letVariables...)
+
 		for _, letVariable := range letVariables {
+			if letVariable.IsIgnore() {
+				continue
+			}
 			tempNamedExpression := decorated.NewNamedDecoratedExpression("let", nil, letVariable)
 			tempNamedExpression.SetReferenced()
 			letVariableContext.Add(letVariable.Name(), tempNamedExpression)
@@ -63,5 +69,16 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 	if decoratedConsequenceErr != nil {
 		return nil, decoratedConsequenceErr
 	}
+
+	for _, letVariable := range allLetVariables {
+		if letVariable.IsIgnore() {
+			continue
+		}
+		if !letVariable.WasReferenced() {
+			unusedErr := decorated.NewUnusedLetVariable(letVariable)
+			d.AddDecoratedError(unusedErr)
+		}
+	}
+
 	return decorated.NewLet(let, decoratedAssignments, decoratedConsequence), nil
 }
