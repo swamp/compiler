@@ -69,6 +69,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateBinaryOperator(d, v, context)
 	case *ast.TypeIdentifier:
 		return decorateProbableConstructorCall(d, v)
+	case *ast.TypeIdentifierScoped:
+		return decorateProbableConstructorCall(d, v)
 	default:
 		return nil, decorated.NewInternalError(
 			fmt.Errorf("don't know how to decorate %v %T %v", e, e, e.FetchPositionLength()))
