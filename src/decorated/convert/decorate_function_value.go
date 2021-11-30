@@ -78,6 +78,13 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionVal
 				functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr)
 		}
 
+		for _, param := range targetFunctionValue.Parameters() {
+			if !param.WasReferenced() && !param.Identifier().IsIgnore() {
+				unusedErr := decorated.NewUnusedParameter(param, targetFunctionValue)
+				d.AddDecoratedError(unusedErr)
+			}
+		}
+
 		checkForNoLint := "a" // CheckForNoLint(comments)
 		if checkForNoLint != "unused" {
 		} else {

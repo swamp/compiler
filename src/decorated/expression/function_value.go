@@ -48,6 +48,10 @@ func (a *FunctionParameterDefinition) AddReferee(ref *FunctionParameterReference
 	a.references = append(a.references, ref)
 }
 
+func (a *FunctionParameterDefinition) WasReferenced() bool {
+	return len(a.references) > 0
+}
+
 func (a *FunctionParameterDefinition) References() []*FunctionParameterReference {
 	return a.references
 }

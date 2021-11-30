@@ -156,6 +156,23 @@ func (e *UnusedVariable) FetchPositionLength() token.SourceFileReference {
 	return e.name.FetchPositionLength()
 }
 
+type UnusedParameter struct {
+	parameter     *FunctionParameterDefinition
+	function *FunctionValue
+}
+
+func NewUnusedParameter(parameter *FunctionParameterDefinition, function *FunctionValue) *UnusedParameter {
+	return &UnusedParameter{parameter: parameter, function: function}
+}
+
+func (e *UnusedParameter) Error() string {
+	return fmt.Sprintf("unused parameter  %v in %v", e.parameter.Identifier().Name(), e.parameter.FetchPositionLength().ToCompleteReferenceString())
+}
+
+func (e *UnusedParameter) FetchPositionLength() token.SourceFileReference {
+	return e.parameter.FetchPositionLength()
+}
+
 type UnusedLetVariable struct {
 	letVariable *LetVariable
 }
