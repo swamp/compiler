@@ -116,6 +116,7 @@ func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*C
 			variantParameters = append(variantParameters, converted)
 		}
 
+		NewCustomTypeVariantReference(nil, field)
 		newField := NewCustomTypeVariant(index, field.astCustomTypeVariant, variantParameters)
 
 		replacedVariants = append(replacedVariants, newField)

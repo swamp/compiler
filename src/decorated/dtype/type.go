@@ -16,4 +16,5 @@ type Type interface {
 	Next() Type
 	ParameterCount() int
 	FetchPositionLength() token.SourceFileReference
+	WasReferenced() bool
 }

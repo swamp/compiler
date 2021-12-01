@@ -146,8 +146,6 @@ func ColorType(dType dtype.Type, indentation int, inside bool, colorer coloring.
 		colorAlias(t, colorer)
 	case *dectype.InvokerType:
 		colorTypeEmbed(t, colorer)
-	case *dectype.CustomTypeVariantConstructorType:
-		//
 	default:
 		{
 			atom, wasAtom := dType.(dtype.Atom)

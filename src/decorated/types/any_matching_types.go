@@ -67,3 +67,7 @@ func (u *AnyMatchingTypes) Next() dtype.Type {
 func NewAnyMatchingTypes(identifier *ast.AnyMatchingType) *AnyMatchingTypes {
 	return &AnyMatchingTypes{astAnyMatchingType: identifier}
 }
+
+func (u *AnyMatchingTypes) WasReferenced() bool {
+	return false
+}

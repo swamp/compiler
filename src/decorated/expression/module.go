@@ -134,7 +134,7 @@ func (m *Module) AddReference(ref *ModuleReference) {
 }
 
 func (m *Module) AddWarning(warning decshared.DecoratedWarning) {
-	fmt.Fprintf(os.Stderr, "%s Warning: '%v'\n", warning.FetchPositionLength().ToCompleteReferenceString(), warning.Warning())
+	fmt.Fprintf(os.Stderr, "%s Warning: %v\n", warning.FetchPositionLength().ToCompleteReferenceString(), warning.Warning())
 	m.warnings = append(m.warnings, warning)
 }
 

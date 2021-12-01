@@ -65,3 +65,7 @@ func NewPrimitiveTypeReference(named *NamedDefinitionTypeReference, primitiveTyp
 func (g *PrimitiveTypeReference) FetchPositionLength() token.SourceFileReference {
 	return g.named.FetchPositionLength()
 }
+
+func (g *PrimitiveTypeReference) WasReferenced() bool {
+	return false
+}

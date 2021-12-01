@@ -251,3 +251,7 @@ func (s *CustomTypeAtom) AddReferee(reference *CustomTypeReference) {
 func (s *CustomTypeAtom) References() []*CustomTypeReference {
 	return s.references
 }
+
+func (s *CustomTypeAtom) WasReferenced() bool {
+	return len(s.references) > 0
+}

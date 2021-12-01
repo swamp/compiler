@@ -65,3 +65,7 @@ func NewCustomTypeReference(named *NamedDefinitionTypeReference, customType *Cus
 func (g *CustomTypeReference) FetchPositionLength() token.SourceFileReference {
 	return g.named.FetchPositionLength()
 }
+
+func (g *CustomTypeReference) WasReferenced() bool {
+	return false // You can not reference references
+}

@@ -96,14 +96,9 @@ func (t *ModuleTypes) AddTypeAlias(alias *dectype.Alias) TypeError {
 	return nil
 }
 
-func (t *ModuleTypes) internalAddVariantConstructorType(constructor *dectype.CustomTypeVariantConstructorType) {
-	t.internalAddType(constructor.Variant().Name(), constructor)
-}
-
 func (t *ModuleTypes) addCustomTypeVariantConstructors(customType *dectype.CustomTypeAtom) {
 	for _, variant := range customType.Variants() {
-		constructorType := dectype.NewCustomTypeVariantConstructorType(variant)
-		t.internalAddVariantConstructorType(constructorType)
+		t.internalAddType(variant.Name(), variant)
 	}
 }
 

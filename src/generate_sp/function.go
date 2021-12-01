@@ -24,8 +24,14 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 
 	for _, parameter := range f.Parameters() {
+		if parameter.Identifier().IsIgnore() {
+			continue
+		}
 		paramVarName := parameter.Identifier().Name()
-		allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, paramVarName, parameter.Type())
+		_, err := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, paramVarName, parameter.Type())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	genContext := &generateContext{

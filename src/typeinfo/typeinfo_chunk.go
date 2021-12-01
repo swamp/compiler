@@ -1259,7 +1259,7 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 		return c.consumeAlias(t)
 	case *dectype.FunctionTypeReference:
 		return c.Consume(t.Next())
-	case *dectype.CustomTypeVariantConstructorType:
+	case *dectype.CustomTypeVariantReference:
 		// intentionally ignore
 		return nil, fmt.Errorf("not supporting CustomTypeVariantConstructorType types")
 	case *dectype.LocalType:

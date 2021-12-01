@@ -65,3 +65,7 @@ func NewCustomTypeVariantReference(named *NamedDefinitionTypeReference, customTy
 func (g *CustomTypeVariantReference) FetchPositionLength() token.SourceFileReference {
 	return g.named.FetchPositionLength()
 }
+
+func (g *CustomTypeVariantReference) WasReferenced() bool {
+	return false
+}

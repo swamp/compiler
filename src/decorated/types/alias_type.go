@@ -70,7 +70,7 @@ func (c *Alias) References() []*AliasReference {
 }
 
 func (c *Alias) WasReferenced() bool {
-	return c.wasReferenced
+	return c.wasReferenced || len(c.references) > 0
 }
 
 func (c *Alias) MarkAsReferenced() {

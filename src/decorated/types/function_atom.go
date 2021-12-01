@@ -124,3 +124,7 @@ func (u *FunctionAtom) IsEqual(other_ dtype.Atom) error {
 
 	return nil
 }
+
+func (u *FunctionAtom) WasReferenced() bool {
+	return false // FunctionAtoms are not reused
+}

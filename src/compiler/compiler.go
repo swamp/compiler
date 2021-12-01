@@ -42,6 +42,12 @@ func CheckUnused(world *loader.Package) {
 				module.AddWarning(warning)
 			}
 		}
+		for _, def := range module.LocalTypes().AllTypes() {
+			if !def.WasReferenced() {
+				warning := decorated.NewUnusedTypeWarning(def)
+				module.AddWarning(warning)
+			}
+		}
 	}
 }
 

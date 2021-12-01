@@ -3,6 +3,7 @@ package decorated
 import (
 	"fmt"
 
+	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -15,11 +16,27 @@ func NewUnusedWarning(definition ModuleDef) *UnusedWarning {
 }
 
 func (e *UnusedWarning) Warning() string {
-	return fmt.Sprintf("unused definition %v", e.definition.Identifier().Name())
+	return fmt.Sprintf("unused definition '%v'", e.definition.Identifier().Name())
 }
 
 func (e *UnusedWarning) FetchPositionLength() token.SourceFileReference {
 	return e.definition.Identifier().FetchPositionLength()
+}
+
+type UnusedTypeWarning struct {
+	unusedType dtype.Type
+}
+
+func NewUnusedTypeWarning(unusedType dtype.Type) *UnusedTypeWarning {
+	return &UnusedTypeWarning{unusedType: unusedType}
+}
+
+func (e *UnusedTypeWarning) Warning() string {
+	return fmt.Sprintf("unused type '%v'", e.unusedType.HumanReadable())
+}
+
+func (e *UnusedTypeWarning) FetchPositionLength() token.SourceFileReference {
+	return e.unusedType.FetchPositionLength()
 }
 
 type UnusedImportWarning struct {

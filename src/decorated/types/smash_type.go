@@ -143,6 +143,8 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 		if len(originalVariant.ParameterTypes()) != len(otherVariant.ParameterTypes()) {
 			return nil, fmt.Errorf("wrong number of parameter types in variant %v", otherVariant)
 		}
+		NewCustomTypeVariantReference(nil, originalVariant)
+		NewCustomTypeVariantReference(nil, otherVariant)
 		var convertedParams []dtype.Type
 		for paramIndex, originalParam := range originalVariant.ParameterTypes() {
 			otherParam := otherVariant.ParameterTypes()[paramIndex]

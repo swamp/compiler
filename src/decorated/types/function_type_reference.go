@@ -65,3 +65,7 @@ func (t *FunctionTypeReference) DecoratedName() string {
 func (t *FunctionTypeReference) ParameterCount() int {
 	return t.referencedType.ParameterCount()
 }
+
+func (t *FunctionTypeReference) WasReferenced() bool {
+	return false // can not reference a reference
+}

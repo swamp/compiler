@@ -100,8 +100,6 @@ func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifi
 		reference = dectype.NewPrimitiveTypeReference(named, t)
 	case *dectype.CustomTypeAtom:
 		reference = dectype.NewCustomTypeReference(named, t)
-	case *dectype.CustomTypeVariantConstructorType:
-		reference = dectype.NewCustomTypeVariantReference(named, t.Variant())
 	default:
 		log.Printf("typelookup: what is this type: %T", t)
 	}

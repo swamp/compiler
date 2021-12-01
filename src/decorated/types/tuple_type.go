@@ -159,3 +159,7 @@ func (u *TupleTypeAtom) IsEqual(other_ dtype.Atom) error {
 
 	return nil
 }
+
+func (u *TupleTypeAtom) WasReferenced() bool {
+	return false // tuples are not reused
+}

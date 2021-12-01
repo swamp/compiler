@@ -79,3 +79,7 @@ func NewInvokerType(typeToInvoke dtype.Type, params []dtype.Type) (*InvokerType,
 
 	return &InvokerType{params: params, typeToInvoke: typeToInvoke}, nil
 }
+
+func (u *InvokerType) WasReferenced() bool {
+	return false // Invoker types are not reused
+}

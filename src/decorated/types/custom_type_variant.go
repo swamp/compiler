@@ -164,7 +164,7 @@ func (s *CustomTypeVariant) String() string {
 }
 
 func (s *CustomTypeVariant) HumanReadable() string {
-	str := fmt.Sprintf("%v", s.astCustomTypeVariant.TypeIdentifier())
+	str := fmt.Sprintf("%v", s.astCustomTypeVariant.TypeIdentifier().Name())
 	for _, parameterType := range s.parameterTypes {
 		str += " "
 		str += parameterType.HumanReadable()
@@ -183,4 +183,8 @@ func (s *CustomTypeVariant) AddReferee(reference *CustomTypeVariantReference) {
 
 func (s *CustomTypeVariant) References() []*CustomTypeVariantReference {
 	return s.references
+}
+
+func (s *CustomTypeVariant) WasReferenced() bool {
+	return len(s.references) > 0
 }

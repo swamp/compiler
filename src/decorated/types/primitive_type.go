@@ -173,3 +173,7 @@ func (u *PrimitiveAtom) AddReferee(reference *PrimitiveTypeReference) {
 func (u *PrimitiveAtom) References() []*PrimitiveTypeReference {
 	return u.references
 }
+
+func (u *PrimitiveAtom) WasReferenced() bool {
+	return len(u.references) > 0
+}

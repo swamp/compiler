@@ -251,3 +251,7 @@ func (u *RecordAtom) IsEqual(other_ dtype.Atom) error {
 
 	return nil
 }
+
+func (u *RecordAtom) WasReferenced() bool {
+	return false // Record atom types are not reused.
+}

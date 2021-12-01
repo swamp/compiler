@@ -210,8 +210,6 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.RecordTypeField().VariableIdentifier().FetchPositionLength(), nil
 	case *dectype.CustomTypeVariantReference:
 		return t.CustomTypeVariant().FetchPositionLength(), nil
-	case *dectype.CustomTypeVariantConstructorType:
-		return t.Variant().FetchPositionLength(), nil
 	case *decorated.RecordConstructorFromParameters:
 		{
 			typeConstructors := t.Type().Next()
