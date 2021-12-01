@@ -55,7 +55,7 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 		}
 		if r == '\n' || r == 0 {
 			const maxColumn = 120
-			const recommendedMaxColumn = 100
+			const recommendedMaxColumn = 110
 
 			sourceFileReference := token.SourceFileReference{
 				Range:    token.MakeRange(pos, pos),

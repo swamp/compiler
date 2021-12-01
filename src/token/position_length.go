@@ -115,7 +115,13 @@ func (s SourceFileReference) ToCompleteReferenceString() string {
 		uri = s.Document.Uri
 	}
 
-	localPath, _ := uri.ToLocalFilePath()
+	localPath, err := uri.ToLocalFilePath()
+	if err != nil {
+		localPath = string(uri)
+	}
+	if localPath == "" {
+		localPath = string(uri)
+	}
 	return fmt.Sprintf("%v:%d:%d - %d:%d:", localPath, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
 }
 
