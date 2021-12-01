@@ -6,11 +6,22 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func allocateVariable(scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName string, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
-	targetPosRange := allocMemoryForType(stackMemory, variableType, "variable:"+variableName)
+func allocateForType(stackMemory *assembler_sp.StackMemoryMapper, debugName string, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
+	targetPosRange := allocMemoryForType(stackMemory, variableType, debugName)
 	sourcePosRange := targetToSourceStackPosRange(targetPosRange)
-	if err := scopeVariables.DefineVariable(variableName, sourcePosRange); err != nil {
-		return assembler_sp.SourceStackPosRange{}, err
+	return sourcePosRange, nil
+}
+
+func allocateVariable(scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName *decorated.FunctionParameterDefinition, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
+	sourcePosRange, allocErr := allocateForType(stackMemory, "variable:"+variableName.Identifier().Name(), variableType)
+	if allocErr != nil {
+		return assembler_sp.SourceStackPosRange{}, allocErr
+	}
+
+	if !variableName.Identifier().IsIgnore() {
+		if err := scopeVariables.DefineVariable(variableName.Identifier().Name(), sourcePosRange); err != nil {
+			return assembler_sp.SourceStackPosRange{}, err
+		}
 	}
 
 	return sourcePosRange, nil

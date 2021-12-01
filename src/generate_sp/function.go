@@ -17,19 +17,14 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 	unaliasedReturnType := dectype.UnaliasWithResolveInvoker(functionType.ReturnType())
-	returnValueSourcePointer, allocateVariableErr := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, "__return", unaliasedReturnType)
+	returnValueSourcePointer, allocateVariableErr := allocateForType(funcContext.stackMemory, "__return", unaliasedReturnType)
 	if allocateVariableErr != nil {
 		return nil, allocateVariableErr
 	}
 	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 
 	for _, parameter := range f.Parameters() {
-		if parameter.Identifier().IsIgnore() {
-			continue
-		}
-		paramVarName := parameter.Identifier().Name()
-		_, err := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, paramVarName, parameter.Type())
-		if err != nil {
+		if _, err := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, parameter, parameter.Type()); err != nil {
 			return nil, err
 		}
 	}
