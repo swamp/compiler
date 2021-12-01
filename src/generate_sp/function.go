@@ -2,7 +2,6 @@ package generate_sp
 
 import (
 	"github.com/swamp/assembler/lib/assembler_sp"
-	decorator "github.com/swamp/compiler/src/decorated/convert"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/typeinfo"
@@ -11,7 +10,7 @@ import (
 )
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
-	f *decorated.FunctionValue, funcContext *Context, definitions *decorator.VariableContext,
+	f *decorated.FunctionValue, funcContext *Context,
 	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
 

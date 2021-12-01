@@ -15,7 +15,6 @@ import (
 
 	"github.com/swamp/assembler/lib/assembler_sp"
 	deccy "github.com/swamp/compiler/src/decorated"
-	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -300,9 +299,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			fmt.Printf("============================================== generating for module %v\n", module)
 		}
 
-		context := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
-
-		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, context, typeInformationChunk, packageConstants, verboseFlag)
+		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, packageConstants, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}

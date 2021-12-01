@@ -14,7 +14,6 @@ import (
 
 	"github.com/swamp/assembler/lib/assembler_sp"
 	deccy "github.com/swamp/compiler/src/decorated"
-	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 	swampdisasmsp "github.com/swamp/disassembler/lib"
@@ -29,14 +28,13 @@ func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assem
 	}
 
 	gen := NewGenerator()
-	rootContext := decorator.NewVariableContext(module.LocalAndImportedDefinitions())
 	packageConstants := assembler_sp.NewPackageConstants()
 	const verboseFlag = verbosity.None
 	_, lookup, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {
 		return nil, nil, typeInfoErr
 	}
-	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, rootContext, lookup, packageConstants, verboseFlag)
+	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, lookup, packageConstants, verboseFlag)
 	if genErr != nil {
 		return nil, nil, genErr
 	}

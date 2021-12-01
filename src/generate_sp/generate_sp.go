@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
-	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -144,7 +143,7 @@ func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembl
 	return targetToSourceStackPosRange(functionPointer), nil
 }
 
-func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, definitions *decorator.VariableContext,
+func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 	lookup typeinfo.TypeLookup, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
 	moduleContext := NewContext(packageConstants)
 
@@ -177,7 +176,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, d
 				continue
 			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
-				rootContext, definitions, lookup, verboseFlag)
+				rootContext, lookup, verboseFlag)
 			if genFuncErr != nil {
 				return nil, nil, genFuncErr
 			}
