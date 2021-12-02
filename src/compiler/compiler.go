@@ -47,6 +47,13 @@ func CheckUnused(world *loader.Package) {
 				module.AddWarning(warning)
 			}
 		}
+
+		for _, importModule := range module.ImportedModules().AllModules() {
+			if !importModule.ImportStatementInModule().WasReferenced() && importModule.ImportStatementInModule().AstImport().ModuleName().ModuleName() != "" {
+				warning := decorated.NewUnusedImportStatementWarning(importModule.ImportStatementInModule())
+				module.AddWarning(warning)
+			}
+		}
 	}
 }
 

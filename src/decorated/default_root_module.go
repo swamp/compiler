@@ -326,7 +326,14 @@ func compileAndAddToModule(targetModule *decorated.Module, name string, code str
 	}
 
 	reference := newModule.FullyQualifiedModuleName().ModuleName.Path()
-	targetModule.ImportedModules().ImportModule(reference, newModule, targetModule)
+	exposeAllImports := true
+
+	keyword := token.NewKeyword("", 0, token.SourceFileReference{})
+	i := ast.NewImport(keyword, nil, nil, reference, nil, nil, nil, true, nil)
+
+	fakeImportStatement := decorated.NewImport(i, nil, nil, exposeAllImports)
+
+	targetModule.ImportedModules().ImportModule(reference, newModule, fakeImportStatement)
 
 	return nil
 }

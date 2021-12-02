@@ -64,3 +64,22 @@ func (e *UnusedImportWarning) FetchPositionLength() token.SourceFileReference {
 	}
 	return e.definition.ModuleName().FetchPositionLength()
 }
+
+type UnusedImportStatementWarning struct {
+	definition *ImportStatement
+}
+
+func NewUnusedImportStatementWarning(definition *ImportStatement) *UnusedImportStatementWarning {
+	if definition.astImport == nil {
+		panic("what is this")
+	}
+	return &UnusedImportStatementWarning{definition: definition}
+}
+
+func (e *UnusedImportStatementWarning) Warning() string {
+	return fmt.Sprintf("unused import %v", e.definition.astImport.ModuleName().ModuleName())
+}
+
+func (e *UnusedImportStatementWarning) FetchPositionLength() token.SourceFileReference {
+	return e.definition.FetchPositionLength()
+}

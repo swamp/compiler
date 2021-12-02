@@ -49,6 +49,7 @@ func (d *ModuleDefinitionsCombine) FindScopedDefinitionExpression(identifier *as
 		return nil
 	}
 	// log.Printf("Found referenced module '%v'\n", identifier.ModuleReference())
+	NewImportStatementReference(foundModule.ImportStatementInModule())
 	referencedModule := foundModule.referencedModule
 	foundDef := referencedModule.exposedDefinitions.FindDefinition(identifier.AstVariableReference())
 	if foundDef == nil {

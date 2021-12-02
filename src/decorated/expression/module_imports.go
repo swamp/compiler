@@ -9,11 +9,11 @@ import (
 type ImportedModule struct {
 	wasReferenced           bool
 	referencedModule        *Module
-	importStatementInModule *Module
+	importStatementInModule *ImportStatement
 	moduleName              *ast.ModuleReference
 }
 
-func NewImportedModule(referencedModule *Module, importStatementInModule *Module) *ImportedModule {
+func NewImportedModule(referencedModule *Module, importStatementInModule *ImportStatement) *ImportedModule {
 	return &ImportedModule{
 		referencedModule:        referencedModule,
 		importStatementInModule: importStatementInModule,
@@ -37,7 +37,7 @@ func (i *ImportedModule) ReferencedModule() *Module {
 	return i.referencedModule
 }
 
-func (i *ImportedModule) ImportStatementInModule() *Module {
+func (i *ImportedModule) ImportStatementInModule() *ImportStatement {
 	return i.importStatementInModule
 }
 
@@ -53,12 +53,15 @@ func NewModuleImports() *ModuleImports {
 	return &ModuleImports{modules: make(map[string]*ImportedModule)}
 }
 
-func (m *ModuleImports) ImportModule(moduleName *ast.ModuleReference, module *Module, importStatementInModule *Module) *ImportedModule {
+func (m *ModuleImports) ImportModule(moduleName *ast.ModuleReference, module *Module, importStatementInModule *ImportStatement) *ImportedModule {
 	importedModule := &ImportedModule{
 		moduleName: moduleName, referencedModule: module,
 		importStatementInModule: importStatementInModule,
 	}
 
+	if importStatementInModule.astImport == nil {
+		panic("not allowed to add this")
+	}
 	m.modules[moduleName.ModuleName()] = importedModule
 
 	return importedModule

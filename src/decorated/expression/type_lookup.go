@@ -51,6 +51,8 @@ func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (d
 		return nil, nil, NewUnknownModule(typeIdentifier.ModuleReference())
 	}
 
+	NewImportStatementReference(moduleFound.ImportStatementInModule())
+
 	moduleFound.MarkAsReferenced()
 	moduleReference := NewModuleReference(typeIdentifier.ModuleReference(), moduleFound.referencedModule)
 	typeReferenceScoped := ast.NewScopedTypeReference(typeIdentifier, nil)
