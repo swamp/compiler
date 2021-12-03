@@ -77,7 +77,7 @@ func NewUnusedImportStatementWarning(definition *ImportStatement) *UnusedImportS
 }
 
 func (e *UnusedImportStatementWarning) Warning() string {
-	return fmt.Sprintf("unused import %v", e.definition.astImport.ModuleName().ModuleName())
+	return fmt.Sprintf("unused import '%v'", e.definition.astImport.ModuleName().ModuleName())
 }
 
 func (e *UnusedImportStatementWarning) FetchPositionLength() token.SourceFileReference {

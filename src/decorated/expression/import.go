@@ -17,6 +17,7 @@ type ImportStatement struct {
 	moduleReference *ModuleReference
 	alias           *ModuleReference
 	references      []*ImportStatementReference
+	isReferenced    bool
 	exposeAll       bool
 }
 
@@ -66,10 +67,14 @@ func (l *ImportStatement) FetchPositionLength() token.SourceFileReference {
 	return l.astImport.FetchPositionLength()
 }
 
+func (l *ImportStatement) MarkAsReferenced() {
+	l.isReferenced = true
+}
+
 func (l *ImportStatement) AddReference(statementReference *ImportStatementReference) {
 	l.references = append(l.references, statementReference)
 }
 
 func (l *ImportStatement) WasReferenced() bool {
-	return len(l.references) > 0
+	return len(l.references) > 0 || l.isReferenced
 }

@@ -23,6 +23,7 @@ func NewImportedModule(referencedModule *Module, importStatementInModule *Import
 
 func (i *ImportedModule) MarkAsReferenced() {
 	i.wasReferenced = true
+	i.importStatementInModule.MarkAsReferenced()
 }
 
 func (i *ImportedModule) WasReferenced() bool {
