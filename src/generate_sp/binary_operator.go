@@ -24,6 +24,8 @@ func booleanToBinaryIntOperatorType(operatorType decorated.BooleanOperatorType) 
 		return instruction_sp.BinaryOperatorBooleanIntGreater
 	case decorated.BooleanGreaterOrEqual:
 		return instruction_sp.BinaryOperatorBooleanIntGreaterOrEqual
+	default:
+		panic(fmt.Errorf("not allowed int operator type"))
 	}
 
 	return 0
@@ -46,6 +48,21 @@ func booleanToBinaryStringOperatorType(operatorType decorated.BooleanOperatorTyp
 		return instruction_sp.BinaryOperatorBooleanStringEqual
 	case decorated.BooleanNotEqual:
 		return instruction_sp.BinaryOperatorBooleanStringNotEqual
+	default:
+		panic(fmt.Errorf("not allowed string operator type"))
+	}
+
+	return 0
+}
+
+func booleanToBinaryBooleanOperatorType(operatorType decorated.BooleanOperatorType) instruction_sp.BinaryOperatorType {
+	switch operatorType {
+	case decorated.BooleanEqual:
+		return instruction_sp.BinaryOperatorBooleanBooleanEqual
+	case decorated.BooleanNotEqual:
+		return instruction_sp.BinaryOperatorBooleanBooleanNotEqual
+	default:
+		panic(fmt.Errorf("not allowed binary operator type"))
 	}
 
 	return 0
@@ -81,8 +98,12 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 		opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
 
 		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+	} else if foundPrimitive.AtomName() == "Bool" {
+		opcodeBinaryOperator := booleanToBinaryBooleanOperatorType(operator.OperatorType())
+
+		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
 	} else {
-		panic(fmt.Errorf("what operator is this for %v", foundPrimitive.AtomName()))
+		panic(fmt.Errorf("generate sp: what operator is this for %v", foundPrimitive.AtomName()))
 	}
 
 	return nil

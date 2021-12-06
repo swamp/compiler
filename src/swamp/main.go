@@ -194,8 +194,8 @@ type Options struct {
 	Lsp     LspCmd         `help:"lsp" cmd:""`
 	Fmt     FmtCmd         `help:"fmt" cmd:""`
 	Doc     DocCmd         `help:"fmt" cmd:""`
-	Build   BuildCmd       `cmd:"" default:"1" help:"builds a swamp application"`
-	Env     EnvironmentCmd `cmd:"" default:"1" help:"manage swamp environment"`
+	Build   BuildCmd       `cmd:"" help:"builds a swamp application"`
+	Env     EnvironmentCmd `cmd:"" help:"manage swamp environment"`
 	Version VersionCmd     `cmd:"" help:"shows the version information"`
 }
 
