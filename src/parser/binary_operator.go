@@ -12,10 +12,11 @@ import (
 )
 
 func parseBinaryOperator(p ParseStream, startIndentation int, infixToken token.OperatorToken, precedence Precedence, left ast.Expression) (ast.Expression, parerr.ParseError) {
-	if _, eatErr := p.eatOneSpace("after binary operator"); eatErr != nil {
+	newIndentation, _, eatErr := p.eatContinuationReturnIndentation(startIndentation)
+	if eatErr != nil {
 		return nil, parerr.NewExpectedOneSpaceAfterBinaryOperator(eatErr)
 	}
-	right, rightErr := p.parseExpression(precedence, startIndentation)
+	right, rightErr := p.parseExpression(precedence, newIndentation)
 	if rightErr != nil {
 		return nil, rightErr
 	}

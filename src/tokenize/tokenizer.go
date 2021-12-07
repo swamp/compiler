@@ -62,10 +62,10 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 				Document: fileDocument,
 			}
 			if pos.Column() > maxColumn {
-				fmt.Fprintf(os.Stderr, "%v: Warning: line is too long (%v of max %v).\n", sourceFileReference.ToCompleteReferenceString(),
+				fmt.Fprintf(os.Stderr, "%v: Warning: line is too long (%v of max %v).\n", sourceFileReference.ToStandardReferenceString(),
 					pos.Column(), maxColumn)
 			} else if pos.Column() > recommendedMaxColumn {
-				fmt.Fprintf(os.Stderr, "%v: Note: exceeds recommended line length (%v of recommended %v).\n", sourceFileReference.ToCompleteReferenceString(),
+				fmt.Fprintf(os.Stderr, "%v: Note: exceeds recommended line length (%v of recommended %v).\n", sourceFileReference.ToStandardReferenceString(),
 					pos.Column(), recommendedMaxColumn)
 			}
 		}

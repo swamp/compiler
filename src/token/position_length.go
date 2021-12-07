@@ -125,6 +125,22 @@ func (s SourceFileReference) ToCompleteReferenceString() string {
 	return fmt.Sprintf("%v:%d:%d - %d:%d:", localPath, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
 }
 
+func (s SourceFileReference) ToStandardReferenceString() string {
+	var uri DocumentURI
+	if s.Document != nil {
+		uri = s.Document.Uri
+	}
+
+	localPath, err := uri.ToLocalFilePath()
+	if err != nil {
+		localPath = string(uri)
+	}
+	if localPath == "" {
+		localPath = string(uri)
+	}
+	return fmt.Sprintf("%v:%d:%d:", localPath, s.Range.start.line+1, s.Range.start.column+1)
+}
+
 func (s SourceFileReference) String() string {
 	return s.ToReferenceString()
 }
