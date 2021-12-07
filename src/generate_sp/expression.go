@@ -128,6 +128,9 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 
 	case *decorated.RecordConstructorFromParameters:
 		return generateRecordConstructorSortedAssignments(code, target, e, genContext)
+
+	case *decorated.CastOperator:
+		return generateExpression(code, target, e.Expression(), leafNode, genContext)
 	}
 
 	panic(fmt.Errorf("generate_sp: unknown node %T %v %v", expr, expr, genContext))

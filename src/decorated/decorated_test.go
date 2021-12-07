@@ -64,6 +64,21 @@ another = [functionvalue ([]) -> [let [[letassign $a = [bool true]] [letassign $
 `)
 }
 
+func TestCast(t *testing.T) {
+	testDecorate(t, `
+type alias Something = Int
+
+
+another : Bool
+another =
+    let
+        b = 32 : Something
+    in
+    b >= 32
+`, `
+`)
+}
+
 func TestResourceName(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`

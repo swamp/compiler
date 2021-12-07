@@ -84,6 +84,15 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 	return 0, false
 }
 
+func tryConvertCastOperator(infix *ast.BinaryOperator, left decorated.Expression, right decorated.Expression) (*decorated.CastOperator, decshared.DecoratedError) {
+	rightType := right.Type()
+	a := decorated.NewCastOperator(left, rightType)
+	if err := dectype.CompatibleTypes(left.Type(), rightType); err != nil {
+		return nil, decorated.NewUnmatchingBitwiseOperatorTypes(infix, left, nil)
+	}
+	return a, nil
+}
+
 /*
 func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, startIndentation int, precedence Precedence, left ast.FunctionExpression) (ast.FunctionExpression, parerr.ParseError) {
 	_, spaceErr := p.eatOneSpace("space after pipe left")
@@ -318,6 +327,10 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 			return nil, decorated.NewUnmatchingBitwiseOperatorTypes(infix, leftExpression, rightExpression)
 		}
 		return decorated.NewBitwiseOperator(infix, leftExpression, rightExpression, bitwiseOperatorType)
+	}
+
+	if infix.OperatorType() == token.Colon {
+		return tryConvertCastOperator(infix, leftExpression, rightExpression)
 	}
 
 	return nil, decorated.NewUnknownBinaryOperator(infix, leftExpression, rightExpression)

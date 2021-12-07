@@ -69,3 +69,7 @@ func (g *AliasReference) ParameterCount() int {
 func (g *AliasReference) FetchPositionLength() token.SourceFileReference {
 	return g.ident.FetchPositionLength()
 }
+
+func (g *AliasReference) Type() dtype.Type {
+	return g.reference
+}

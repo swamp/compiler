@@ -37,9 +37,14 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 	switch t := variantConstructor.(type) {
 	case *dectype.AliasReference:
 		{
+			_, wasPrimitive := unaliasedConstructor.(*dectype.PrimitiveAtom)
+			if wasPrimitive {
+				return decorated.NewAliasReference(t), nil
+			}
+
 			e, wasRecordType := unaliasedConstructor.(*dectype.RecordAtom)
 			if !wasRecordType {
-				return nil, decorated.NewInternalError(fmt.Errorf("was not a record atom %T", unaliasedConstructor))
+				return nil, decorated.NewInternalError(fmt.Errorf("variantconstructor was not a record atom %T", unaliasedConstructor))
 			}
 			argumentCount := len(decoratedExpressions)
 			if argumentCount == 1 {
