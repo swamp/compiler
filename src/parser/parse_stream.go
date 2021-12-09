@@ -117,7 +117,8 @@ type ParseStream interface {
 	detectAssign() bool
 	detectNewLineOrSpace() (bool, bool)
 	detectOneSpaceAndTermination() bool
-	detectTypeIdentifier() bool
+	detectTypeIdentifierWithoutScope() bool
+	detectNormalOrScopedTypeIdentifier() bool
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// parse. parse expressions and terms

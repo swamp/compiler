@@ -36,7 +36,7 @@ func parseCase(p ParseStream, keyword token.Keyword, startIndentation int, previ
 
 	subPreviousComent := report.Comments.LastComment()
 
-	if p.detectTypeIdentifier() {
+	if p.detectTypeIdentifierWithoutScope() {
 		return parseCaseForCustomType(p, test, keyword, ofToken, startIndentation, consequenceIndentation, subPreviousComent)
 	}
 

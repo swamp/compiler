@@ -379,11 +379,28 @@ func (p *ParseStreamImpl) maybeAccessor() bool {
 	return p.tokenizer.MaybeAccessor()
 }
 
-func (p *ParseStreamImpl) detectTypeIdentifier() bool {
+func (p *ParseStreamImpl) detectTypeIdentifierWithoutScope() bool {
 	pos := p.tokenizer.Tell()
 	_, typeSymbolErr := p.tokenizer.ParseTypeSymbol()
+	accessorFollowing := p.maybeAccessor()
 	p.tokenizer.Seek(pos)
-	return typeSymbolErr == nil
+
+	return !accessorFollowing && typeSymbolErr == nil
+}
+
+func (p *ParseStreamImpl) detectNormalOrScopedTypeIdentifier() bool {
+	pos := p.tokenizer.Tell()
+
+	wasTypeIdentifier := false
+	if foundTypeIdentifier, wasTypeSymbol := p.wasTypeIdentifier(); wasTypeSymbol {
+		_, typeSymbolErr := parseTypeSymbolWithOptionalModules(p, foundTypeIdentifier)
+		if typeSymbolErr != nil {
+			wasTypeIdentifier = false
+		}
+	}
+
+	p.tokenizer.Seek(pos)
+	return wasTypeIdentifier
 }
 
 func (p *ParseStreamImpl) readVariableIdentifierAssignOrUpdate(indentation int) (*ast.VariableIdentifier, bool, int, parerr.ParseError) {

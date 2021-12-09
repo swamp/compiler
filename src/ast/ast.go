@@ -23,4 +23,9 @@ type Expression interface {
 	DebugString() string
 }
 
+type ConstantOrLiteral interface {
+	Node
+	DebugString() string
+}
+
 type Literal = Expression

@@ -22,7 +22,7 @@ func (p *Parser) parseTermUsingToken(someToken token.Token, startIndentation int
 		}
 	case token.TypeSymbolToken:
 		{
-			return parseTypeSymbol(p.stream, startIndentation, t)
+			return parseExpressionStartingWithTypeSymbol(p.stream, startIndentation, t)
 		}
 	case token.StringToken:
 		{

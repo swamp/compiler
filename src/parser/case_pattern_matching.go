@@ -22,7 +22,7 @@ func parseCasePatternMatching(p ParseStream, test ast.Expression, keywordCase to
 			// prefix = ast.NewDefaultMarker(fakeSymbol)
 		} else {
 			var prefixErr tokenize.TokenError
-			prefix, prefixErr = p.parseLiteral(startIndentation)
+			prefix, prefixErr = ParseLiteralOrConstant(p, startIndentation)
 			if prefixErr != nil {
 				return nil, parerr.NewExpectedCaseConsequenceSymbolError(prefixErr)
 			}

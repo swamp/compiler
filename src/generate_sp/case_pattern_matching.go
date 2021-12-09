@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
+	"github.com/swamp/compiler/src/ast"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
@@ -45,9 +46,19 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 		} else {
 			characterLiteral, wasCharacterLiteral := consequence.Literal().(*decorated.CharacterLiteral)
 			if !wasCharacterLiteral {
-				panic(fmt.Errorf("unsupported literal"))
+				constantReference, wasConstantReference := consequence.Literal().(*decorated.ConstantReference)
+				if !wasConstantReference {
+					return fmt.Errorf("unsupported int literal or int constant %T", consequence.Literal())
+				}
+				constExpression := constantReference.Constant().AstConstant().Expression()
+				integerLiteral, wasIntegerLiteral := constExpression.(*ast.IntegerLiteral)
+				if !wasIntegerLiteral {
+					return fmt.Errorf("couldnt find a good integer constant")
+				}
+				intValue = integerLiteral.Value()
+			} else {
+				intValue = characterLiteral.Value()
 			}
-			intValue = characterLiteral.Value()
 		}
 
 		labelVariableName := assembler_sp.VariableName("a1")
