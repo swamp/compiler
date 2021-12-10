@@ -642,6 +642,9 @@ func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connect
 		case *dectype.CustomTypeAtom:
 			count = len(t.References())
 			foundRange = t.FetchPositionLength().Range
+		case *decorated.Constant:
+			count = len(t.References())
+			foundRange = t.FetchPositionLength().Range
 		default:
 			continue
 		}

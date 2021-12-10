@@ -36,6 +36,10 @@ func (a *Constant) AddReferee(ref *ConstantReference) {
 	a.references = append(a.references, ref)
 }
 
+func (a *Constant) References() []*ConstantReference {
+	return a.references
+}
+
 func (c *Constant) Expression() Expression {
 	return c.expression
 }

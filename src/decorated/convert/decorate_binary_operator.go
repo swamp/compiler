@@ -84,10 +84,9 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 	return 0, false
 }
 
-func tryConvertCastOperator(infix *ast.BinaryOperator, left decorated.Expression, right decorated.Expression) (*decorated.CastOperator, decshared.DecoratedError) {
-	rightType := right.Type()
-	a := decorated.NewCastOperator(left, rightType)
-	if err := dectype.CompatibleTypes(left.Type(), rightType); err != nil {
+func tryConvertCastOperator(infix *ast.BinaryOperator, left decorated.Expression, right *decorated.AliasReference) (*decorated.CastOperator, decshared.DecoratedError) {
+	a := decorated.NewCastOperator(left, right, infix)
+	if err := dectype.CompatibleTypes(left.Type(), right.Type()); err != nil {
 		return nil, decorated.NewUnmatchingBitwiseOperatorTypes(infix, left, nil)
 	}
 	return a, nil
@@ -330,7 +329,8 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 	}
 
 	if infix.OperatorType() == token.Colon {
-		return tryConvertCastOperator(infix, leftExpression, rightExpression)
+		aliasReference, _ := rightExpression.(*decorated.AliasReference)
+		return tryConvertCastOperator(infix, leftExpression, aliasReference)
 	}
 
 	return nil, decorated.NewUnknownBinaryOperator(infix, leftExpression, rightExpression)

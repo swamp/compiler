@@ -624,6 +624,19 @@ func addSemanticTokenBinaryOperator(operator *decorated.BinaryOperator, builder 
 	return nil
 }
 
+func addSemanticTokenCastOperator(operator *decorated.CastOperator, builder *SemanticBuilder) error {
+	if err := addSemanticToken(operator.Expression(), builder); err != nil {
+		return err
+	}
+	/*
+		if err := addSemanticToken(operator.Type(), builder); err != nil {
+			return err
+		}
+	*/
+
+	return nil
+}
+
 func addSemanticTokenUnaryOperator(operator *decorated.UnaryOperator, builder *SemanticBuilder) error {
 	if err := addSemanticToken(operator.Left(), builder); err != nil {
 		return err
@@ -954,6 +967,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenMultilineComment(t, builder)
 	case *decorated.BinaryOperator:
 		return addSemanticTokenBinaryOperator(t, builder)
+	case *decorated.CastOperator:
+		return addSemanticTokenCastOperator(t, builder)
 	case *decorated.UnaryOperator:
 		return addSemanticTokenUnaryOperator(t, builder)
 	case *decorated.RecordLiteral:

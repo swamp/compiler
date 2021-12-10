@@ -341,6 +341,13 @@ func expandChildNodesBinaryOperator(namedFunctionValue *BinaryOperator) []TypeOr
 	return tokens
 }
 
+func expandChildNodesForCastOperator(castOperator *CastOperator) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(castOperator.Expression())...)
+	tokens = append(tokens, expandChildNodes(castOperator.Type())...)
+	return tokens
+}
+
 func expandChildNodesRecordLookups(lookup *RecordLookups) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(lookup.Expression())...)
@@ -436,10 +443,10 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return expandChildNodes(&t.BinaryOperator)
 	case *BitwiseOperator:
 		return expandChildNodes(&t.BinaryOperator)
-
+	case *CastOperator:
+		return append(tokens, expandChildNodesForCastOperator(t)...)
 	case *CaseConsequenceParameterForCustomType:
 		return tokens
-
 	case *ArithmeticUnaryOperator:
 		return expandChildNodes(&t.UnaryOperator)
 	case *FunctionName: // Should not be expanded
@@ -488,8 +495,6 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:
 		return append(tokens, expandChildNodesRecordLookups(t)...)
-	case *CastOperator:
-		return tokens
 	case *dectype.LocalType:
 		return tokens
 	case *dectype.AnyMatchingTypes:
