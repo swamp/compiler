@@ -21,7 +21,7 @@ func TestBooleanOperator(t *testing.T) {
 	testGenerate(t,
 		`
 main : Int -> Bool
-main x =
+main _ =
     let
         a = True
         b = False

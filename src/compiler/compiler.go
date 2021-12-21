@@ -218,8 +218,8 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	packageConstants := assembler_sp.NewPackageConstants()
 	for _, module := range compiledPackage.AllModules() {
 		for _, named := range module.LocalDefinitions().Definitions() {
-			unknownType := named.Expression()
-			maybeFunction, _ := unknownType.(*decorated.FunctionValue)
+			unknownExpression := named.Expression()
+			maybeFunction, _ := unknownExpression.(*decorated.FunctionValue)
 			if maybeFunction != nil {
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 				isExternal := maybeFunction.Annotation().Annotation().IsSomeKindOfExternal()
@@ -247,8 +247,10 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 
 					pos += dectype.MemoryOffset(returnSize)
 
-					for index, param := range maybeFunction.Parameters() {
-						unaliased := dectype.Unalias(maybeFunction.Parameters()[index].Type())
+					parameterTypes, _ := maybeFunction.ForcedFunctionType().ParameterAndReturn()
+
+					for _, param := range parameterTypes {
+						unaliased := dectype.Unalias(param)
 						if dectype.ArgumentNeedsTypeIdInsertedBefore(unaliased) || dectype.IsTypeIdRef(unaliased) {
 							pos = align(pos, dectype.MemoryAlign(opcode_sp_type.AlignOfSwampInt))
 							typeIndexPosRange := assembler_sp.SourceStackPosRange{
@@ -261,7 +263,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 								continue
 							}
 						}
-						size, alignment := dectype.GetMemorySizeAndAlignment(param.Type())
+						size, alignment := dectype.GetMemorySizeAndAlignment(param)
 						pos = align(pos, alignment)
 						posRange := assembler_sp.SourceStackPosRange{
 							Pos:  assembler_sp.SourceStackPos(pos),
@@ -275,8 +277,9 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 						return decorated.NewInternalError(err)
 					}
 				} else {
+					// parameterTypes, _ := maybeFunction.ForcedFunctionType().ParameterAndReturn()
 					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
-					parameterCount := uint(len(maybeFunction.Parameters()))
+					parameterCount := uint(len(maybeFunction.Parameters())) // parameterTypes
 
 					functionTypeIndex, lookupErr := typeInformationChunk.Lookup(maybeFunction.ForcedFunctionType())
 					if lookupErr != nil {
@@ -295,7 +298,9 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 					}
 				}
 			} else {
-				// log.Printf("Unknown thing here:%T\n", unknownType)
+				if _, isConstant := unknownExpression.(*decorated.Constant); !isConstant {
+					panic(fmt.Errorf("Unknown thing here:%T\n", unknownExpression))
+				}
 			}
 		}
 	}

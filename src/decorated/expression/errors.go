@@ -157,8 +157,8 @@ func (e *UnusedVariable) FetchPositionLength() token.SourceFileReference {
 }
 
 type UnusedParameter struct {
-	parameter     *FunctionParameterDefinition
-	function *FunctionValue
+	parameter *FunctionParameterDefinition
+	function  *FunctionValue
 }
 
 func NewUnusedParameter(parameter *FunctionParameterDefinition, function *FunctionValue) *UnusedParameter {
@@ -1003,6 +1003,24 @@ func (e *AnnotationMismatch) Error() string {
 
 func (e *AnnotationMismatch) FetchPositionLength() token.SourceFileReference {
 	return e.assignment.Identifier().Symbol().SourceFileReference
+}
+
+type TooFewIdentifiersForFunctionType struct {
+	forcedFunctionType    *dectype.FunctionAtom
+	functionValue         *ast.FunctionValue
+	annotationIdentifiers []*ast.VariableIdentifier
+}
+
+func NewTooFewIdentifiersForFunctionType(annotationIdentifiers []*ast.VariableIdentifier, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooFewIdentifiersForFunctionType {
+	return &TooFewIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers, forcedFunctionType: forcedFunctionType, functionValue: functionValue}
+}
+
+func (e *TooFewIdentifiersForFunctionType) Error() string {
+	return fmt.Sprintf("too few identifiers for function %v %v", e.annotationIdentifiers, e.functionValue.DebugFunctionIdentifier())
+}
+
+func (e *TooFewIdentifiersForFunctionType) FetchPositionLength() token.SourceFileReference {
+	return e.functionValue.FetchPositionLength()
 }
 
 type ModuleError struct {

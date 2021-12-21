@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
+	"github.com/swamp/compiler/src/ast"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	opcode_sp_type "github.com/swamp/opcodes/type"
@@ -17,10 +18,25 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 	return offset
 }
 
+func callIsExternal(fn decorated.Expression) (*ast.Annotation, bool) {
+	functionReference, isFunctionReference := fn.(*decorated.FunctionReference)
+	if isFunctionReference {
+		annotation := functionReference.FunctionValue().Annotation().Annotation()
+		if annotation.IsSomeKindOfExternal() {
+			return annotation, true
+		} else {
+			return nil, false
+		}
+	}
+
+	return nil, false
+}
+
 func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, isLeafNode bool,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	functionAtom := dectype.UnaliasWithResolveInvoker(call.CompleteCalledFunctionType()).(*dectype.FunctionAtom)
-
+	functionAtom := dectype.UnaliasWithResolveInvoker(call.SmashedFunctionType()).(*dectype.FunctionAtom)
+	maybeOriginalFunctionType := dectype.UnaliasWithResolveInvoker(call.FunctionExpression().Type())
+	originalFunctionType, _ := maybeOriginalFunctionType.(*dectype.FunctionAtom)
 	if decorated.TypeIsTemplateHasLocalTypes(functionAtom) {
 		panic(fmt.Errorf("we can not call functions that has local types %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), functionAtom))
 	}
@@ -59,15 +75,14 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 	// arguments := make([]assembler_sp.TargetStackPosRange, len(call.Arguments()))
 	var arguments []assembler_sp.TargetStackPosRange
 	var argumentsAlign []dectype.MemoryAlign
-	callFnReference := call.FunctionExpression().(*decorated.FunctionReference)
-	callFn := callFnReference.FunctionValue()
-	originalParameters := callFn.Parameters()
-	if len(originalParameters) < len(call.Arguments()) {
+
+	expectedParameters, _ := originalFunctionType.ParameterAndReturn()
+	if len(expectedParameters) < len(call.Arguments()) {
 		panic(fmt.Errorf("wrong parameters %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))
 	}
 
 	for index, arg := range call.Arguments() {
-		functionArgType := originalParameters[index].Type()
+		functionArgType := expectedParameters[index]
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
 		if needsTypeId {
@@ -83,7 +98,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 
 	argumentIndex := 0
 	for index, arg := range call.Arguments() {
-		functionArgType := originalParameters[index].Type()
+		functionArgType := expectedParameters[index]
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 
 		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
@@ -117,9 +132,12 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 		argumentIndex++
 	}
 
-	if call.IsExternal() {
-		functionValue := fn.(*decorated.FunctionReference)
-		if functionValue.FunctionValue().Annotation().Annotation().IsExternalVarFunction() {
+	annotation, isExternal := callIsExternal(fn)
+	if callSelf && isExternal {
+		panic(fmt.Errorf("can not be external and self"))
+	}
+	if isExternal {
+		if annotation.IsExternalVarFunction() {
 			sizes := make([]assembler_sp.VariableArgumentPosSize, len(arguments)+1)
 			startVariableArgumentPos := uint(returnValue.Pos)
 			sizes[0].Offset = 0
@@ -128,8 +146,9 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 				sizes[index+1].Offset = uint16(uint(argument.Pos) - startVariableArgumentPos)
 				sizes[index+1].Size = uint16(argument.Size)
 			}
+
 			code.CallExternalWithSizes(functionRegister.Pos, returnValue.Pos, sizes)
-		} else if functionValue.FunctionValue().Annotation().Annotation().IsExternalVarExFunction() {
+		} else if annotation.IsExternalVarExFunction() {
 			sizes := make([]assembler_sp.VariableArgumentPosSizeAlign, len(arguments)+1)
 			startVariableArgumentPos := uint(returnValue.Pos)
 			sizes[0].Offset = 0

@@ -15,30 +15,18 @@ import (
 )
 
 type FunctionCall struct {
-	functionValueExpression    Expression
-	assignments                []Expression
-	completeCalledFunctionType *dectype.FunctionAtom
-	astFunctionCall            *ast.FunctionCall
-	isExternal                 bool
+	functionValueExpression Expression
+	assignments             []Expression
+	smashedFunctionType     *dectype.FunctionAtom
+	astFunctionCall         *ast.FunctionCall
 }
 
-func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression, completeCalledFunctionType *dectype.FunctionAtom, assignments []Expression) *FunctionCall {
-	// HACK to check for external
-	functionRef, wasFunctionRef := functionValueExpression.(*FunctionReference)
-	wasExternal := false
-	if wasFunctionRef {
-		_, foundExternal := functionRef.FunctionValue().decoratedExpression.(*AnnotationStatement)
-		wasExternal = foundExternal
-	}
-	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, assignments: assignments, completeCalledFunctionType: completeCalledFunctionType, isExternal: wasExternal}
+func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression, smashedFunctionType *dectype.FunctionAtom, assignments []Expression) *FunctionCall {
+	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, assignments: assignments, smashedFunctionType: smashedFunctionType}
 }
 
 func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
 	return c.astFunctionCall
-}
-
-func (c *FunctionCall) IsExternal() bool {
-	return c.isExternal
 }
 
 func (c *FunctionCall) FunctionExpression() Expression {
@@ -50,11 +38,11 @@ func (c *FunctionCall) Arguments() []Expression {
 }
 
 func (c *FunctionCall) Type() dtype.Type {
-	return c.completeCalledFunctionType.ReturnType()
+	return c.smashedFunctionType.ReturnType()
 }
 
-func (c *FunctionCall) CompleteCalledFunctionType() *dectype.FunctionAtom {
-	return c.completeCalledFunctionType
+func (c *FunctionCall) SmashedFunctionType() *dectype.FunctionAtom {
+	return c.smashedFunctionType
 }
 
 func (c *FunctionCall) String() string {

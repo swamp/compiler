@@ -229,7 +229,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 
 	functionCall := fullRightFunctionCall.(*decorated.FunctionCall)
 
-	halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionCall, functionCall.CompleteCalledFunctionType(), arguments)
+	halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionCall, functionCall.SmashedFunctionType(), arguments)
 
 	return decorated.NewPipeRightOperator(leftDecorated, halfRightFunctionCall, fullRightFunctionCall), nil
 }

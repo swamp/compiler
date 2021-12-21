@@ -152,7 +152,7 @@ func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functi
 	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
 	identifiers := functionValue.Parameters()
 	if len(identifiers) < len(functionParameterTypes) {
-		return nil, decorated.NewInternalError(fmt.Errorf("no enough parameter definitions %v", functionValue))
+		return nil, decorated.NewTooFewIdentifiersForFunctionType(identifiers, forcedFunctionType, functionValue)
 	}
 	for index, parameterType := range functionParameterTypes {
 		identifier := identifiers[index]
@@ -264,9 +264,9 @@ func (g *RootStatementHandler) declareAnnotation(d DecorateStream, declaration *
 		}
 		preparedFunctionValue := decorated.NewPrepareFunctionValue(annotationStatement, functionValue, functionAtom, parameterDefinitions, nil)
 		// convertedErr := g.declareNamedFunctionValue(d, assi)
-		//if convertedErr != nil {
-		//return nil, convertedErr
-		//}
+		// if convertedErr != nil {
+		// return nil, convertedErr
+		// }
 
 		d.AddDefinition(declaration.Identifier(), preparedFunctionValue)
 		preparedFunctionValue.DefineExpression(annotationStatement) // HACK SO IT HAS AN EXPRESSION
