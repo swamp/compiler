@@ -216,6 +216,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	}
 
 	packageConstants := assembler_sp.NewPackageConstants()
+	fileUrlCache := generate_sp.NewFileUrlCache()
 	for _, module := range compiledPackage.AllModules() {
 		for _, named := range module.LocalDefinitions().Definitions() {
 			unknownExpression := named.Expression()
@@ -311,7 +312,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			fmt.Printf("============================================== generating for module %v\n", module)
 		}
 
-		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, packageConstants, verboseFlag)
+		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, fileUrlCache, packageConstants, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}

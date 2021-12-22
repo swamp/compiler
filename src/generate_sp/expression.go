@@ -58,25 +58,25 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateGuard(code, target, e, genContext)
 
 	case *decorated.StringLiteral:
-		return generateStringLiteral(code, target, e, genContext.context.Constants())
+		return generateStringLiteral(code, target, e, genContext)
 
 	case *decorated.CharacterLiteral:
-		return generateCharacterLiteral(code, target, e)
+		return generateCharacterLiteral(code, target, e, genContext)
 
 	case *decorated.TypeIdLiteral:
 		return generateTypeIdLiteral(code, target, e, genContext)
 
 	case *decorated.IntegerLiteral:
-		return generateIntLiteral(code, target, e)
+		return generateIntLiteral(code, target, e, genContext)
 
 	case *decorated.FixedLiteral:
-		return generateFixedLiteral(code, target, e)
+		return generateFixedLiteral(code, target, e, genContext)
 
 	case *decorated.ResourceNameLiteral:
-		return generateResourceNameLiteral(code, target, e, genContext.context.Constants())
+		return generateResourceNameLiteral(code, target, e, genContext)
 
 	case *decorated.BooleanLiteral:
-		return generateBoolLiteral(code, target, e)
+		return generateBoolLiteral(code, target, e, genContext)
 
 	case *decorated.ListLiteral:
 		return generateList(code, target, e, genContext)
@@ -109,16 +109,16 @@ func generateExpression(code *assembler_sp.Code, target assembler_sp.TargetStack
 		return generateExpression(code, target, e.Constant(), leafNode, genContext)
 
 	case *decorated.FunctionParameterReference:
-		return generateLocalFunctionParameterReference(code, target, e, genContext.context)
+		return generateLocalFunctionParameterReference(code, target, e, genContext)
 
 	case *decorated.LetVariableReference:
-		return generateLetVariableReference(code, target, e, genContext.context)
+		return generateLetVariableReference(code, target, e, genContext)
 
 	case *decorated.FunctionReference:
-		return generateFunctionReference(code, target, e, genContext.context.constants)
+		return generateFunctionReference(code, target, e, genContext)
 
 	case *decorated.CaseConsequenceParameterReference:
-		return generateLocalConsequenceParameterReference(code, target, e, genContext.context)
+		return generateLocalConsequenceParameterReference(code, target, e, genContext)
 
 	case *decorated.ConsOperator:
 		return generateListCons(code, target, e, genContext)

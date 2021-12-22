@@ -34,7 +34,7 @@ func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assem
 	if typeInfoErr != nil {
 		return nil, nil, typeInfoErr
 	}
-	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, lookup, packageConstants, verboseFlag)
+	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, lookup, nil, packageConstants, verboseFlag)
 	if genErr != nil {
 		return nil, nil, genErr
 	}

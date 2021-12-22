@@ -22,7 +22,9 @@ func generateUnaryBitwise(code *assembler_sp.Code, target assembler_sp.TargetSta
 		return leftErr
 	}
 	opcodeUnaryOperatorType := bitwiseToUnaryOperatorType(operator.OperatorType())
-	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType)
+	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
+
+	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType, filePosition)
 
 	return nil
 }
@@ -42,7 +44,9 @@ func generateUnaryLogical(code *assembler_sp.Code, target assembler_sp.TargetSta
 		return leftErr
 	}
 	opcodeUnaryOperatorType := logicalToUnaryOperatorType(operator.OperatorType())
-	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType)
+
+	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
+	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType, filePosition)
 	return nil
 }
 
@@ -63,7 +67,9 @@ func generateUnaryArithmetic(code *assembler_sp.Code, target assembler_sp.Target
 		return leftErr
 	}
 	opcodeUnaryOperatorType := arithmeticToUnaryOperatorType(operator.OperatorType())
-	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType)
+
+	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
+	code.UnaryOperator(target.Pos, leftVar.Pos, opcodeUnaryOperatorType, filePosition)
 
 	return nil
 }

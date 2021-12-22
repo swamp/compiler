@@ -35,7 +35,8 @@ func generateLookups(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 		return err
 	}
 
-	code.CopyMemory(target.Pos, sourcePosRange)
+	filePosition := genContext.toFilePosition(lookups.FetchPositionLength())
+	code.CopyMemory(target.Pos, sourcePosRange, filePosition)
 
 	return nil
 }

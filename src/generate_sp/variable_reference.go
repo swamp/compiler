@@ -19,13 +19,15 @@ func handleLocalFunctionParameterReference(getVar *decorated.FunctionParameterRe
 }
 
 func generateLocalFunctionParameterReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	getVar *decorated.FunctionParameterReference, context *Context) error {
+	getVar *decorated.FunctionParameterReference, genContext *generateContext) error {
+	context := genContext.context
 	sourcePosRange, err := handleLocalFunctionParameterReference(getVar, context.scopeVariables)
 	if err != nil {
 		return err
 	}
 
-	code.CopyMemory(target.Pos, sourcePosRange)
+	filePosition := genContext.toFilePosition(getVar.FetchPositionLength())
+	code.CopyMemory(target.Pos, sourcePosRange, filePosition)
 
 	return nil
 }
@@ -37,12 +39,15 @@ func handleLocalConsequenceParameterReference(getVar *decorated.CaseConsequenceP
 }
 
 func generateLocalConsequenceParameterReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	getVar *decorated.CaseConsequenceParameterReference, context *Context) error {
+	getVar *decorated.CaseConsequenceParameterReference, genContext *generateContext) error {
+	context := genContext.context
 	sourcePosRange, err := handleLocalConsequenceParameterReference(getVar, context.scopeVariables)
 	if err != nil {
 		return err
 	}
-	code.CopyMemory(target.Pos, sourcePosRange)
+
+	filePosition := genContext.toFilePosition(getVar.FetchPositionLength())
+	code.CopyMemory(target.Pos, sourcePosRange, filePosition)
 
 	return nil
 }
@@ -54,11 +59,16 @@ func handleLetVariableReference(getVar *decorated.LetVariableReference,
 }
 
 func generateLetVariableReference(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	getVar *decorated.LetVariableReference, context *Context) error {
+	getVar *decorated.LetVariableReference, genContext *generateContext) error {
+	context := genContext.context
 	sourcePosRange, err := handleLetVariableReference(getVar, context.scopeVariables)
 	if err != nil {
 		return err
 	}
-	code.CopyMemory(target.Pos, sourcePosRange)
+
+	filePosition := genContext.toFilePosition(getVar.FetchPositionLength())
+
+	code.CopyMemory(target.Pos, sourcePosRange, filePosition)
+
 	return nil
 }

@@ -79,6 +79,8 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 		return rightErr
 	}
 
+	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
+
 	unaliasedTypeLeft := dectype.UnaliasWithResolveInvoker(operator.Left().Type())
 	foundPrimitive, _ := unaliasedTypeLeft.(*dectype.PrimitiveAtom)
 	if foundPrimitive == nil {
@@ -88,20 +90,20 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 		} else {
 			// unaliasedTypeRight := dectype.UnaliasWithResolveInvoker(operator.Right().Type())
 			opcodeBinaryOperator := booleanToBinaryEnumOperatorType(operator.OperatorType())
-			code.EnumBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+			code.EnumBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator, filePosition)
 			//			panic(fmt.Errorf("not implemented yet %v", unaliasedTypeRight))
 		}
 	} else if foundPrimitive.AtomName() == "String" {
 		opcodeBinaryOperator := booleanToBinaryStringOperatorType(operator.OperatorType())
-		code.StringBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+		code.StringBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator, filePosition)
 	} else if foundPrimitive.AtomName() == "Int" || foundPrimitive.AtomName() == "Char" || foundPrimitive.AtomName() == "Fixed" {
 		opcodeBinaryOperator := booleanToBinaryIntOperatorType(operator.OperatorType())
 
-		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator, filePosition)
 	} else if foundPrimitive.AtomName() == "Bool" {
 		opcodeBinaryOperator := booleanToBinaryBooleanOperatorType(operator.OperatorType())
 
-		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+		code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator, filePosition)
 	} else {
 		panic(fmt.Errorf("generate sp: what operator is this for %v", foundPrimitive.AtomName()))
 	}

@@ -24,35 +24,43 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 			if err != nil {
 				return assembler_sp.SourceStackPosRange{}, err
 			}
-			code.LoadInteger(intStorage.Pos, int32(integerValue))
+			filePosition := genContext.toFilePosition(t.FetchPositionLength())
+			code.LoadInteger(intStorage.Pos, int32(integerValue), filePosition)
 
 			return targetToSourceStackPosRange(intStorage), nil
 		}
 	case *decorated.IntegerLiteral:
 		{
 			intStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampInt), uint32(opcode_sp_type.AlignOfSwampInt), "intLiteral:"+t.String())
-			code.LoadInteger(intStorage.Pos, t.Value())
+			filePosition := genContext.toFilePosition(t.FetchPositionLength())
+			code.LoadInteger(intStorage.Pos, t.Value(), filePosition)
 
 			return targetToSourceStackPosRange(intStorage), nil
 		}
 	case *decorated.FixedLiteral:
 		{
 			fixedStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampInt), uint32(opcode_sp_type.AlignOfSwampInt), "fixedLiteral:"+t.String())
-			code.LoadInteger(fixedStorage.Pos, t.Value())
+
+			filePosition := genContext.toFilePosition(t.FetchPositionLength())
+			code.LoadInteger(fixedStorage.Pos, t.Value(), filePosition)
 
 			return targetToSourceStackPosRange(fixedStorage), nil
 		}
 	case *decorated.CharacterLiteral:
 		{
 			runeStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampRune), uint32(opcode_sp_type.AlignOfSwampRune), "runeLiteral"+t.String())
-			code.LoadRune(runeStorage.Pos, instruction_sp.ShortRune(t.Value()))
+
+			filePosition := genContext.toFilePosition(t.FetchPositionLength())
+			code.LoadRune(runeStorage.Pos, instruction_sp.ShortRune(t.Value()), filePosition)
 
 			return targetToSourceStackPosRange(runeStorage), nil
 		}
 	case *decorated.BooleanLiteral:
 		{
 			boolStorage := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampBool), uint32(opcode_sp_type.AlignOfSwampBool), "boolLiteral"+t.String())
-			code.LoadBool(boolStorage.Pos, t.Value())
+
+			filePosition := genContext.toFilePosition(t.FetchPositionLength())
+			code.LoadBool(boolStorage.Pos, t.Value(), filePosition)
 
 			return targetToSourceStackPosRange(boolStorage), nil
 		}

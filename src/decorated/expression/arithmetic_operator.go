@@ -38,6 +38,7 @@ func NewArithmeticOperator(infix *ast.BinaryOperator, left Expression, right Exp
 	a := &ArithmeticOperator{operatorType: operatorType, infix: infix}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
+
 	if err := dectype.CompatibleTypes(left.Type(), right.Type()); err != nil {
 		return nil, NewUnMatchingArithmeticOperatorTypes(infix, left, right)
 	}
@@ -86,5 +87,5 @@ func (a *ArithmeticOperator) String() string {
 }
 
 func (a *ArithmeticOperator) FetchPositionLength() token.SourceFileReference {
-	return a.Left().FetchPositionLength()
+	return token.MakeInclusiveSourceFileReference(a.left.FetchPositionLength(), a.right.FetchPositionLength())
 }

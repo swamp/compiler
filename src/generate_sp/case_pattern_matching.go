@@ -7,6 +7,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/opcodes/opcode_sp"
 )
 
 type PatternMatchingType uint8
@@ -96,7 +97,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 
 	for index, consequenceCode := range consequencesCodes {
 		if index != len(consequencesCodes)-1 {
-			consequenceCode.Jump(endLabel)
+			consequenceCode.Jump(endLabel, opcode_sp.FilePosition{})
 		}
 	}
 
@@ -104,7 +105,8 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 		consequencesBlockCode.Copy(consequenceCode)
 	}
 
-	code.CasePatternMatchingInt(testVar.Pos, consequences, defaultLabel)
+	filePosition := genContext.toFilePosition(caseExpr.Test().FetchPositionLength())
+	code.CasePatternMatchingInt(testVar.Pos, consequences, defaultLabel, filePosition)
 
 	code.Copy(consequencesBlockCode)
 

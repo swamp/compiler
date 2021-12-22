@@ -43,7 +43,9 @@ func generateArithmetic(code *assembler_sp.Code, target assembler_sp.TargetStack
 	}
 
 	opcodeBinaryOperator := arithmeticToBinaryOperatorType(operator.OperatorType())
-	code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator)
+
+	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
+	code.IntBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator, filePosition)
 
 	return nil
 }

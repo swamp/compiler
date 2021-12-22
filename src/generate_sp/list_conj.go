@@ -22,7 +22,8 @@ func generateListCons(code *assembler_sp.Code, target assembler_sp.TargetStackPo
 
 	itemSize, itemAlign := dectype.GetMemorySizeAndAlignment(operator.Left().Type())
 
-	code.ListConj(target.Pos, leftVar.Pos, assembler_sp.StackItemSize(itemSize), opcode_sp_type.MemoryAlign(itemAlign), rightVar.Pos)
+	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
+	code.ListConj(target.Pos, leftVar.Pos, assembler_sp.StackItemSize(itemSize), opcode_sp_type.MemoryAlign(itemAlign), rightVar.Pos, filePosition)
 
 	return nil
 }

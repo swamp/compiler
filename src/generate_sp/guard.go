@@ -3,6 +3,7 @@ package generate_sp
 import (
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	"github.com/swamp/opcodes/opcode_sp"
 )
 
 func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, guardExpr *decorated.Guard,
@@ -45,7 +46,7 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 			return consErr
 		}
 
-		consequenceCode.Jump(endLabel)
+		consequenceCode.Jump(endLabel, opcode_sp.FilePosition{})
 		endOfConsequenceLabel := consequenceCode.Label("", "guard-end")
 
 		// consequenceContext.context.Free()
@@ -60,7 +61,7 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 
 	for _, codeItem := range codeItems {
 		code.Copy(codeItem.ConditionCode)
-		code.BranchFalse(codeItem.ConditionVariable.Pos, codeItem.EndOfConsequenceLabel)
+		code.BranchFalse(codeItem.ConditionVariable.Pos, codeItem.EndOfConsequenceLabel, opcode_sp.FilePosition{})
 
 		code.Copy(codeItem.ConsequenceCode)
 	}

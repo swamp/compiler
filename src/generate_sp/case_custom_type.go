@@ -4,6 +4,7 @@ import (
 	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	"github.com/swamp/opcodes/opcode_sp"
 )
 
 func allocateForType(stackMemory *assembler_sp.StackMemoryMapper, debugName string, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
@@ -98,11 +99,12 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 	lastConsequnce := consequencesCodes[len(consequencesCodes)-1]
 
 	labelVariableEndName := assembler_sp.VariableName("case end")
+
 	endLabel := lastConsequnce.Label(labelVariableEndName, "caseend")
 
 	for index, consequenceCode := range consequencesCodes {
 		if index != len(consequencesCodes)-1 {
-			consequenceCode.Jump(endLabel)
+			consequenceCode.Jump(endLabel, opcode_sp.FilePosition{})
 		}
 	}
 
@@ -110,7 +112,8 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 		consequencesBlockCode.Copy(consequenceCode)
 	}
 
-	code.CaseEnum(testVar.Pos, consequences, defaultCase)
+	filePosition := genContext.toFilePosition(caseExpr.Test().FetchPositionLength())
+	code.CaseEnum(testVar.Pos, consequences, defaultCase, filePosition)
 
 	code.Copy(consequencesBlockCode)
 

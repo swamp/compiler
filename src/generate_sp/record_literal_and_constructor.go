@@ -56,7 +56,8 @@ func generateRecordLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 			return genErr
 		}
 
-		code.CopyMemory(target.Pos, structToCopyVar)
+		filePosition := genContext.toFilePosition(record.RecordTemplate().FetchPositionLength())
+		code.CopyMemory(target.Pos, structToCopyVar, filePosition)
 
 		recordFields := recordType.SortedFields()
 		for _, assignment := range record.SortedAssignments() {

@@ -29,7 +29,8 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 		return fmt.Errorf("internal error, target size is not exactly right at %v, target is:%v and unionMemorySize is:%v", constructor.FetchPositionLength().ToCompleteReferenceString(), target.Size, unionMemorySize)
 	}
 
-	code.SetEnum(target.Pos, uint8(constructor.CustomTypeVariant().Index()))
+	filePosition := genContext.toFilePosition(constructor.FetchPositionLength())
+	code.SetEnum(target.Pos, uint8(constructor.CustomTypeVariant().Index()), filePosition)
 
 	for index, arg := range constructor.Arguments() {
 		variantField := smashedVariant.Fields()[index]

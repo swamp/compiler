@@ -3,6 +3,7 @@ package generate_sp
 import (
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	"github.com/swamp/opcodes/opcode_sp"
 )
 
 func generateIf(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, ifExpr *decorated.If, genContext *generateContext) error {
@@ -34,9 +35,9 @@ func generateIf(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange
 
 	// alternativeContext2.context.Free()
 
-	code.BranchFalse(conditionVar.Pos, alternativeLabel)
+	code.BranchFalse(conditionVar.Pos, alternativeLabel, opcode_sp.FilePosition{})
 
-	consequenceCode.Jump(endLabel)
+	consequenceCode.Jump(endLabel, opcode_sp.FilePosition{})
 	code.Copy(consequenceCode)
 	code.Copy(alternativeCode)
 

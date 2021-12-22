@@ -59,7 +59,8 @@ func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		Size: assembler_sp.SourceStackRange((uint(lastArgument.Pos) + uint(lastArgument.Size)) - uint(arguments[0].Pos)),
 	}
 
-	code.Curry(target.Pos, uint16(indexIntoTypeInformationChunk), assembler_sp.MemoryAlign(firstAlign), functionRegister.Pos, completeArgumentRange)
+	filePosition := genContext.toFilePosition(call.FetchPositionLength())
+	code.Curry(target.Pos, uint16(indexIntoTypeInformationChunk), assembler_sp.MemoryAlign(firstAlign), functionRegister.Pos, completeArgumentRange, filePosition)
 
 	genContext.context.stackMemory.Set(beforePos)
 

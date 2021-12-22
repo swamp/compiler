@@ -8,22 +8,23 @@ import (
 )
 
 func generateStringLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.StringLiteral,
-	constants *assembler_sp.PackageConstants) error {
+	genContext *generateContext) error {
 	if target.Size != assembler_sp.StackRange(opcode_sp_type.Sizeof64BitPointer) {
 		panic("wrong size")
 	}
-
+	constants := genContext.context.constants
 	constant := constants.AllocateStringConstant(str.Value())
-	code.LoadZeroMemoryPointer(target.Pos, constant.PosRange().Position)
+	filePosition := genContext.toFilePosition(str.FetchPositionLength())
+	code.LoadZeroMemoryPointer(target.Pos, constant.PosRange().Position, filePosition)
 	return nil
 }
 
-func generateCharacterLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.CharacterLiteral) error {
+func generateCharacterLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, str *decorated.CharacterLiteral, genContext *generateContext) error {
 	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
-
-	code.LoadRune(target.Pos, instruction_sp.ShortRune(str.Value()))
+	filePosition := genContext.toFilePosition(str.FetchPositionLength())
+	code.LoadRune(target.Pos, instruction_sp.ShortRune(str.Value()), filePosition)
 	return nil
 }
 
@@ -37,43 +38,48 @@ func generateTypeIdLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 		panic("wrong size")
 	}
 
-	code.LoadInteger(target.Pos, int32(integerValue))
+	filePosition := genContext.toFilePosition(typeId.FetchPositionLength())
+	code.LoadInteger(target.Pos, int32(integerValue), filePosition)
 	return nil
 }
 
-func generateIntLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, integer *decorated.IntegerLiteral) error {
+func generateIntLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, integer *decorated.IntegerLiteral, genContext *generateContext) error {
 	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
 
-	code.LoadInteger(target.Pos, integer.Value())
+	filePosition := genContext.toFilePosition(integer.FetchPositionLength())
+	code.LoadInteger(target.Pos, integer.Value(), filePosition)
 	return nil
 }
 
-func generateFixedLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, fixed *decorated.FixedLiteral) error {
+func generateFixedLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, fixed *decorated.FixedLiteral, genContext *generateContext) error {
 	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
 
-	code.LoadInteger(target.Pos, fixed.Value())
+	filePosition := genContext.toFilePosition(fixed.FetchPositionLength())
+	code.LoadInteger(target.Pos, fixed.Value(), filePosition)
 	return nil
 }
 
 func generateResourceNameLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	resourceName *decorated.ResourceNameLiteral, context *assembler_sp.PackageConstants) error {
+	resourceName *decorated.ResourceNameLiteral, genContext *generateContext) error {
 	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
-	constant := context.AllocateResourceNameConstant(resourceName.Value())
-	code.LoadInteger(target.Pos, int32(constant.ResourceID()))
+	constant := genContext.context.constants.AllocateResourceNameConstant(resourceName.Value())
+	filePosition := genContext.toFilePosition(resourceName.FetchPositionLength())
+	code.LoadInteger(target.Pos, int32(constant.ResourceID()), filePosition)
 	return nil
 }
 
 func generateBoolLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
-	boolLiteral *decorated.BooleanLiteral) error {
+	boolLiteral *decorated.BooleanLiteral, genContext *generateContext) error {
 	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampBool) {
 		panic("wrong size")
 	}
-	code.LoadBool(target.Pos, boolLiteral.Value())
+	filePosition := genContext.toFilePosition(boolLiteral.FetchPositionLength())
+	code.LoadBool(target.Pos, boolLiteral.Value(), filePosition)
 	return nil
 }

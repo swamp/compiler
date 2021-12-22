@@ -15,6 +15,7 @@ import (
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 	"github.com/swamp/opcodes/instruction_sp"
+	"github.com/swamp/opcodes/opcode_sp"
 	swamppack "github.com/swamp/pack/lib"
 )
 
@@ -101,7 +102,8 @@ func allocMemoryForTypeEx(stackMemory *assembler_sp.StackMemoryMapper, typeToAll
 }
 
 func generateRecurCall(code *assembler_sp.Code, call *decorated.RecurCall, genContext *generateContext) error {
-	code.Recur()
+	filePosition := genContext.toFilePosition(call.FetchPositionLength())
+	code.Recur(filePosition)
 
 	return nil
 }
@@ -138,13 +140,13 @@ func sourceToTargetStackPosRange(functionPointer assembler_sp.SourceStackPosRang
 
 func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembler_sp.StackMemoryMapper, constant *assembler_sp.Constant) (assembler_sp.SourceStackPosRange, error) {
 	functionPointer := stackMemory.Allocate(PointerSize, PointerAlign, "functionReference:"+constant.String())
-	code.LoadZeroMemoryPointer(functionPointer.Pos, constant.PosRange().Position)
+	code.LoadZeroMemoryPointer(functionPointer.Pos, constant.PosRange().Position, opcode_sp.FilePosition{})
 
 	return targetToSourceStackPosRange(functionPointer), nil
 }
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
-	lookup typeinfo.TypeLookup, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
+	lookup typeinfo.TypeLookup, fileUrlCache *FileUrlCache, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
 	moduleContext := NewContext(packageConstants)
 
 	var functionConstants []*assembler_sp.Constant
@@ -176,7 +178,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 				continue
 			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
-				rootContext, lookup, verboseFlag)
+				rootContext, lookup, fileUrlCache, verboseFlag)
 			if genFuncErr != nil {
 				return nil, nil, genFuncErr
 			}

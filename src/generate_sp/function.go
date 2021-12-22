@@ -11,7 +11,7 @@ import (
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
 	f *decorated.FunctionValue, funcContext *Context,
-	lookup typeinfo.TypeLookup, verboseFlag verbosity.Verbosity) (*Function, error) {
+	lookup typeinfo.TypeLookup, fileCache *FileUrlCache, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
 
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
@@ -31,7 +31,8 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	genContext := &generateContext{
 		context: funcContext,
 		// definitions: definitions,
-		lookup: lookup,
+		lookup:    lookup,
+		fileCache: fileCache,
 	}
 
 	genErr := generateExpression(code, returnValueTargetPointer, f.Expression(), true, genContext)
@@ -39,7 +40,8 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		return nil, genErr
 	}
 
-	code.Return()
+	filePosition := genContext.toFilePosition(f.Expression().FetchPositionLength())
+	code.Return(filePosition)
 
 	opcodes, resolveErr := code.Resolve(verboseFlag >= verbosity.Mid)
 	if resolveErr != nil {

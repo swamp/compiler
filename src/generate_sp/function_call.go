@@ -117,7 +117,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 				}
 			}
 
-			code.LoadInteger(arguments[argumentIndex].Pos, int32(typeID))
+			filePosition := genContext.toFilePosition(arg.FetchPositionLength())
+			code.LoadInteger(arguments[argumentIndex].Pos, int32(typeID), filePosition)
 			argumentIndex++
 			if dectype.IsTypeIdRef(functionArgTypeUnalias) {
 				continue
@@ -132,6 +133,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 		argumentIndex++
 	}
 
+	filePosition := genContext.toFilePosition(call.FetchPositionLength())
 	annotation, isExternal := callIsExternal(fn)
 	if callSelf && isExternal {
 		panic(fmt.Errorf("can not be external and self"))
@@ -147,7 +149,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 				sizes[index+1].Size = uint16(argument.Size)
 			}
 
-			code.CallExternalWithSizes(functionRegister.Pos, returnValue.Pos, sizes)
+			code.CallExternalWithSizes(functionRegister.Pos, returnValue.Pos, sizes, filePosition)
 		} else if annotation.IsExternalVarExFunction() {
 			sizes := make([]assembler_sp.VariableArgumentPosSizeAlign, len(arguments)+1)
 			startVariableArgumentPos := uint(returnValue.Pos)
@@ -159,9 +161,9 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 				sizes[index+1].Size = uint16(argument.Size)
 				sizes[index+1].Align = uint8(argumentsAlign[index])
 			}
-			code.CallExternalWithSizesAndAlign(functionRegister.Pos, returnValue.Pos, sizes)
+			code.CallExternalWithSizesAndAlign(functionRegister.Pos, returnValue.Pos, sizes, filePosition)
 		} else {
-			code.CallExternal(functionRegister.Pos, returnValue.Pos)
+			code.CallExternal(functionRegister.Pos, returnValue.Pos, filePosition)
 		}
 	} else {
 		if callSelf {
@@ -175,13 +177,13 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 				Pos:  assembler_sp.SourceStackPos(arguments[0].Pos),
 				Size: assembler_sp.SourceStackRange(octetsToCopy),
 			}
-			code.CopyMemory(firstArgumentStackPosition, sourcePosRange)
-			code.Recur()
+			code.CopyMemory(firstArgumentStackPosition, sourcePosRange, filePosition)
+			code.Recur(filePosition)
 			// Hack to notify that there is no source information left at this point
 			returnValue.Pos = 0xffffffff
 			returnValue.Size = 0
 		} else {
-			code.Call(functionRegister.Pos, returnValue.Pos)
+			code.Call(functionRegister.Pos, returnValue.Pos, filePosition)
 		}
 	}
 
@@ -201,7 +203,8 @@ func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetSta
 		return nil
 	}
 
-	code.CopyMemory(target.Pos, posRange)
+	filePosition := genContext.toFilePosition(call.FetchPositionLength())
+	code.CopyMemory(target.Pos, posRange, filePosition)
 
 	return err
 }

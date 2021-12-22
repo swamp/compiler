@@ -23,7 +23,10 @@ func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 	primitive, _ := array.Type().(*dectype.PrimitiveAtom)
 	firstPrimitiveType := primitive.GenericTypes()[0]
 	itemSize, itemAlign := dectype.GetMemorySizeAndAlignment(firstPrimitiveType)
-	code.ArrayLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize), opcode_sp_type.MemoryAlign(itemAlign))
+
+	filePosition := genContext.toFilePosition(array.FetchPositionLength())
+	code.ArrayLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize), opcode_sp_type.MemoryAlign(itemAlign), filePosition)
+
 	return nil
 }
 

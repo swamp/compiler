@@ -16,7 +16,9 @@ func generateStringAppend(code *assembler_sp.Code, target assembler_sp.TargetSta
 		return rightErr
 	}
 
-	code.StringAppend(target.Pos, leftVar.Pos, rightVar.Pos)
+	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
+
+	code.StringAppend(target.Pos, leftVar.Pos, rightVar.Pos, filePosition)
 
 	return nil
 }

@@ -19,10 +19,11 @@ func generateLogical(code *assembler_sp.Code, target assembler_sp.TargetStackPos
 	}
 	afterLabel := codeAlternative.Label("", "after-alternative")
 
+	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
 	if operator.OperatorType() == decorated.LogicalAnd {
-		code.BranchFalse(targetToSourceStackPosRange(target).Pos, afterLabel)
+		code.BranchFalse(targetToSourceStackPosRange(target).Pos, afterLabel, filePosition)
 	} else if operator.OperatorType() == decorated.LogicalOr {
-		code.BranchTrue(targetToSourceStackPosRange(target).Pos, afterLabel)
+		code.BranchTrue(targetToSourceStackPosRange(target).Pos, afterLabel, filePosition)
 	}
 	code.Copy(codeAlternative)
 
