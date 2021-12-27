@@ -10,9 +10,9 @@ require (
 	github.com/piot/go-lsp v0.0.0-20210308100331-e96ace6e5b0d
 	github.com/piot/lsp-server v0.0.0-20210308100659-f6871334c685
 	github.com/piot/raff-go v0.0.0-20210107105329-efd4e0e14756
-	github.com/swamp/assembler v0.0.0-20211222131114-0f18023e9e81
+	github.com/swamp/assembler v0.0.0-20211227162956-19f5043d7422
 	github.com/swamp/disassembler v0.0.0-20211222130842-13b82baf302d
-	github.com/swamp/opcodes v0.0.0-20211222130712-8c1d60023703
+	github.com/swamp/opcodes v0.0.0-20211227162917-ee4493088160
 	github.com/swamp/pack v0.0.0-20210607170051-c7bb302d6df6
 )
 

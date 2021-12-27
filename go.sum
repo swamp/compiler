@@ -35,10 +35,14 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/swamp/assembler v0.0.0-20211222131114-0f18023e9e81 h1:v8TzS6UdTO5Viaz2xPTYJd0rlHIwcNjLvqhCZHheKUM=
 github.com/swamp/assembler v0.0.0-20211222131114-0f18023e9e81/go.mod h1:o9q73JrlTs3PS4n6bkhMLEqRkpHynnEfBAr7nGRjXSw=
+github.com/swamp/assembler v0.0.0-20211227162956-19f5043d7422 h1:umQLRxhEtqUJorrFIdBJ86UCOHAi597UamZmflR1GCY=
+github.com/swamp/assembler v0.0.0-20211227162956-19f5043d7422/go.mod h1:o9q73JrlTs3PS4n6bkhMLEqRkpHynnEfBAr7nGRjXSw=
 github.com/swamp/disassembler v0.0.0-20211222130842-13b82baf302d h1:Sp6wHTNkmJ3bJK2JGVNh4NhmgVpz+HFqtleSW+qQTvI=
 github.com/swamp/disassembler v0.0.0-20211222130842-13b82baf302d/go.mod h1:uE1fRNP7eKbZikkfCfWiWxbqG31e4XgotqTWJZsyp5Y=
 github.com/swamp/opcodes v0.0.0-20211222130712-8c1d60023703 h1:eDBmVyZcs1csK5ExCW0umvS0MS+wEPQ0j9ZL7BoI+7Q=
 github.com/swamp/opcodes v0.0.0-20211222130712-8c1d60023703/go.mod h1:m9QgadE+ACQ9mYFIuoVWX/+3Ol4ivU+Dnb/LcDtWB5w=
+github.com/swamp/opcodes v0.0.0-20211227162917-ee4493088160 h1:1PYbB1VhHw8p0/39rJPBZ2iQCINTHKlVP0SM0qImlWw=
+github.com/swamp/opcodes v0.0.0-20211227162917-ee4493088160/go.mod h1:m9QgadE+ACQ9mYFIuoVWX/+3Ol4ivU+Dnb/LcDtWB5w=
 github.com/swamp/pack v0.0.0-20210607170051-c7bb302d6df6 h1:pSpDRyGO1SJvmwtK/jDyIWfHy0VyhsuF9hvHAVisbYw=
 github.com/swamp/pack v0.0.0-20210607170051-c7bb302d6df6/go.mod h1:wYBguB+Q5gfTgsB9sR6G3Du5A/Sf0gGb+lXe7CjhIJ8=
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
