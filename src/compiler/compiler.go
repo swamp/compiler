@@ -216,7 +216,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	}
 
 	packageConstants := assembler_sp.NewPackageConstants()
-	fileUrlCache := generate_sp.NewFileUrlCache()
+	fileUrlCache := assembler_sp.NewFileUrlCache()
 	for _, module := range compiledPackage.AllModules() {
 		for _, named := range module.LocalDefinitions().Definitions() {
 			unknownExpression := named.Expression()
@@ -297,6 +297,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), opcode_sp_type.MemorySize(returnSize), opcode_sp_type.MemoryAlign(returnAlign), parameterCount, opcode_sp_type.MemorySize(parameterOctetSize), uint(functionTypeIndex)); err != nil {
 						return decorated.NewInternalError(err)
 					}
+
 				}
 			} else {
 				if _, isConstant := unknownExpression.(*decorated.Constant); !isConstant {
@@ -340,6 +341,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		fmt.Println(assemblerOutput)
 	}
 
+	constants.AllocateDebugInfoFiles(fileUrlCache.FileUrls())
 	typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(typeInformationChunk)
 	if typeInformationErr != nil {
 		return decorated.NewInternalError(typeInformationErr)

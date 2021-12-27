@@ -1,6 +1,7 @@
 package generate_sp
 
 import (
+	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/opcodes/opcode_sp"
@@ -9,7 +10,7 @@ import (
 type generateContext struct {
 	context   *Context
 	lookup    typeinfo.TypeLookup
-	fileCache *FileUrlCache
+	fileCache *assembler_sp.FileUrlCache
 }
 
 func (c *generateContext) MakeScopeContext() *generateContext {

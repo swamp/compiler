@@ -1,17 +1,19 @@
 package generate_sp
 
 import (
+	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/opcodes/opcode_sp"
 )
 
-func toFilePosition(cache *FileUrlCache, source token.SourceFileReference) opcode_sp.FilePosition {
-	var fileID FileUrlID
+func toFilePosition(cache *assembler_sp.FileUrlCache, source token.SourceFileReference) opcode_sp.FilePosition {
+	var fileID assembler_sp.FileUrlID
 	if source.Document == nil {
 		fileID = 0xffff
 	} else {
 		fileID = cache.GetID(string(source.Document.Uri))
 	}
+
 	return opcode_sp.FilePosition{
 		SourceFileID: uint(fileID),
 		Start: opcode_sp.LineCol{

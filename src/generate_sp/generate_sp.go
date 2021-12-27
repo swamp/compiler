@@ -28,6 +28,7 @@ type Function struct {
 	name                *decorated.FullyQualifiedPackageVariableName
 	signature           swamppack.TypeRef
 	opcodes             []byte
+	debugLines          []opcode_sp.OpcodeInfo
 	debugParameterCount uint
 }
 
@@ -38,9 +39,10 @@ type ExternalFunction struct {
 }
 
 func NewFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, signature swamppack.TypeRef,
-	opcodes []byte, debugParameterCount uint) *Function {
+	opcodes []byte, debugParameterCount uint, debugInfos []opcode_sp.OpcodeInfo) *Function {
 	f := &Function{
 		name: fullyQualifiedName, signature: signature, opcodes: opcodes, debugParameterCount: debugParameterCount,
+		debugLines: debugInfos,
 	}
 
 	return f
@@ -59,6 +61,10 @@ func (f *Function) String() string {
 
 func (f *Function) Opcodes() []byte {
 	return f.opcodes
+}
+
+func (f *Function) DebugLines() []opcode_sp.OpcodeInfo {
+	return f.debugLines
 }
 
 type Generator struct {
@@ -146,7 +152,7 @@ func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembl
 }
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
-	lookup typeinfo.TypeLookup, fileUrlCache *FileUrlCache, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
+	lookup typeinfo.TypeLookup, fileUrlCache *assembler_sp.FileUrlCache, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
 	moduleContext := NewContext(packageConstants)
 
 	var functionConstants []*assembler_sp.Constant
@@ -189,6 +195,12 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 
 			moduleContext.Constants().DefineFunctionOpcodes(preparedFuncConstant, generatedFunctionInfo.opcodes)
 
+			debugLinesOctets, debugLinesErr := opcode_sp.SerializeDebugLines(generatedFunctionInfo.debugLines)
+			if debugLinesErr != nil {
+				return nil, nil, debugLinesErr
+			}
+
+			moduleContext.Constants().DefineFunctionDebugLines(preparedFuncConstant, uint(len(generatedFunctionInfo.debugLines)), debugLinesOctets)
 		} else {
 			maybeConstant, _ := unknownType.(*decorated.Constant)
 			if maybeConstant != nil {
