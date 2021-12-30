@@ -8,18 +8,20 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func generateAssemblerVariable(variable *decorated.LetVariable, assignmentIndex int, tupleIndex int) string {
+func generateAssemblerVariable(variable *decorated.LetVariable, assignmentIndex int, tupleIndex int) assembler_sp.VariableName {
 	varName := variable.Name().Name()
 	if variable.IsIgnore() {
 		varName = fmt.Sprintf("_%v_%v", assignmentIndex, tupleIndex)
 	}
 
-	return varName
+	return assembler_sp.VariableName(varName)
 }
 
 func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, let *decorated.Let,
 	genContext *generateContext) error {
-	letContext := genContext.MakeScopeContext()
+	letContext := genContext.MakeScopeContext("letContext")
+
+	var variablesInThisScope []*assembler_sp.VariableImpl
 	for assignmentIndex, assignment := range let.Assignments() {
 		sourceVar, sourceErr := generateExpressionWithSourceVar(code, assignment.Expression(), letContext, "let source")
 		if sourceErr != nil {
@@ -30,11 +32,18 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 			firstVar := assignment.LetVariables()[0]
 			firstVarName := generateAssemblerVariable(firstVar, assignmentIndex, 0)
 
-			if err := letContext.context.scopeVariables.DefineVariable(firstVarName, sourceVar); err != nil {
+			newVariable := code.VariableStart(firstVarName, sourceVar)
+			variablesInThisScope = append(variablesInThisScope, newVariable)
+
+			letVariableScopeStartLabel := code.Label("scope start let", "let variable")
+			typeString := assembler_sp.TypeString(assignment.Type().HumanReadable())
+			if _, err := letContext.context.scopeVariables.DefineVariable(firstVarName, sourceVar, typeString, letVariableScopeStartLabel); err != nil {
 				return err
 			}
 		} else {
 			tupleType := assignment.Expression().Type().(*dectype.TupleTypeAtom)
+			letVariableScopeStartLabel := code.Label("scope start let", "let variable")
+
 			for index, tupleField := range tupleType.Fields() {
 				variable := assignment.LetVariables()[index]
 				fieldSourcePosRange := assembler_sp.SourceStackPosRange{
@@ -43,7 +52,8 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 				}
 
 				varName := generateAssemblerVariable(variable, assignmentIndex, index)
-				if err := letContext.context.scopeVariables.DefineVariable(varName, fieldSourcePosRange); err != nil {
+				typeString := assembler_sp.TypeString(variable.Type().HumanReadable())
+				if _, err := letContext.context.scopeVariables.DefineVariable(varName, fieldSourcePosRange, typeString, letVariableScopeStartLabel); err != nil {
 					return err
 				}
 			}

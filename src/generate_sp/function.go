@@ -23,7 +23,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 
 	for _, parameter := range f.Parameters() {
-		if _, err := allocateVariable(funcContext.scopeVariables, funcContext.stackMemory, parameter, parameter.Type()); err != nil {
+		if _, err := allocateVariable(code, funcContext.scopeVariables, funcContext.stackMemory, parameter, parameter.Type()); err != nil {
 			return nil, err
 		}
 	}

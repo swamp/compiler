@@ -13,9 +13,9 @@ type generateContext struct {
 	fileCache *assembler_sp.FileUrlCache
 }
 
-func (c *generateContext) MakeScopeContext() *generateContext {
+func (c *generateContext) MakeScopeContext(debugString string) *generateContext {
 	newGenContext := &generateContext{
-		context:   c.context.MakeScopeContext(),
+		context:   c.context.MakeScopeContext(debugString),
 		lookup:    c.lookup,
 		fileCache: c.fileCache,
 	}

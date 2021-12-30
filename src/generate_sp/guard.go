@@ -17,7 +17,7 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 
 	defaultCode := assembler_sp.NewCode()
 	// defaultLabel := defaultCode.Label(nil, "guard-default")
-	defaultContext := genContext.MakeScopeContext()
+	defaultContext := genContext.MakeScopeContext("guard")
 
 	altErr := generateExpression(defaultCode, target, guardExpr.DefaultGuard().Expression(), false, defaultContext)
 	if altErr != nil {
@@ -30,7 +30,7 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 
 	for _, item := range guardExpr.Items() {
 		conditionCode := assembler_sp.NewCode()
-		conditionCodeContext := genContext.MakeScopeContext()
+		conditionCodeContext := genContext.MakeScopeContext("guard condition")
 
 		conditionVar, testErr := generateExpressionWithSourceVar(conditionCode,
 			item.Condition(), conditionCodeContext, "guard-condition")
@@ -39,7 +39,7 @@ func generateGuard(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		}
 
 		consequenceCode := assembler_sp.NewCode()
-		consequenceContext := genContext.MakeScopeContext()
+		consequenceContext := genContext.MakeScopeContext("guard consequence")
 
 		consErr := generateExpression(consequenceCode, target, item.Expression(), false, consequenceContext)
 		if consErr != nil {

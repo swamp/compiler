@@ -12,30 +12,31 @@ type Context struct {
 	inFunction     *decorated.FunctionValue
 }
 
-func NewContext(packageConstants *assembler_sp.PackageConstants) *Context {
+func NewContext(packageConstants *assembler_sp.PackageConstants, debugString string) *Context {
 	return &Context{
 		constants:      packageConstants,
-		scopeVariables: assembler_sp.NewFunctionVariables(),
+		inFunction:     nil,
+		scopeVariables: assembler_sp.NewFunctionVariables(debugString),
 		stackMemory:    assembler_sp.NewStackMemoryMapper(32 * 1024),
 	}
 }
 
-func (c *Context) MakeScopeContext() *Context {
+func (c *Context) MakeScopeContext(debugString string) *Context {
 	newContext := &Context{
 		constants:      c.constants,
 		inFunction:     c.inFunction,
-		scopeVariables: assembler_sp.NewFunctionVariablesWithParent(c.scopeVariables),
+		scopeVariables: assembler_sp.NewFunctionVariablesWithParent(c.scopeVariables, debugString),
 		stackMemory:    c.stackMemory,
 	}
 
 	return newContext
 }
 
-func (c *Context) MakeFunctionContext(inFunction *decorated.FunctionValue) *Context {
+func (c *Context) MakeFunctionContext(inFunction *decorated.FunctionValue, debugString string) *Context {
 	newContext := &Context{
 		constants:      c.constants,
 		inFunction:     inFunction,
-		scopeVariables: assembler_sp.NewFunctionVariables(),
+		scopeVariables: assembler_sp.NewFunctionVariables(debugString),
 		stackMemory:    assembler_sp.NewStackMemoryMapper(32 * 1024),
 	}
 

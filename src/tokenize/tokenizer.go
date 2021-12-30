@@ -87,6 +87,19 @@ func NewTokenizerInternal(r *runestream.RuneReader, exactWhitespace bool) (*Toke
 	return t, nil
 }
 
+// NewTokenizerInternalWithStartPosition :
+func NewTokenizerInternalWithStartPosition(r *runestream.RuneReader, position token.Position, exactWhitespace bool) (*Tokenizer, TokenError) {
+	t := &Tokenizer{
+		r:                     r,
+		document:              token.MakeSourceFileDocumentFromLocalPath(r.RelativeFilename()),
+		position:              token.NewPositionToken(position, 0),
+		lastTokenWasDelimiter: true,
+		enforceStyleGuide:     exactWhitespace,
+	}
+
+	return t, nil
+}
+
 // NewTokenizer :
 func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
 	verifyErr := verifyOctets(r.Octets(), r.RelativeFilename())

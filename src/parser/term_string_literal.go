@@ -77,10 +77,10 @@ func replaceInterpolationString(s string) string {
 func replaceInterpolationStringToExpression(stringToken token.StringToken) (*ast.StringInterpolation, parerr.ParseError) {
 	replaced := replaceInterpolationString(stringToken.Text())
 	reader := strings.NewReader(replaced)
-	runeReader, _ := runestream.NewRuneReader(reader, "internal interpolation string")
+	runeReader, _ := runestream.NewRuneReader(reader, stringToken.Document.String())
 
 	const exactWhitespace = true
-	tokenizer, tokenizerErr := tokenize.NewTokenizerInternal(runeReader, exactWhitespace)
+	tokenizer, tokenizerErr := tokenize.NewTokenizerInternalWithStartPosition(runeReader, stringToken.FetchPositionLength().Range.Start(), exactWhitespace)
 	if tokenizerErr != nil {
 		return nil, tokenizerErr
 	}

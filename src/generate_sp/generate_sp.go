@@ -7,6 +7,7 @@ package generate_sp
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -153,7 +154,7 @@ func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembl
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 	lookup typeinfo.TypeLookup, fileUrlCache *assembler_sp.FileUrlCache, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
-	moduleContext := NewContext(packageConstants)
+	moduleContext := NewContext(packageConstants, "root")
 
 	var functionConstants []*assembler_sp.Constant
 
@@ -178,7 +179,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
-			rootContext := moduleContext.MakeFunctionContext(maybeFunction)
+			rootContext := moduleContext.MakeFunctionContext(maybeFunction, fullyQualifiedName.String())
 
 			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
 				continue
@@ -191,6 +192,11 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 
 			if generatedFunctionInfo == nil {
 				panic(fmt.Sprintf("problem %v\n", maybeFunction))
+			}
+
+			if false {
+				log.Printf("---------- generated code for '%v'", fullyQualifiedName.String())
+				rootContext.scopeVariables.DebugOutput(0)
 			}
 
 			moduleContext.Constants().DefineFunctionOpcodes(preparedFuncConstant, generatedFunctionInfo.opcodes)

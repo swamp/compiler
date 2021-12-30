@@ -37,7 +37,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 	var consequencesCodes []*assembler_sp.Code
 
 	for _, consequence := range caseExpr.Consequences() {
-		consequenceContext := genContext.MakeScopeContext()
+		consequenceContext := genContext.MakeScopeContext("case pattern matching")
 		consequencesCode := assembler_sp.NewCode()
 
 		intValue := int32(0)
@@ -77,7 +77,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 	}
 
 	defaultCode := assembler_sp.NewCode()
-	defaultContext := genContext.MakeScopeContext()
+	defaultContext := genContext.MakeScopeContext("default case pattern matching")
 
 	decoratedDefault := caseExpr.DefaultCase()
 	defaultLabel := defaultCode.Label("default", "default")

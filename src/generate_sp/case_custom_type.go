@@ -13,14 +13,16 @@ func allocateForType(stackMemory *assembler_sp.StackMemoryMapper, debugName stri
 	return sourcePosRange, nil
 }
 
-func allocateVariable(scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName *decorated.FunctionParameterDefinition, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
+func allocateVariable(code *assembler_sp.Code, scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName *decorated.FunctionParameterDefinition, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
 	sourcePosRange, allocErr := allocateForType(stackMemory, "variable:"+variableName.Identifier().Name(), variableType)
 	if allocErr != nil {
 		return assembler_sp.SourceStackPosRange{}, allocErr
 	}
 
 	if !variableName.Identifier().IsIgnore() {
-		if err := scopeVariables.DefineVariable(variableName.Identifier().Name(), sourcePosRange); err != nil {
+		startLabel := code.Label("dfsfdj", "fjskdjf")
+		variableTypeString := assembler_sp.TypeString(variableType.HumanReadable())
+		if _, err := scopeVariables.DefineVariable(assembler_sp.VariableName(variableName.Identifier().Name()), sourcePosRange, variableTypeString, startLabel); err != nil {
 			return assembler_sp.SourceStackPosRange{}, err
 		}
 	}
@@ -39,20 +41,22 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 	var consequencesCodes []*assembler_sp.Code
 
 	for _, consequence := range caseExpr.Consequences() {
-		consequenceContext := genContext.MakeScopeContext()
+		consequenceContext := genContext.MakeScopeContext("case")
 
 		consequencesCode := assembler_sp.NewCode()
 
 		fields := consequence.VariantReference().CustomTypeVariant().Fields()
 		for index, param := range consequence.Parameters() {
 			field := fields[index]
-			consequenceLabelVariableName := param.Identifier().Name()
+			consequenceLabelVariableName := assembler_sp.VariableName(param.Identifier().Name())
 
 			paramVariable := assembler_sp.SourceStackPosRange{
 				Pos:  assembler_sp.SourceStackPos(uint(testVar.Pos) + uint(field.MemoryOffset())),
 				Size: assembler_sp.SourceStackRange(field.MemorySize()),
 			}
-			if err := consequenceContext.context.scopeVariables.DefineVariable(consequenceLabelVariableName, paramVariable); err != nil {
+			paramValidFromLabel := code.Label(assembler_sp.VariableName(param.Identifier().Name()+"_scope"), "scopeStart")
+			typeString := assembler_sp.TypeString(param.Type().HumanReadable())
+			if _, err := consequenceContext.context.scopeVariables.DefineVariable(consequenceLabelVariableName, paramVariable, typeString, paramValidFromLabel); err != nil {
 				return err
 			}
 		}
@@ -73,6 +77,8 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 
 		consequencesCodes = append(consequencesCodes, consequencesCode)
 
+		endOfScopeLabel := consequencesCode.Label("end", "end of consequence scope")
+		consequenceContext.context.scopeVariables.StopScope(endOfScopeLabel)
 		// consequenceContext.context.Free()
 	}
 
@@ -80,7 +86,7 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 
 	if caseExpr.DefaultCase() != nil {
 		consequencesCode := assembler_sp.NewCode()
-		defaultContext := genContext.MakeScopeContext()
+		defaultContext := genContext.MakeScopeContext("case default")
 
 		decoratedDefault := caseExpr.DefaultCase()
 		defaultLabel := consequencesCode.Label("default", "default")
@@ -92,6 +98,8 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 		consequencesCodes = append(consequencesCodes, consequencesCode)
 		//		endLabel := consequencesBlockCode.Label(nil, "if-end")
 		// defaultContext.context.Free()
+		endOfScopeLabel := consequencesCode.Label("enddefault", "end of consequence scope")
+		defaultContext.context.scopeVariables.StopScope(endOfScopeLabel)
 	}
 
 	consequencesBlockCode := assembler_sp.NewCode()
