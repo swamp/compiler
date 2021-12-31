@@ -23,7 +23,11 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	returnValueTargetPointer := sourceToTargetStackPosRange(returnValueSourcePointer)
 
 	for _, parameter := range f.Parameters() {
-		if _, err := allocateVariable(code, funcContext.scopeVariables, funcContext.stackMemory, parameter, parameter.Type()); err != nil {
+		parameterTypeID, lookupErr := lookup.Lookup(parameter.Type())
+		if lookupErr != nil {
+			return nil, lookupErr
+		}
+		if _, err := allocateVariable(code, funcContext.scopeVariables, funcContext.stackMemory, parameter, parameter.Type(), assembler_sp.TypeID(parameterTypeID)); err != nil {
 			return nil, err
 		}
 	}
@@ -41,7 +45,10 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	}
 
 	filePosition := genContext.toFilePosition(f.Expression().FetchPositionLength())
+
+	endLabel := code.Label("end", "end of func")
 	code.Return(filePosition)
+	funcContext.scopeVariables.StopScope(endLabel)
 
 	opcodes, debugLineInfos, resolveErr := code.Resolve(verboseFlag >= verbosity.Mid)
 	if resolveErr != nil {

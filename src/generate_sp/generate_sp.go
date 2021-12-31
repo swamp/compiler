@@ -30,6 +30,7 @@ type Function struct {
 	signature           swamppack.TypeRef
 	opcodes             []byte
 	debugLines          []opcode_sp.OpcodeInfo
+	debugVariables      []opcode_sp.VariableInfo
 	debugParameterCount uint
 }
 
@@ -194,7 +195,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 				panic(fmt.Sprintf("problem %v\n", maybeFunction))
 			}
 
-			if false {
+			if verboseFlag >= verbosity.High {
 				log.Printf("---------- generated code for '%v'", fullyQualifiedName.String())
 				rootContext.scopeVariables.DebugOutput(0)
 			}
@@ -207,6 +208,13 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 			}
 
 			moduleContext.Constants().DefineFunctionDebugLines(preparedFuncConstant, uint(len(generatedFunctionInfo.debugLines)), debugLinesOctets)
+
+			generatedFunctionInfo.debugVariables = assembler_sp.GenerateVariablesWithScope(rootContext.scopeVariables, 1)
+			if verboseFlag >= verbosity.High {
+				assembler_sp.VariableInfosDebugOutput(generatedFunctionInfo.debugVariables)
+			}
+			moduleContext.Constants().DefineFunctionDebugScopes(preparedFuncConstant, generatedFunctionInfo.debugVariables)
+
 		} else {
 			maybeConstant, _ := unknownType.(*decorated.Constant)
 			if maybeConstant != nil {

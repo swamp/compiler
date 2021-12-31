@@ -13,7 +13,7 @@ func allocateForType(stackMemory *assembler_sp.StackMemoryMapper, debugName stri
 	return sourcePosRange, nil
 }
 
-func allocateVariable(code *assembler_sp.Code, scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName *decorated.FunctionParameterDefinition, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
+func allocateVariable(code *assembler_sp.Code, scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName *decorated.FunctionParameterDefinition, variableType dtype.Type, variableTypeID assembler_sp.TypeID) (assembler_sp.SourceStackPosRange, error) {
 	sourcePosRange, allocErr := allocateForType(stackMemory, "variable:"+variableName.Identifier().Name(), variableType)
 	if allocErr != nil {
 		return assembler_sp.SourceStackPosRange{}, allocErr
@@ -22,7 +22,7 @@ func allocateVariable(code *assembler_sp.Code, scopeVariables *assembler_sp.Scop
 	if !variableName.Identifier().IsIgnore() {
 		startLabel := code.Label("dfsfdj", "fjskdjf")
 		variableTypeString := assembler_sp.TypeString(variableType.HumanReadable())
-		if _, err := scopeVariables.DefineVariable(assembler_sp.VariableName(variableName.Identifier().Name()), sourcePosRange, variableTypeString, startLabel); err != nil {
+		if _, err := scopeVariables.DefineVariable(assembler_sp.VariableName(variableName.Identifier().Name()), sourcePosRange, variableTypeID, variableTypeString, startLabel); err != nil {
 			return assembler_sp.SourceStackPosRange{}, err
 		}
 	}
@@ -56,7 +56,11 @@ func generateCaseCustomType(code *assembler_sp.Code, target assembler_sp.TargetS
 			}
 			paramValidFromLabel := code.Label(assembler_sp.VariableName(param.Identifier().Name()+"_scope"), "scopeStart")
 			typeString := assembler_sp.TypeString(param.Type().HumanReadable())
-			if _, err := consequenceContext.context.scopeVariables.DefineVariable(consequenceLabelVariableName, paramVariable, typeString, paramValidFromLabel); err != nil {
+			paramTypeID, lookupErr := genContext.lookup.Lookup(param.Type())
+			if lookupErr != nil {
+				return lookupErr
+			}
+			if _, err := consequenceContext.context.scopeVariables.DefineVariable(consequenceLabelVariableName, paramVariable, assembler_sp.TypeID(paramTypeID), typeString, paramValidFromLabel); err != nil {
 				return err
 			}
 		}
