@@ -704,10 +704,6 @@ func (p *ParseStreamImpl) maybeRightParen() bool {
 	return p.tokenizer.MaybeRune(')')
 }
 
-func (p *ParseStreamImpl) detectRightParen() bool {
-	return p.tokenizer.DetectRune(')')
-}
-
 func (p *ParseStreamImpl) maybeEmptyParen() bool {
 	return p.tokenizer.MaybeString("()")
 }
@@ -987,10 +983,6 @@ func (p *ParseStreamImpl) eatNewLineAndExactIndentHelper(indentation int, allowC
 	return report, subErr
 }
 
-func (p *ParseStreamImpl) eatNewLineAndExactIndent(indentation int) (token.IndentationReport, parerr.ParseError) {
-	return p.eatNewLineAndExactIndentHelper(indentation, tokenize.NotAllowedAtAll)
-}
-
 func (p *ParseStreamImpl) eatNewLineAndExactIndentAllowComments(indentation int) (token.IndentationReport, parerr.ParseError) {
 	return p.eatNewLineAndExactIndentHelper(indentation, tokenize.OwnLine)
 }
@@ -1014,10 +1006,6 @@ func (p *ParseStreamImpl) eatNewLineAndExactIndentExtraLine(indentation int) (to
 	subErr := tokenize.NewUnexpectedIndentationError(report.PositionLength, indentation, report.CloseIndentation)
 
 	return report, parerr.NewExpectedOneSpaceOrExtraIndent(subErr)
-}
-
-func (p *ParseStreamImpl) eatNewLineContinuation(indentation int) (token.IndentationReport, parerr.ParseError) {
-	return p.eatNewLineAndExactIndent(indentation + 1)
 }
 
 func (p *ParseStreamImpl) eatNewLineContinuationAllowComment(indentation int) (token.IndentationReport, parerr.ParseError) {

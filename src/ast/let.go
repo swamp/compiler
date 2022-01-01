@@ -81,5 +81,5 @@ func (i *Let) String() string {
 }
 
 func (i *Let) DebugString() string {
-	return fmt.Sprintf("[let]")
+	return "[let]"
 }

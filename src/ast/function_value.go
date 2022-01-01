@@ -56,5 +56,5 @@ func (i *FunctionValue) String() string {
 }
 
 func (i *FunctionValue) DebugString() string {
-	return fmt.Sprintf("[function]")
+	return "[function]"
 }

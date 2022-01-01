@@ -32,21 +32,28 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 		if spaceErr != nil {
 			return nil, spaceErr
 		}
+
 		keywordSymbol, keywordSymbolErr = p.stream.tokenizer.ParseVariableSymbol()
+		if keywordSymbolErr != nil {
+			return nil, keywordSymbolErr
+		}
 	}
 
 	variableSymbol, wasVariableSymbol := keywordSymbol.(token.VariableSymbolToken)
 	if !wasVariableSymbol {
 		return nil, parerr.NewUnknownStatement(variableSymbol)
 	}
+
 	p.stream.nodes = append(p.stream.nodes, variableSymbol)
 
 	switch variableSymbol.Name() {
 	case "type":
 		keywordType := token.NewKeyword(variableSymbol.Raw(), token.Import, variableSymbol.SourceFileReference)
+
 		return parseCustomType(p.stream, keywordType, precedingComments, variableSymbol.Indentation)
 	case "import":
 		keywordImport := token.NewKeyword(variableSymbol.Raw(), token.Import, variableSymbol.SourceFileReference)
+
 		return parseImport(p.stream, keywordImport, 0, precedingComments)
 	default:
 		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, annotationFunctionType, precedingComments)

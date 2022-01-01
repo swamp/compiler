@@ -9,15 +9,6 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func customTypeVariantConstructor() {
-	/*
-
-		unionMemorySize := variant.InCustomType().MemorySize()
-		unionMemoryAlignment := variant.InCustomType().MemoryAlignment()
-		unionMemory := genContext.context.stackMemory.Allocate(unionMemorySize, unionMemoryAlignment, "variant constructor")
-	*/
-}
-
 func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	constructor *decorated.CustomTypeVariantConstructor, genContext *generateContext) error {
 	smashedCustomType := constructor.Type().(*dectype.CustomTypeAtom)

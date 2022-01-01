@@ -103,10 +103,6 @@ func colorMultiLineComment(t token.MultiLineCommentToken) string {
 	return color.HiBlackString(t.Raw())
 }
 
-func colorSpecialKeyword(t token.Keyword) string {
-	return t.Raw()
-}
-
 func ColorKeywordString(t string) string {
 	return color.HiCyanString(t)
 }

@@ -17,13 +17,10 @@ type Record struct {
 	startParen     token.ParenToken
 	endParen       token.ParenToken
 	comment        *MultilineComment
-
-	inclusive token.SourceFileReference
 }
 
 func NewRecordType(startParen token.ParenToken, endParen token.ParenToken, fields []*RecordTypeField, typeParameters []*TypeParameter, comment *MultilineComment) *Record {
-	inclusive := token.MakeInclusiveSourceFileReference(startParen.SourceFileReference, endParen.SourceFileReference)
-	return &Record{fields: fields, typeParameters: typeParameters, inclusive: inclusive, comment: comment}
+	return &Record{fields: fields, typeParameters: typeParameters, startParen: startParen, endParen: endParen, comment: comment}
 }
 
 func (i *Record) TypeParameters() []*TypeParameter {
@@ -56,5 +53,6 @@ func (i *Record) Comment() *MultilineComment {
 }
 
 func (i *Record) FetchPositionLength() token.SourceFileReference {
-	return i.inclusive
+	inclusive := token.MakeInclusiveSourceFileReference(i.startParen.SourceFileReference, i.endParen.SourceFileReference)
+	return inclusive
 }

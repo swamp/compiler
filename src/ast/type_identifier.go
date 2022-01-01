@@ -6,8 +6,6 @@
 package ast
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -38,7 +36,7 @@ func (i *TypeIdentifier) String() string {
 }
 
 func (i *TypeIdentifier) DebugString() string {
-	return fmt.Sprintf("[TypeReference]")
+	return "[TypeReference]"
 }
 
 func (i *TypeIdentifier) IsDefaultSymbol() bool {

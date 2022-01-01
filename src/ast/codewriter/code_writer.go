@@ -510,7 +510,7 @@ func WriteType(astType ast.Type, colorer coloring.Colorer, addParen bool, indent
 			writeScopedTypeReference(t, colorer)
 		}
 	default:
-		panic(fmt.Errorf(">>> what is this type %T\n", t))
+		panic(fmt.Errorf("what is this type %T", t))
 	}
 }
 
@@ -620,7 +620,7 @@ func WriteExpression(expression ast.Expression, colorer coloring.Colorer, indent
 	case *ast.Lookups:
 		writeLookups(t, colorer, indentation)
 	default:
-		panic(fmt.Errorf(">>> what is this expression %T\n", expression))
+		panic(fmt.Errorf("what is this expression %T", expression))
 	}
 }
 
@@ -653,7 +653,7 @@ func WriteStatementUsingColorer(expression ast.Expression, colorer coloring.Colo
 	case *ast.ConstantDefinition:
 		writeDefinitionAssignmentConstant(t, colorer, indentation)
 	default:
-		panic(fmt.Errorf(">>> what is this statement %T\n", t))
+		panic(fmt.Errorf("what is this statement %T", t))
 	}
 
 	return nil

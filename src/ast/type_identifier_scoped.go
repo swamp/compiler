@@ -6,8 +6,6 @@
 package ast
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -41,7 +39,7 @@ func (i *TypeIdentifierScoped) String() string {
 }
 
 func (i *TypeIdentifierScoped) DebugString() string {
-	return fmt.Sprintf("[TypeIdentifierScoped]")
+	return "[TypeIdentifierScoped]"
 }
 
 func (i *TypeIdentifierScoped) FetchPositionLength() token.SourceFileReference {

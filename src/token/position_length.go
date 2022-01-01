@@ -97,6 +97,9 @@ func MakeSourceFileDocumentFromLocalPath(localPath string) *SourceFileDocument {
 }
 
 func MakeSourceFileDocumentFromURI(uri DocumentURI) *SourceFileDocument {
+	if strings.Contains(string(uri), "document") {
+		panic("stop")
+	}
 	return &SourceFileDocument{
 		uri,
 	}

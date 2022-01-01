@@ -8,6 +8,7 @@ package swampcompiler
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -205,16 +206,6 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		}
 	}
 
-	for _, module := range compiledPackage.AllModules() {
-		for _, named := range module.LocalDefinitions().Definitions() {
-			unknownType := named.Expression()
-			maybeFunction, _ := unknownType.(*decorated.FunctionValue)
-			if maybeFunction == nil {
-				// log.Printf("WHAT IS THIS!_ %T %v", unknownType, unknownType)
-			}
-		}
-	}
-
 	packageConstants := assembler_sp.NewPackageConstants()
 	fileUrlCache := assembler_sp.NewFileUrlCache()
 	for _, module := range compiledPackage.AllModules() {
@@ -301,7 +292,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 				}
 			} else {
 				if _, isConstant := unknownExpression.(*decorated.Constant); !isConstant {
-					panic(fmt.Errorf("Unknown thing here:%T\n", unknownExpression))
+					panic(fmt.Errorf("unknown thing here: %T", unknownExpression))
 				}
 			}
 		}
@@ -310,7 +301,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 	var constants *assembler_sp.PackageConstants
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.High {
-			fmt.Printf("============================================== generating for module %v\n", module)
+			log.Printf("============================================== generating for module %v\n", module)
 		}
 
 		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, fileUrlCache, packageConstants, verboseFlag)

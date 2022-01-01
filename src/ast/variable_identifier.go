@@ -6,8 +6,6 @@
 package ast
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -46,5 +44,5 @@ func (i *VariableIdentifier) String() string {
 }
 
 func (i *VariableIdentifier) DebugString() string {
-	return fmt.Sprintf("[identifier]")
+	return "[identifier]"
 }

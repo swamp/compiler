@@ -6,7 +6,7 @@
 package parser
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
@@ -66,10 +66,10 @@ func writeAllNodes(nodes []ast.Node) {
 	for _, node := range nodes {
 		rangeFound := node.FetchPositionLength().Range
 		if rangeFound.Start().Line() != lastLine {
-			fmt.Printf("\n")
+			log.Printf("\n")
 			lastLine = rangeFound.End().Line()
 		}
-		fmt.Printf("node pos %v ", node.FetchPositionLength())
+		log.Printf("node pos %v ", node.FetchPositionLength())
 	}
 }
 

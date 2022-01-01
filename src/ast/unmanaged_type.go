@@ -22,7 +22,7 @@ type UnmanagedType struct {
 
 func NewUnmanagedType(startParen token.ParenToken, endParen token.ParenToken, nativeLanguageTypeName *TypeIdentifier, keyword *TypeIdentifier, comment *MultilineComment) *UnmanagedType {
 	inclusive := token.MakeInclusiveSourceFileReference(keyword.FetchPositionLength(), endParen.SourceFileReference)
-	return &UnmanagedType{nativeLanguageTypeName: nativeLanguageTypeName, inclusive: inclusive, keyword: keyword, comment: comment}
+	return &UnmanagedType{nativeLanguageTypeName: nativeLanguageTypeName, startParen: startParen, endParen: endParen, inclusive: inclusive, keyword: keyword, comment: comment}
 }
 
 func (i *UnmanagedType) NativeLanguageTypeName() *TypeIdentifier {

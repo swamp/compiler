@@ -86,7 +86,7 @@ func (i *Import) String() string {
 	if len(i.typesToExpose) > 0 || len(i.definitionsToExpose) > 0 {
 		s += fmt.Sprintf(" exposing (%v %v)", i.typesToExpose, i.definitionsToExpose)
 	} else if i.exposeAll {
-		s += fmt.Sprintf(" exposing (..)")
+		s += " exposing (..)"
 	}
 	s += "]"
 
@@ -94,5 +94,5 @@ func (i *Import) String() string {
 }
 
 func (i *Import) DebugString() string {
-	return fmt.Sprintf("[Import]")
+	return "[Import]"
 }

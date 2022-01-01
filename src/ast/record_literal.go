@@ -40,7 +40,7 @@ func (i *RecordLiteral) String() string {
 }
 
 func (i *RecordLiteral) DebugString() string {
-	return fmt.Sprintf("[record-literal]")
+	return "[record-literal]"
 }
 
 func (i *RecordLiteral) FetchPositionLength() token.SourceFileReference {
