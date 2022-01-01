@@ -211,7 +211,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 			moduleContext.Constants().DefineFunctionDebugLines(preparedFuncConstant, uint(len(generatedFunctionInfo.debugLines)), debugLinesOctets)
 
 			generatedFunctionInfo.debugVariables = assembler_sp.GenerateVariablesWithScope(rootContext.scopeVariables, 1)
-			if verboseFlag >= verbosity.None {
+			if verboseFlag >= verbosity.High {
 				assembler_sp.VariableInfosDebugOutput(generatedFunctionInfo.debugVariables)
 			}
 			moduleContext.Constants().DefineFunctionDebugScopes(preparedFuncConstant, generatedFunctionInfo.debugVariables)
