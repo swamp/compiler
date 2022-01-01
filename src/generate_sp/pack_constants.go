@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
-	swamppacksp "github.com/swamp/compiler/src/swamp_pack_sp"
+	swamppack "github.com/swamp/pack/lib"
 )
 
 func PackLedger(constants []*assembler_sp.Constant) ([]byte, error) {
@@ -32,5 +32,5 @@ func Pack(constants []*assembler_sp.Constant, dynamicMemory []byte, typeInfoPayl
 		return nil, ledgerErr
 	}
 
-	return swamppacksp.Pack(ledgerOctets, dynamicMemory, typeInfoPayload)
+	return swamppack.Pack(ledgerOctets, dynamicMemory, typeInfoPayload)
 }

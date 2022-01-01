@@ -17,7 +17,6 @@ import (
 	"github.com/swamp/compiler/src/verbosity"
 	"github.com/swamp/opcodes/instruction_sp"
 	"github.com/swamp/opcodes/opcode_sp"
-	swamppack "github.com/swamp/pack/lib"
 )
 
 type AnyPosAndRange interface {
@@ -25,9 +24,11 @@ type AnyPosAndRange interface {
 	getSize() uint32
 }
 
+type TypeRef uint16
+
 type Function struct {
 	name                *decorated.FullyQualifiedPackageVariableName
-	signature           swamppack.TypeRef
+	signature           TypeRef
 	opcodes             []byte
 	debugLines          []opcode_sp.OpcodeInfo
 	debugVariables      []opcode_sp.VariableInfo
@@ -36,11 +37,11 @@ type Function struct {
 
 type ExternalFunction struct {
 	name           *decorated.FullyQualifiedPackageVariableName
-	signature      swamppack.TypeRef
+	signature      TypeRef
 	parameterCount uint
 }
 
-func NewFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, signature swamppack.TypeRef,
+func NewFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName, signature TypeRef,
 	opcodes []byte, debugParameterCount uint, debugInfos []opcode_sp.OpcodeInfo) *Function {
 	f := &Function{
 		name: fullyQualifiedName, signature: signature, opcodes: opcodes, debugParameterCount: debugParameterCount,
@@ -51,7 +52,7 @@ func NewFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName
 }
 
 func NewExternalFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName,
-	signature swamppack.TypeRef, parameterCount uint) *ExternalFunction {
+	signature TypeRef, parameterCount uint) *ExternalFunction {
 	f := &ExternalFunction{name: fullyQualifiedName, signature: signature, parameterCount: parameterCount}
 
 	return f

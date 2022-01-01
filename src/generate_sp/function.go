@@ -6,7 +6,6 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
-	swamppack "github.com/swamp/pack/lib"
 )
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
@@ -67,7 +66,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		return nil, lookupErr
 	}
 
-	functionConstant := NewFunction(fullyQualifiedVariableName, swamppack.TypeRef(signature),
+	functionConstant := NewFunction(fullyQualifiedVariableName, TypeRef(signature),
 		opcodes, parameterCount, debugLineInfos)
 
 	return functionConstant, nil

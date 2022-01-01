@@ -23,7 +23,6 @@ github.com/piot/jsonrpc2 v0.0.0-20210220142131-b277991378fa h1:FtrijhH82PF6+ji/A
 github.com/piot/jsonrpc2 v0.0.0-20210220142131-b277991378fa/go.mod h1:s+tl/s19xr+adNH5UV+e6ULdl+HygO2nhYnFGqRZqXc=
 github.com/piot/lsp-server v0.0.0-20210308100659-f6871334c685 h1:eAIZIv1yagMRbPwn8BvGp/pILZy/5uaOKfngVVIkyqU=
 github.com/piot/lsp-server v0.0.0-20210308100659-f6871334c685/go.mod h1:KzCO6Ww00SfHznR/CTHjg+I34T6DvLKqyssoyt0ePrI=
-github.com/piot/raff-go v0.0.0-20210104204224-135e45dcf14d/go.mod h1:OGCWlHa0Htk9Th+hXwKCRmY5pH+I/HVANV/0dVMYLHI=
 github.com/piot/raff-go v0.0.0-20210107105329-efd4e0e14756 h1:uEObVi2jn/7Ki+vzbqb20JF1C06W4v2x2jYb88IHec0=
 github.com/piot/raff-go v0.0.0-20210107105329-efd4e0e14756/go.mod h1:OGCWlHa0Htk9Th+hXwKCRmY5pH+I/HVANV/0dVMYLHI=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
@@ -40,8 +39,8 @@ github.com/swamp/disassembler v0.0.0-20211222130842-13b82baf302d/go.mod h1:uE1fR
 github.com/swamp/opcodes v0.0.0-20211222130712-8c1d60023703/go.mod h1:m9QgadE+ACQ9mYFIuoVWX/+3Ol4ivU+Dnb/LcDtWB5w=
 github.com/swamp/opcodes v0.0.0-20211231212613-990c546a8dd3 h1:joKW4siwwEJzXZXI6TJBT8VFqHSkZhKxq7A1dQgIfhM=
 github.com/swamp/opcodes v0.0.0-20211231212613-990c546a8dd3/go.mod h1:m9QgadE+ACQ9mYFIuoVWX/+3Ol4ivU+Dnb/LcDtWB5w=
-github.com/swamp/pack v0.0.0-20210607170051-c7bb302d6df6 h1:pSpDRyGO1SJvmwtK/jDyIWfHy0VyhsuF9hvHAVisbYw=
-github.com/swamp/pack v0.0.0-20210607170051-c7bb302d6df6/go.mod h1:wYBguB+Q5gfTgsB9sR6G3Du5A/Sf0gGb+lXe7CjhIJ8=
+github.com/swamp/pack v0.0.0-20220101125357-e0d50aa34d0c h1:rpZK6bJzW5HuXzWzQZHoNAzF18F5FWNNjD442GxZtew=
+github.com/swamp/pack v0.0.0-20220101125357-e0d50aa34d0c/go.mod h1:U+xUgqe0SZmldNqixR16h6gCcmR6I5msltjOCFM5f4Y=
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
