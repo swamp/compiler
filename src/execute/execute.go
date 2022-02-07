@@ -16,6 +16,7 @@ import (
 	"github.com/fatih/color"
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	"github.com/swamp/compiler/src/environment"
+	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 )
@@ -83,7 +84,8 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	const enforceStyle = true
 	const showAssembly = false
 	typeInformationChunk := &typeinfo.Chunk{}
-	_, compileErr := swampcompiler.CompileAndLink(typeInformationChunk, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, showAssembly, enforceStyle, verbose)
+	resourceNameLookup := resourceid.NewResourceNameLookupImpl()
+	_, compileErr := swampcompiler.CompileAndLink(typeInformationChunk, resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, showAssembly, enforceStyle, verbose)
 	if compileErr != nil {
 		return "", compileErr
 	}

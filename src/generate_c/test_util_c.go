@@ -24,7 +24,7 @@ func testGenerateInternal(code string, writer io.Writer) error {
 	gen := NewGenerator()
 
 	const verboseFlag = verbosity.None
-	_, _, typeInfoErr := typeinfo.GenerateModule(module)
+	_, _, _, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {
 		return typeInfoErr
 	}
