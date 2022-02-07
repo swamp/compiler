@@ -68,9 +68,9 @@ func generateResourceNameLiteral(code *assembler_sp.Code, target assembler_sp.Ta
 	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
 		panic("wrong size")
 	}
-	constant := genContext.context.constants.AllocateResourceNameConstant(resourceName.Value())
+	resourceId := genContext.resourceNameLookup.LookupResourceId(resourceName.Value())
 	filePosition := genContext.toFilePosition(resourceName.FetchPositionLength())
-	code.LoadInteger(target.Pos, int32(constant.ResourceID()), filePosition)
+	code.LoadInteger(target.Pos, int32(resourceId), filePosition)
 	return nil
 }
 

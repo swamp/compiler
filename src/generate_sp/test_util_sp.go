@@ -30,11 +30,11 @@ func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assem
 	gen := NewGenerator()
 	packageConstants := assembler_sp.NewPackageConstants()
 	const verboseFlag = verbosity.None
-	_, lookup, typeInfoErr := typeinfo.GenerateModule(module)
+	_, lookup, resourceLookup, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {
 		return nil, nil, typeInfoErr
 	}
-	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, lookup, nil, packageConstants, verboseFlag)
+	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, lookup, resourceLookup, nil, packageConstants, verboseFlag)
 	if genErr != nil {
 		return nil, nil, genErr
 	}

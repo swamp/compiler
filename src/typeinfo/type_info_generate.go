@@ -11,6 +11,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/loader"
+	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/verbosity"
 )
 
@@ -45,21 +46,22 @@ func ChunkToOctets(chunk *Chunk) ([]byte, error) {
 	return octets, nil
 }
 
-func GenerateModule(module *decorated.Module) ([]byte, TypeLookup, error) {
+func GenerateModule(module *decorated.Module) ([]byte, TypeLookup, resourceid.ResourceNameLookup, error) {
 	const verboseFlag = verbosity.None
 
 	chunk := &Chunk{}
+	resourceLookup := resourceid.NewResourceNameLookupImpl()
 
 	if err := generateModuleToChunk(module, chunk, verboseFlag); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	octets, octetsErr := ChunkToOctets(chunk)
 	if octetsErr != nil {
-		return nil, nil, octetsErr
+		return nil, nil, nil, octetsErr
 	}
 
-	return octets, chunk, nil
+	return octets, chunk, resourceLookup, nil
 }
 
 func GeneratePackageToChunk(world *loader.Package, chunk *Chunk) error {

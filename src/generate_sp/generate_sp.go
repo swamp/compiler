@@ -13,6 +13,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 	"github.com/swamp/opcodes/instruction_sp"
@@ -155,7 +156,7 @@ func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembl
 }
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
-	lookup typeinfo.TypeLookup, fileUrlCache *assembler_sp.FileUrlCache, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
+	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
 	moduleContext := NewContext(packageConstants, "root")
 
 	var functionConstants []*assembler_sp.Constant
@@ -187,7 +188,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 				continue
 			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
-				rootContext, lookup, fileUrlCache, verboseFlag)
+				rootContext, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
 			if genFuncErr != nil {
 				return nil, nil, genFuncErr
 			}

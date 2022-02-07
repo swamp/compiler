@@ -23,6 +23,7 @@ import (
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/loader"
+	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/solution"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
@@ -71,12 +72,13 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 
 	if statInfo.IsDir() {
 		typeInformationChunk := &typeinfo.Chunk{}
+		resourceNameLookup := resourceid.NewResourceNameLookupImpl()
 		if solutionSettings, err := solution.LoadIfExists(mainSourceFile); err == nil {
 			var packages []*loader.Package
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				compiledPackage, err := CompileAndLink(typeInformationChunk, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, showAssembler, verboseFlag)
+				compiledPackage, err := CompileAndLink(typeInformationChunk, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, showAssembler, verboseFlag)
 				if err != nil {
 					return packages, err
 				}
@@ -190,7 +192,7 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 	return offset
 }
 
-func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *loader.Package, outputFilename string, showAssembler bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputFilename string, showAssembler bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	gen := generate_sp.NewGenerator()
 
 	var allFunctions []*assembler_sp.Constant
@@ -304,7 +306,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 			log.Printf("============================================== generating for module %v\n", module)
 		}
 
-		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, fileUrlCache, packageConstants, verboseFlag)
+		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, resourceNameLookup, fileUrlCache, packageConstants, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}
@@ -343,6 +345,10 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, compiledPackage *load
 		typeInformationChunk.DebugOutput()
 	}
 
+	for _, resourceName := range resourceNameLookup.SortedResourceNames() {
+		constants.AllocateResourceNameConstant(resourceName)
+	}
+
 	constants.Finalize()
 	dynamicMemoryOctets := constants.DynamicMemory().Octets()
 
@@ -371,14 +377,14 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 	return compiledPackage, nil
 }
 
-func CompileAndLink(typeInformationChunk *typeinfo.Chunk, configuration environment.Environment, name string,
+func CompileAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup resourceid.ResourceNameLookup, configuration environment.Environment, name string,
 	filename string, outputFilename string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
 	if compileErr != nil {
 		return nil, compileErr
 	}
 
-	if err := GenerateAndLink(typeInformationChunk, compiledPackage, outputFilename, showAssembler, verboseFlag); err != nil {
+	if err := GenerateAndLink(typeInformationChunk, resourceNameLookup, compiledPackage, outputFilename, showAssembler, verboseFlag); err != nil {
 		return compiledPackage, err
 	}
 

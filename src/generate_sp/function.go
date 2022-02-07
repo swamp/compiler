@@ -4,13 +4,14 @@ import (
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 )
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
 	f *decorated.FunctionValue, funcContext *Context,
-	lookup typeinfo.TypeLookup, fileCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*Function, error) {
+	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
 
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
@@ -34,8 +35,9 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	genContext := &generateContext{
 		context: funcContext,
 		// definitions: definitions,
-		lookup:    lookup,
-		fileCache: fileCache,
+		lookup:             lookup,
+		resourceNameLookup: resourceNameLookup,
+		fileCache:          fileCache,
 	}
 
 	genErr := generateExpression(code, returnValueTargetPointer, f.Expression(), true, genContext)
