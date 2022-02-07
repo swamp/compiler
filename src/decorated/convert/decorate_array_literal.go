@@ -6,7 +6,8 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func decorateArrayLiteral(d DecorateStream, list *ast.ArrayLiteral, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func decorateArrayLiteral(d DecorateStream, list *ast.ArrayLiteral, context *VariableContext) (decorated.Expression,
+	decshared.DecoratedError) {
 	wrappedType, listExpressions, err := decorateContainerLiteral(d, list.Expressions(), context, "Array")
 	if err != nil {
 		return nil, err
