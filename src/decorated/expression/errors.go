@@ -268,7 +268,7 @@ func NewCaseCouldNotFindCustomVariantType(caseExpression *ast.CaseForCustomType,
 }
 
 func (e *CaseCouldNotFindCustomVariantType) Error() string {
-	return fmt.Sprintf("couldn't find custom variant in case consequence %v (%v) %v", e.consequence, e.caseExpression, e.FetchPositionLength())
+	return fmt.Sprintf("couldn't find custom variant in case consequence %v (%v)", e.consequence, e.caseExpression)
 }
 
 func (e *CaseCouldNotFindCustomVariantType) FetchPositionLength() token.SourceFileReference {
@@ -981,7 +981,7 @@ func NewUnknownVariable(ident *ast.VariableIdentifier) *UnknownVariable {
 }
 
 func (e *UnknownVariable) Error() string {
-	return fmt.Sprintf("unknown variable '%v' %v", e.ident, e.FetchPositionLength())
+	return fmt.Sprintf("unknown variable '%v'", e.ident)
 }
 
 func (e *UnknownVariable) FetchPositionLength() token.SourceFileReference {

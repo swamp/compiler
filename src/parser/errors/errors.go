@@ -585,7 +585,7 @@ func NewExpectedOneSpace(sourceFileReference token.SourceFileReference) Expected
 }
 
 func (e ExpectedOneSpace) Error() string {
-	return fmt.Sprintf("expected a single space here (%v)", e.sourceFileReference)
+	return "expected a single space here"
 }
 
 func (e ExpectedOneSpace) FetchPositionLength() token.SourceFileReference {

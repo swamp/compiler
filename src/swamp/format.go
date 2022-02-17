@@ -27,8 +27,7 @@ func parseToProgram(moduleName string, x string, enforceStyle bool, verbose verb
 	}
 	tokenizer, tokenizerErr := tokenize.NewTokenizerInternal(runeReader, enforceStyle)
 	if tokenizerErr != nil {
-		const errorsAsWarnings = false
-		parser.ShowError(tokenizer, moduleName, tokenizerErr, verbose, errorsAsWarnings)
+		parser.ShowAsError(tokenizer, tokenizerErr)
 		return tokenizer, nil, tokenizerErr
 	}
 	p := parser.NewParser(tokenizer, enforceStyle)

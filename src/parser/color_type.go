@@ -75,6 +75,26 @@ func colorRecordType(recordType *dectype.RecordAtom, indentation int, inside boo
 	colorer.OperatorString("}")
 }
 
+func colorTupleType(recordType *dectype.TupleTypeAtom, indentation int, inside bool, colorer coloring.Colorer) {
+	colorer.OperatorString("(")
+	colorer.OneSpace()
+	continuationIndentation := indentation
+	if inside {
+		continuationIndentation++
+	}
+	for index, fieldInType := range recordType.ParameterTypes() {
+		if index > 0 {
+			colorer.NewLine(continuationIndentation)
+			colorer.OperatorString(",")
+			colorer.OneSpace()
+		}
+		colorer.OneSpace()
+		ColorType(fieldInType, continuationIndentation, true, colorer)
+	}
+	colorer.OneSpace()
+	colorer.OperatorString(")")
+}
+
 func colorCustomType(recordType *dectype.CustomTypeAtom, indentation int, inside bool, colorer coloring.Colorer) {
 	s := coloring.ColorTypeSymbol(recordType.TypeIdentifier().Symbol())
 	indentation++
@@ -128,6 +148,8 @@ func ColorAtom(atomType dtype.Atom, indentation int, inside bool, colorer colori
 		colorFunctionType(t, indentation, inside, colorer)
 	case *dectype.RecordAtom:
 		colorRecordType(t, indentation, inside, colorer)
+	case *dectype.TupleTypeAtom:
+		colorTupleType(t, indentation, inside, colorer)
 	case *dectype.CustomTypeAtom:
 		colorCustomType(t, indentation, inside, colorer)
 	case *dectype.PrimitiveAtom:
@@ -146,6 +168,14 @@ func ColorType(dType dtype.Type, indentation int, inside bool, colorer coloring.
 		colorAlias(t, colorer)
 	case *dectype.InvokerType:
 		colorTypeEmbed(t, colorer)
+	case *dectype.FunctionTypeReference:
+		colorFunctionType(t.FunctionAtom(), indentation, inside, colorer)
+	case *dectype.CustomTypeReference:
+		colorCustomType(t.CustomTypeAtom(), indentation, inside, colorer)
+	case *dectype.PrimitiveTypeReference:
+		colorPrimitive(t.PrimitiveAtom(), indentation, inside, colorer)
+	case *dectype.AliasReference:
+		ColorType(t.Type(), indentation, inside, colorer)
 	default:
 		{
 			atom, wasAtom := dType.(dtype.Atom)

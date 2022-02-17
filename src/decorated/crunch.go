@@ -54,16 +54,30 @@ func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle
 
 	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, enforceStyle)
 	if tokenizerErr != nil {
-		const errorsAsWarnings = false
-		parser.ShowError(tokenizer, absoluteFilename, tokenizerErr, verbose, errorsAsWarnings)
+		parser.ShowAsError(tokenizer, tokenizerErr)
 		return tokenizer, nil, tokenizerErr
 	}
 
 	p := parser.NewParser(tokenizer, enforceStyle)
 	program, programErr := p.Parse()
+	parserErrors := p.Errors()
+	if len(parserErrors) > 0 {
+		for _, parserErr := range parserErrors {
+			parser.ShowWarningOrError(tokenizer, parserErr)
+		}
+	}
+
+	parserWarnings := p.Warnings()
+	if len(parserWarnings) > 0 {
+		for _, parserErr := range parserWarnings {
+			parser.ShowWarningOrError(tokenizer, parserErr)
+		}
+	}
+
 	if programErr != nil {
 		return tokenizer, nil, programErr
 	}
+
 	program.SetNodes(p.Nodes())
 
 	return tokenizer, program, nil
@@ -105,7 +119,7 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	enforceStyle bool, verbose verbosity.Verbosity, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
 	tokenizer, program, programErr := InternalCompileToProgram(absoluteFilename, code, enforceStyle, verbose)
 	if programErr != nil {
-		parser.ShowError(tokenizer, absoluteFilename, programErr, verbose, errorAsWarning)
+		parser.ShowAsError(tokenizer, programErr)
 		return nil, programErr
 	}
 

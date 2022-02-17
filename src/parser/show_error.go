@@ -7,7 +7,6 @@ package parser
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -120,8 +119,16 @@ func showOneSpaceAfterRecordTypeColon(e *parerr.OneSpaceAfterRecordTypeColon, in
 	userInstruction("you must have a space after the ':' in a record type field:", indentation, colorer)
 }
 
+type ReportAsSeverity uint8
+
+const (
+	ReportAsSeverityNote ReportAsSeverity = iota
+	ReportAsSeverityWarning
+	ReportAsSeverityError
+)
+
 func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parerr.ParseError,
-	verbose verbosity.Verbosity, errorAsWarning bool) tokenize.TokenError {
+	verbose verbosity.Verbosity, errorAsWarning ReportAsSeverity) tokenize.TokenError {
 	if parserError == nil {
 		panic("parserError is nil. internal error.")
 	}
@@ -140,17 +147,24 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	highlightColumn := posLength.Range.Position().Column()
 
 	messageError := parserError.Error()
-	severityString := "error"
-	colorToUse := color.New(color.FgHiRed)
-	if errorAsWarning {
-		colorToUse = color.New(color.FgHiGreen)
+	severityString := "Error"
+	colorToUse := color.New(color.FgRed)
+	switch errorAsWarning {
+	case ReportAsSeverityWarning:
+		severityString = "Warning"
+		colorToUse = color.New(color.FgHiYellow)
+	case ReportAsSeverityNote:
+		severityString = "Note"
+		colorToUse = color.New(color.FgHiBlue)
 	}
 
 	pathToShow := pathutil.TryToMakeRelativePath(filename)
 
-	errorString := colorToUse.Sprintf("%v:%d:%d: %v: %v", pathToShow, highlightLine+1, highlightColumn+1,
-		severityString, messageError)
-	fmt.Fprintf(os.Stderr, "\n%v\n", errorString)
+	coloredErrorMessage := colorToUse.Sprintf("%v: %v", severityString, messageError)
+
+	errorString := fmt.Sprintf("%v:%d:%d: %v", pathToShow, highlightLine+1, highlightColumn+1,
+		coloredErrorMessage)
+	fmt.Fprintf(os.Stderr, "%v %T\n", errorString, parserError)
 
 	color.NoColor = false
 	ShowSourceCode(tokenizer, highlightLine, highlightColumn, posLength)
@@ -164,8 +178,6 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	}
 
 	indentation := 1
-	colorer.NewLine(indentation)
-
 	switch e := parserError.(type) {
 	case *decorated.UnMatchingFunctionReturnTypesInFunctionValue:
 		showUnmatchingError(&e.UnMatchingTypesError, indentation, colorer)
@@ -176,10 +188,29 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	case *parerr.OneSpaceAfterRecordTypeColon:
 		showOneSpaceAfterRecordTypeColon(e, indentation, colorer)
 	default:
-		log.Printf("internal: I have no good description for error %T\n", e)
+		// log.Printf("internal: I have no good description for error %T\n", e)
 	}
 
-	fmt.Fprintf(os.Stderr, colorer.String())
-
 	return nil
+}
+
+func typeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
+	switch parserError.(type) {
+	case parerr.ExpectedOneSpace:
+		return ReportAsSeverityWarning
+	case parerr.UnexpectedImportAlias:
+		return ReportAsSeverityWarning
+	}
+	return ReportAsSeverityError
+}
+
+func ShowWarningOrError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) {
+	showAsWarning := typeOfWarning(parserError)
+	localPath, _ := parserError.FetchPositionLength().Document.Uri.ToLocalFilePath()
+	ShowError(tokenizer, localPath, parserError, verbosity.High, showAsWarning)
+}
+
+func ShowAsError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) {
+	localPath, _ := parserError.FetchPositionLength().Document.Uri.ToLocalFilePath()
+	ShowError(tokenizer, localPath, parserError, verbosity.High, ReportAsSeverityError)
 }

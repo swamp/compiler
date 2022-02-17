@@ -16,6 +16,7 @@ import (
 	"github.com/piot/lsp-server/lspserv"
 	"github.com/swamp/compiler/src/doc"
 	"github.com/swamp/compiler/src/environment"
+	"github.com/swamp/compiler/src/parser"
 	"github.com/swamp/compiler/src/verbosity"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
@@ -214,12 +215,12 @@ func main() {
 		multiErr, _ := decErr.(*decorated.MultiErrors)
 		if multiErr != nil {
 			for _, subErr := range multiErr.Errors() {
-				fmt.Printf("%v ERROR:%v\n", subErr.FetchPositionLength(), subErr)
+				parser.ShowWarningOrError(nil, subErr)
 			}
 		} else if decErr != nil {
-			fmt.Printf("%v ERROR:%v\n", decErr.FetchPositionLength(), err)
+			parser.ShowWarningOrError(nil, decErr)
 		} else {
-			fmt.Printf("Unknown ERROR: '%v'\n", err)
+			fmt.Fprintf(os.Stderr, "Unknown ERROR!!: '%v'\n", err)
 		}
 		os.Exit(-1)
 	}

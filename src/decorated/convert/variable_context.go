@@ -80,7 +80,6 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression, decshared.DecoratedError) {
 	def := c.FindNamedDecoratedExpression(name)
 	if def == nil {
-		log.Printf("tried to resolve variable %v in %v\n", name, c)
 		return nil, decorated.NewUnknownVariable(name)
 	}
 

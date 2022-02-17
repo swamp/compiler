@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
-
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -116,18 +114,10 @@ func (p *ParseStreamImpl) readTypeIdentifier() (*ast.TypeIdentifier, parerr.Pars
 }
 
 func (p *ParseStreamImpl) AddWarning(parseError parerr.ParseError) {
-	pos := parseError.FetchPositionLength()
-	s := color.YellowString("%v:%d:%d: %v: %v\n", p.tokenizer.RelativeFilename(), pos.Range.Position().Line()+1,
-		pos.Range.Position().Column()+1, "Warning", parseError.Error())
-	fmt.Fprint(os.Stderr, s)
 	p.warnings = append(p.warnings, parseError)
 }
 
 func (p *ParseStreamImpl) AddError(parseError parerr.ParseError) {
-	pos := parseError.FetchPositionLength()
-	s := color.YellowString("%v:%d:%d: %v: %v\n", p.tokenizer.RelativeFilename(), pos.Range.Position().Line()+1,
-		pos.Range.Position().Column()+1, "Error", parseError.Error())
-	fmt.Fprint(os.Stderr, s)
 	p.errors = append(p.errors, parseError)
 }
 
