@@ -46,16 +46,21 @@ func ExpectedLinePaddingAfter(expression Node) int {
 	_, isImport := expression.(*Import)
 	dontCare := isImport
 
-	_, isAnnotation := expression.(*Annotation)
+	annotation, isAnnotation := expression.(*Annotation)
 	mustBeSingleLine := isAnnotation
+
+	if isAnnotation {
+		if annotation.IsSomeKindOfExternal() {
+			dontCare = true
+			mustBeSingleLine = false
+		}
+	}
 
 	lines := 3
 
 	if dontCare {
 		lines = -1
-	}
-
-	if mustBeSingleLine {
+	} else if mustBeSingleLine {
 		lines = 1
 	}
 

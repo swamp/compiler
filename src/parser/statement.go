@@ -27,12 +27,14 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 		annotationFunctionType = token.AnnotationFunctionTypeExternalVarEx
 	}
 
+	startIndentation := -1
 	if annotationFunctionType != token.AnnotationFunctionTypeNormal {
 		_, spaceErr := p.stream.tokenizer.EatOneSpace()
 		if spaceErr != nil {
 			return nil, spaceErr
 		}
 
+		startIndentation = 0
 		keywordSymbol, keywordSymbolErr = p.stream.tokenizer.ParseVariableSymbol()
 		if keywordSymbolErr != nil {
 			return nil, keywordSymbolErr
@@ -42,6 +44,10 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 	variableSymbol, wasVariableSymbol := keywordSymbol.(token.VariableSymbolToken)
 	if !wasVariableSymbol {
 		return nil, parerr.NewUnknownStatement(variableSymbol)
+	}
+
+	if startIndentation == -1 {
+		startIndentation = variableSymbol.FetchIndentation()
 	}
 
 	p.stream.nodes = append(p.stream.nodes, variableSymbol)
@@ -56,6 +62,6 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 
 		return parseImport(p.stream, keywordImport, 0, precedingComments)
 	default:
-		return checkAndParseAnnotationOrDefinition(p.stream, variableSymbol, annotationFunctionType, precedingComments)
+		return checkAndParseAnnotationOrDefinition(p.stream, startIndentation, variableSymbol, annotationFunctionType, precedingComments)
 	}
 }

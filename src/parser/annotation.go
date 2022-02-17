@@ -11,10 +11,10 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func ParseAnnotation(p ParseStream, ident *ast.VariableIdentifier,
+func ParseAnnotation(p ParseStream, keywordIndentation int, ident *ast.VariableIdentifier,
 	annotationFunctionType token.AnnotationFunctionType, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
 	typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
-	t, tErr := parseTypeReferenceFunc(p, ident.Symbol().FetchIndentation(), typeParameterContext, precedingComments)
+	t, tErr := parseTypeReferenceFunc(p, keywordIndentation, typeParameterContext, precedingComments)
 	if tErr != nil {
 		return nil, tErr
 	}

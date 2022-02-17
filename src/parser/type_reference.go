@@ -72,7 +72,10 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 				if !continues {
 					break
 				}
-				p.eatOneSpace("after continuing right arrow")
+				_, _, spaceAfterArrowErr := p.eatContinuationReturnIndentation(keywordIndentation)
+				if spaceAfterArrowErr != nil {
+					return nil, spaceAfterArrowErr
+				}
 			}
 			newFunctionType := ast.NewFunctionType(functionTypes)
 
