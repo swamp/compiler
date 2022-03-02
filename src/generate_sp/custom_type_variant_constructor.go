@@ -21,7 +21,7 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 	}
 
 	filePosition := genContext.toFilePosition(constructor.FetchPositionLength())
-	code.SetEnum(target.Pos, uint8(constructor.CustomTypeVariant().Index()), filePosition)
+	code.SetEnum(target.Pos, uint8(constructor.CustomTypeVariant().Index()), target.Size, filePosition)
 
 	for index, arg := range constructor.Arguments() {
 		variantField := smashedVariant.Fields()[index]
