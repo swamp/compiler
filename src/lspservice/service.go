@@ -149,6 +149,9 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 			codeSignature = normalToken.Type().HumanReadable()
 			name = normalToken.HumanReadable()
 			switch t := normalToken.(type) {
+			case *decorated.TypeIdLiteral:
+				codeSignature = t.ContainedType().HumanReadable()
+				name = t.ContainedType().HumanReadable()
 			case *decorated.FunctionReference:
 				if t.FunctionValue().CommentBlock() != nil {
 					documentation = t.FunctionValue().CommentBlock().Value()
@@ -210,6 +213,8 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.RecordTypeField().VariableIdentifier().FetchPositionLength(), nil
 	case *dectype.CustomTypeVariantReference:
 		return t.CustomTypeVariant().FetchPositionLength(), nil
+	case *decorated.TypeIdLiteral:
+		return tokenToDefinition(t.ContainedType())
 	case *decorated.RecordConstructorFromParameters:
 		{
 			typeConstructors := t.Type().Next()

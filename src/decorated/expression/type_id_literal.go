@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -16,10 +17,10 @@ import (
 type TypeIdLiteral struct {
 	typeId                *ast.TypeId
 	constructedTypeIdType dtype.Type
-	containedType         dtype.Type
+	containedType         dectype.TypeReferenceScopedOrNormal
 }
 
-func NewTypeIdLiteral(typeId *ast.TypeId, constructedTypeIdType dtype.Type, containedType dtype.Type) *TypeIdLiteral {
+func NewTypeIdLiteral(typeId *ast.TypeId, constructedTypeIdType dtype.Type, containedType dectype.TypeReferenceScopedOrNormal) *TypeIdLiteral {
 	return &TypeIdLiteral{typeId: typeId, constructedTypeIdType: constructedTypeIdType, containedType: containedType}
 }
 
@@ -27,7 +28,7 @@ func (i *TypeIdLiteral) Type() dtype.Type {
 	return i.constructedTypeIdType
 }
 
-func (i *TypeIdLiteral) ContainedType() dtype.Type {
+func (i *TypeIdLiteral) ContainedType() dectype.TypeReferenceScopedOrNormal {
 	return i.containedType
 }
 
