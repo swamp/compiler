@@ -1,2 +1,5 @@
-.idea
+build/
+.idea/
+.DS_Store
+
 
