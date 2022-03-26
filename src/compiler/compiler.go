@@ -21,6 +21,7 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/file"
+	"github.com/swamp/compiler/src/generate_ir"
 	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/resourceid"
@@ -193,8 +194,8 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 }
 
 func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputFilename string, showAssembler bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
-	gen := generate_sp.NewGenerator()
-
+	//gen := generate_sp.NewGenerator()
+	gen := generate_ir.NewGenerator()
 	var allFunctions []*assembler_sp.Constant
 
 	err := typeinfo.GeneratePackageToChunk(compiledPackage, typeInformationChunk)
@@ -306,13 +307,16 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup re
 			log.Printf("============================================== generating for module %v\n", module)
 		}
 
-		createdConstants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, resourceNameLookup, fileUrlCache, packageConstants, verboseFlag)
+		//createdConstants, functions
+		// packageConstants
+		irModule, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, resourceNameLookup, fileUrlCache, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}
-		constants = createdConstants
+		log.Printf("Module %v\n%v\n", module.FullyQualifiedModuleName(), irModule)
+		constants = nil // createdConstants
 
-		allFunctions = append(allFunctions, functions...)
+		//allFunctions = append(allFunctions, functions...)
 	}
 
 	if verboseFlag >= verbosity.Mid || showAssembler {
