@@ -26,15 +26,9 @@ jobs:
           install-go: false
         continue-on-error: true
 
-      - name: Build
-        run: go build -v ./...
-#
-#      - name: Test
-#        run: go test -v -count=1 ./...
-
-
-      - name: Fetch Gox
-        run: go get github.com/mitchellh/gox
+  #
+  #      - name: Test
+  #        run: go test -v -count=1 ./...
 
   releases:
     name: Release Go Binary
@@ -48,12 +42,8 @@ jobs:
           - goarch: arm64
             goos: windows
     steps:
-    - uses: actions/checkout@v2
-    - uses: wangyoucao577/go-release-action@v1.25
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        goos: ${{ matrix.goos }}
-        goarch: ${{ matrix.goarch }}
-        goversion: "https://dl.google.com/go/go1.18.linux-amd64.tar.gz"
-        project_path: "./src/swamp/"
-        binary_name: "swamp"
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Compile for ${{ matrix.goos }} and ${{ matrix.goarch }}
+        run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -o swamp_${{ matrix.goos }_${{ matrix.goarch }} ./src/swamp/
