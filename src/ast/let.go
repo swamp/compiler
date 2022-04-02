@@ -16,15 +16,20 @@ type LetAssignment struct {
 	expression  Expression
 	inclusive   token.SourceFileReference
 	comment     *MultilineComment
+	wasRecordDestructuring bool
 }
 
-func NewLetAssignment(identifiers []*VariableIdentifier, expression Expression, comment *MultilineComment) LetAssignment {
+func NewLetAssignment(wasRecordDestructuring bool, identifiers []*VariableIdentifier, expression Expression, comment *MultilineComment) LetAssignment {
 	inclusive := token.MakeInclusiveSourceFileReference(identifiers[0].FetchPositionLength(), expression.FetchPositionLength())
-	return LetAssignment{identifiers: identifiers, expression: expression, inclusive: inclusive, comment: comment}
+	return LetAssignment{wasRecordDestructuring: wasRecordDestructuring, identifiers: identifiers, expression: expression, inclusive: inclusive, comment: comment}
 }
 
 func (l LetAssignment) Identifiers() []*VariableIdentifier {
 	return l.identifiers
+}
+
+func (l LetAssignment) WasRecordDestructuring() bool {
+	return l.wasRecordDestructuring
 }
 
 func (l LetAssignment) Expression() Expression {

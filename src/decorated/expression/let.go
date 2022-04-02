@@ -87,6 +87,10 @@ func (l *LetAssignment) LetVariables() []*LetVariable {
 	return l.letVariables
 }
 
+func (l *LetAssignment) WasRecordDestructuring() bool {
+	return l.astLetAssignment.WasRecordDestructuring()
+}
+
 func (l *LetAssignment) Expression() Expression {
 	return l.expression
 }

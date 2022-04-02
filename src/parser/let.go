@@ -36,6 +36,39 @@ func parseMultipleIdentifiers(p ParseStream) ([]*ast.VariableIdentifier, parerr.
 	return identifiers, nil
 }
 
+func parseRecordDestructuring(p ParseStream, keywordIndentation int) ([]*ast.VariableIdentifier, parerr.ParseError) {
+	if _, err := p.eatOneSpace("after destructuring {"); err != nil {
+		return nil, err
+	}
+
+	var identifiers []*ast.VariableIdentifier
+	for {
+		letVariableIdentifier, letVariableIdentifierErr := p.readVariableIdentifier()
+		if letVariableIdentifierErr != nil {
+			return nil, letVariableIdentifierErr
+		}
+		identifiers = append(identifiers, letVariableIdentifier)
+
+		if _, wasComma := p.maybeComma(); !wasComma {
+			break
+		}
+		if _, err := p.eatOneSpace("afterComma"); err != nil {
+			return nil, err
+		}
+	}
+
+	if _, spaceAfterIdentifierErr := p.eatOneSpace("after variable identifier"); spaceAfterIdentifierErr != nil {
+		return nil, parerr.NewExpectedOneSpaceAfterVariableAndBeforeAssign(spaceAfterIdentifierErr)
+	}
+	if _, endCurlyErr:= p.readRightCurly(); endCurlyErr != nil {
+		return nil, endCurlyErr
+	}
+	if _, spaceAfterCurlyErr := p.eatOneSpace("after } destructuring"); spaceAfterCurlyErr != nil {
+		return nil, parerr.NewExpectedOneSpaceAfterVariableAndBeforeAssign(spaceAfterCurlyErr)
+	}
+	return identifiers, nil
+}
+
 func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expression, parerr.ParseError) {
 	var assignments []ast.LetAssignment
 
@@ -48,20 +81,29 @@ func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expre
 	}
 
 	var inKeyword token.Keyword
+	var identifiers []*ast.VariableIdentifier
+	var identifiersErr parerr.ParseError
+	wasCurlyDestructuring := false
 	for {
-		identifiers, identifiersErr := parseMultipleIdentifiers(p)
-		if identifiersErr != nil {
-			return nil, identifiersErr
-		}
+		if _, wasCurly := p.maybeLeftCurly(); wasCurly {
+			wasCurlyDestructuring = true
+			identifiers, identifiersErr = parseRecordDestructuring(p, keywordIndentation)
+		} else {
+			wasCurlyDestructuring = false
+			identifiers, identifiersErr = parseMultipleIdentifiers(p)
+			if identifiersErr != nil {
+				return nil, identifiersErr
+			}
 
-		for _, checkIdentifier := range identifiers {
-			for _, existingAssignment := range assignments {
-				for _, existingIdentifier := range existingAssignment.Identifiers() {
-					if checkIdentifier.IsIgnore() || existingIdentifier.IsIgnore() {
-						continue
-					}
-					if checkIdentifier.Name() == existingIdentifier.Name() {
-						return nil, parerr.NewExpectedUniqueLetIdentifier(checkIdentifier.FetchPositionLength())
+			for _, checkIdentifier := range identifiers {
+				for _, existingAssignment := range assignments {
+					for _, existingIdentifier := range existingAssignment.Identifiers() {
+						if checkIdentifier.IsIgnore() || existingIdentifier.IsIgnore() {
+							continue
+						}
+						if checkIdentifier.Name() == existingIdentifier.Name() {
+							return nil, parerr.NewExpectedUniqueLetIdentifier(checkIdentifier.FetchPositionLength())
+						}
 					}
 				}
 			}
@@ -94,7 +136,7 @@ func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expre
 				astMultilineComment = ast.NewMultilineComment(multiline)
 			}
 		}
-		newLetAssignment := ast.NewLetAssignment(identifiers, letExpr, astMultilineComment)
+		newLetAssignment := ast.NewLetAssignment(wasCurlyDestructuring, identifiers, letExpr, astMultilineComment)
 		assignments = append(assignments, newLetAssignment)
 
 		expectingNewLetAssignment, nextReport, posLengthErr := p.eatOneOrTwoNewLineContinuationOrDedent(expectedIndentation)
