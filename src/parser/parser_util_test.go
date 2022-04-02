@@ -16,7 +16,7 @@ import (
 	"github.com/swamp/compiler/src/verbosity"
 )
 
-func testParseInternal(code string, errorsAsWarnings bool) (*ast.SourceFile, ParseStream, parerr.ParseError) {
+func testParseInternal(code string, errorsAsWarnings ReportAsSeverity) (*ast.SourceFile, ParseStream, parerr.ParseError) {
 	code = strings.TrimSpace(code)
 	const enforceStyle = true
 	tokenizer, tokenizerErr := testutil.Setup(code)
@@ -33,7 +33,7 @@ func testParseInternal(code string, errorsAsWarnings bool) (*ast.SourceFile, Par
 }
 
 func testParseExpressionInternal(code string, enforceStyle bool) (*ast.SourceFile, ParseStream, parerr.ParseError) {
-	const errorsAsWarnings = false
+	const errorsAsWarnings = ReportAsSeverityNote
 	code = strings.TrimSpace(code)
 	tokenizer, tokenizerErr := testutil.Setup(code)
 	if tokenizerErr != nil {
@@ -50,7 +50,7 @@ func testParseExpressionInternal(code string, enforceStyle bool) (*ast.SourceFil
 }
 
 func testParse(t *testing.T, code string, ast string) {
-	const errorsAsWarnings = false
+	const errorsAsWarnings = ReportAsSeverityNote
 	program, _, programErr := testParseInternal(code, errorsAsWarnings)
 	if programErr != nil {
 		t.Fatal(programErr)
@@ -84,7 +84,9 @@ func testParseExpressionNoStyle(t *testing.T, code string, ast string) {
 }
 
 func testParseError(t *testing.T, code string, expectedErrorType interface{}) {
-	const errorsAsWarnings = true
+	const errorsAsWarnings = ReportAsSeverityNote
+
+
 	_, _, programErr := testParseInternal(code, errorsAsWarnings)
 	if programErr == nil {
 		t.Fatal("it should have failed, but it didn't")

@@ -12,10 +12,10 @@ import (
 )
 
 type LetAssignment struct {
-	identifiers []*VariableIdentifier
-	expression  Expression
-	inclusive   token.SourceFileReference
-	comment     *MultilineComment
+	identifiers            []*VariableIdentifier
+	expression             Expression
+	inclusive              token.SourceFileReference
+	comment                *MultilineComment
 	wasRecordDestructuring bool
 }
 

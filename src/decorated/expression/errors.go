@@ -87,8 +87,8 @@ func (e *RecordDestructuringWasNotRecordExpression) FetchPositionLength() token.
 }
 
 type RecordDestructuringFieldNotFound struct {
-	expression Expression
-	recordType *dectype.RecordAtom
+	expression      Expression
+	recordType      *dectype.RecordAtom
 	fieldIdentifier *ast.VariableIdentifier
 }
 
@@ -105,8 +105,8 @@ func (e *RecordDestructuringFieldNotFound) FetchPositionLength() token.SourceFil
 }
 
 type TupleDestructuringWrongNumberOfIdentifiers struct {
-	expression Expression
-	tupleType *dectype.TupleTypeAtom
+	expression       Expression
+	tupleType        *dectype.TupleTypeAtom
 	fieldIdentifiers []*ast.VariableIdentifier
 }
 
@@ -121,7 +121,6 @@ func (e *TupleDestructuringWrongNumberOfIdentifiers) Error() string {
 func (e *TupleDestructuringWrongNumberOfIdentifiers) FetchPositionLength() token.SourceFileReference {
 	return e.fieldIdentifiers[0].FetchPositionLength()
 }
-
 
 type TypeNotFound struct {
 	requestedType string

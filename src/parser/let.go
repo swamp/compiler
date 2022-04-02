@@ -60,7 +60,7 @@ func parseRecordDestructuring(p ParseStream, keywordIndentation int) ([]*ast.Var
 	if _, spaceAfterIdentifierErr := p.eatOneSpace("after variable identifier"); spaceAfterIdentifierErr != nil {
 		return nil, parerr.NewExpectedOneSpaceAfterVariableAndBeforeAssign(spaceAfterIdentifierErr)
 	}
-	if _, endCurlyErr:= p.readRightCurly(); endCurlyErr != nil {
+	if _, endCurlyErr := p.readRightCurly(); endCurlyErr != nil {
 		return nil, endCurlyErr
 	}
 	if _, spaceAfterCurlyErr := p.eatOneSpace("after } destructuring"); spaceAfterCurlyErr != nil {
