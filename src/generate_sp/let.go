@@ -35,7 +35,6 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 			for index, letVariable := range assignment.LetVariables() {
 				recordField := recordType.FindField(letVariable.Name().Name())
 
-
 				fieldSourcePosRange := assembler_sp.SourceStackPosRange{
 					Pos:  assembler_sp.SourceStackPos(uint(sourceVar.Pos) + uint(recordField.MemoryOffset())),
 					Size: assembler_sp.SourceStackRange(recordField.MemorySize()),

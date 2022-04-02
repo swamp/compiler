@@ -32,12 +32,12 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 			atom := dectype.UnaliasWithResolveInvoker(decoratedExpression.Type())
 			record, wasRecord := atom.(*dectype.RecordAtom)
 			if !wasRecord {
-				return nil, decorated.NewInternalError(fmt.Errorf("wasn't a record"))
+				return nil, decorated.NewRecordDestructuringWasNotRecordExpression(decoratedExpression, record)
 			}
 			for _, ident := range assignment.Identifiers() {
 				recordField := record.FindField(ident.Symbol().Name())
 				if recordField == nil {
-					return nil, decorated.NewInternalError(fmt.Errorf("wasn't a record name '%v' in %v", ident.Symbol().Name(), record))
+					return nil, decorated.NewRecordDestructuringFieldNotFound(decoratedExpression, record, ident)
 				}
 				letVar := decorated.NewLetVariable(ident, recordField.Type(), assignment.CommentBlock())
 				letVariables = append(letVariables, letVar)
@@ -52,7 +52,7 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 					return nil, decorated.NewInternalError(fmt.Errorf("wasn't a tuple"))
 				}
 				if tuple.ParameterCount() != identifierCount {
-					return nil, decorated.NewInternalError(fmt.Errorf("wrong number of identifiers for the tuple %v vs %v", tuple.ParameterCount(), identifierCount))
+					return nil, decorated.NewTupleDestructuringWrongNumberOfIdentifiers(decoratedExpression, tuple, assignment.Identifiers())
 				}
 
 				for index, ident := range assignment.Identifiers() {
