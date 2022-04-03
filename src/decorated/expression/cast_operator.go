@@ -29,7 +29,7 @@ func (c *CastOperator) Expression() Expression {
 }
 
 func (c *CastOperator) String() string {
-	return fmt.Sprintf("cast %v %v", c.expression, c.castToType)
+	return fmt.Sprintf("[Cast %v %v]", c.expression, c.castToType)
 }
 
 func (c *CastOperator) HumanReadable() string {

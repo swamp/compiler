@@ -1076,6 +1076,26 @@ func (e *TooFewIdentifiersForFunctionType) FetchPositionLength() token.SourceFil
 	return e.functionValue.FetchPositionLength()
 }
 
+
+type TooManyIdentifiersForFunctionType struct {
+	forcedFunctionType    *dectype.FunctionAtom
+	functionValue         *ast.FunctionValue
+	annotationIdentifiers []*ast.VariableIdentifier
+}
+
+func NewTooManyIdentifiersForFunctionType(annotationIdentifiers []*ast.VariableIdentifier, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooManyIdentifiersForFunctionType {
+	return &TooManyIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers, forcedFunctionType: forcedFunctionType, functionValue: functionValue}
+}
+
+func (e *TooManyIdentifiersForFunctionType) Error() string {
+	return fmt.Sprintf("too many identifiers for function %v %v", e.annotationIdentifiers, e.functionValue.DebugFunctionIdentifier())
+}
+
+func (e *TooManyIdentifiersForFunctionType) FetchPositionLength() token.SourceFileReference {
+	return e.functionValue.FetchPositionLength()
+}
+
+
 type ModuleError struct {
 	err        decshared.DecoratedError
 	sourceFile string

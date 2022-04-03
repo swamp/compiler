@@ -31,7 +31,7 @@ func (i *StringLiteral) Value() string {
 }
 
 func (i *StringLiteral) String() string {
-	return fmt.Sprintf("[str %v]", i.str.Value())
+	return fmt.Sprintf("[String %v]", i.str.Value())
 }
 
 func (i *StringLiteral) FetchPositionLength() token.SourceFileReference {

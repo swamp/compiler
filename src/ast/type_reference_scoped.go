@@ -18,9 +18,9 @@ type TypeReferenceScoped struct {
 
 func (i *TypeReferenceScoped) String() string {
 	if len(i.arguments) == 0 {
-		return fmt.Sprintf("[type-reference %v]", i.ident)
+		return fmt.Sprintf("[ScopedTypeReference %v]", i.ident)
 	}
-	return fmt.Sprintf("[type-reference %v %v]", i.ident, i.arguments)
+	return fmt.Sprintf("[ScopedTypeReference %v %v]", i.ident, i.arguments)
 }
 
 func (i *TypeReferenceScoped) DebugString() string {

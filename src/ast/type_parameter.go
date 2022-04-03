@@ -24,7 +24,7 @@ func NewTypeParameter(ident *VariableIdentifier) *TypeParameter {
 }
 
 func (t *TypeParameter) String() string {
-	return fmt.Sprintf("[type-param %v]", t.ident)
+	return fmt.Sprintf("[GenericParam %v]", t.ident)
 }
 
 func (t *TypeParameter) Name() string {

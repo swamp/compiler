@@ -29,7 +29,7 @@ type AnyMatchingTypes struct {
 }
 
 func (u *AnyMatchingTypes) String() string {
-	return fmt.Sprintf("[anymatching types %v]", u.astAnyMatchingType.Name())
+	return fmt.Sprintf("[AnyMatching %v]", u.astAnyMatchingType.Name())
 }
 
 func (u *AnyMatchingTypes) FetchPositionLength() token.SourceFileReference {

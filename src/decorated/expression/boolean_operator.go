@@ -62,7 +62,7 @@ func booleanOperatorToString(t BooleanOperatorType) string {
 }
 
 func (l *BooleanOperator) String() string {
-	return fmt.Sprintf("(boolop %v %v %v)", l.BinaryOperator.left,
+	return fmt.Sprintf("[BoolOp %v %v %v]", l.BinaryOperator.left,
 		booleanOperatorToString(l.operatorType), l.BinaryOperator.right)
 }
 

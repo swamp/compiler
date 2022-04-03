@@ -31,7 +31,7 @@ func (i *FixedLiteral) Value() int32 {
 }
 
 func (i *FixedLiteral) String() string {
-	return fmt.Sprintf("[integer %v]", i.integer.Value())
+	return fmt.Sprintf("[Fixed %v]", i.integer.Value())
 }
 
 func (i *FixedLiteral) FetchPositionLength() token.SourceFileReference {

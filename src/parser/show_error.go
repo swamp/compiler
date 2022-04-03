@@ -206,11 +206,17 @@ func typeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
 
 func ShowWarningOrError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) {
 	showAsWarning := typeOfWarning(parserError)
-	localPath, _ := parserError.FetchPositionLength().Document.Uri.ToLocalFilePath()
+	localPath := ""
+	if parserError.FetchPositionLength().Document != nil {
+		localPath, _ = parserError.FetchPositionLength().Document.Uri.ToLocalFilePath()
+	}
 	ShowError(tokenizer, localPath, parserError, verbosity.High, showAsWarning)
 }
 
 func ShowAsError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) {
-	localPath, _ := parserError.FetchPositionLength().Document.Uri.ToLocalFilePath()
+	localPath := ""
+	if parserError.FetchPositionLength().Document != nil {
+		localPath, _ = parserError.FetchPositionLength().Document.Uri.ToLocalFilePath()
+	}
 	ShowError(tokenizer, localPath, parserError, verbosity.High, ReportAsSeverityError)
 }

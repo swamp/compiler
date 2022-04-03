@@ -24,9 +24,9 @@ type TypeReference struct {
 
 func (i *TypeReference) String() string {
 	if len(i.arguments) == 0 {
-		return fmt.Sprintf("[type-reference %v]", i.ident)
+		return fmt.Sprintf("[TypeReference %v]", i.ident)
 	}
-	return fmt.Sprintf("[type-reference %v %v]", i.ident, i.arguments)
+	return fmt.Sprintf("[TypeReference %v %v]", i.ident, i.arguments)
 }
 
 func (i *TypeReference) DebugString() string {

@@ -1,6 +1,7 @@
 package dectype
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/modref"
 	"github.com/swamp/compiler/src/token"
@@ -26,12 +27,19 @@ func (r *NamedDefinitionTypeReference) AstIdentifier() ast.TypeReferenceScopedOr
 	return r.ident
 }
 
+func moduleReferenceString(referencer modref.ModuleReferencer) string {
+	if referencer == nil {
+		return ""
+	}
+	return referencer.String()
+}
+
 func (r *NamedDefinitionTypeReference) String() string {
-	return "named definition type reference"
+	return fmt.Sprintf("[NamedDefTypeRef %v:%v]", moduleReferenceString(r.optionalModuleReference), r.ident)
 }
 
 func (r *NamedDefinitionTypeReference) DebugString() string {
-	return "named definition type reference"
+	return fmt.Sprintf("[NamedDefTypeRef %v:%v]", r.optionalModuleReference, r.ident)
 }
 
 func (r *NamedDefinitionTypeReference) FetchPositionLength() token.SourceFileReference {

@@ -31,7 +31,7 @@ func (i *BooleanLiteral) Value() bool {
 }
 
 func (i *BooleanLiteral) String() string {
-	return fmt.Sprintf("[bool %v]", i.boolean.Value())
+	return fmt.Sprintf("[Bool %v]", i.boolean.Value())
 }
 
 func (i *BooleanLiteral) FetchPositionLength() token.SourceFileReference {

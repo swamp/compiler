@@ -153,6 +153,8 @@ func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functi
 	identifiers := functionValue.Parameters()
 	if len(identifiers) < len(functionParameterTypes) {
 		return nil, decorated.NewTooFewIdentifiersForFunctionType(identifiers, forcedFunctionType, functionValue)
+	} else if len(identifiers) > len(functionParameterTypes) {
+		return nil, decorated.NewTooManyIdentifiersForFunctionType(identifiers, forcedFunctionType, functionValue)
 	}
 	for index, parameterType := range functionParameterTypes {
 		identifier := identifiers[index]

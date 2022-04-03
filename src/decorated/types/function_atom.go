@@ -63,7 +63,7 @@ func (u *FunctionAtom) ParameterCount() int {
 }
 
 func (u *FunctionAtom) String() string {
-	return fmt.Sprintf("[functype %v]", u.parameterTypes)
+	return fmt.Sprintf("[FunctionType %v]", u.parameterTypes)
 }
 
 func (u *FunctionAtom) HumanReadable() string {

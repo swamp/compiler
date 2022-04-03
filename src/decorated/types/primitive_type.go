@@ -139,7 +139,7 @@ func (u *PrimitiveAtom) PrimitiveName() *ast.TypeIdentifier {
 }
 
 func (u *PrimitiveAtom) String() string {
-	return fmt.Sprintf("[primitive %v%v]", u.name.Name(), TypeParametersSuffix(u.genericTypes))
+	return fmt.Sprintf("[Primitive %v%v]", u.name.Name(), TypeParametersSuffix(u.genericTypes))
 }
 
 func (u *PrimitiveAtom) HumanReadable() string {

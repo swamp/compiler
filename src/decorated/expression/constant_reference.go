@@ -23,11 +23,11 @@ func (g *ConstantReference) Type() dtype.Type {
 }
 
 func (g *ConstantReference) String() string {
-	return fmt.Sprintf("[functionref %v %v]", g.definitionReference, g.referencedConstant)
+	return fmt.Sprintf("[ConstantRef %v]", g.definitionReference)
 }
 
 func (g *ConstantReference) DebugString() string {
-	return fmt.Sprintf("[functionref %v %v]", g.definitionReference, g.referencedConstant)
+	return fmt.Sprintf("[ConstantRef %v]", g.definitionReference)
 }
 
 func (g *ConstantReference) HumanReadable() string {

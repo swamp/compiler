@@ -37,7 +37,7 @@ func (l LetAssignment) Expression() Expression {
 }
 
 func (l LetAssignment) String() string {
-	return fmt.Sprintf("[letassign %v = %v]", l.identifiers, l.expression)
+	return fmt.Sprintf("[LetAssign %v = %v]", l.identifiers, l.expression)
 }
 
 func (l LetAssignment) CommentBlock() *MultilineComment {
@@ -82,7 +82,7 @@ func (i *Let) FetchPositionLength() token.SourceFileReference {
 }
 
 func (i *Let) String() string {
-	return fmt.Sprintf("[let: %v in %v]", i.assignments, i.consequence)
+	return fmt.Sprintf("[Let: %v in %v]", i.assignments, i.consequence)
 }
 
 func (i *Let) DebugString() string {

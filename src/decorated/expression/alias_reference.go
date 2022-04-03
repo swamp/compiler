@@ -9,21 +9,21 @@ import (
 )
 
 type AliasReference struct {
-	castToType *dectype.AliasReference
+	referencedType *dectype.AliasReference
 }
 
-func NewAliasReference(castToType *dectype.AliasReference) *AliasReference {
-	return &AliasReference{castToType: castToType}
+func NewAliasReference(referencedType *dectype.AliasReference) *AliasReference {
+	return &AliasReference{referencedType: referencedType}
 }
 
 func (c *AliasReference) FetchPositionLength() token.SourceFileReference {
-	return c.castToType.FetchPositionLength()
+	return c.referencedType.FetchPositionLength()
 }
 
 func (c *AliasReference) String() string {
-	return fmt.Sprintf("cast %v %v", c.castToType, c.castToType)
+	return fmt.Sprintf("[AliasRef %v]", c.referencedType)
 }
 
 func (c *AliasReference) Type() dtype.Type {
-	return c.castToType.Type()
+	return c.referencedType.Type()
 }

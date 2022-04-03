@@ -23,11 +23,11 @@ func (g *FunctionParameterReference) Type() dtype.Type {
 }
 
 func (g *FunctionParameterReference) String() string {
-	return fmt.Sprintf("[functionparamref %v %v]", g.ident, g.referencedParameter)
+	return fmt.Sprintf("[FunctionParamRef %v]", g.referencedParameter)
 }
 
 func (g *FunctionParameterReference) HumanReadable() string {
-	return fmt.Sprintf("Parameter Reference")
+	return fmt.Sprintf("FunctionParamRef")
 }
 
 func (g *FunctionParameterReference) Identifier() ast.ScopedOrNormalVariableIdentifier {

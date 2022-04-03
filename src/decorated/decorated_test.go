@@ -21,29 +21,24 @@ first a =
     a * a
 `,
 		`
-func(Int -> Int) : [func  [primitive Int] [primitive Int]]
-
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]
+[ModuleDef $first = [FunctionValue ([[arg $a = [PrimitiveTypeVariantRef NamedDefTypeRef [Primitive Int]]]]) -> (arithmetic [FunctionParamRef $a [arg $a = [PrimitiveTypeVariantRef NamedDefTypeRef [Primitive Int]]]] MULTIPLY [FunctionParamRef $a [arg $a = [PrimitiveTypeVariantRef NamedDefTypeRef [Primitive Int]]]])]]
 `)
 }
 
 func TestConstant(t *testing.T) {
 	testDecorateWithoutDefault(t, `
-fn : String
 fn =
     "Hello"
 
 
 another : String
 another =
-    fn()
+    fn
 
 
 `, `
-func(String) : [func  [primitive String]]
-
-another = [functionvalue ([]) -> [fcall [getvar $fn [primitive String]] []]]
-fn = [functionvalue ([]) -> [str Hello]]
+[ModuleDef $another = [FunctionValue ([]) -> [ConstantRef [NamedDefinitionReference :$fn]]]]
+[ModuleDef $fn = [Constant [str Hello]]]
 `)
 }
 
@@ -57,11 +52,7 @@ another =
     in
     a && b
 `, `
-TypeRef : [alias TypeRef [primitive Array<[localtype a]>]]
-func(Bool) : [func  [primitive Bool]]
-
-another = [functionvalue ([]) -> [let [[letassign $a = [bool true]] [letassign $b = [bool false]]] in [logical [getvar $a [primitive Bool]] [getvar $b [primitive Bool]] 0]]]
-`)
+[ModuleDef $another = [FunctionValue ([]) -> [Let [[LetAssign [[LetVar $a]] = [Bool true]] [LetAssign [[LetVar $b]] = [Bool false]]] in [Logical [LetVarRef [LetVar $a]] and [LetVarRef [LetVar $b]]]]]]`)
 }
 
 func TestCast(t *testing.T) {
@@ -76,6 +67,7 @@ another =
     in
     b >= 32
 `, `
+[ModuleDef $another = [FunctionValue ([]) -> [Let [[LetAssign [[LetVar $b]] = [Cast [Integer 32] [AliasRef [LetVarRef [Alias Something [PrimitiveTypeVariantRef NamedDefTypeRef [Primitive Int]]]]]]]] in [BoolOp [LetVarRef [LetVar $b]] GRE [Integer 32]]]]]
 `)
 }
 
@@ -84,12 +76,12 @@ func TestResourceName(t *testing.T) {
 		`
 --| ignore this
 first : ResourceName -> Int
-first a =
+first _ =
     2
 
 
 main : Bool -> Int
-main ignore =
+main _ =
     first @this/is/something.txt
 `,
 		`
@@ -105,11 +97,11 @@ func TestAnyMatchingType(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 fn : * -> Int
-fn a b x =
+fn _ _ _ =
     23
 `,
 		`
-[mdefx $fn = [functionvalue ([[arg $a = [anymatching types AnyMatchingType]]]) -> [integer 23]]]
+[ModuleDef $fn = [FunctionValue ([[arg $_ = [AnyMatching AnyMatchingType]]]) -> [Integer 23]]]
 `)
 }
 
@@ -117,7 +109,7 @@ func TestAnyMatchingTypeCall(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 fn : * -> Int
-fn a b x =
+fn _ _ _ =
     23
 
 
@@ -135,7 +127,7 @@ func TestAnyMatchingTypeCallMiddle(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 fn : String -> * -> Int
-fn str b x =
+fn _ _ _ =
     23
 
 
@@ -144,8 +136,8 @@ main =
     fn "hello" 42.0
 `,
 		`
-[mdefx $fn = [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $b = [anymatching types AnyMatchingType]]]) -> [integer 23]]]
-[mdefx $main = [functionvalue ([]) -> [fcall [functionref named definition reference [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $b = [anymatching types AnyMatchingType]]]) -> [integer 23]]] [[str hello] [integer 42000]]]]]
+[ModuleDef $fn = [FunctionValue ([[arg $_ = [PrimitiveTypeVariantRef [NamedDefTypeRef <nil>:[type-reference $String]] [Primitive String]]] [arg $_ = [AnyMatching AnyMatchingType]]]) -> [Integer 23]]]
+[ModuleDef $main = [FunctionValue ([]) -> [FnCall [FunctionRef [NamedDefinitionReference :$fn]] [[String hello] [Fixed 42000]]]]]
 `)
 }
 
@@ -153,7 +145,7 @@ func TestAnyMatchingTypeCallMiddleLocalType(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 fn : String -> * -> a -> List a
-fn str b x =
+fn _ _ _ =
     [ 23.0 ]
 
 
@@ -162,8 +154,8 @@ main =
     fn "hello" -23939 42.0
 `,
 		`
-[mdefx $fn = [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $b = [anymatching types AnyMatchingType]] [arg $x = [localtype a]]]) -> [ListLiteral List [[integer 23000]]]]]
-[mdefx $main = [functionvalue ([]) -> [fcall [functionref named definition reference [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $b = [anymatching types AnyMatchingType]] [arg $x = [localtype a]]]) -> [ListLiteral List [[integer 23000]]]]] [[str hello] [integer -23939] [integer 42000]]]]]
+[ModuleDef $fn = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $String]] [Primitive String]]] [Arg $_ : [AnyMatching AnyMatchingType]] [Arg $_ : [GenericParam a]]]) -> [ListLiteral List [[Fixed 23000]]]]]
+[ModuleDef $main = [FunctionValue ([]) -> [FnCall [FunctionRef [NamedDefinitionReference :$fn]] [[String hello] [Integer -23939] [Fixed 42000]]]]]
 `)
 }
 
@@ -171,12 +163,12 @@ func TestAnyMatchingTypeCallMiddleLocalTypeFn(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 fn : String -> (* -> a) -> List a
-fn str fn =
+fn _ _ =
     [ 23.0 ]
 
 
 someOther : Int -> Fixed
-someOther x =
+someOther _ =
     3.5
 
 
@@ -185,9 +177,9 @@ main =
     fn "hello" someOther
 `,
 		`
-[mdefx $fn = [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $fn = fntyperef [func-type [anymatching-type: *] -> [local-type: [type-param $a]]] [functype [[anymatching types AnyMatchingType] [localtype a]]]]]) -> [ListLiteral List [[integer 23000]]]]]
-[mdefx $main = [functionvalue ([]) -> [fcall [functionref named definition reference [functionvalue ([[arg $str = [customtypevariantref named definition reference [primitive String]]] [arg $fn = fntyperef [func-type [anymatching-type: *] -> [local-type: [type-param $a]]] [functype [[anymatching types AnyMatchingType] [localtype a]]]]]) -> [ListLiteral List [[integer 23000]]]]] [[str hello] [functionref named definition reference [functionvalue ([[arg $x = [customtypevariantref named definition reference [primitive Int]]]]) -> [integer 3500]]]]]]]
-[mdefx $someOther = [functionvalue ([[arg $x = [customtypevariantref named definition reference [primitive Int]]]]) -> [integer 3500]]]
+[ModuleDef $fn = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $String]]]] [Arg $_ : [FunctionTypeRef [FunctionType [[AnyMatching AnyMatchingType] [GenericParam a]]]]]) -> [ListLiteral [[Fixed 23000]]]]]
+[ModuleDef $main = [FunctionValue ([]) -> [FnCall [FunctionRef [NamedDefinitionReference :$fn]] [[String hello] [FunctionRef [NamedDefinitionReference :$someOther]]]]]]
+[ModuleDef $someOther = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Fixed 3500]]]
 `)
 }
 
@@ -200,9 +192,7 @@ first a =
     a * a
 `,
 		`
-func(Fixed -> Fixed) : [func  [primitive Fixed] [primitive Fixed]]
-
-first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> (arithmetic [getvar $a [primitive Fixed]] FMULTIPLY [getvar $a [primitive Fixed]])]
+[ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]) -> (arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] FMULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Fixed]]]]])]]
 `)
 }
 
@@ -211,21 +201,17 @@ func TestChar(t *testing.T) {
 		`
 --| ignore this
 first : Char -> Int
-first a =
+first _ =
     2
 
 
 main : Bool -> Int
-main ignore =
+main _ =
     first 'c'
 `,
 		`
-TypeRef : [alias TypeRef [primitive Array<[localtype a]>]]
-func(Char -> Int) : [func  [primitive Char] [primitive Int]]
-func(Bool -> Int) : [func  [primitive Bool] [primitive Int]]
-
-first = [functionvalue ([[arg $a = [primitive Char]]]) -> [integer 2]]
-main = [functionvalue ([[arg $ignore = [primitive Bool]]]) -> [fcall [getvar $first [primitive Int]] [[char 99]]]]
+[ModuleDef $first = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Char]]]]]) -> [Integer 2]]]
+[ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference :$first]] [[Char 99]]]]]
 `)
 }
 
@@ -239,14 +225,12 @@ first a =
 
 
 another : Int -> Fixed
-another a =
+another _ =
     first 2
 `,
 		`
-func(Int -> Fixed) : [func  [primitive Int] [primitive Fixed]]
-
-another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Fixed]] [[integer 2]]]]
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $Int.toFixed [primitive Fixed]] [[getvar $a [primitive Int]]]]]
+[ModuleDef $another = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /first]] [[Integer 2]]]]]
+[ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference Int/toFixed]] [[FunctionParamRef [Arg $a : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]]]
 `)
 }
 
@@ -260,15 +244,12 @@ first a =
 
 
 another : Int -> Int
-another a =
+another _ =
     first 2.3
 `,
 		`
-func(Fixed -> Int) : [func  [primitive Fixed] [primitive Int]]
-func(Int -> Int) : [func  [primitive Int] [primitive Int]]
-
-another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 2300]]]]
-first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]
+[ModuleDef $another = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /first]] [[Fixed 2300]]]]]
+[ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference Int/round]] [[FunctionParamRef [Arg $a : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]]]]]
 `)
 }
 
@@ -277,22 +258,20 @@ func TestFixedConvertLet(t *testing.T) {
 		`
 --| ignore this
 first : Int -> Fixed
-first a =
+first _ =
     0.3
 
 
 another : Int -> Fixed
-another a =
+another _ =
     let
         x = first 2
     in
     x
 `,
 		`
-func(Int -> Fixed) : [func  [primitive Int] [primitive Fixed]]
-
-another = [functionvalue ([[arg $a = [primitive Int]]]) -> [let [[letassign $x = [fcall [getvar $first [primitive Fixed]] [[integer 2]]]]] in [getvar $x [primitive Fixed]]]]
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> [integer 300]]
+[ModuleDef $another = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $x]] = [FnCall [FunctionRef [NamedDefinitionReference /first]] [[Integer 2]]]]] in [LetVarRef [LetVar $x]]]]]
+[ModuleDef $first = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Fixed 300]]]
 `)
 }
 
@@ -305,18 +284,14 @@ type alias State =
 
 
 another : Int -> State
-another a =
+another _ =
     let
         state = { playerX = 0 }
     in
     { state | playerX = 22 }
 `,
 		`
-func(Fixed -> Int) : [func  [primitive Fixed] [primitive Int]]
-func(Int -> Int) : [func  [primitive Int] [primitive Int]]
-
-another = [functionvalue ([[arg $a = [primitive Int]]]) -> [fcall [getvar $first [primitive Int]] [[integer 2300]]]]
-first = [functionvalue ([[arg $a = [primitive Fixed]]]) -> [fcall [getvar $Int.round [primitive Int]] [[getvar $a [primitive Fixed]]]]]
+[ModuleDef $another = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $state]] = [record-literal record-type [[record-type-field $playerX [Primitive Int] (0)]][]] [0 = [Integer 0]]]]] in [record-literal record-type [[record-type-field $playerX [Primitive Int] (0)]][]] [0 = [Integer 22]]]]]]
 `)
 }
 
@@ -459,7 +434,7 @@ receiveStatus status =
 
 
 someFunc : String -> Status
-someFunc name =
+someFunc _ =
     receiveStatus Unknown
 `,
 		`

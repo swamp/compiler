@@ -23,15 +23,15 @@ func (g *FunctionReference) Type() dtype.Type {
 }
 
 func (g *FunctionReference) String() string {
-	return fmt.Sprintf("[functionref %v %v]", g.definitionReference, g.referencedFunctionValue)
+	return fmt.Sprintf("[FunctionRef %v]", g.definitionReference)
 }
 
 func (g *FunctionReference) DebugString() string {
-	return fmt.Sprintf("[functionref %v %v]", g.definitionReference, g.referencedFunctionValue)
+	return fmt.Sprintf("[FunctionRef %v]", g.definitionReference)
 }
 
 func (g *FunctionReference) HumanReadable() string {
-	return "function reference"
+	return "FunctionRef"
 }
 
 func (g *FunctionReference) Identifier() ast.ScopedOrNormalVariableIdentifier {

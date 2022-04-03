@@ -33,5 +33,5 @@ func NewIntegerLiteral(token token.NumberToken, v int32) *IntegerLiteral {
 }
 
 func (i *IntegerLiteral) DebugString() string {
-	return fmt.Sprintf("[integer %v]", i.value)
+	return fmt.Sprintf("[Integer %v]", i.value)
 }
