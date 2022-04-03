@@ -115,8 +115,8 @@ func NewGenerator() *Generator {
 	return &Generator{}
 }
 
-func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, irModule *ir.Module,
-	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*ir.Module, error) {
+func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, irModule *ir.Module,  repo *IrTypeRepo,
+lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*ir.Module, error) {
 	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
 		_, isConstant := unknownType.(*decorated.Constant)
@@ -137,7 +137,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, i
 				continue
 			}
 			_, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
-				lookup, resourceNameLookup, fileUrlCache, irModule, verboseFlag)
+				lookup, resourceNameLookup, fileUrlCache, irModule, repo, verboseFlag)
 			if genFuncErr != nil {
 				return nil, genFuncErr
 			}
@@ -161,11 +161,11 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, i
 	return irModule, nil
 }
 
-func generateRecordType(irModule *ir.Module, recordType *dectype.RecordAtom) (*types.StructType, error) {
+func generateRecordType(irModule* ir.Module, repo *IrTypeRepo, recordType *dectype.RecordAtom) *types.StructType {
 	var recordFieldIrTypes []types.Type
 
 	for _, recordField := range recordType.SortedFields() {
-		recordFieldIrType := makeIrType(recordField.Type())
+		recordFieldIrType := makeIrType(irModule, repo, recordField.Type())
 		recordFieldIrTypes = append(recordFieldIrTypes, recordFieldIrType)
 	}
 	recordStruct := types.NewStruct(recordFieldIrTypes...)
@@ -173,8 +173,39 @@ func generateRecordType(irModule *ir.Module, recordType *dectype.RecordAtom) (*t
 
 	log.Printf("   record %v", recordStruct)
 
-	return recordStruct, nil
+	return recordStruct
 }
+
+func generateTupleType(irModule* ir.Module, repo *IrTypeRepo, tupleType *dectype.TupleTypeAtom) *types.StructType {
+	var tupleFieldIrTypes []types.Type
+
+	for _, tupleField := range tupleType.Fields() {
+		tupleFieldIrType := makeIrType(irModule, repo, tupleField.Type())
+		tupleFieldIrTypes = append(tupleFieldIrTypes, tupleFieldIrType)
+	}
+	tupleStruct := types.NewStruct(tupleFieldIrTypes...)
+	// Note: Not allowed to set a name for the struct. We need a literal structure that is compared by the contents and not the typename
+
+	log.Printf("   tuple %v", tupleStruct)
+
+	return tupleStruct
+}
+
+func generateFunctionType(irModule* ir.Module, repo *IrTypeRepo, functionType *dectype.FunctionAtom) *types.StructType {
+	var functionFieldIrTypes []types.Type
+
+	for _, functionField := range functionType.FunctionParameterTypes() {
+		functionFieldIrType := makeIrType(irModule, repo, functionField)
+		functionFieldIrTypes = append(functionFieldIrTypes, functionFieldIrType)
+	}
+	functionStruct := types.NewStruct(functionFieldIrTypes...)
+	// Note: Not allowed to set a name for the struct. We need a literal structure that is compared by the contents and not the typename
+
+	log.Printf("   function %v", functionStruct)
+
+	return functionStruct
+}
+
 
 // generateCustomType generates Ir types for a swamp custom type.
 // A custom type in swamp is in principle the same as a tagged union.
@@ -182,53 +213,57 @@ func generateRecordType(irModule *ir.Module, recordType *dectype.RecordAtom) (*t
 // Tagged union has a single octet and then a array of octets with the max size of the struct (including padding)
 // Each variant needs to bitcast from the completeUnion to the specific variant:
 // Example %1 = bitcast %CustomTypeName* %x to %CustomTypeName_VariantName*
-func generateCustomType(irModule *ir.Module, customType *dectype.CustomTypeAtom) error {
+func generateCustomType(irModule *ir.Module, repo *IrTypeRepo, customType *dectype.CustomTypeAtom) error {
 
 	memSize, _ := dectype.GetMemorySizeAndAlignment(customType)
 	maximumPaddedSize := memSize - 1
 	unionPayloadArray := types.NewArray(uint64(maximumPaddedSize), types.I8)
 	completeUnionStruct := types.NewStruct(types.I8, unionPayloadArray)
-	completeUnionStruct.SetName(customType.DecoratedName())
-	completeUnionTypeDef := irModule.NewTypeDef(customType.DecoratedName(), completeUnionStruct)
+	irCompleteUnionName := customType.ArtifactTypeName().String()
+	completeUnionStruct.SetName(irCompleteUnionName)
+	completeUnionTypeDef := irModule.NewTypeDef(irCompleteUnionName, completeUnionStruct)
 
-	log.Printf("complete %v %v", completeUnionTypeDef, completeUnionStruct)
+	repo.AddTypeDef(irCompleteUnionName, completeUnionTypeDef)
 
 	for _, variant := range customType.Variants() {
 		var variantParamIrTypes []types.Type
 		variantParamIrTypes = append(variantParamIrTypes, types.I8)
 		for _, variantParam := range variant.ParameterTypes() {
-			variantParamIrType := makeIrType(variantParam)
+			variantParamIrType := makeIrType(irModule, repo, variantParam)
 			variantParamIrTypes = append(variantParamIrTypes, variantParamIrType)
 		}
 		ilVariantName := customType.DecoratedName() + "_" + variant.DecoratedName()
 		variantStruct := types.NewStruct(variantParamIrTypes...)
 		variantStruct.SetName(ilVariantName)
-		variantStructTypeDef := irModule.NewTypeDef(ilVariantName, variantStruct)
-
-		log.Printf("   variant %v %v", variantStructTypeDef, variantStruct)
+		irModule.NewTypeDef(ilVariantName, variantStruct)
 	}
+
 	return nil
 }
 
-func generateAlias(irModule *ir.Module, alias *dectype.Alias) error {
+func generateAlias(irModule *ir.Module,  repo *IrTypeRepo, alias *dectype.Alias) error {
 	log.Printf("alias: %T", alias.Next())
 	switch t := alias.Next().(type) {
 	case *dectype.RecordAtom:
-		irType, err := generateRecordType(irModule, t)
-		if err != nil {
-			return err
-		}
+		irType := generateRecordType(irModule, repo, t)
 		log.Printf("irType:%v", irType)
 	}
 	return nil
 }
 
-func generateType(irModule *ir.Module, definedType dtype.Type) error {
-	switch t := definedType.(type) {
+func generateType(irModule *ir.Module, repo *IrTypeRepo, definedType dtype.Type) error {
+	unAliased := dectype.UnaliasWithResolveInvoker(definedType)
+	switch t := unAliased.(type) {
 	case *dectype.CustomTypeAtom:
-		return generateCustomType(irModule, t)
-	case *dectype.Alias:
-		return generateAlias(irModule, t)
+		return generateCustomType(irModule, repo, t)
+	case *dectype.CustomTypeVariant:
+		return nil // All variants are generated along side customType
+	case *dectype.RecordAtom:
+		return nil
+	case *dectype.PrimitiveAtom:
+		return nil
+	default:
+		log.Printf("what is this %T", unAliased)
 	}
 
 	return nil
@@ -238,14 +273,17 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*ir.Module, error) {
 	irModule := ir.NewModule()
 
-	for name, definedType := range module.LocalTypes().AllTypes() {
-		log.Printf("found type %v %T", name, definedType)
-		if err := generateType(irModule, definedType); err != nil {
+	repo := NewIrTypeRepo()
+
+	for _, definedType := range module.LocalTypes().AllTypes() {
+		if err := generateType(irModule, repo, definedType); err != nil {
 			return nil, err
 		}
 	}
 
-	log.Printf("module:%v", irModule)
+	g.GenerateAllLocalDefinedFunctions(module, irModule, repo, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
 
 	return irModule, nil
 }
+
+

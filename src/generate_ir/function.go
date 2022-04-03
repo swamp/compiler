@@ -11,12 +11,89 @@ import (
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
+	"log"
 )
 
-func makeIrForType(p dtype.Type) types.Type {
-	switch t := p.(type) {
-	case *dectype.PrimitiveTypeReference:
-		return makeIrForType(t.PrimitiveAtom())
+type IrTypeRepo struct {
+	string *types.PointerType
+	blob   *types.PointerType
+	array  *types.PointerType
+	list   *types.PointerType
+	unmanaged *types.PointerType
+
+	typeDefs map[string]types.Type
+}
+
+func NewIrTypeRepo() *IrTypeRepo {
+	stringStruct := types.NewStruct()
+	stringStruct.SetName("String")
+	stringPointer := types.NewPointer(stringStruct)
+
+	blobStruct := types.NewStruct()
+	blobStruct.SetName("Blob")
+	blobPointer := types.NewPointer(blobStruct)
+
+	listStruct := types.NewStruct()
+	listStruct.SetName("List")
+	listPointer := types.NewPointer(listStruct)
+
+	arrayStruct := types.NewStruct()
+	arrayStruct.SetName("Array")
+	arrayPointer := types.NewPointer(arrayStruct)
+
+	unmanagedStruct := types.NewStruct()
+	unmanagedStruct.SetName("Unmanaged")
+	unmanagedPointer := types.NewPointer(unmanagedStruct)
+
+	return &IrTypeRepo{
+		string:   stringPointer,
+		blob:     blobPointer,
+		list:     listPointer,
+		array:    arrayPointer,
+		unmanaged: unmanagedPointer,
+		typeDefs: make(map[string]types.Type),
+	}
+}
+
+func (r *IrTypeRepo) AddTypeDef(name string, newType types.Type) {
+	_, hasType := r.typeDefs[name]
+	if hasType {
+		log.Printf("skipping %v", name)
+		return
+	}
+
+	r.typeDefs[name] = newType
+}
+
+func (r *IrTypeRepo) GetTypeRef(name string) (types.Type, error) {
+	foundType, hasType := r.typeDefs[name]
+	if !hasType {
+		return nil, fmt.Errorf("can not find %v %v", name, r.typeDefs)
+	}
+
+	return foundType, nil
+}
+
+func makeIrForType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Type {
+	unaliased := dectype.UnaliasWithResolveInvoker(p)
+	switch t := unaliased.(type) {
+	case *dectype.RecordAtom:
+		return generateRecordType(irModule, repo, t)
+	case *dectype.TupleTypeAtom:
+		return generateTupleType(irModule, repo, t)
+	case *dectype.FunctionAtom:
+		return generateFunctionType(irModule, repo, t)
+	case *dectype.CustomTypeAtom:
+		foundType, foundErr := repo.GetTypeRef(t.ArtifactTypeName().String())
+		if foundErr != nil {
+			generateCustomType(irModule, repo, t)
+			foundType2, foundErr2 := repo.GetTypeRef(t.ArtifactTypeName().String())
+			if foundErr2 != nil {
+				panic(foundErr2)
+			}
+			return foundType2
+		}
+		return foundType
 	case *dectype.PrimitiveAtom:
 		switch t.AtomName() {
 		case "Int":
@@ -26,45 +103,51 @@ func makeIrForType(p dtype.Type) types.Type {
 		case "Bool":
 			return types.I8
 		case "String":
-			return types.I2
+			return repo.string
 		case "ResourceName":
-			return types.I2
+			return repo.string
 		case "Blob":
-			return types.I2
+			return repo.blob
+		case "Array":
+			return repo.array
+		case "List":
+			return repo.list
 		default:
 			panic(fmt.Errorf("unknown atom %v", t))
 		}
-		return types.I1
+	case *dectype.UnmanagedType:
+		return repo.unmanaged
 	default:
+		panic(fmt.Errorf("what is this %T", t))
 		return types.I1
 	}
 }
 
-func makeIrType(p dtype.Type) types.Type {
-	return makeIrForType(p)
+func makeIrType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Type {
+	return makeIrForType(irModule, repo, p)
 }
 
-func generateFunctionParameter(functionParam *decorated.FunctionParameterDefinition) *ir.Param {
-	irType := makeIrType(functionParam.Type())
-	newParam := ir.NewParam("x", irType)
+func generateFunctionParameter(irModule* ir.Module, repo *IrTypeRepo, functionParam *decorated.FunctionParameterDefinition) *ir.Param {
+	irType := makeIrType(irModule, repo, functionParam.Type())
+	newParam := ir.NewParam(functionParam.Identifier().Name(), irType)
 
 	return newParam
 }
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
-	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, module *ir.Module, verboseFlag verbosity.Verbosity) (*ir.Func, error) {
+	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, verboseFlag verbosity.Verbosity) (*ir.Func, error) {
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
-	irReturnType := makeIrType(functionType.ReturnType())
+	irReturnType := makeIrType(irModule, repo, functionType.ReturnType())
 	//unaliasedReturnType := dectype.UnaliasWithResolveInvoker()
 
 	var irParams []*ir.Param
 	for _, parameter := range f.Parameters() {
-		irParam := generateFunctionParameter(parameter)
+		irParam := generateFunctionParameter(irModule, repo, parameter)
 		irParams = append(irParams, irParam)
 		//		log.Println(irParam)
 	}
 
-	newIrFunc := module.NewFunc(f.Annotation().Annotation().Identifier().Name(), irReturnType, irParams...)
+	newIrFunc := irModule.NewFunc(f.Annotation().Annotation().Identifier().Name(), irReturnType, irParams...)
 
 	/*
 		genErr := generateExpression(code, returnValueTargetPointer, f.Expression(), true, genContext)
