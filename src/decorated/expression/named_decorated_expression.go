@@ -28,6 +28,12 @@ func NewNamedDecoratedExpression(fullyQualifiedName string, mDef ModuleDef,
 	if expression == nil {
 		panic("must have a valid expression")
 	}
+	if mDef != nil {
+		ownedByModule := mDef.OwnedByModule()
+		if ownedByModule == nil {
+			panic("must be owned by a module")
+		}
+	}
 
 	return &NamedDecoratedExpression{
 		fullyQualifiedName: fullyQualifiedName, mDef: mDef,

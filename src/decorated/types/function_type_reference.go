@@ -35,7 +35,7 @@ func (t *FunctionTypeReference) HumanReadable() string {
 }
 
 func (t *FunctionTypeReference) String() string {
-	return fmt.Sprintf("fntyperef %v %v", t.astFunctionType, t.referencedType)
+	return fmt.Sprintf("[FunctionTypeRef %v", t.referencedType)
 }
 
 func (t *FunctionTypeReference) Resolve() (dtype.Atom, error) {
@@ -59,7 +59,7 @@ func (t *FunctionTypeReference) ParameterAndReturn() ([]dtype.Type, dtype.Type) 
 }
 
 func (t *FunctionTypeReference) DecoratedName() string {
-	return fmt.Sprintf("fntyperef %v %v", t.astFunctionType, t.referencedType)
+	return fmt.Sprintf("[FunctionTypeRef %v", t.referencedType)
 }
 
 func (t *FunctionTypeReference) ParameterCount() int {

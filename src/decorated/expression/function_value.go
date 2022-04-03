@@ -33,7 +33,7 @@ func (a *FunctionParameterDefinition) Type() dtype.Type {
 }
 
 func (a *FunctionParameterDefinition) String() string {
-	return fmt.Sprintf("[arg %v = %v]", a.identifier, a.generatedType)
+	return fmt.Sprintf("[Arg %v : %v]", a.identifier, a.generatedType)
 }
 
 func (a *FunctionParameterDefinition) HumanReadable() string {
@@ -100,11 +100,11 @@ func (f *FunctionValue) ForcedFunctionType() dectype.FunctionTypeLike {
 }
 
 func (f *FunctionValue) String() string {
-	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
+	return fmt.Sprintf("[FunctionValue (%v) -> %v]", f.parameters, f.decoratedExpression)
 }
 
 func (f *FunctionValue) HumanReadable() string {
-	return fmt.Sprintf("[functionvalue (%v) -> %v]", f.parameters, f.decoratedExpression)
+	return fmt.Sprintf("[FunctionValue (%v) -> %v]", f.parameters, f.decoratedExpression)
 }
 
 func (f *FunctionValue) Type() dtype.Type {

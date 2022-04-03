@@ -324,6 +324,24 @@ func NewExpectedVariableIdentifierError(err tokenize.TokenError) ExpectedVariabl
 	return ExpectedVariableIdentifierError{SubError: SubError{err}}
 }
 
+type UnknownKeywordError struct {
+	pos token.SourceFileReference
+	subError error
+}
+
+func NewUnknownKeywordError(pos token.SourceFileReference, subError error) UnknownKeywordError {
+	return UnknownKeywordError{pos: pos, subError: subError}
+}
+
+func (e UnknownKeywordError) Error() string {
+	return fmt.Sprintf("unknown keyword error")
+}
+
+func (e UnknownKeywordError) FetchPositionLength() token.SourceFileReference {
+	return e.pos
+}
+
+
 func (e ExpectedVariableIdentifierError) Error() string {
 	return fmt.Sprintf("expected a variable identifier (start with lowercase) %v", e.SubError)
 }

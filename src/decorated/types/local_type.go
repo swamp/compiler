@@ -19,7 +19,7 @@ type LocalType struct {
 }
 
 func (u *LocalType) String() string {
-	return fmt.Sprintf("[localtype %v]", u.identifier.Name())
+	return fmt.Sprintf("[GenericParam %v]", u.identifier.Name())
 }
 
 func (u *LocalType) FetchPositionLength() token.SourceFileReference {

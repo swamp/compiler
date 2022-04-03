@@ -46,7 +46,7 @@ func (c *FunctionCall) SmashedFunctionType() *dectype.FunctionAtom {
 }
 
 func (c *FunctionCall) String() string {
-	return fmt.Sprintf("[fcall ]") // c.functionValueExpression, c.assignments)
+	return fmt.Sprintf("[FnCall %v %v]", c.functionValueExpression, c.assignments) // c.functionValueExpression, c.assignments)
 }
 
 func (c *FunctionCall) HumanReadable() string {

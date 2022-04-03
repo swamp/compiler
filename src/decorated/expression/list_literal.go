@@ -36,7 +36,7 @@ func (c *ListLiteral) Expressions() []Expression {
 }
 
 func (c *ListLiteral) String() string {
-	return fmt.Sprintf("[ListLiteral %v %v]", c.t.HumanReadable(), c.expressions)
+	return fmt.Sprintf("[ListLiteral %v]",  c.expressions)
 }
 
 func (c *ListLiteral) FetchPositionLength() token.SourceFileReference {

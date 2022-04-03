@@ -21,7 +21,7 @@ func NewConstant(identifier ast.ScopedOrNormalVariableIdentifier, astConstant *a
 }
 
 func (c *Constant) String() string {
-	return "constant"
+	return fmt.Sprintf("[Constant %v]", c.expression)
 }
 
 func (c *Constant) CommentBlock() *ast.MultilineComment {

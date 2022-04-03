@@ -26,30 +26,45 @@ func decorateLet(d DecorateStream, let *ast.Let, context *VariableContext) (*dec
 		}
 
 		identifierCount := len(assignment.Identifiers())
-		isMultiple := identifierCount > 1
 
 		var letVariables []*decorated.LetVariable
-		if isMultiple {
+		if assignment.WasRecordDestructuring() {
 			atom := dectype.UnaliasWithResolveInvoker(decoratedExpression.Type())
-
-			tuple, wasTuple := atom.(*dectype.TupleTypeAtom)
-			if !wasTuple {
-				return nil, decorated.NewInternalError(fmt.Errorf("wasn't a tuple"))
+			record, wasRecord := atom.(*dectype.RecordAtom)
+			if !wasRecord {
+				return nil, decorated.NewRecordDestructuringWasNotRecordExpression(decoratedExpression, record)
 			}
-			if tuple.ParameterCount() != identifierCount {
-				return nil, decorated.NewInternalError(fmt.Errorf("wrong number of identifiers for the tuple %v vs %v", tuple.ParameterCount(), identifierCount))
-			}
-
-			for index, ident := range assignment.Identifiers() {
-				variableType := tuple.ParameterTypes()[index]
-				letVar := decorated.NewLetVariable(ident, variableType, assignment.CommentBlock())
+			for _, ident := range assignment.Identifiers() {
+				recordField := record.FindField(ident.Symbol().Name())
+				if recordField == nil {
+					return nil, decorated.NewRecordDestructuringFieldNotFound(decoratedExpression, record, ident)
+				}
+				letVar := decorated.NewLetVariable(ident, recordField.Type(), assignment.CommentBlock())
 				letVariables = append(letVariables, letVar)
 			}
 		} else {
-			letVar := decorated.NewLetVariable(assignment.Identifiers()[0], decoratedExpression.Type(), assignment.CommentBlock())
-			letVariables = []*decorated.LetVariable{letVar}
-		}
+			isMultiple := identifierCount > 1
+			if isMultiple {
+				atom := dectype.UnaliasWithResolveInvoker(decoratedExpression.Type())
 
+				tuple, wasTuple := atom.(*dectype.TupleTypeAtom)
+				if !wasTuple {
+					return nil, decorated.NewInternalError(fmt.Errorf("wasn't a tuple"))
+				}
+				if tuple.ParameterCount() != identifierCount {
+					return nil, decorated.NewTupleDestructuringWrongNumberOfIdentifiers(decoratedExpression, tuple, assignment.Identifiers())
+				}
+
+				for index, ident := range assignment.Identifiers() {
+					variableType := tuple.ParameterTypes()[index]
+					letVar := decorated.NewLetVariable(ident, variableType, assignment.CommentBlock())
+					letVariables = append(letVariables, letVar)
+				}
+			} else {
+				letVar := decorated.NewLetVariable(assignment.Identifiers()[0], decoratedExpression.Type(), assignment.CommentBlock())
+				letVariables = []*decorated.LetVariable{letVar}
+			}
+		}
 		decoratedAssignment := decorated.NewLetAssignment(assignment, letVariables, decoratedExpression)
 		decoratedAssignments = append(decoratedAssignments, decoratedAssignment)
 

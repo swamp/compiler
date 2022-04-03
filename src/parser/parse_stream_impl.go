@@ -158,7 +158,7 @@ func (p *ParseStreamImpl) readKeyword() (token.Keyword, parerr.ParseError) {
 
 	keyword, keywordErr := tokenize.DetectLowercaseKeyword(ident.Symbol())
 	if keywordErr != nil {
-		return token.Keyword{}, parerr.NewInternalError(p.tokenizer.MakeSourceFileReference(pos), keywordErr)
+		return token.Keyword{}, parerr.NewUnknownKeywordError(p.tokenizer.MakeSourceFileReference(pos), keywordErr)
 	}
 
 	return keyword, nil

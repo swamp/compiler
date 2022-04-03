@@ -12,19 +12,24 @@ import (
 )
 
 type LetAssignment struct {
-	identifiers []*VariableIdentifier
-	expression  Expression
-	inclusive   token.SourceFileReference
-	comment     *MultilineComment
+	identifiers            []*VariableIdentifier
+	expression             Expression
+	inclusive              token.SourceFileReference
+	comment                *MultilineComment
+	wasRecordDestructuring bool
 }
 
-func NewLetAssignment(identifiers []*VariableIdentifier, expression Expression, comment *MultilineComment) LetAssignment {
+func NewLetAssignment(wasRecordDestructuring bool, identifiers []*VariableIdentifier, expression Expression, comment *MultilineComment) LetAssignment {
 	inclusive := token.MakeInclusiveSourceFileReference(identifiers[0].FetchPositionLength(), expression.FetchPositionLength())
-	return LetAssignment{identifiers: identifiers, expression: expression, inclusive: inclusive, comment: comment}
+	return LetAssignment{wasRecordDestructuring: wasRecordDestructuring, identifiers: identifiers, expression: expression, inclusive: inclusive, comment: comment}
 }
 
 func (l LetAssignment) Identifiers() []*VariableIdentifier {
 	return l.identifiers
+}
+
+func (l LetAssignment) WasRecordDestructuring() bool {
+	return l.wasRecordDestructuring
 }
 
 func (l LetAssignment) Expression() Expression {
@@ -32,7 +37,7 @@ func (l LetAssignment) Expression() Expression {
 }
 
 func (l LetAssignment) String() string {
-	return fmt.Sprintf("[letassign %v = %v]", l.identifiers, l.expression)
+	return fmt.Sprintf("[LetAssign %v = %v]", l.identifiers, l.expression)
 }
 
 func (l LetAssignment) CommentBlock() *MultilineComment {
@@ -77,7 +82,7 @@ func (i *Let) FetchPositionLength() token.SourceFileReference {
 }
 
 func (i *Let) String() string {
-	return fmt.Sprintf("[let: %v in %v]", i.assignments, i.consequence)
+	return fmt.Sprintf("[Let: %v in %v]", i.assignments, i.consequence)
 }
 
 func (i *Let) DebugString() string {

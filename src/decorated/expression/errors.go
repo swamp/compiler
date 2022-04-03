@@ -69,6 +69,59 @@ func (e *UnExpectedListTypeForCons) FetchPositionLength() token.SourceFileRefere
 	return e.typeB.FetchPositionLength()
 }
 
+type RecordDestructuringWasNotRecordExpression struct {
+	expression Expression
+	recordType *dectype.RecordAtom
+}
+
+func NewRecordDestructuringWasNotRecordExpression(decoratedExpression Expression, recordType *dectype.RecordAtom) *RecordDestructuringWasNotRecordExpression {
+	return &RecordDestructuringWasNotRecordExpression{expression: decoratedExpression, recordType: recordType}
+}
+
+func (e *RecordDestructuringWasNotRecordExpression) Error() string {
+	return fmt.Sprintf("destructuring record was requested, but expression is not a record %v %v", e.recordType, e.expression)
+}
+
+func (e *RecordDestructuringWasNotRecordExpression) FetchPositionLength() token.SourceFileReference {
+	return e.expression.FetchPositionLength()
+}
+
+type RecordDestructuringFieldNotFound struct {
+	expression      Expression
+	recordType      *dectype.RecordAtom
+	fieldIdentifier *ast.VariableIdentifier
+}
+
+func NewRecordDestructuringFieldNotFound(decoratedExpression Expression, recordType *dectype.RecordAtom, fieldIdentifier *ast.VariableIdentifier) *RecordDestructuringFieldNotFound {
+	return &RecordDestructuringFieldNotFound{expression: decoratedExpression, recordType: recordType, fieldIdentifier: fieldIdentifier}
+}
+
+func (e *RecordDestructuringFieldNotFound) Error() string {
+	return fmt.Sprintf("destructuring record, could not find field '%v' in %v", e.fieldIdentifier, e.recordType)
+}
+
+func (e *RecordDestructuringFieldNotFound) FetchPositionLength() token.SourceFileReference {
+	return e.expression.FetchPositionLength()
+}
+
+type TupleDestructuringWrongNumberOfIdentifiers struct {
+	expression       Expression
+	tupleType        *dectype.TupleTypeAtom
+	fieldIdentifiers []*ast.VariableIdentifier
+}
+
+func NewTupleDestructuringWrongNumberOfIdentifiers(decoratedExpression Expression, tupleType *dectype.TupleTypeAtom, fieldIdentifiers []*ast.VariableIdentifier) *TupleDestructuringWrongNumberOfIdentifiers {
+	return &TupleDestructuringWrongNumberOfIdentifiers{expression: decoratedExpression, tupleType: tupleType, fieldIdentifiers: fieldIdentifiers}
+}
+
+func (e *TupleDestructuringWrongNumberOfIdentifiers) Error() string {
+	return fmt.Sprintf("destructuring tuple, wrong number of identifiers %v vs %v", len(e.fieldIdentifiers), len(e.tupleType.Fields()))
+}
+
+func (e *TupleDestructuringWrongNumberOfIdentifiers) FetchPositionLength() token.SourceFileReference {
+	return e.fieldIdentifiers[0].FetchPositionLength()
+}
+
 type TypeNotFound struct {
 	requestedType string
 }
@@ -1022,6 +1075,26 @@ func (e *TooFewIdentifiersForFunctionType) Error() string {
 func (e *TooFewIdentifiersForFunctionType) FetchPositionLength() token.SourceFileReference {
 	return e.functionValue.FetchPositionLength()
 }
+
+
+type TooManyIdentifiersForFunctionType struct {
+	forcedFunctionType    *dectype.FunctionAtom
+	functionValue         *ast.FunctionValue
+	annotationIdentifiers []*ast.VariableIdentifier
+}
+
+func NewTooManyIdentifiersForFunctionType(annotationIdentifiers []*ast.VariableIdentifier, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooManyIdentifiersForFunctionType {
+	return &TooManyIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers, forcedFunctionType: forcedFunctionType, functionValue: functionValue}
+}
+
+func (e *TooManyIdentifiersForFunctionType) Error() string {
+	return fmt.Sprintf("too many identifiers for function %v %v", e.annotationIdentifiers, e.functionValue.DebugFunctionIdentifier())
+}
+
+func (e *TooManyIdentifiersForFunctionType) FetchPositionLength() token.SourceFileReference {
+	return e.functionValue.FetchPositionLength()
+}
+
 
 type ModuleError struct {
 	err        decshared.DecoratedError

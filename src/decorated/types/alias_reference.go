@@ -23,7 +23,7 @@ func (g *AliasReference) NameReference() *NamedDefinitionTypeReference {
 }
 
 func (g *AliasReference) String() string {
-	return fmt.Sprintf("[letvarref %v %v]", g.ident, g.reference)
+	return fmt.Sprintf("[LetVarRef %v]", g.reference)
 }
 
 func (g *AliasReference) HumanReadable() string {

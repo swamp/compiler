@@ -1,6 +1,7 @@
 package decorated
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/token"
 )
@@ -33,12 +34,19 @@ func (r *NamedDefinitionReference) FullyQualifiedName() string {
 	return r.ident.Name()
 }
 
+func moduleRefToString(reference *ModuleReference) string {
+	if reference == nil {
+		return ""
+	}
+	return reference.module.fullyQualifiedModuleName.String()
+}
+
 func (r *NamedDefinitionReference) String() string {
-	return "named definition reference"
+	return fmt.Sprintf("[NamedDefinitionReference %v/%v]", moduleRefToString(r.optionalModuleReference), r.ident.Symbol().Name())
 }
 
 func (r *NamedDefinitionReference) DebugString() string {
-	return "named definition reference"
+	return fmt.Sprintf("[NamedDefinitionReference %v/%v]", moduleRefToString(r.optionalModuleReference), r.ident.Symbol().Name())
 }
 
 func (r *NamedDefinitionReference) FetchPositionLength() token.SourceFileReference {

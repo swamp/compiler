@@ -7,7 +7,6 @@ package decorator
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -131,7 +130,13 @@ func defToFunctionReference(def *decorated.NamedDecoratedExpression, ident ast.S
 	functionValue, _ := lookupExpression.(*decorated.FunctionValue)
 
 	fromModule := def.ModuleDefinition().OwnedByModule()
-	moduleRef := decorated.NewModuleReference(ast.NewModuleReference(fromModule.FullyQualifiedModuleName().Path().Parts()), fromModule)
+	pathToMod := fromModule.FullyQualifiedModuleName().Path()
+
+	var moduleRef *decorated.ModuleReference
+	if pathToMod != nil {
+		moduleRef = decorated.NewModuleReference(ast.NewModuleReference(pathToMod.Parts()), fromModule)
+	}
+
 	nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, ident)
 	return decorated.NewFunctionReference(nameWithModuleRef, functionValue)
 }
@@ -160,7 +165,6 @@ func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context 
 		if def == nil {
 			return nil, nil, nil, decorated.NewInternalError(fmt.Errorf("couldn't find %v", t))
 		}
-
 		functionReference := defToFunctionReference(def, t)
 		functionExpression = functionReference
 		leftAstCall = ast.NewFunctionCall(functionReference, nil)

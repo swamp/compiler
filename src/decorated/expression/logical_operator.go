@@ -21,6 +21,17 @@ const (
 	LogicalOr
 )
 
+func LogicalOperatorToString(operatorType LogicalOperatorType) string {
+	switch operatorType {
+	case LogicalOr:
+		return "or"
+	case LogicalAnd:
+		return "and"
+	}
+
+	panic("not possible")
+}
+
 type LogicalOperator struct {
 	BinaryOperator
 	operatorType LogicalOperatorType
@@ -55,7 +66,7 @@ func (l *LogicalOperator) OperatorType() LogicalOperatorType {
 }
 
 func (l *LogicalOperator) String() string {
-	return fmt.Sprintf("[logical %v %v %v]", l.BinaryOperator.left, l.BinaryOperator.right, l.operatorType)
+	return fmt.Sprintf("[Logical %v %v %v]", l.BinaryOperator.left, LogicalOperatorToString(l.operatorType), l.BinaryOperator.right)
 }
 
 func (l *LogicalOperator) FetchPositionLength() token.SourceFileReference {

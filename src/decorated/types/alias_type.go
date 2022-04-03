@@ -22,7 +22,7 @@ type Alias struct {
 }
 
 func (u *Alias) String() string {
-	return fmt.Sprintf("[alias %v %v]", u.name.Name(), u.referencedType)
+	return fmt.Sprintf("[Alias %v %v]", u.name.Name(), u.referencedType)
 }
 
 func (u *Alias) AstAlias() *ast.Alias {

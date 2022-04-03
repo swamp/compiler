@@ -16,7 +16,7 @@ type LocalType struct {
 }
 
 func (i *LocalType) String() string {
-	return fmt.Sprintf("[local-type: %v]", i.typeParameterReference)
+	return fmt.Sprintf("[GenericType %v]", i.typeParameterReference)
 }
 
 func (i *LocalType) Name() string {

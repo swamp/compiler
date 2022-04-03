@@ -31,7 +31,7 @@ func (i *CharacterLiteral) Value() rune {
 }
 
 func (i *CharacterLiteral) String() string {
-	return fmt.Sprintf("[char %v]", i.str.Value())
+	return fmt.Sprintf("[Char %v]", i.str.Value())
 }
 
 func (i *CharacterLiteral) FetchPositionLength() token.SourceFileReference {

@@ -21,7 +21,7 @@ type LetVariable struct {
 }
 
 func (l *LetVariable) String() string {
-	return fmt.Sprintf("[letvariable %v]", l.name)
+	return fmt.Sprintf("[LetVar %v]", l.name)
 }
 
 func (l *LetVariable) HumanReadable() string {
@@ -80,11 +80,15 @@ func NewLetAssignment(astLetAssignment ast.LetAssignment, letVariables []*LetVar
 }
 
 func (l *LetAssignment) String() string {
-	return fmt.Sprintf("[letassign %v = %v]", l.letVariables, l.expression)
+	return fmt.Sprintf("[LetAssign %v = %v]", l.letVariables, l.expression)
 }
 
 func (l *LetAssignment) LetVariables() []*LetVariable {
 	return l.letVariables
+}
+
+func (l *LetAssignment) WasRecordDestructuring() bool {
+	return l.astLetAssignment.WasRecordDestructuring()
 }
 
 func (l *LetAssignment) Expression() Expression {
@@ -128,7 +132,7 @@ func (l *Let) Type() dtype.Type {
 }
 
 func (l *Let) String() string {
-	return fmt.Sprintf("[let %v in %v]", l.assignments, l.consequence)
+	return fmt.Sprintf("[Let %v in %v]", l.assignments, l.consequence)
 }
 
 func (l *Let) FetchPositionLength() token.SourceFileReference {

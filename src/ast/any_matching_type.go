@@ -16,7 +16,7 @@ type AnyMatchingType struct {
 }
 
 func (i *AnyMatchingType) String() string {
-	return fmt.Sprintf("[anymatching-type: %v]", i.operatorToken)
+	return fmt.Sprintf("[AnyMatchingType %v]", i.operatorToken)
 }
 
 func (i *AnyMatchingType) Name() string {
