@@ -7,7 +7,6 @@ package swampcompiler
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -22,7 +21,6 @@ import (
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/generate_ir"
-	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/solution"
@@ -302,14 +300,17 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup re
 	}
 
 	var constants *assembler_sp.PackageConstants
+
+
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.High {
 			log.Printf("============================================== generating for module %v\n", module)
 		}
 
+
 		//createdConstants, functions
 		// packageConstants
-		irModule, genErr := gen.GenerateAllLocalDefinedFunctions(module, typeInformationChunk, resourceNameLookup, fileUrlCache, verboseFlag)
+		irModule, genErr := gen.GenerateModule(module, typeInformationChunk, resourceNameLookup, fileUrlCache, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}
@@ -338,6 +339,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup re
 		fmt.Println(assemblerOutput)
 	}
 
+	/*
 	constants.AllocateDebugInfoFiles(fileUrlCache.FileUrls())
 	typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(typeInformationChunk)
 	if typeInformationErr != nil {
@@ -364,7 +366,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup re
 	if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
 		return decorated.NewInternalError(err)
 	}
-
+*/
 	// color.Cyan("wrote output file '%v'\n", outputFilename)
 	return nil
 }

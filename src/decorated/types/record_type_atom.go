@@ -187,6 +187,19 @@ func (s *RecordAtom) SortedFields() []*RecordField {
 	return s.sortedFields
 }
 
+func (s *RecordAtom) NameFromSortedFields() string {
+	out := ""
+	for index, field := range s.sortedFields {
+		unaliasedType := UnaliasWithResolveInvoker(field.Type())
+		if index > 0 {
+			out += ":"
+		}
+		out += field.FieldName().Name().Name() + "_" + unaliasedType.String()
+	}
+
+	return out
+}
+
 func (s *RecordAtom) ParseOrderedFields() []*RecordField {
 	return s.parsedOrderFields
 }

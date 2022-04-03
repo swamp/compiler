@@ -7,7 +7,9 @@ import (
 	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"github.com/swamp/assembler/lib/assembler_sp"
+	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
@@ -58,9 +60,7 @@ func Example() {
 
 	x := ir.NewParam("x", i32)
 
-
 	rand := m.NewFunc("rand", i32, x)
-
 
 	// Create an unnamed entry basic block and append it to the `rand` function.
 	block := rand.NewBlock("")
@@ -75,8 +75,6 @@ func Example() {
 	}
 
 	diCompileUnit.File = diFile
-
-
 
 	tmp2 := block.NewMul(tmp1, a)
 	tmp3 := block.NewAdd(tmp2, c)
@@ -111,17 +109,14 @@ func Example() {
 }
 
 type Generator struct {
-
 }
 
 func NewGenerator() *Generator {
 	return &Generator{}
 }
 
-func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
+func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, irModule *ir.Module,
 	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*ir.Module, error) {
-	irModule := ir.NewModule()
-
 	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
 		_, isConstant := unknownType.(*decorated.Constant)
@@ -162,6 +157,95 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 			}
 		}
 	}
+
+	return irModule, nil
+}
+
+func generateRecordType(irModule *ir.Module, recordType *dectype.RecordAtom) (*types.StructType, error) {
+	var recordFieldIrTypes []types.Type
+
+	for _, recordField := range recordType.SortedFields() {
+		recordFieldIrType := makeIrType(recordField.Type())
+		recordFieldIrTypes = append(recordFieldIrTypes, recordFieldIrType)
+	}
+	recordStruct := types.NewStruct(recordFieldIrTypes...)
+	// Note: Not allowed to set a name for the struct. We need a literal structure that is compared by the contents and not the typename
+
+	log.Printf("   record %v", recordStruct)
+
+	return recordStruct, nil
+}
+
+// generateCustomType generates Ir types for a swamp custom type.
+// A custom type in swamp is in principle the same as a tagged union.
+// https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/en/latest/basic-constructs/unions.html#tagged-unions
+// Tagged union has a single octet and then a array of octets with the max size of the struct (including padding)
+// Each variant needs to bitcast from the completeUnion to the specific variant:
+// Example %1 = bitcast %CustomTypeName* %x to %CustomTypeName_VariantName*
+func generateCustomType(irModule *ir.Module, customType *dectype.CustomTypeAtom) error {
+
+	memSize, _ := dectype.GetMemorySizeAndAlignment(customType)
+	maximumPaddedSize := memSize - 1
+	unionPayloadArray := types.NewArray(uint64(maximumPaddedSize), types.I8)
+	completeUnionStruct := types.NewStruct(types.I8, unionPayloadArray)
+	completeUnionStruct.SetName(customType.DecoratedName())
+	completeUnionTypeDef := irModule.NewTypeDef(customType.DecoratedName(), completeUnionStruct)
+
+	log.Printf("complete %v %v", completeUnionTypeDef, completeUnionStruct)
+
+	for _, variant := range customType.Variants() {
+		var variantParamIrTypes []types.Type
+		variantParamIrTypes = append(variantParamIrTypes, types.I8)
+		for _, variantParam := range variant.ParameterTypes() {
+			variantParamIrType := makeIrType(variantParam)
+			variantParamIrTypes = append(variantParamIrTypes, variantParamIrType)
+		}
+		ilVariantName := customType.DecoratedName() + "_" + variant.DecoratedName()
+		variantStruct := types.NewStruct(variantParamIrTypes...)
+		variantStruct.SetName(ilVariantName)
+		variantStructTypeDef := irModule.NewTypeDef(ilVariantName, variantStruct)
+
+		log.Printf("   variant %v %v", variantStructTypeDef, variantStruct)
+	}
+	return nil
+}
+
+func generateAlias(irModule *ir.Module, alias *dectype.Alias) error {
+	log.Printf("alias: %T", alias.Next())
+	switch t := alias.Next().(type) {
+	case *dectype.RecordAtom:
+		irType, err := generateRecordType(irModule, t)
+		if err != nil {
+			return err
+		}
+		log.Printf("irType:%v", irType)
+	}
+	return nil
+}
+
+func generateType(irModule *ir.Module, definedType dtype.Type) error {
+	switch t := definedType.(type) {
+	case *dectype.CustomTypeAtom:
+		return generateCustomType(irModule, t)
+	case *dectype.Alias:
+		return generateAlias(irModule, t)
+	}
+
+	return nil
+}
+
+func (g *Generator) GenerateModule(module *decorated.Module,
+	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*ir.Module, error) {
+	irModule := ir.NewModule()
+
+	for name, definedType := range module.LocalTypes().AllTypes() {
+		log.Printf("found type %v %T", name, definedType)
+		if err := generateType(irModule, definedType); err != nil {
+			return nil, err
+		}
+	}
+
+	log.Printf("module:%v", irModule)
 
 	return irModule, nil
 }

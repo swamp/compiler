@@ -1,6 +1,7 @@
 package generate_ir
 
 import (
+	"fmt"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/types"
 	"github.com/swamp/assembler/lib/assembler_sp"
@@ -12,16 +13,35 @@ import (
 	"github.com/swamp/compiler/src/verbosity"
 )
 
-func makeIrType(p dtype.Type) types.Type {
+func makeIrForType(p dtype.Type) types.Type {
 	switch t := p.(type) {
+	case *dectype.PrimitiveTypeReference:
+		return makeIrForType(t.PrimitiveAtom())
 	case *dectype.PrimitiveAtom:
-		if t.AtomName() == "Int" {
+		switch t.AtomName() {
+		case "Int":
 			return types.I32
+		case "Fixed":
+			return types.I32
+		case "Bool":
+			return types.I8
+		case "String":
+			return types.I2
+		case "ResourceName":
+			return types.I2
+		case "Blob":
+			return types.I2
+		default:
+			panic(fmt.Errorf("unknown atom %v", t))
 		}
 		return types.I1
 	default:
 		return types.I1
 	}
+}
+
+func makeIrType(p dtype.Type) types.Type {
+	return makeIrForType(p)
 }
 
 func generateFunctionParameter(functionParam *decorated.FunctionParameterDefinition) *ir.Param {
