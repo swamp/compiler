@@ -34,7 +34,7 @@ doubleInt a =
 
 * CustomType (similar to enums or unions in other languages, but with associated data).
 
-```
+```haskell
 type Custom =
     Idle
     | Running Int
