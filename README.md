@@ -8,10 +8,7 @@ Compiles `.swamp` files and produces `.swamp-pack` binaries.
 
 Swamp is designed to be embedded into other applications, mainly for game engines.
 
-
-## Syntax
-
-### Functions
+## Functions
 
 You must specify an annotation for all functions. All types separated by '->' (right arrow). The last type is normally the return type (see Currying).
 
@@ -101,7 +98,7 @@ sample a b =
 
 Let features:
 
-##### destructuring
+##### Destructuring
 
 Extract fields from a Record or Tuple during let expression.
 
@@ -149,7 +146,7 @@ speed state =
         _ -> 0
 ```
 
-#### function call
+#### Function call
 
 Add terms after a function value to call it and return the result. If fewer arguments are passed, it creates a function value that saves the specified arguments for future calls (Currying).
 
@@ -164,7 +161,7 @@ main _ =
     double 42
 ```
 
-#### record lookup
+#### Record lookup
 
 Fetches the field from a record value. Use a `.` on a record value and then specify the field name.
 
@@ -177,7 +174,7 @@ lookupX position =
 ```
 
 
-#### guard
+#### Guard
 
 A list of if statements to be evaluated. Evaluated from top to bottom, uses `_` if no match is found.
 
@@ -186,11 +183,11 @@ temperature : Int -> String
 temperature x =
     | x > 15 -> "Warm"
     | x < -10 > -> "Cold"
-    | _ -> "Neither hot nor cold"
+    | _ -> "Neither warm nor cold"
 ```
 
 
-#### construction
+#### Construction
 
 Easier way to fill in the values for a record.
 
@@ -238,13 +235,37 @@ sample a =
 
 ```
 
+#### Binary Operators
 
+Send a result to the left or to the right.
+
+* `::` add an item onto a collection.
+
+```haskell
+42 :: [ 99 ]
+```
+
+* `++` concatenate two collections.
+
+```haskell
+[ 42, 99 ] ++ [ 12 ]
+```
+
+* arithmetic: `*`, `/`, `+`, `-`, `%`
+* boolean: `==`, `!=`, `<`, `<=`, `>`, `>=`
+* logical: `||`, `&&`
+* bitwise: `&`, `|`, `<<`, `>>`
+
+#### Unary operators
+
+* not: `!`
+* bitwise: `~`
 
 ### Statements
 
 Statements must be top level in a swamp file and can not be part of expressions.
 
-#### type alias
+#### Type alias
 
 Use a type under another name.
 
@@ -259,7 +280,7 @@ moveRight pos =
 
 ```
 
-#### custom type
+#### Custom type
 
 Define own type with variants that can have parameters.
 
@@ -331,6 +352,14 @@ False
 "Hello, world"
 ```
 
+#### Char
+
+Is of type `Int`.
+
+```haskell
+'a'
+```
+
 #### Type ID
 
 References a type.
@@ -341,6 +370,14 @@ $Position
 
 #### Resource Name
 
+A way to name things, usually referring to files.
+
 ```haskell
 @directory/name.png
 ```
+### Other
+
+#### Comments
+
+* `--`. Comment to end of line.
+* `{-`, `-}`. Multiline comment. If it starts with `{-|`, it is meant to be used as documentation.
