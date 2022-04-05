@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
-	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -194,8 +193,7 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 		return nil, halfErr
 	}
 
-	var allArguments []decorated.Expression
-	allArguments = append(arguments, rightDecorated)
+	allArguments := append(arguments, rightDecorated)
 
 	fullLeftFunctionCall, functionCallErr := decorateFunctionCallInternal(d, leftAstCall, functionExpression, allArguments, context)
 	if functionCallErr != nil {
@@ -223,8 +221,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		return nil, halfErr
 	}
 
-	var allArguments []decorated.Expression
-	allArguments = append(arguments, leftDecorated)
+	allArguments := append(arguments, leftDecorated)
 
 	fullRightFunctionCall, functionCallErr := decorateFunctionCallInternal(d, rightAstCall, functionExpression, allArguments, context)
 	if functionCallErr != nil {
@@ -307,7 +304,7 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 		if boolType == nil {
 			return nil, decorated.NewTypeNotFound("Bool")
 		}
-		return decorated.NewBooleanOperator(infix, leftExpression, rightExpression, booleanOperatorType, boolType.(dtype.Type))
+		return decorated.NewBooleanOperator(infix, leftExpression, rightExpression, booleanOperatorType, boolType)
 	}
 
 	logicalOperatorType, isLogical := tryConvertToLogicalOperator(infix.OperatorType())
@@ -320,7 +317,7 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 		if boolType == nil {
 			return nil, decorated.NewTypeNotFound("Bool")
 		}
-		return decorated.NewLogicalOperator(leftExpression, rightExpression, logicalOperatorType, boolType.(dtype.Type))
+		return decorated.NewLogicalOperator(leftExpression, rightExpression, logicalOperatorType, boolType)
 	}
 
 	bitwiseOperatorType, isBitwise := tryConvertToBitwiseOperator(infix.OperatorType())

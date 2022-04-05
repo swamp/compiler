@@ -85,11 +85,14 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionVal
 			}
 		}
 
+		/*
 		checkForNoLint := "a" // CheckForNoLint(comments)
 		if checkForNoLint != "unused" {
 		} else {
 			// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
 		}
+
+		 */
 	} else {
 		decoratedExpression = annotation
 	}

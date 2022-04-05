@@ -34,12 +34,9 @@ func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.Fu
 	var completeCalledFunctionParameterTypes []dtype.Type
 	completeCalledFunctionParameterTypes = append(completeCalledFunctionParameterTypes, encounteredCallParametersType.FunctionParameterTypes()...)
 	extraParameters := smashedFunctionType.FunctionParameterTypes()[len(encounteredCallParametersType.FunctionParameterTypes()):]
-	//nolint: gosimple
-	for _, extraParameter := range extraParameters {
-		// log.Printf("extra parameter:%v\n", extraParameter)
-		completeCalledFunctionParameterTypes = append(completeCalledFunctionParameterTypes, extraParameter)
-	}
-	/* */
+
+	completeCalledFunctionParameterTypes = append(completeCalledFunctionParameterTypes, extraParameters...)
+
 	completeCalledFunctionType := dectype.NewFunctionAtom(nil, completeCalledFunctionParameterTypes)
 
 	functionCompatibleErr := dectype.CompatibleTypes(smashedFunctionType, completeCalledFunctionType)

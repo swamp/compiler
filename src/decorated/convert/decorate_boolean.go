@@ -8,7 +8,6 @@ package decorator
 import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
-	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
@@ -17,6 +16,6 @@ func decorateBoolean(d DecorateStream, boolean *ast.BooleanLiteral) (decorated.E
 	if boolType == nil {
 		return nil, decorated.NewTypeNotFound("Bool")
 	}
-	decoratedBoolean := decorated.NewBooleanLiteral(boolean, boolType.(dtype.Type))
+	decoratedBoolean := decorated.NewBooleanLiteral(boolean, boolType)
 	return decoratedBoolean, nil
 }

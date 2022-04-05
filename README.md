@@ -8,12 +8,9 @@ Compiles `.swamp` files and produces `.swamp-pack` binaries.
 
 Swamp is designed to be embedded into other applications, mainly for game engines.
 
+## Functions
 
-## Syntax
-
-### Functions
-
-You must specify an annotation for all functions. All types separated by '->' (right arrow). The last type is the return type.
+You must specify an annotation for all functions. All types separated by '->' (right arrow). The last type is normally the return type (see Currying).
 
 ```haskell
 
@@ -23,28 +20,56 @@ doubleInt a =
 
 ```
 
-### Primitives
+### Primitive types
 
-* Int (always 32-bit)
-* FixedPoint (always 32-bit)
-* String
-* Bool (True or False)
-* Blob (binary data)
-* List []
-* Array
+* `Int` (always signed 32-bit)
+* `Fixed` (fixedpoint, always signed 32-bit)
+* `String`
+* `Bool` (`True` or `False`)
+* `Blob` (binary data)
+* `List`. Literal `[]`
+* `Array` Literal `[| |]`
 
 ### Types
 
-* CustomType (similar to enums in other languages, but with associated data).
+* CustomType (similar to enums or unions in other languages, but with associated data).
+
+```haskell
+type Custom =
+    Idle
+    | Running Int
+    | Sleeping
+```
+
 * Records (structs in other languages).
 
-### Collections
+```haskell
+{ name : String, x : Int, y : Int }
+```
+
+* TupleType (ordered types, minimum of two entries)
+
+```haskell
+( String, Int, Fixed )
+```
+
+### Collection Types
 
 * List. Fast to add to.
+
+```haskell
+List Int
+```
+
 * Array. Fast to access using index.
 
+```haskell
+Array String
+```
 
-### Statements
+### Expressions
+
+Most things in Swamp is an expression.
 
 #### if
 
@@ -71,6 +96,33 @@ sample a b =
 
 ```
 
+Let features:
+
+##### Destructuring
+
+Extract fields from a Record or Tuple during let expression.
+
+```haskell
+
+type alias Position = { x : Int, y : Int }
+
+addXY : Position -> Int
+addXY pos =
+    let
+        { x, y } = pos
+    in
+    x + y
+
+
+addXYTuple : (Int, Int) -> (Int, Int)
+addXYTuple pos =
+    let
+        x, y = pos
+    in
+    x + y    
+
+```
+
 
 #### case
 
@@ -94,32 +146,74 @@ speed state =
         _ -> 0
 ```
 
-#### alias
+#### Function call
 
-Use something under another name.
+Add terms after a function value to call it and return the result. If fewer arguments are passed, it creates a function value that saves the specified arguments for future calls (Currying).
+
+```haskell
+
+double : Int -> Int
+double a =
+    a * 2
+
+main : Int -> Int
+main _ =
+    double 42
+```
+
+#### Record lookup
+
+Fetches the field from a record value. Use a `.` on a record value and then specify the field name.
+
+```haskell
+
+lookupX : { x : Int, y : Int } -> Int
+lookupX position =
+    position.x
+
+```
+
+
+#### Guard
+
+A list of if statements to be evaluated. Evaluated from top to bottom, uses `_` if no match is found.
+
+```haskell
+temperature : Int -> String
+temperature x =
+    | x > 15 -> "Warm"
+    | x < -10 > -> "Cold"
+    | _ -> "Neither warm nor cold"
+```
+
+
+#### Construction
+
+Easier way to fill in the values for a record.
 
 ```haskell
 
 type alias Position = { x : Int, y : Int }
 
 
-moveRight : Position -> Position
-moveRight pos =
-    { x = pos.x + 10, y = pos.y }
+moveLeft : Position -> Position
+moveLeft pos =
+    Position (pos.x - 10) pos.y
 
 ```
 
-#### import
+#### cast
 
-Import from another `.swamp` file:
+Explicitly cast from one type to another. Usually this conversion happen automatically in Swamp (if the types are strictly the same).
 
 ```haskell
 
-import AnotherFile
+type alias Velocity = Int
 
-sample : Int -> Int
-sample a =
-    AnotherFile.Abs -10
+let
+    velocity = 42 : Velocity
+in
+velocity
 
 ```
 
@@ -140,3 +234,150 @@ sample a =
     double <| AnotherFile.Abs -10
 
 ```
+
+#### Binary Operators
+
+Send a result to the left or to the right.
+
+* `::` add an item onto a collection.
+
+```haskell
+42 :: [ 99 ]
+```
+
+* `++` concatenate two collections.
+
+```haskell
+[ 42, 99 ] ++ [ 12 ]
+```
+
+* arithmetic: `*`, `/`, `+`, `-`, `%`
+* boolean: `==`, `!=`, `<`, `<=`, `>`, `>=`
+* logical: `||`, `&&`
+* bitwise: `&`, `|`, `<<`, `>>`
+
+#### Unary operators
+
+* not: `!`
+* bitwise: `~`
+
+### Statements
+
+Statements must be top level in a swamp file and can not be part of expressions.
+
+#### Type alias
+
+Use a type under another name.
+
+```haskell
+
+type alias Position = { x : Int, y : Int }
+
+
+moveRight : Position -> Position
+moveRight pos =
+    { x = pos.x + 10, y = pos.y }
+
+```
+
+#### Custom type
+
+Define own type with variants that can have parameters.
+
+```haskell
+
+type alias Velocity = Int
+
+type Custom =
+    Idle
+    | Running Velocity
+    | Sleeping
+
+```
+
+#### import
+
+Import from another `.swamp` file:
+
+```haskell
+
+import AnotherFile
+
+sample : Int -> Int
+sample a =
+    AnotherFile.Abs -10
+
+```
+
+
+### Literals
+
+#### List
+
+```haskell
+[ 2, 42, 99 ]
+```
+
+
+#### Array
+
+
+```haskell
+[| 2, 42, 99 |]
+
+```
+
+#### Bool
+
+```haskell
+True
+False
+```
+
+#### Int
+
+```haskell
+12
+```
+
+#### Fixed
+
+```haskell
+42.9
+```
+
+#### String
+
+```haskell
+"Hello, world"
+```
+
+#### Char
+
+Is of type `Int`.
+
+```haskell
+'a'
+```
+
+#### Type ID
+
+References a type.
+
+```haskell
+$Position
+```
+
+#### Resource Name
+
+A way to name things, usually referring to files.
+
+```haskell
+@directory/name.png
+```
+### Other
+
+#### Comments
+
+* `--`. Comment to end of line.
+* `{-`, `-}`. Multiline comment. If it starts with `{-|`, it is meant to be used as documentation.
