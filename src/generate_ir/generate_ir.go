@@ -171,8 +171,6 @@ func generateRecordType(irModule* ir.Module, repo *IrTypeRepo, recordType *decty
 	recordStruct := types.NewStruct(recordFieldIrTypes...)
 	// Note: Not allowed to set a name for the struct. We need a literal structure that is compared by the contents and not the typename
 
-	log.Printf("   record %v", recordStruct)
-
 	return recordStruct
 }
 
@@ -185,8 +183,6 @@ func generateTupleType(irModule* ir.Module, repo *IrTypeRepo, tupleType *dectype
 	}
 	tupleStruct := types.NewStruct(tupleFieldIrTypes...)
 	// Note: Not allowed to set a name for the struct. We need a literal structure that is compared by the contents and not the typename
-
-	log.Printf("   tuple %v", tupleStruct)
 
 	return tupleStruct
 }

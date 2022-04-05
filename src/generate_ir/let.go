@@ -34,6 +34,8 @@ func generateLet(let *decorated.Let, genContext *generateContext) (value.Value, 
 
 	result := genContext.block.NewAdd(a, a)
 
+	//callResult := genContext.block.NewCall(result)
+
 	return result, nil
 
 	/*
