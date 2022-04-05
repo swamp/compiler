@@ -154,7 +154,12 @@ func (c *EnvironmentSetCmd) Run() error {
 		return err
 	}
 
-	configuration.AddOrSet(c.Name, c.Path)
+	absolutePath, absErr := filepath.Abs(c.Path)
+	if absErr != nil {
+		return absErr
+	}
+
+	configuration.AddOrSet(c.Name, absolutePath)
 
 	return configuration.SaveToConfig()
 }
