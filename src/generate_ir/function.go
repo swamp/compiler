@@ -15,10 +15,10 @@ import (
 )
 
 type IrTypeRepo struct {
-	string *types.PointerType
-	blob   *types.PointerType
-	array  *types.PointerType
-	list   *types.PointerType
+	string    *types.PointerType
+	blob      *types.PointerType
+	array     *types.PointerType
+	list      *types.PointerType
 	unmanaged *types.PointerType
 
 	typeDefs map[string]types.Type
@@ -46,12 +46,12 @@ func NewIrTypeRepo() *IrTypeRepo {
 	unmanagedPointer := types.NewPointer(unmanagedStruct)
 
 	return &IrTypeRepo{
-		string:   stringPointer,
-		blob:     blobPointer,
-		list:     listPointer,
-		array:    arrayPointer,
+		string:    stringPointer,
+		blob:      blobPointer,
+		list:      listPointer,
+		array:     arrayPointer,
 		unmanaged: unmanagedPointer,
-		typeDefs: make(map[string]types.Type),
+		typeDefs:  make(map[string]types.Type),
 	}
 }
 
@@ -127,7 +127,7 @@ func makeIrType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Type 
 	return makeIrForType(irModule, repo, p)
 }
 
-func generateFunctionParameter(irModule* ir.Module, repo *IrTypeRepo, functionParam *decorated.FunctionParameterDefinition) *ir.Param {
+func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo, functionParam *decorated.FunctionParameterDefinition) *ir.Param {
 	irType := makeIrType(irModule, repo, functionParam.Type())
 	newParam := ir.NewParam(functionParam.Identifier().Name(), irType)
 
@@ -147,14 +147,32 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		//		log.Println(irParam)
 	}
 
+	paramContext := newParameterContext(irParams)
+
+	log.Printf("paramContext %v", paramContext)
+
+	genContext := &generateContext{
+		irModule:           irModule,
+		block:              ir.NewBlock("function"),
+		parameterContext:   paramContext,
+		lookup:             lookup,
+		resourceNameLookup: resourceNameLookup,
+		fileCache:          fileCache,
+	}
+
 	newIrFunc := irModule.NewFunc(f.Annotation().Annotation().Identifier().Name(), irReturnType, irParams...)
 
-	/*
-		genErr := generateExpression(code, returnValueTargetPointer, f.Expression(), true, genContext)
-		if genErr != nil {
-			return nil, genErr
-		}
-	*/
+	result, genErr := generateExpression(f.Expression(), genContext)
+	if genErr != nil {
+		return nil, genErr
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	genContext.block.Term = genContext.block.NewRet(result)
+
+	log.Printf("result of function was %v in block %v", result.Ident(), genContext.block.LLString())
 
 	return newIrFunc, nil
 }
