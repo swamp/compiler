@@ -28,6 +28,10 @@ func (p *Parser) parseTermUsingToken(someToken token.Token, startIndentation int
 		{
 			return parseStringLiteral(p.stream, t)
 		}
+	case token.StringInterpolationTuple:
+		{
+			return parseInterpolationStringToTupleExpression(p.stream, t.StringToken())
+		}
 	case token.CharacterToken:
 		{
 			return parseCharacterLiteral(p.stream, t)

@@ -74,6 +74,48 @@ func replaceInterpolationString(s string) string {
 	return result
 }
 
+func replaceInterpolationStringToTuple(s string) string {
+	ranges := parseInterpolationString(s)
+
+	result := "("
+	lastPos := 0
+
+	for index, item := range ranges {
+		start := item[0]
+		end := item[1]
+
+		if len(s[lastPos:start]) > 0 {
+			if index > 0 {
+				result += ", "
+			}
+			result += fmt.Sprintf("\"%s\"", s[lastPos:start])
+		}
+
+		inside := s[start+2 : end-1]
+
+		if index > 0 {
+			result += ", "
+		}
+		result += fmt.Sprintf("%v", inside)
+
+		lastPos = end
+	}
+
+	remaining := s[lastPos:]
+
+	if len(remaining) > 0 {
+		if len(ranges) > 0 {
+			result += ", "
+		}
+
+		result += fmt.Sprintf("\"%s\"", remaining)
+	}
+
+	result += ")"
+
+	return result
+}
+
 func replaceInterpolationStringToExpression(stringToken token.StringToken) (*ast.StringInterpolation, parerr.ParseError) {
 	replaced := replaceInterpolationString(stringToken.Text())
 	reader := strings.NewReader(replaced)
@@ -95,6 +137,29 @@ func replaceInterpolationStringToExpression(stringToken token.StringToken) (*ast
 	}
 
 	return ast.NewStringInterpolation(stringToken, expr), nil
+}
+
+func parseInterpolationStringToTupleExpression(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
+	replaced := replaceInterpolationStringToTuple(stringToken.Text())
+	reader := strings.NewReader(replaced)
+	localPath, localErr := stringToken.Document.Uri.ToLocalFilePath()
+	if localErr != nil {
+		panic(localErr)
+	}
+	runeReader, _ := runestream.NewRuneReader(reader, localPath)
+
+	const exactWhitespace = true
+	tokenizer, tokenizerErr := tokenize.NewTokenizerInternalWithStartPosition(runeReader, stringToken.FetchPositionLength().Range.Start(), exactWhitespace)
+	if tokenizerErr != nil {
+		return nil, tokenizerErr
+	}
+	parser := NewParser(tokenizer, exactWhitespace)
+	expr, exprErr := parser.parseExpressionNormal(0)
+	if exprErr != nil {
+		return nil, exprErr
+	}
+
+	return expr, nil
 }
 
 func parseStringLiteral(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {

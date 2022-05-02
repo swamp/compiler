@@ -904,6 +904,13 @@ func (t *Tokenizer) readTermToken() (token.Token, TokenError) {
 		return token.NewLineDelimiter(t.MakeSourceFileReference(posToken)), nil
 	}
 	t.lastTokenWasDelimiter = false
+	if r == '%' {
+		n := t.nextRune()
+		if n == '"' {
+			return t.ParseStringInterpolationTuple('"', posToken)
+		}
+	}
+
 	if isLetter(r) {
 		t.unreadRune()
 		return t.parseAnySymbol(posToken)

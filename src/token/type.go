@@ -71,6 +71,7 @@ const (
 	NumberInteger
 	NumberFixed
 	StringConstant
+	StringInterpolationTupleConstant
 	RuneConstant
 	CommentConstant
 	NewLine
