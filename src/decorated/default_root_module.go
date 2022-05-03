@@ -252,10 +252,9 @@ third tuple =
 `
 
 const debugCode = `
-__externalfn log : String -> String
-__externalvarfn logAny : Any -> String
+__externalfn log : Any -> String
 __externalvarfn toString : Any -> String
-__externalfn panic : String -> Any
+__externalfn panic : Any -> Any
 
 `
 
