@@ -49,12 +49,17 @@ func replaceInterpolationString(s string, delimiter string, encapsulate string) 
 			result += fmt.Sprintf("\"%s\"", first)
 		}
 
-		inside := s[start+1 : end-1]
-		if len(inside) > 0 {
+		expressionString := s[start+1 : end-1]
+		if len(expressionString) > 0 {
 			if len(result) > 0 {
 				result += delimiter
 			}
-			result += fmt.Sprintf(encapsulate, inside)
+			if strings.HasSuffix(expressionString, "=") {
+				expressionString = expressionString[:len(expressionString)-1]
+				result += fmt.Sprintf("\"%v=\"", expressionString)
+				result += delimiter
+			}
+			result += fmt.Sprintf(encapsulate, expressionString)
 		}
 
 		lastPos = end

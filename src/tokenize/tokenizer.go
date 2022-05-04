@@ -41,6 +41,8 @@ type Tokenizer struct {
 func verifyOctets(octets []byte, relativeFilename string) TokenError {
 	pos := token.NewPositionTopLeft()
 	fileDocument := token.MakeSourceFileDocumentFromLocalPath(relativeFilename)
+	var errors []TokenError
+
 	if len(relativeFilename) == 0 {
 		panic("must have relative filename")
 	}
@@ -62,19 +64,20 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 				Document: fileDocument,
 			}
 			if pos.Column() > maxColumn {
-				fmt.Fprintf(os.Stderr, "%v: Warning: line is too long (%v of max %v).\n", sourceFileReference.ToStandardReferenceString(),
-					pos.Column(), maxColumn)
+				err := NewLineIsTooLongError(sourceFileReference)
+				errors = append(errors, err)
 			} else if pos.Column() > recommendedMaxColumn {
-				fmt.Fprintf(os.Stderr, "%v: Note: exceeds recommended line length (%v of recommended %v).\n", sourceFileReference.ToStandardReferenceString(),
-					pos.Column(), recommendedMaxColumn)
-				/*
-					fmt.Fprintf(os.Stderr, "%s Warning: %v\n", warning.FetchPositionLength().ToStandardReferenceString(), warning.Warning())
-
-				*/
+				err := NewLineIsLongerThanRecommendedError(sourceFileReference)
+				errors = append(errors, err)
 			}
 		}
 		pos = nextPosition(pos, r)
 	}
+
+	if len(errors) > 0 {
+		return NewMultiErrors(errors)
+	}
+
 	return nil
 }
 
@@ -107,11 +110,12 @@ func NewTokenizerInternalWithStartPosition(r *runestream.RuneReader, position to
 // NewTokenizer :
 func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
 	verifyErr := verifyOctets(r.Octets(), r.RelativeFilename())
-	if verifyErr != nil {
-		return nil, verifyErr
+	tokenizer, createErr := NewTokenizerInternal(r, exactWhitespace)
+	if createErr != nil {
+		return nil, createErr
 	}
 
-	return NewTokenizerInternal(r, exactWhitespace)
+	return tokenizer, verifyErr
 }
 
 func (t *Tokenizer) SourceFile() *token.SourceFileURI {

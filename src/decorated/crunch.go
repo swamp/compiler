@@ -54,8 +54,7 @@ func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle
 
 	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, enforceStyle)
 	if tokenizerErr != nil {
-		parser.ShowAsError(tokenizer, tokenizerErr)
-		return tokenizer, nil, tokenizerErr
+		parser.ShowWarningOrError(tokenizer, tokenizerErr)
 	}
 
 	p := parser.NewParser(tokenizer, enforceStyle)

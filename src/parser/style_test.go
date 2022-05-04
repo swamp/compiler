@@ -29,7 +29,7 @@ func compileToProgram(moduleName string, x string, enforceStyle bool, verbose ve
 	}
 	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, enforceStyle)
 	if tokenizerErr != nil {
-		const errorsAsWarnings = false
+		const errorsAsWarnings = ReportAsSeverityError
 		ShowError(tokenizer, moduleName, tokenizerErr, verbose, errorsAsWarnings)
 		return tokenizer, nil, tokenizerErr
 	}

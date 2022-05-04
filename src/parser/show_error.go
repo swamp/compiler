@@ -141,6 +141,10 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	if parseAliasErr != nil {
 		parserError = parseAliasErr.Unwrap()
 	}
+	_, wasMulti := parserError.(*tokenize.MultiErrors)
+	if wasMulti {
+		panic("can not have multi errors")
+	}
 
 	posLength := parserError.FetchPositionLength()
 	highlightLine := posLength.Range.Position().Line()
@@ -167,7 +171,10 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	fmt.Fprintf(os.Stderr, "%v %T\n", errorString, parserError)
 
 	color.NoColor = false
-	ShowSourceCode(tokenizer, highlightLine, highlightColumn, posLength)
+
+	if errorAsWarning == ReportAsSeverityError {
+		ShowSourceCode(tokenizer, highlightLine, highlightColumn, posLength)
+	}
 
 	const useColor = true
 	var colorer coloring.Colorer
@@ -200,11 +207,40 @@ func typeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
 		return ReportAsSeverityWarning
 	case parerr.UnexpectedImportAlias:
 		return ReportAsSeverityWarning
+	case tokenize.LineIsLongerThanRecommendedError:
+		return ReportAsSeverityNote
+	case tokenize.LineIsTooLongError:
+		return ReportAsSeverityWarning
 	}
 	return ReportAsSeverityError
 }
 
 func ShowWarningOrError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) {
+	multi, wasMulti := parserError.(*tokenize.MultiErrors)
+	if wasMulti {
+		for _, tokenizeErr := range multi.Errors() {
+			ShowWarningOrError(tokenizer, tokenizeErr)
+		}
+		return
+	}
+
+	moduleErr, isModuleErr := parserError.(*decorated.ModuleError)
+	if isModuleErr {
+		parserError = moduleErr.WrappedError()
+	}
+
+	parseAliasErr, _ := parserError.(*parerr.ParseAliasError)
+	if parseAliasErr != nil {
+		parserError = parseAliasErr.Unwrap()
+	}
+
+	decoratedMultiErr, wasDecoratedMultiErr := parserError.(*decorated.MultiErrors)
+	if wasDecoratedMultiErr {
+		for _, tokenizeErr := range decoratedMultiErr.Errors() {
+			ShowWarningOrError(tokenizer, tokenizeErr)
+		}
+		return
+	}
 	showAsWarning := typeOfWarning(parserError)
 	localPath := ""
 	if parserError.FetchPositionLength().Document != nil {

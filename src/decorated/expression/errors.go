@@ -382,7 +382,7 @@ func NewUnMatchingFunctionReturnTypesInFunctionValue(fn *ast.FunctionValue, expr
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) Error() string {
-	return fmt.Sprintf("%v unmatching function return types %v and %v\n%v", e.FetchPositionLength(), e.HasType.HumanReadable(), e.ExpectedType.HumanReadable(), e.err)
+	return fmt.Sprintf("unmatching function return types %v and %v\n%v", e.HasType.HumanReadable(), e.ExpectedType.HumanReadable(), e.err)
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) FetchPositionLength() token.SourceFileReference {
@@ -1076,7 +1076,6 @@ func (e *TooFewIdentifiersForFunctionType) FetchPositionLength() token.SourceFil
 	return e.functionValue.FetchPositionLength()
 }
 
-
 type TooManyIdentifiersForFunctionType struct {
 	forcedFunctionType    *dectype.FunctionAtom
 	functionValue         *ast.FunctionValue
@@ -1094,7 +1093,6 @@ func (e *TooManyIdentifiersForFunctionType) Error() string {
 func (e *TooManyIdentifiersForFunctionType) FetchPositionLength() token.SourceFileReference {
 	return e.functionValue.FetchPositionLength()
 }
-
 
 type ModuleError struct {
 	err        decshared.DecoratedError
