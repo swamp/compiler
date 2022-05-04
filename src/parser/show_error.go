@@ -206,7 +206,7 @@ func typeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
 	case parerr.ExpectedOneSpace:
 		return ReportAsSeverityWarning
 	case parerr.UnexpectedImportAlias:
-		return ReportAsSeverityWarning
+		return ReportAsSeverityNote
 	case tokenize.LineIsLongerThanRecommendedError:
 		return ReportAsSeverityNote
 	case tokenize.LineIsTooLongError:

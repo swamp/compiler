@@ -52,9 +52,11 @@ func parseRecordDestructuring(p ParseStream, keywordIndentation int) ([]*ast.Var
 		if _, wasComma := p.maybeComma(); !wasComma {
 			break
 		}
-		if _, err := p.eatOneSpace("afterComma"); err != nil {
+		newIndentation, _, err := p.eatContinuationReturnIndentation(keywordIndentation)
+		if err != nil {
 			return nil, err
 		}
+		keywordIndentation = newIndentation
 	}
 
 	if _, spaceAfterIdentifierErr := p.eatOneSpace("after variable identifier"); spaceAfterIdentifierErr != nil {
