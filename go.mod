@@ -3,10 +3,10 @@ module github.com/swamp/compiler
 go 1.17
 
 require (
-	github.com/alecthomas/kong v0.4.1
+	github.com/alecthomas/kong v0.5.0
 	github.com/fatih/color v1.13.0
-	github.com/gomarkdown/markdown v0.0.0-20220114203417-14399d5448c4
-	github.com/pelletier/go-toml v1.9.4
+	github.com/gomarkdown/markdown v0.0.0-20220419181919-412bcf14cd2e
+	github.com/pelletier/go-toml v1.9.5
 	github.com/piot/go-lsp v0.0.0-20210308100331-e96ace6e5b0d
 	github.com/piot/lsp-server v0.0.0-20210308100659-f6871334c685
 	github.com/swamp/assembler v0.0.0-20220302164531-9020b62d1e4b
@@ -21,5 +21,5 @@ require (
 	github.com/piot/jsonrpc2 v0.0.0-20210220142131-b277991378fa // indirect
 	github.com/piot/raff-go v0.0.0-20210107105329-efd4e0e14756 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
+	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
 )
