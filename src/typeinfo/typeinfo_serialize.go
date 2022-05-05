@@ -30,6 +30,7 @@ const (
 	SwtiTypeResourceName
 	SwtiTypeChar
 	SwtiTypeTuple
+	SwtiTypeRefId
 	SwtiTypeAny
 	SwtiTypeAnyMatchingTypes
 	SwtiTypeUnmanaged
@@ -235,6 +236,18 @@ func writeAlias(writer io.Writer, alias *AliasType) error {
 	return nil
 }
 
+func writeTypeRefId(writer io.Writer, typeRefId *TypeRefIdType) error {
+	if err := writeTypeID(writer, SwtiTypeRefId); err != nil {
+		return err
+	}
+
+	if err := writeTypeRef(writer, typeRefId.originalType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func writeFunction(writer io.Writer, fn *FunctionType) error {
 	if err := writeTypeID(writer, SwtiTypeFunction); err != nil {
 		return err
@@ -343,9 +356,8 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		return writeFunction(writer, t)
 	case *CustomType:
 		return writeCustom(writer, t)
-	case *TypeRefType:
-		// TODO:
-		return writePrimitive(writer, SwtiTypeResourceName)
+	case *TypeRefIdType:
+		return writeTypeRefId(writer, t)
 	case *TupleType:
 		return writeTuple(writer, t)
 	case *AnyType:

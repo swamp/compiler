@@ -186,16 +186,17 @@ func (t *ResourceNameType) HumanReadable() string {
 	return "ResourceName"
 }
 
-type TypeRefType struct {
+type TypeRefIdType struct {
 	Type
+	originalType InfoType
 }
 
-func (t *TypeRefType) String() string {
-	return "TypeRef"
+func (t *TypeRefIdType) String() string {
+	return "TypeRefId"
 }
 
-func (t *TypeRefType) HumanReadable() string {
-	return "TypeRef"
+func (t *TypeRefIdType) HumanReadable() string {
+	return "TypeRefId"
 }
 
 type ListType struct {
@@ -245,6 +246,25 @@ func (t *AliasType) HumanReadable() string {
 func (t *AliasType) HumanReadableExpanded() string {
 	return fmt.Sprintf("%s => %v", t.name, t.realType.HumanReadable())
 }
+
+/*
+type TypeRefIdType struct {
+	Type
+	realType InfoType
+}
+
+func (t *TypeRefIdType) String() string {
+	return fmt.Sprintf("typerefid %s -> %v", t.realType.Ref())
+}
+
+func (t *TypeRefIdType) HumanReadable() string {
+	return t.String()
+}
+
+func (t *TypeRefIdType) HumanReadableExpanded() string {
+	return fmt.Sprintf("$%v", t.realType.HumanReadable())
+}
+*/
 
 type RecordField struct {
 	name             string
@@ -583,6 +603,19 @@ func (c *Chunk) doWeHaveList(list *ListType) int {
 	return -1
 }
 
+func (c *Chunk) doWeHaveTypeRef(proposedRefIdType *TypeRefIdType) int {
+	for index, infoType := range c.infoTypes {
+		other, isTypeRef := infoType.(*TypeRefIdType)
+		if isTypeRef {
+			if other.originalType.Index() == proposedRefIdType.originalType.Index() {
+				return index
+			}
+		}
+	}
+
+	return -1
+}
+
 func (c *Chunk) doWeHaveAlias(alias *AliasType) int {
 	for index, infoType := range c.infoTypes {
 		other, isAlias := infoType.(*AliasType)
@@ -701,17 +734,6 @@ func (c *Chunk) doWeHaveResourceName() int {
 	for index, infoType := range c.infoTypes {
 		_, isResourceName := infoType.(*ResourceNameType)
 		if isResourceName {
-			return index
-		}
-	}
-
-	return -1
-}
-
-func (c *Chunk) doWeHaveTypeRef() int {
-	for index, infoType := range c.infoTypes {
-		_, isTypeRef := infoType.(*TypeRefType)
-		if isTypeRef {
 			return index
 		}
 	}
@@ -1042,18 +1064,30 @@ func (c *Chunk) consumeResourceName() (InfoType, error) {
 	return proposedNewResourceName, nil
 }
 
-func (c *Chunk) consumeTypeRef() (InfoType, error) {
-	indexArray := c.doWeHaveTypeRef()
-	if indexArray != -1 {
-		return c.infoTypes[indexArray].(*TypeRefType), nil
+func (c *Chunk) consumeTypeRef(referencedType dtype.Type) (InfoType, error) {
+	consumedReferencedType, err := c.Consume(referencedType)
+	if err != nil {
+		return nil, err
+	}
+	if consumedReferencedType == nil {
+		return nil, nil
 	}
 
-	proposedTypeRefType := &TypeRefType{}
+	proposedNewRefIdType := &TypeRefIdType{
+		Type:         Type{},
+		originalType: consumedReferencedType,
+	}
 
-	proposedTypeRefType.index = len(c.infoTypes)
-	c.infoTypes = append(c.infoTypes, proposedTypeRefType)
+	indexArray := c.doWeHaveTypeRef(proposedNewRefIdType)
+	if indexArray != -1 {
+		return c.infoTypes[indexArray].(*TypeRefIdType), nil
+	}
 
-	return proposedTypeRefType, nil
+	proposedNewRefIdType.index = len(c.infoTypes)
+
+	c.infoTypes = append(c.infoTypes, proposedNewRefIdType)
+
+	return proposedNewRefIdType, nil
 }
 
 func (c *Chunk) consumeBool() (InfoType, error) {
@@ -1169,7 +1203,7 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 	} else if name == "Blob" {
 		return c.consumeBlob()
 	} else if name == "TypeRef" {
-		return c.consumeTypeRef()
+		return c.consumeTypeRef(primitive.GenericTypes()[0])
 	} else if name == "Any" {
 		return c.consumeAny()
 	}
