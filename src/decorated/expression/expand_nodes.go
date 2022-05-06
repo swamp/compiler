@@ -193,6 +193,15 @@ func expandChildNodesListLiteral(listLiteral *ListLiteral) []TypeOrToken {
 	return tokens
 }
 
+func expandChildNodesStringInterpolation(stringInterpolation *StringInterpolation) []TypeOrToken {
+	var tokens []TypeOrToken
+	for _, expression := range stringInterpolation.IncludedExpressions() {
+		tokens = append(tokens, expandChildNodes(expression)...)
+	}
+
+	return tokens
+}
+
 func expandChildNodesTupleLiteral(tupleLiteral *TupleLiteral) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, expression := range tupleLiteral.Expressions() {
@@ -471,8 +480,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *ResourceNameLiteral: // Should not be expanded
 		return tokens
-	case *StringInterpolation: // Should not be expanded
-		return tokens
+	case *StringInterpolation:
+		return append(tokens, expandChildNodesStringInterpolation(t)...)
 	case *BooleanLiteral: // Should not be expanded
 		return tokens
 	case *StringLiteral: // Should not be expanded

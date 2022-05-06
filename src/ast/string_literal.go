@@ -13,19 +13,18 @@ import (
 
 type StringLiteral struct {
 	Token token.StringToken
-	value string
 }
 
 func (i *StringLiteral) String() string {
-	return fmt.Sprintf("'%v'", i.value)
+	return fmt.Sprintf("'%v'", i.Token.Text())
 }
 
 func (i *StringLiteral) Value() string {
-	return i.value
+	return i.Token.Text()
 }
 
-func NewStringConstant(t token.StringToken, v string) *StringLiteral {
-	return &StringLiteral{value: v, Token: t}
+func NewStringLiteral(t token.StringToken) *StringLiteral {
+	return &StringLiteral{Token: t}
 }
 
 func (i *StringLiteral) FetchPositionLength() token.SourceFileReference {
@@ -37,5 +36,5 @@ func (i *StringLiteral) StringToken() token.StringToken {
 }
 
 func (i *StringLiteral) DebugString() string {
-	return fmt.Sprintf("[String %v]", i.value)
+	return fmt.Sprintf("[String %v]", i.Token.Text())
 }

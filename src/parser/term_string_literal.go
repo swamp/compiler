@@ -6,7 +6,6 @@
 package parser
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -30,54 +29,64 @@ func parseInterpolationString(s string) [][]int {
 	return locations
 }
 
-func replaceInterpolationString(s string, delimiter string, encapsulate string) string {
-	ranges := parseInterpolationString(s)
+func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression, parerr.ParseError) {
+	ranges := parseInterpolationString(stringToken.Text())
 
-	result := ""
+	var expressions []ast.Expression
 	lastPos := 0
 
 	for _, item := range ranges {
 		start := item[0]
 		end := item[1]
 
-		first := s[lastPos:start]
-		if len(first) > 0 {
-			if len(result) > 0 {
-				result += delimiter
+		stringPart := stringToken.Text()[lastPos:start]
+		if len(stringPart) > 0 {
+			sourceFileReference := token.SourceFileReference{
+				Range: token.MakeRange(
+					stringToken.Range.Start(),
+					stringToken.Range.End(),
+				),
+				Document: stringToken.Document,
 			}
-
-			result += fmt.Sprintf("\"%s\"", first)
+			stringToken := token.NewStringToken(stringPart, stringPart, sourceFileReference)
+			expression := ast.NewStringLiteral(stringToken)
+			expressions = append(expressions, expression)
 		}
 
-		expressionString := s[start+1 : end-1]
+		expressionString := stringToken.Text()[start+1 : end-1]
 		if len(expressionString) > 0 {
-			if len(result) > 0 {
-				result += delimiter
-			}
 			if strings.HasSuffix(expressionString, "=") {
 				expressionString = expressionString[:len(expressionString)-1]
-				result += fmt.Sprintf("\"%v=\"", expressionString)
-				result += delimiter
 			}
-			result += fmt.Sprintf(encapsulate, expressionString)
+			expression, expressionErr := stringToExpression(expressionString, stringToken.FetchPositionLength())
+			if expressionErr != nil {
+				return nil, expressionErr
+			}
+			expressions = append(expressions, expression)
 		}
 
 		lastPos = end
 	}
 
-	remaining := s[lastPos:]
+	remainingString := stringToken.Text()[lastPos:]
 
-	if len(remaining) > 0 {
-		if len(ranges) > 0 {
-			result += delimiter
+	if len(remainingString) > 0 {
+		sourceFileReference := token.SourceFileReference{
+			Range: token.MakeRange(
+				stringToken.Range.Start(),
+				stringToken.Range.End(),
+			),
+			Document: stringToken.Document,
 		}
-
-		result += fmt.Sprintf("\"%s\"", remaining)
+		stringToken := token.NewStringToken(remainingString, remainingString, sourceFileReference)
+		expression := ast.NewStringLiteral(stringToken)
+		expressions = append(expressions, expression)
 	}
 
-	return result
+	return expressions, nil
 }
 
+/*
 func replaceInterpolationStringToString(s string) string {
 	return replaceInterpolationString(s, " ++ ", "Debug.toString(%v)")
 }
@@ -85,6 +94,7 @@ func replaceInterpolationStringToString(s string) string {
 func replaceInterpolationStringToTuple(s string) string {
 	return "( " + replaceInterpolationString(s, ", ", "%v") + " )"
 }
+*/
 
 func stringToExpression(replaced string, sourceFileReference token.SourceFileReference) (ast.Expression, parerr.ParseError) {
 	reader := strings.NewReader(replaced)
@@ -109,27 +119,55 @@ func stringToExpression(replaced string, sourceFileReference token.SourceFileRef
 }
 
 func parseInterpolationStringToTupleExpression(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
-	replaced := replaceInterpolationStringToTuple(stringToken.Text())
-	expr, exprErr := stringToExpression(replaced, stringToken.FetchPositionLength())
-	if exprErr != nil {
-		return nil, exprErr
+	expressions, interpolateErr := replaceInterpolationString(stringToken)
+	if interpolateErr != nil {
+		return nil, interpolateErr
 	}
 
-	return expr, nil
+	startParen := token.NewParenToken("(", token.LeftParen, stringToken.FetchPositionLength(), "(")
+	endParen := token.NewParenToken(")", token.RightParen, stringToken.FetchPositionLength(), ")")
+
+	tupleLiteral := ast.NewTupleLiteral(startParen, endParen, expressions)
+
+	return ast.NewStringInterpolation(stringToken, tupleLiteral, expressions), nil
+}
+
+func makeItString(expression ast.Expression, stringToken token.StringToken) ast.Expression {
+	_, wasStringLiteral := expression.(*ast.StringLiteral)
+	if wasStringLiteral {
+		return expression
+	}
+
+	debugModuleName := token.NewTypeSymbolToken("Debug", stringToken.FetchPositionLength(), 0)
+	debugModuleNamePart := ast.NewModuleNamePart(ast.NewTypeIdentifier(debugModuleName))
+	debugModuleRef := ast.NewModuleReference([]*ast.ModuleNamePart{debugModuleNamePart})
+	toStringVar := ast.NewVariableIdentifier(token.NewVariableSymbolToken("toString", stringToken.FetchPositionLength(), 0))
+	debugToString := ast.NewQualifiedVariableIdentifierScoped(debugModuleRef, toStringVar)
+	return ast.NewFunctionCall(debugToString, []ast.Expression{expression})
 }
 
 func parseInterpolationStringToStringExpression(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
-	replaced := replaceInterpolationStringToString(stringToken.Text())
-	expr, exprErr := stringToExpression(replaced, stringToken.FetchPositionLength())
-	if exprErr != nil {
-		return nil, exprErr
+	expressions, interpolateErr := replaceInterpolationString(stringToken)
+	if interpolateErr != nil {
+		return nil, interpolateErr
 	}
 
-	return expr, nil
+	var lastExpression ast.Expression
+	for _, expression := range expressions {
+		convertedExpression := makeItString(expression, stringToken)
+
+		if lastExpression != nil {
+			appendOperatorToken := token.NewOperatorToken(token.OperatorAppend, stringToken.FetchPositionLength(), "++", "++")
+			convertedExpression = ast.NewBinaryOperator(appendOperatorToken, appendOperatorToken, lastExpression, convertedExpression)
+		}
+		lastExpression = convertedExpression
+	}
+
+	return ast.NewStringInterpolation(stringToken, lastExpression, expressions), nil
 }
 
 func parseStringLiteral(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
-	lit := ast.NewStringConstant(stringToken, stringToken.Text())
+	lit := ast.NewStringLiteral(stringToken)
 
 	return lit, nil
 }

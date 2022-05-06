@@ -74,5 +74,5 @@ func (i *BinaryOperator) String() string {
 }
 
 func (i *BinaryOperator) DebugString() string {
-	return fmt.Sprintf("[binaryop %v]", i.operator.String())
+	return fmt.Sprintf("[binaryop %v %v %v]", i.operator.String(), i.left, i.right)
 }

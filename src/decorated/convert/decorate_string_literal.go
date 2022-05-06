@@ -27,5 +27,14 @@ func decorateStringInterpolation(d DecorateStream, str *ast.StringInterpolation,
 		return nil, err
 	}
 
-	return decoratedExpression, nil
+	var decoratedExpressions []decorated.Expression
+	for _, referencedExpression := range str.ReferencedExpressions() {
+		decoratedExpression, err := DecorateExpression(d, referencedExpression, context)
+		if err != nil {
+			return nil, err
+		}
+		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
+	}
+
+	return decorated.NewStringInterpolation(str, decoratedExpression, decoratedExpressions), nil
 }
