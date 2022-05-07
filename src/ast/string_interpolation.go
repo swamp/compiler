@@ -22,6 +22,15 @@ func (i *StringInterpolation) String() string {
 }
 
 func NewStringInterpolation(stringToken token.StringToken, expression Expression, referencedExpressions []Expression) *StringInterpolation {
+	var lastExpression Expression
+	for _, expr := range referencedExpressions {
+		if lastExpression != nil {
+			if !expr.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
+				panic(fmt.Sprintf("not allowed %v %v", expr.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
+			}
+		}
+		lastExpression = expr
+	}
 	return &StringInterpolation{expression: expression, stringToken: stringToken, referencedExpressions: referencedExpressions}
 }
 

@@ -703,11 +703,13 @@ func addSemanticTokenBooleanLiteral(stringLiteral *decorated.BooleanLiteral, bui
 }
 
 func addSemanticTokenStringInterpolation(stringInterpolation *decorated.StringInterpolation, builder *SemanticBuilder) error {
-	/*
-		if err := builder.EncodeSymbol(stringInterpolation.FetchPositionLength().Range, "string", nil); err != nil {
+	for _, expression := range stringInterpolation.IncludedExpressions() {
+		if err := addSemanticToken(expression, builder); err != nil {
+			panic(err)
 			return err
 		}
-	*/
+	}
+
 	return nil
 }
 

@@ -6,6 +6,7 @@
 package parser
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -33,6 +34,7 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 	ranges := parseInterpolationString(stringToken.Text())
 
 	var expressions []ast.Expression
+	var lastExpression ast.Expression
 	lastPos := 0
 
 	for _, item := range ranges {
@@ -40,46 +42,70 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 		end := item[1]
 
 		stringPart := stringToken.Text()[lastPos:start]
+		stringPartRange := stringToken.CalculateRange(lastPos, start)
+		//log.Printf("cuts out %v:%v %v '%v'", lastPos, start, stringPartRange, stringPart)
 		if len(stringPart) > 0 {
 			sourceFileReference := token.SourceFileReference{
-				Range: token.MakeRange(
-					stringToken.Range.Start(),
-					stringToken.Range.End(),
-				),
+				Range:    stringPartRange,
 				Document: stringToken.Document,
 			}
 			stringToken := token.NewStringToken(stringPart, stringPart, sourceFileReference)
+
+			if lastExpression != nil && !stringToken.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
+				panic(fmt.Sprintf("not allowed %v %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
+			}
+
 			expression := ast.NewStringLiteral(stringToken)
+
 			expressions = append(expressions, expression)
+			lastExpression = expression
 		}
 
 		expressionString := stringToken.Text()[start+1 : end-1]
+		if strings.HasSuffix(expressionString, "=") { // TODO, must store in expressions
+			end--
+			expressionString = stringToken.Text()[start+1 : end-1]
+		}
+		startPositionOfExpression := stringToken.CalculateRange(start+1, end-1)
+		//log.Printf("cuts out expression %v:%v %v '%v'", start+1, end-1, startPositionOfExpression, expressionString)
 		if len(expressionString) > 0 {
-			if strings.HasSuffix(expressionString, "=") {
-				expressionString = expressionString[:len(expressionString)-1]
+			expressionSourceFileReference := token.SourceFileReference{
+				Range:    startPositionOfExpression,
+				Document: stringToken.Document,
 			}
-			expression, expressionErr := stringToExpression(expressionString, stringToken.FetchPositionLength())
+			expression, expressionErr := stringToExpression(expressionString, expressionSourceFileReference)
 			if expressionErr != nil {
 				return nil, expressionErr
 			}
+
+			if !startPositionOfExpression.IsEqual(expression.FetchPositionLength().Range) {
+				panic(fmt.Sprintf("correct range is %v, but got %v. something is wrong in type %T", startPositionOfExpression, expression.FetchPositionLength().Range, expression))
+			}
+
+			if lastExpression != nil && !expression.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
+				panic(fmt.Sprintf("not allowed expression string %v last was %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
+			}
+
 			expressions = append(expressions, expression)
+			lastExpression = expression
 		}
 
 		lastPos = end
 	}
 
 	remainingString := stringToken.Text()[lastPos:]
-
+	remainingPartRange := stringToken.CalculateRange(lastPos, len(stringToken.Text()))
+	//log.Printf("cuts out remaining %v: %v '%v'", lastPos, remainingPartRange, remainingString)
 	if len(remainingString) > 0 {
 		sourceFileReference := token.SourceFileReference{
-			Range: token.MakeRange(
-				stringToken.Range.Start(),
-				stringToken.Range.End(),
-			),
+			Range:    remainingPartRange,
 			Document: stringToken.Document,
 		}
 		stringToken := token.NewStringToken(remainingString, remainingString, sourceFileReference)
 		expression := ast.NewStringLiteral(stringToken)
+		if lastExpression != nil && !stringToken.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
+			panic(fmt.Sprintf("not allowed %v %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
+		}
 		expressions = append(expressions, expression)
 	}
 
@@ -159,6 +185,7 @@ func parseInterpolationStringToStringExpression(p ParseStream, stringToken token
 		if lastExpression != nil {
 			appendOperatorToken := token.NewOperatorToken(token.OperatorAppend, stringToken.FetchPositionLength(), "++", "++")
 			convertedExpression = ast.NewBinaryOperator(appendOperatorToken, appendOperatorToken, lastExpression, convertedExpression)
+
 		}
 		lastExpression = convertedExpression
 	}

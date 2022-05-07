@@ -223,6 +223,10 @@ func (p Range) IsAfter(other Range) bool {
 	return (p.start.line > other.end.line) || ((p.start.line == other.end.line) && p.start.column > other.end.column)
 }
 
+func (p Range) IsEqual(other Range) bool {
+	return p.start.line == other.start.line && p.start.column == other.start.column && p.end.line == other.end.line && p.end.column == other.end.column
+}
+
 func MakeInclusiveRange(start Range, end Range) Range {
 	return Range{
 		start: start.Start(),
