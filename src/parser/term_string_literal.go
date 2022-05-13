@@ -43,13 +43,18 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 
 		stringPart := stringToken.Text()[lastPos:start]
 		stringPartRange := stringToken.CalculateRange(lastPos, start)
-		//log.Printf("cuts out %v:%v %v '%v'", lastPos, start, stringPartRange, stringPart)
 		if len(stringPart) > 0 {
 			sourceFileReference := token.SourceFileReference{
 				Range:    stringPartRange,
 				Document: stringToken.Document,
 			}
-			stringToken := token.NewStringToken(stringPart, stringPart, sourceFileReference)
+			// TODO: CalculateRange in text should return stringLines
+			stringLine := token.StringLine{
+				Position:     stringPartRange.Position(),
+				Length:       stringPartRange.RuneWidth(),
+				StringOffset: 0, // For this created stringToken
+			}
+			stringToken := token.NewStringToken(stringPart, stringPart, sourceFileReference, []token.StringLine{stringLine})
 
 			if lastExpression != nil && !stringToken.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
 				panic(fmt.Sprintf("not allowed %v %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
@@ -67,7 +72,6 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 			expressionString = stringToken.Text()[start+1 : end-1]
 		}
 		startPositionOfExpression := stringToken.CalculateRange(start+1, end-1)
-		//log.Printf("cuts out expression %v:%v %v '%v'", start+1, end-1, startPositionOfExpression, expressionString)
 		if len(expressionString) > 0 {
 			expressionSourceFileReference := token.SourceFileReference{
 				Range:    startPositionOfExpression,
@@ -94,14 +98,18 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 	}
 
 	remainingString := stringToken.Text()[lastPos:]
-	remainingPartRange := stringToken.CalculateRange(lastPos, len(stringToken.Text()))
-	//log.Printf("cuts out remaining %v: %v '%v'", lastPos, remainingPartRange, remainingString)
 	if len(remainingString) > 0 {
+		remainingPartRange := stringToken.CalculateRange(lastPos, len(stringToken.Text()))
 		sourceFileReference := token.SourceFileReference{
 			Range:    remainingPartRange,
 			Document: stringToken.Document,
 		}
-		stringToken := token.NewStringToken(remainingString, remainingString, sourceFileReference)
+		stringLine := token.StringLine{
+			Position:     remainingPartRange.Position(),
+			Length:       remainingPartRange.RuneWidth(),
+			StringOffset: 0,
+		}
+		stringToken := token.NewStringToken(remainingString, remainingString, sourceFileReference, []token.StringLine{stringLine})
 		expression := ast.NewStringLiteral(stringToken)
 		if lastExpression != nil && !stringToken.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
 			panic(fmt.Sprintf("not allowed %v %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))

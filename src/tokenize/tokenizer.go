@@ -643,6 +643,9 @@ func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.Cha
 func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, TokenError) {
 	var a string
 	raw := string(startStringRune)
+	var lines []token.StringLine
+	currentLineStart := startPosition.Position().NextColumn() // Skip first "
+	currentStringIndex := 0
 	for {
 		ch := t.nextRune()
 		raw += string(ch)
@@ -654,9 +657,19 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 		}
 
 		if ch == '\\' {
+			potentialEnd := t.ParsingPosition()
 			next := t.nextRune()
-			if next == '\n' || next == '\r' {
+			if next == '\n' {
+				length := potentialEnd.Position().Column() - currentLineStart.Column()
+				newLine := token.StringLine{
+					Position:     currentLineStart,
+					Length:       length,
+					StringOffset: currentStringIndex,
+				}
+				lines = append(lines, newLine)
 				t.skipSpaces()
+				currentLineStart = t.ParsingPosition().Position()
+				currentStringIndex = len(a)
 				continue
 			} else {
 				t.unreadRune()
@@ -665,13 +678,22 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 
 		if ch == '\n' || ch == '\r' {
 			// we ignore new line (LF) in normal string literals. See verbatim strings (triple quote strings) for other behavior.
-			continue
+			return token.StringToken{}, NewUnexpectedEatTokenError(t.MakeSourceFileReference(t.ParsingPosition()), ' ', ' ')
 		}
 
 		a += string(ch)
 	}
+
+	length := len(a) - currentStringIndex
+	newLine := token.StringLine{
+		Position:     currentLineStart,
+		Length:       length,
+		StringOffset: currentStringIndex,
+	}
+	lines = append(lines, newLine)
+
 	posLen := t.MakeSourceFileReference(startPosition)
-	return token.NewStringToken(raw, a, posLen), nil
+	return token.NewStringToken(raw, a, posLen, lines), nil
 }
 
 func (t *Tokenizer) isTriple(ch rune, startStringRune rune) (bool, error) {
@@ -696,7 +718,14 @@ func (t *Tokenizer) isTriple(ch rune, startStringRune rune) (bool, error) {
 func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, TokenError) {
 	var a string
 	raw := string(startStringRune + startStringRune + startStringRune)
+
+	currentLineStart := startPosition.Position().NextColumn().NextColumn().NextColumn()
+	currentIndexStart := 0
+
+	var lines []token.StringLine
+	var potentialEnd token.Position
 	for {
+		potentialEnd = t.ParsingPosition().Position()
 		ch := t.nextRune()
 		raw += string(ch)
 		if ch == 0 {
@@ -712,9 +741,29 @@ func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.
 			break
 		}
 		a += string(ch)
+		if ch == '\n' {
+			length := potentialEnd.Column() - currentLineStart.Column()
+			newLine := token.StringLine{
+				Position:     currentLineStart,
+				Length:       length,
+				StringOffset: currentIndexStart,
+			}
+			lines = append(lines, newLine)
+			currentLineStart = t.position.Position()
+			currentIndexStart = len(a)
+		}
+	}
+	stringLength := len(a) - currentIndexStart
+	if stringLength > 0 {
+		newLine := token.StringLine{
+			Position:     currentLineStart,
+			Length:       stringLength,
+			StringOffset: currentIndexStart,
+		}
+		lines = append(lines, newLine)
 	}
 	posLen := t.MakeSourceFileReference(startPosition)
-	return token.NewStringToken(raw, a, posLen), nil
+	return token.NewStringToken(raw, a, posLen, lines), nil
 }
 
 func (t *Tokenizer) ReadStringUntilEndOfLine() string {
@@ -897,6 +946,14 @@ func (t *Tokenizer) ReadOpenOperatorToken(r rune, singleCharLength token.SourceF
 	return nil, NewNotAnOpenOperatorError(t.MakeSourceFileReference(posToken), r)
 }
 
+func (t *Tokenizer) parseNormalOrTripleString(r rune, positionToken token.PositionToken) (token.StringToken, TokenError) {
+	if wasTriple, _ := t.isTriple(r, r); wasTriple {
+		return t.parseTripleString(r, positionToken)
+	}
+	return t.ParseString(r, positionToken)
+
+}
+
 func (t *Tokenizer) readTermToken() (token.Token, TokenError) {
 	posToken := t.position
 	r := t.nextRune()
@@ -909,12 +966,17 @@ func (t *Tokenizer) readTermToken() (token.Token, TokenError) {
 	}
 	t.lastTokenWasDelimiter = false
 	if r == '%' || r == '$' {
+		beforeToken := t.position
 		n := t.nextRune()
 		if n == '"' {
+			parsedString, parsedErr := t.parseNormalOrTripleString(n, beforeToken)
+			if parsedErr != nil {
+				return nil, parsedErr
+			}
 			if r == '%' {
-				return t.ParseStringInterpolationTuple('"', posToken)
+				return t.ParseStringInterpolationTuple(parsedString)
 			} else {
-				return t.ParseStringInterpolationString('"', posToken)
+				return t.ParseStringInterpolationString(parsedString)
 			}
 		} else {
 			t.unreadRune()
@@ -934,10 +996,7 @@ func (t *Tokenizer) readTermToken() (token.Token, TokenError) {
 	} else if r == '\'' {
 		return t.ParseCharacter(posToken)
 	} else if isStartString(r) {
-		if wasTriple, _ := t.isTriple(r, r); wasTriple {
-			return t.parseTripleString(r, posToken)
-		}
-		return t.ParseString(r, posToken)
+		return t.parseNormalOrTripleString(r, posToken)
 	} else if isUnaryOperator(r) {
 		t.unreadRune()
 		return t.ParseUnaryOperator()
