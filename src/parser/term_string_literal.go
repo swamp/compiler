@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -51,9 +52,10 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 			// TODO: CalculateRange in text should return stringLines
 			stringLine := token.StringLine{
 				Position:     stringPartRange.Position(),
-				Length:       stringPartRange.RuneWidth(),
+				Length:       len(stringPart),
 				StringOffset: 0, // For this created stringToken
 			}
+			log.Printf("stringPart '%v', %v", stringPart, stringPartRange)
 			stringToken := token.NewStringToken(stringPart, stringPart, sourceFileReference, []token.StringLine{stringLine})
 
 			if lastExpression != nil && !stringToken.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
@@ -87,7 +89,7 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 			}
 
 			if lastExpression != nil && !expression.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
-				panic(fmt.Sprintf("not allowed expression string %v last was %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
+				panic(fmt.Sprintf("not allowed expression string %v last was %v %T %T", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range, expression, lastExpression))
 			}
 
 			expressions = append(expressions, expression)
@@ -99,6 +101,7 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 
 	remainingString := stringToken.Text()[lastPos:]
 	if len(remainingString) > 0 {
+		log.Printf("want rest of string:%v %v %v", stringToken.Text(), lastPos, len(stringToken.Text()))
 		remainingPartRange := stringToken.CalculateRange(lastPos, len(stringToken.Text()))
 		sourceFileReference := token.SourceFileReference{
 			Range:    remainingPartRange,
@@ -106,7 +109,7 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 		}
 		stringLine := token.StringLine{
 			Position:     remainingPartRange.Position(),
-			Length:       remainingPartRange.RuneWidth(),
+			Length:       len(remainingString),
 			StringOffset: 0,
 		}
 		stringToken := token.NewStringToken(remainingString, remainingString, sourceFileReference, []token.StringLine{stringLine})

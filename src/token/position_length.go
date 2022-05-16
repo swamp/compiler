@@ -193,6 +193,25 @@ func MakeInclusiveSourceFileReferenceSlice(references []SourceFileReferenceProvi
 	return MakeInclusiveSourceFileReference(first.FetchPositionLength(), last.FetchPositionLength())
 }
 
+type SameLineRange struct {
+	start  Position
+	length int
+}
+
+func MakeSameLineRange(start Position, length int) SameLineRange {
+	if length == 0 {
+		panic("how is this possible")
+	}
+	return SameLineRange{
+		start:  start,
+		length: length,
+	}
+}
+
+func (s SameLineRange) String() string {
+	return fmt.Sprintf("[sameline pos:%v length:%v]", s.start, s.length)
+}
+
 type Range struct {
 	start Position
 	end   Position
@@ -273,6 +292,10 @@ func (p Range) Contains(pos Position) bool {
 		return pos.column <= p.end.column
 	}
 	panic("what happened")
+}
+
+func (p Range) ContainsRange(other Range) bool {
+	return other.Start().IsOnOrAfter(other.Start()) && p.end.IsOnOrAfter(other.End())
 }
 
 func (p Range) Position() Position {

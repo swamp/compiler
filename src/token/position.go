@@ -21,6 +21,10 @@ func MakePosition(line int, column int, octetOffset int) Position {
 	return Position{line: line, column: column, octetOffset: octetOffset}
 }
 
+func (p Position) IsOnOrAfter(other Position) bool {
+	return p.line > other.line || (p.line == other.line && p.column >= other.column)
+}
+
 func (p Position) Line() int {
 	return p.line
 }

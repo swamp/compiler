@@ -7,6 +7,7 @@ package tokenize
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -660,7 +661,7 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 			potentialEnd := t.ParsingPosition()
 			next := t.nextRune()
 			if next == '\n' {
-				length := potentialEnd.Position().Column() - currentLineStart.Column()
+				length := potentialEnd.Position().Column() - currentLineStart.Column() - 1
 				newLine := token.StringLine{
 					Position:     currentLineStart,
 					Length:       length,
@@ -669,6 +670,7 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 				lines = append(lines, newLine)
 				t.skipSpaces()
 				currentLineStart = t.ParsingPosition().Position()
+				log.Printf("marking new line at %v", currentLineStart)
 				currentStringIndex = len(a)
 				continue
 			} else {
@@ -690,6 +692,8 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 		Length:       length,
 		StringOffset: currentStringIndex,
 	}
+
+	log.Printf("end line is %v", newLine)
 	lines = append(lines, newLine)
 
 	posLen := t.MakeSourceFileReference(startPosition)
