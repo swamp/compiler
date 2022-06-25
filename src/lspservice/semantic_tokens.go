@@ -703,7 +703,9 @@ func addSemanticTokenBooleanLiteral(stringLiteral *decorated.BooleanLiteral, bui
 }
 
 func addSemanticTokenStringInterpolation(stringInterpolation *decorated.StringInterpolation, builder *SemanticBuilder) error {
+	log.Printf("decorate string interpolation '%v'", stringInterpolation.String())
 	for _, expression := range stringInterpolation.IncludedExpressions() {
+		log.Printf("%T %v", expression, expression.FetchPositionLength().ToCompleteReferenceString())
 		if err := addSemanticToken(expression, builder); err != nil {
 			panic(err)
 			return err

@@ -644,7 +644,7 @@ func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.Cha
 func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, TokenError) {
 	var a string
 	raw := string(startStringRune)
-	var lines []token.StringLine
+	var lines []token.SameLineRange
 	currentLineStart := startPosition.Position().NextColumn() // Skip first "
 	currentStringIndex := 0
 	for {
@@ -662,10 +662,10 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 			next := t.nextRune()
 			if next == '\n' {
 				length := potentialEnd.Position().Column() - currentLineStart.Column() - 1
-				newLine := token.StringLine{
-					Position:     currentLineStart,
-					Length:       length,
-					StringOffset: currentStringIndex,
+				newLine := token.SameLineRange{
+					Position:         currentLineStart,
+					Length:           length,
+					LocalOctetOffset: currentStringIndex,
 				}
 				lines = append(lines, newLine)
 				t.skipSpaces()
@@ -686,11 +686,13 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 		a += string(ch)
 	}
 
+	currentLineStart.SetOctetOffset(0)
+
 	length := len(a) - currentStringIndex
-	newLine := token.StringLine{
-		Position:     currentLineStart,
-		Length:       length,
-		StringOffset: currentStringIndex,
+	newLine := token.SameLineRange{
+		Position:         currentLineStart,
+		Length:           length,
+		LocalOctetOffset: currentStringIndex,
 	}
 
 	log.Printf("end line is %v", newLine)
@@ -726,7 +728,7 @@ func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.
 	currentLineStart := startPosition.Position().NextColumn().NextColumn().NextColumn()
 	currentIndexStart := 0
 
-	var lines []token.StringLine
+	var lines []token.SameLineRange
 	var potentialEnd token.Position
 	for {
 		potentialEnd = t.ParsingPosition().Position()
@@ -747,10 +749,10 @@ func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.
 		a += string(ch)
 		if ch == '\n' {
 			length := potentialEnd.Column() - currentLineStart.Column()
-			newLine := token.StringLine{
-				Position:     currentLineStart,
-				Length:       length,
-				StringOffset: currentIndexStart,
+			newLine := token.SameLineRange{
+				Position:         currentLineStart,
+				Length:           length,
+				LocalOctetOffset: currentIndexStart,
 			}
 			lines = append(lines, newLine)
 			currentLineStart = t.position.Position()
@@ -759,10 +761,10 @@ func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.
 	}
 	stringLength := len(a) - currentIndexStart
 	if stringLength > 0 {
-		newLine := token.StringLine{
-			Position:     currentLineStart,
-			Length:       stringLength,
-			StringOffset: currentIndexStart,
+		newLine := token.SameLineRange{
+			Position:         currentLineStart,
+			Length:           stringLength,
+			LocalOctetOffset: currentIndexStart,
 		}
 		lines = append(lines, newLine)
 	}

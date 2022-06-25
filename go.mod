@@ -9,6 +9,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/piot/go-lsp v0.0.0-20210308100331-e96ace6e5b0d
 	github.com/piot/lsp-server v0.0.0-20210308100659-f6871334c685
+	github.com/stretchr/testify v1.7.0
 	github.com/swamp/assembler v0.0.0-20220302164531-9020b62d1e4b
 	github.com/swamp/disassembler v0.0.0-20220302164004-9d62adc80845
 	github.com/swamp/opcodes v0.0.0-20220302163745-47703b09858c
@@ -16,10 +17,13 @@ require (
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/piot/jsonrpc2 v0.0.0-20210220142131-b277991378fa // indirect
 	github.com/piot/raff-go v0.0.0-20210107105329-efd4e0e14756 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
