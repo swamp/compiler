@@ -148,13 +148,6 @@ func (s SourceFileReference) String() string {
 	return s.ToReferenceString()
 }
 
-func MakeSourceFileReferenceFromString(uri string, tokenRange Range) SourceFileReference {
-	return SourceFileReference{
-		Range:    tokenRange,
-		Document: MakeSourceFileDocument(uri),
-	}
-}
-
 func MakeSourceFileReference(uri *SourceFileDocument, tokenRange Range) SourceFileReference {
 	return SourceFileReference{
 		Range:    tokenRange,
@@ -163,15 +156,6 @@ func MakeSourceFileReference(uri *SourceFileDocument, tokenRange Range) SourceFi
 }
 
 func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileReference) SourceFileReference {
-	/*
-		if start.Document == nil {
-			panic("document can not be nil")
-		}
-		if start.Document != end.Document {
-			panic("source file reference can not span files")
-		}
-
-	*/
 	tokenRange := MakeInclusiveRange(start.Range, end.Range)
 	return SourceFileReference{
 		Range:    tokenRange,
@@ -181,16 +165,6 @@ func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileR
 
 type SourceFileReferenceProvider interface {
 	FetchPositionLength() SourceFileReference
-}
-
-func MakeInclusiveSourceFileReferenceSlice(references []SourceFileReferenceProvider) SourceFileReference {
-	if len(references) < 1 {
-		panic("MakeInclusiveSourceFileReferenceSlice can not be empty")
-	}
-
-	first := references[0]
-	last := references[len(references)-1]
-	return MakeInclusiveSourceFileReference(first.FetchPositionLength(), last.FetchPositionLength())
 }
 
 type SameLineRange struct {
@@ -222,7 +196,7 @@ func MakeSameLineRange(start Position, length int, localOffset int) SameLineRang
 	}
 }
 
-func RangeFromSameLineRange(ranges []SameLineRange) Range {
+func RangeFromSameLineRanges(ranges []SameLineRange) Range {
 	if len(ranges) == 0 {
 		return Range{}
 	}
@@ -234,15 +208,6 @@ func RangeFromSameLineRange(ranges []SameLineRange) Range {
 
 func RangeFromSingleSameLineRange(singleRange SameLineRange) Range {
 	return MakeRange(singleRange.Position, singleRange.Position.AddColumn(singleRange.Length))
-}
-
-func RangeFromSameLineRangeWithStringOffset(ranges []SameLineRange, start int, end int) Range {
-	completeRange := RangeFromSameLineRange(ranges)
-
-	//	completeRange.start.SetOctetOffset(start)
-	//	completeRange.end.SetOctetOffset(end)
-
-	return completeRange
 }
 
 type Range struct {
