@@ -353,7 +353,7 @@ func expandChildNodesBinaryOperator(namedFunctionValue *BinaryOperator) []TypeOr
 func expandChildNodesForCastOperator(castOperator *CastOperator) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(castOperator.Expression())...)
-	tokens = append(tokens, expandChildNodes(castOperator.Type())...)
+	tokens = append(tokens, expandChildNodes(castOperator.AliasReference())...)
 	return tokens
 }
 

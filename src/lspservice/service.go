@@ -250,9 +250,11 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.FetchPositionLength(), nil
 	case *dectype.CustomTypeReference:
 		return t.CustomTypeAtom().FetchPositionLength(), nil
+	case *decorated.AliasReference:
+		return tokenToDefinition(t.Type())
 	}
 
-	err := fmt.Errorf("couldn't find anything for %T", decoratedToken)
+	err := fmt.Errorf("tokenToDefinition: couldn't find anything for %T", decoratedToken)
 
 	log.Printf(err.Error())
 
@@ -515,6 +517,9 @@ func findAllLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filter
 		}
 	case *decorated.FunctionReference:
 		return findAllLinkedSymbolsInDocument(t.FunctionValue(), filterDocument)
+
+	case *decorated.CastOperator:
+		return findAllLinkedSymbolsInDocument(t.AliasReference(), filterDocument)
 	}
 
 	return sourceFileReferences
@@ -565,6 +570,10 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 	case *decorated.FunctionReference:
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
 			sourceFileReferences = append(sourceFileReferences, t.FunctionValue().FetchPositionLength())
+		}
+	case *decorated.CastOperator:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.Type().FetchPositionLength())
 		}
 	default:
 		log.Printf("not sure how to find linked symbols to %T", decoratedToken)

@@ -628,11 +628,10 @@ func addSemanticTokenCastOperator(operator *decorated.CastOperator, builder *Sem
 	if err := addSemanticToken(operator.Expression(), builder); err != nil {
 		return err
 	}
-	/*
-		if err := addSemanticToken(operator.Type(), builder); err != nil {
-			return err
-		}
-	*/
+
+	if err := addSemanticTokenNamedTypeReference(operator.AliasReference().NameReference(), builder); err != nil {
+		return err
+	}
 
 	return nil
 }
