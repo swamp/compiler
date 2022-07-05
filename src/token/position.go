@@ -65,7 +65,7 @@ func (p Position) OctetOffset() int {
 	return p.originalOctetOffsetInSourceFile
 }
 
-func (p Position) SetOctetOffset(offset int) {
+func (p *Position) SetOctetOffset(offset int) {
 	p.originalOctetOffsetInSourceFile = offset
 }
 

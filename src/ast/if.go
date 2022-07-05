@@ -59,5 +59,5 @@ func (i *IfExpression) String() string {
 }
 
 func (i *IfExpression) DebugString() string {
-	return fmt.Sprintf("[if]")
+	return "[if]"
 }

@@ -25,7 +25,7 @@ func DecorateCustomType(customTypeDefinition *ast.CustomType,
 			if newTypeErr != nil {
 				return nil, decorated.NewUnknownTypeInCustomTypeVariant(astVariant, newTypeErr)
 			}
-			astVariantTypes = append(astVariantTypes, newType.(dtype.Type))
+			astVariantTypes = append(astVariantTypes, newType)
 		}
 
 		variant := dectype.NewCustomTypeVariant(astVariantIndex, astVariant, astVariantTypes)

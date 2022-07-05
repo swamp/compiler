@@ -98,7 +98,6 @@ func (d *Decorator) ImportModule(moduleType decorated.ModuleType, importAst *ast
 	moduleRef := decorated.NewModuleReference(importAst.ModuleName(), moduleToImport)
 	var moduleAliasRef *decorated.ModuleReference
 	if !alias.IsEmpty() {
-		relativeModuleName = dectype.MakePackageRelativeModuleName(alias.Path())
 		moduleAliasRef = decorated.NewModuleReference(alias.Path(), moduleToImport)
 	}
 

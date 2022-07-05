@@ -61,10 +61,6 @@ func (g *RootStatementHandler) functionAnnotation(annotation *ast.Annotation, co
 	if decErr != nil {
 		return nil, decErr
 	}
-	checkedType, _ := convertedType.(dtype.Type)
-	if checkedType != nil {
-		// g.decorateStream.AddDeclaration(annotation.Identifier(), checkedType)
-	}
 	return g.AnnotateFunc(annotation, convertedType)
 }
 
@@ -201,7 +197,7 @@ func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assig
 	}
 	forcedFunctionType := DerefFunctionTypeLike(foundFunctionType)
 	if forcedFunctionType == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("I have no forced function type %v", assignment))
+		return nil, decorated.NewInternalError(fmt.Errorf("no forced function type %v", assignment))
 	}
 
 	parameters, parametersErr := createParameterDefinitions(forcedFunctionType, assignment.FunctionValue())

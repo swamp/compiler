@@ -719,53 +719,6 @@ tester = [functionvalue ([[arg $a = [primitive String]]]) -> [fcall [getvar $sec
 `)
 }
 
-func xTestLambda(t *testing.T) {
-	testDecorateWithoutDefault(t,
-		`
-second : String -> Int -> Bool
-second a b =
-    b > 25
-
-
-tester : String -> Bool
-tester a =
-    let
-        secondFn = \y -> second "hello" y
-    in
-    secondFn 23
-`, ``)
-}
-
-func xTestOperatorPipeLambda(t *testing.T) {
-	testDecorateWithoutDefault(t,
-		`
-first : Int -> Int
-first a =
-    a * a
-
-
-second : String -> Int -> Bool
-second a b =
-    b > 25
-
-
-tester : String -> Bool
-tester a =
-    let
-        secondFn = \y -> second "hello" y
-    in
-    first (2+2) |> secondFn
-`, `
-func(Int -> Int) : [func  [primitive Int] [primitive Int]]
-func(Int -> Bool) : [func  [primitive Int] [primitive Bool]]
-func(String -> Bool) : [func  [primitive String] [primitive Bool]]
-
-first = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [getvar $a [primitive Int]] MULTIPLY [getvar $a [primitive Int]])]
-second = [functionvalue ([[arg $a = [primitive Int]]]) -> (boolop [getvar $a [primitive Int]] GR [integer 25])]
-tester = [functionvalue ([[arg $a = [primitive String]]]) -> [fcall [func [[primitive Int] [primitive Bool]]] second [[fcall [func [[primitive Int] [primitive Int]]] first [(arithmetic [integer 2] PLUS [integer 2])]]]]]
-`)
-}
-
 func TestBasicCall(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`

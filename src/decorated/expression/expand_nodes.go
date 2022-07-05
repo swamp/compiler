@@ -302,7 +302,7 @@ func expandChildNodesCustomTypeVariantReference(constructor *dectype.CustomTypeV
 
 func expandChildNodesCaseForTypeAlias(typeAlias *dectype.Alias) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(typeAlias.TypeIdentifier())...)
+	//tokens = append(tokens, expandChildNodes(typeAlias.TypeIdentifier())...)
 	tokens = append(tokens, expandChildNodes(typeAlias.Next())...)
 
 	return tokens
@@ -394,6 +394,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	}
 	tokens := []TypeOrToken{node}
 	switch t := node.(type) {
+
 	case *ModuleReference:
 		return tokens
 	case *AnnotationStatement:
@@ -511,7 +512,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *dectype.AnyMatchingTypes:
 		return tokens
 	case *dectype.Alias:
-		return append(tokens, expandChildNodes(t.Next())...)
+		return append(tokens, expandChildNodesCaseForTypeAlias(t)...)
 	case *dectype.PrimitiveAtom:
 		return append(tokens, expandChildNodesPrimitive(t)...)
 	case *dectype.InvokerType:

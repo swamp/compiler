@@ -90,6 +90,9 @@ func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expre
 		if _, wasCurly := p.maybeLeftCurly(); wasCurly {
 			wasCurlyDestructuring = true
 			identifiers, identifiersErr = parseRecordDestructuring(p, keywordIndentation)
+			if identifiersErr != nil {
+				return nil, identifiersErr
+			}
 		} else {
 			wasCurlyDestructuring = false
 			identifiers, identifiersErr = parseMultipleIdentifiers(p)
