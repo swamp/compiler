@@ -29,6 +29,10 @@ func (c *AliasReference) Type() dtype.Type {
 	return c.referencedType
 }
 
+func (c *AliasReference) TypeAliasReference() *dectype.AliasReference {
+	return c.referencedType
+}
+
 func (c *AliasReference) NameReference() *dectype.NamedDefinitionTypeReference {
 	return c.definitionReference
 }

@@ -629,7 +629,7 @@ func addSemanticTokenCastOperator(operator *decorated.CastOperator, builder *Sem
 		return err
 	}
 
-	if err := addSemanticTokenNamedTypeReference(operator.AliasReference().NameReference(), builder); err != nil {
+	if err := addSemanticToken(operator.AliasReference(), builder); err != nil {
 		return err
 	}
 
@@ -856,6 +856,18 @@ func addSemanticTokenConstantReference(constantReference *decorated.ConstantRefe
 	return nil
 }
 
+func addSemanticAliasReference(constantReference *decorated.AliasReference, builder *SemanticBuilder) error {
+	if err := addSemanticTokenNamedTypeReference(constantReference.NameReference(), builder); err != nil {
+		return err
+	}
+
+	if err := addSemanticToken(constantReference.TypeAliasReference().NameReference(), builder); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func addSemanticTokenCustomTypeVariantParameterExpandReference(parameter *decorated.CaseConsequenceParameterReference, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(parameter.Identifier().FetchPositionLength().Range, "parameter", nil); err != nil {
 		return err
@@ -882,6 +894,8 @@ func typeReferenceHelper(next dtype.Type, referenceRange token.Range, builder *S
 		return addTypeReferenceInvoker(referenceRange, t, builder)
 	case *dectype.Alias:
 		return addTypeReferenceAlias(referenceRange, t, builder)
+	case *dectype.AliasReference:
+		return addTypeReferenceAlias(referenceRange, t.Alias(), builder)
 	case *dectype.CustomTypeAtom:
 		return addTypeReferenceCustomType(referenceRange, t, builder)
 	case *dectype.FunctionAtom:
@@ -914,7 +928,7 @@ func typeReferenceParamHelper(param dtype.Type, builder *SemanticBuilder) error 
 	case *dectype.CustomTypeReference:
 		return addSemanticToken(t, builder)
 	case *dectype.AliasReference:
-		return addSemanticTokenTypeReference(t, builder)
+		return addSemanticToken(t, builder)
 	case *dectype.InvokerType:
 		return addSemanticToken(t, builder)
 	case *dectype.FunctionAtom:
@@ -1051,7 +1065,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenConstant(t, builder)
 	case *decorated.ConstantReference:
 		return addSemanticTokenConstantReference(t, builder)
-
+	case *decorated.AliasReference:
+		return addSemanticAliasReference(t, builder)
 	case *decorated.FunctionReference:
 		return addSemanticTokenFunctionReference(t, builder)
 	case *decorated.FunctionParameterReference:
