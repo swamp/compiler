@@ -500,6 +500,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesConstant(t)...)
 	case *ConstantReference:
 		return tokens
+	case *AliasReference:
+		return append(tokens, expandChildNodes(t.Type())...)
 	case *BinaryOperator:
 		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:
