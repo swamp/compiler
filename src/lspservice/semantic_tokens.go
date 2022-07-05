@@ -682,9 +682,15 @@ func addSemanticTokenLetVariableReference(letVarReference *decorated.LetVariable
 
 func addSemanticTokenString(stringLiteral *decorated.StringLiteral, builder *SemanticBuilder) error {
 	log.Printf("encoding string '%v'", stringLiteral)
-	if err := builder.EncodeSymbol(stringLiteral.FetchPositionLength().Range, "string", nil); err != nil {
-		return err
+
+	// Strings can continue over several lines
+	for _, sameLineRange := range stringLiteral.AstString().Token.StringLines() {
+		tempRange := token.RangeFromSingleSameLineRange(sameLineRange)
+		if err := builder.EncodeSymbol(tempRange, "string", nil); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 

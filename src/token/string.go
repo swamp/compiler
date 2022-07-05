@@ -25,17 +25,18 @@ func NewStringToken(raw string, text string, position SourceFileReference, strin
 	for _, stringLine := range stringLines {
 		if stringLine.LocalStringOffset() < 0 || (stringLine.LocalStringOffset() >= strLength && strLength != 0) {
 			panic(fmt.Errorf("illegal string line %v %v '%v'", stringLine.LocalStringOffset(), strLength, text))
-		} // : stringLine.LocalStringOffset+stringLine.Length]
+		}
 		if stringLine.LocalStringOffset()+stringLine.Length > strLength {
 			panic(fmt.Errorf("illegal string line totalOffset '%v' %v %v vs %v", text, stringLine.LocalStringOffset(), stringLine.Length, strLength))
 		}
 	}
 
-	log.Printf("NewStringToken '%v'", text)
-	calculatedRange := t.CalculateRanges(0, len(text)-1)
-	if !position.Range.ContainsSameLineRanges(calculatedRange) {
-		t.DebugOutput()
-		panic(fmt.Errorf("string literal do not contain '%v' %v \n%v\nvs\n%v (%v)", text, position, calculatedRange, position.Range, stringLines))
+	if len(text) > 0 {
+		calculatedRange := t.CalculateRanges(0, len(text)-1)
+		if !position.Range.ContainsSameLineRanges(calculatedRange) {
+			t.DebugOutput()
+			panic(fmt.Errorf("string literal do not contain '%v' %v \n%v\nvs\n%v (%v)", text, position, calculatedRange, position.Range, stringLines))
+		}
 	}
 
 	return t
@@ -61,7 +62,6 @@ func findSameLineRangeFromLocalOffset(stringLines []SameLineRange, stringOffset 
 		start := stringLine.LocalStringOffset()
 		end := stringLine.LocalStringOffset() + stringLine.Length - 1
 		if stringOffset >= start && stringOffset <= end {
-			log.Printf("found stringOffset: %v to index %v to %v", stringOffset, index, stringLine)
 			return index, stringLine
 		}
 	}
@@ -69,7 +69,6 @@ func findSameLineRangeFromLocalOffset(stringLines []SameLineRange, stringOffset 
 }
 
 func (s StringToken) GetStringLinesFromLocalOctetOffset(start int, end int) []SameLineRange {
-	log.Printf("'%v' %v:%v (length:%v)", s.text, start, end, len(s.text))
 	if start > end {
 		panic("not allowed")
 	}
@@ -85,19 +84,24 @@ func (s StringToken) GetStringLinesFromLocalOctetOffset(start int, end int) []Sa
 
 	remaining := start - startStringLine.LocalStringOffset()
 
-	log.Printf("found '%v' startIndex %v endIndex %v, skip first line %v", s.text, startIndex, endIndex, remaining)
 	newColumn := startStringLine.Position.Column() + remaining
 	firstPosition := Position{
 		line:                            startStringLine.Position.Line(),
 		column:                          newColumn,
-		originalOctetOffsetInSourceFile: start,
+		originalOctetOffsetInSourceFile: startStringLine.LocalOctetOffset + remaining,
 	}
 
 	var runLength int
-	if end <= startStringLine.LocalStringOffset()+startStringLine.Length {
+	if startIndex == endIndex {
 		runLength = end - start
 	} else {
-		runLength = startStringLine.Length
+		if start > startStringLine.LocalStringOffset()+startStringLine.Length {
+			panic(fmt.Errorf("illegal start position %v", start))
+		}
+		runLength = startStringLine.Length - (start - startStringLine.LocalStringOffset())
+		if runLength == 0 {
+			panic(fmt.Errorf("zero run length is illegal"))
+		}
 	}
 
 	startLineRange := MakeSameLineRange(firstPosition, runLength, start)
@@ -105,7 +109,6 @@ func (s StringToken) GetStringLinesFromLocalOctetOffset(start int, end int) []Sa
 
 	for i := startIndex + 1; i < endIndex; i++ {
 		stringLine := s.stringLines[i]
-		//sameLineRange := MakeSameLineRange(stringLine.Position, stringLine.Length, stringLine.LocalStringOffset)
 		convertedLines = append(convertedLines, stringLine)
 	}
 
@@ -115,14 +118,12 @@ func (s StringToken) GetStringLinesFromLocalOctetOffset(start int, end int) []Sa
 		lastPosition := Position{
 			line:                            endStringLine.Position.Line(),
 			column:                          newColumnEnd,
-			originalOctetOffsetInSourceFile: end,
+			originalOctetOffsetInSourceFile: endStringLine.LocalOctetOffset + endStringLine.Position.Column(),
 		}
 
-		endLineRange := MakeSameLineRange(lastPosition, remainingEnd, end)
+		endLineRange := MakeSameLineRange(lastPosition, remainingEnd, endStringLine.LocalStringOffset())
 		convertedLines = append(convertedLines, endLineRange)
 	}
-
-	log.Printf("resulting stringLines %v", convertedLines)
 
 	return convertedLines
 }
@@ -135,6 +136,11 @@ func (s StringToken) CalculateRangesWithOffset(start int, end int, octetOffset i
 		newRanges = append(newRanges, x)
 	}
 	return newRanges
+}
+
+func (s StringToken) CalculateRangesWithOffsetAndString(start int, end int, octetOffset int) ([]SameLineRange, string) {
+	ranges := s.CalculateRangesWithOffset(start, end, octetOffset)
+	return ranges, s.text[start:end]
 }
 
 func (s StringToken) CalculateRanges(start int, end int) []SameLineRange {

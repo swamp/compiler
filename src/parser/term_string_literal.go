@@ -7,7 +7,6 @@ package parser
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 
@@ -43,26 +42,23 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 		end := item[1]
 
 		stringPart := stringToken.Text()[lastPos:start]
-		stringPartRange := stringToken.CalculateRangesWithOffset(lastPos, start, lastPos)
+		stringPartRanges := stringToken.CalculateRangesWithOffset(lastPos, start, lastPos)
 		if len(stringPart) > 0 {
-			log.Printf("detected range %v:%v %v", lastPos, start, stringPartRange)
-			//	if stringPartRange.OctetCount() != len(stringPart) {
-			//		panic(fmt.Sprintf("%v   not good. lengths differ %v vs %v", stringPartRange, stringPartRange.OctetCount(), len(stringPart)))
+			//	if stringPartRanges.OctetCount() != len(stringPart) {
+			//		panic(fmt.Sprintf("%v   not good. lengths differ %v vs %v", stringPartRanges, stringPartRanges.OctetCount(), len(stringPart)))
 			//	}
 
-			completeRange := token.RangeFromSameLineRange(stringPartRange)
+			completeRange := token.RangeFromSameLineRange(stringPartRanges)
+
 			sourceFileReference := token.SourceFileReference{
 				Range:    completeRange,
 				Document: stringToken.Document,
 			}
-			log.Printf("stringPart '%v', %v", stringPart, stringPartRange)
-			stringToken := token.NewStringToken(stringPart, stringPart, sourceFileReference, stringPartRange)
+			stringToken := token.NewStringToken(stringPart, stringPart, sourceFileReference, stringPartRanges)
 
 			if lastExpression != nil && !stringToken.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
 				panic(fmt.Sprintf("not allowed %v %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
 			}
-
-			log.Printf("stringToken '%v', %v", stringToken, stringToken.Range)
 
 			expression := ast.NewStringLiteral(stringToken)
 
@@ -85,7 +81,6 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 			if expressionErr != nil {
 				return nil, expressionErr
 			}
-			log.Printf("generated expression %T %v %v", expression, expression, expression.FetchPositionLength().Range)
 
 			//if !startPositionOfExpression.IsEqual(expression.FetchPositionLength().Range) {
 			//	panic(fmt.Sprintf("correct range is %v, but got %v. something is wrong in type %T", startPositionOfExpression, expression.FetchPositionLength().Range, expression))
@@ -104,7 +99,6 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 
 	remainingString := stringToken.Text()[lastPos:]
 	if len(remainingString) > 0 {
-		log.Printf("want rest of string:%v %v %v", stringToken.Text(), lastPos, len(stringToken.Text()))
 		remainingPartRange := stringToken.CalculateRangesWithOffset(lastPos, len(stringToken.Text()), lastPos)
 		sourceFileReference := token.SourceFileReference{
 			Range:    token.RangeFromSameLineRange(remainingPartRange),
@@ -128,16 +122,6 @@ func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression
 
 	return expressions, nil
 }
-
-/*
-func replaceInterpolationStringToString(s string) string {
-	return replaceInterpolationString(s, " ++ ", "Debug.toString(%v)")
-}
-
-func replaceInterpolationStringToTuple(s string) string {
-	return "( " + replaceInterpolationString(s, ", ", "%v") + " )"
-}
-*/
 
 func stringToExpression(replaced string, sourceFileReference token.SourceFileReference) (ast.Expression, parerr.ParseError) {
 	reader := strings.NewReader(replaced)

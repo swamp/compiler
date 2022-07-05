@@ -56,8 +56,8 @@ func (p Position) PreviousColumn() Position {
 func (p Position) AddColumn(length int) Position {
 	return Position{
 		line:                            p.line,
-		column:                          p.column + length,
-		originalOctetOffsetInSourceFile: p.originalOctetOffsetInSourceFile + length,
+		column:                          p.column + length - 1,
+		originalOctetOffsetInSourceFile: p.originalOctetOffsetInSourceFile + length - 1,
 	}
 }
 

@@ -232,6 +232,10 @@ func RangeFromSameLineRange(ranges []SameLineRange) Range {
 	return MakeRange(first.Position, last.Position.AddColumn(last.Length))
 }
 
+func RangeFromSingleSameLineRange(singleRange SameLineRange) Range {
+	return MakeRange(singleRange.Position, singleRange.Position.AddColumn(singleRange.Length))
+}
+
 func RangeFromSameLineRangeWithStringOffset(ranges []SameLineRange, start int, end int) Range {
 	completeRange := RangeFromSameLineRange(ranges)
 
