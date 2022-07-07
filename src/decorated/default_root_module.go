@@ -7,6 +7,7 @@ package deccy
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/parser"
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
@@ -180,8 +181,12 @@ func compileToModule(globalModule *decorated.Module, name string, code string) (
 	newModule, err := InternalCompileToModule(decorated.ModuleTypeNormal, nil, globalModule,
 		fullyQualifiedName,
 		name+"_internal", strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
-	if err != nil {
+	if parser.IsCompileError(err) {
 		return nil, err
+	}
+
+	if newModule == nil {
+		panic("newModule can not be nil, if it isnt a compile err")
 	}
 
 	newModule.MarkAsInternal()

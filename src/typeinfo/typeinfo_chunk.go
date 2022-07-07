@@ -975,6 +975,9 @@ func (c *Chunk) consumeList(genericTypes []dtype.Type) (InfoType, error) {
 	}
 
 	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(itemType)
+	if !dectype.IsLocalType(itemType) && memorySize == 0 {
+		panic(fmt.Errorf("can not have zero item size"))
+	}
 
 	proposedNewList := &ListType{
 		Type:      Type{},

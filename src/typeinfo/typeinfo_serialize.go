@@ -157,15 +157,12 @@ func writeMemoryOffset(writer io.Writer, offset MemoryOffset) error {
 }
 
 func writeMemorySize(writer io.Writer, size MemorySize) error {
-	if size == 0 {
-		//	panic(fmt.Errorf("illegal memory size"))
-	}
 	return writeUint16(writer, int(size))
 }
 
 func writeMemoryAlign(writer io.Writer, align MemoryAlign) error {
-	if align == 0 {
-		// panic(fmt.Errorf("illegal memory align"))
+	if align > 8 {
+		panic(fmt.Errorf("illegal memory align"))
 	}
 	return writeUint8(writer, uint8(align))
 }

@@ -27,7 +27,7 @@ func (d *DocumentCache) Open(path LocalFileSystemPath, payload string) error {
 }
 
 func (d *DocumentCache) internalOpen(path LocalFileSystemPath, payload string) error {
-	found := d.documents[path]
+	found, _ := d.documents[path]
 	if found != nil {
 		found.Overwrite(payload)
 	} else {
@@ -37,7 +37,7 @@ func (d *DocumentCache) internalOpen(path LocalFileSystemPath, payload string) e
 }
 
 func (d *DocumentCache) Close(path LocalFileSystemPath) error {
-	found := d.documents[path]
+	found, _ := d.documents[path]
 	if found != nil {
 		return fmt.Errorf("no such file cached and open %v", path)
 	}
@@ -48,7 +48,7 @@ func (d *DocumentCache) Close(path LocalFileSystemPath) error {
 }
 
 func (d *DocumentCache) Get(path LocalFileSystemPath) (*InMemoryDocument, error) {
-	found := d.documents[path]
+	found, _ := d.documents[path]
 	if found == nil {
 		return nil, fmt.Errorf("no such file cached and open %v\n%v", path, d.documents)
 	}

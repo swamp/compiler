@@ -28,7 +28,6 @@ type ParseStreamImpl struct {
 	parser              ParserInterface
 	disableEnforceStyle bool
 	nodes               []ast.Node
-	warnings            []parerr.ParseError
 	errors              []parerr.ParseError
 }
 
@@ -113,16 +112,8 @@ func (p *ParseStreamImpl) readTypeIdentifier() (*ast.TypeIdentifier, parerr.Pars
 	return typeIdent, nil
 }
 
-func (p *ParseStreamImpl) AddWarning(parseError parerr.ParseError) {
-	p.warnings = append(p.warnings, parseError)
-}
-
 func (p *ParseStreamImpl) AddError(parseError parerr.ParseError) {
 	p.errors = append(p.errors, parseError)
-}
-
-func (p *ParseStreamImpl) Warnings() []parerr.ParseError {
-	return p.warnings
 }
 
 func (p *ParseStreamImpl) Errors() []parerr.ParseError {
@@ -717,7 +708,7 @@ func (p *ParseStreamImpl) eatOneSpace(reason string) (token.IndentationReport, p
 			if report.NewLineCount == 0 && report.SpacesUntilMaybeNewline == 0 {
 				return report, err
 			}
-			p.AddWarning(err)
+			p.AddError(err)
 		}
 	}
 
@@ -809,7 +800,7 @@ func (p *ParseStreamImpl) eatNewLinesAfterStatement(count int) (token.Indentatio
 
 		if report.NewLineCount > 0 && report.IndentationSpaces == 0 {
 			err := parerr.NewExpectedNewLineCount(report.PositionLength, count, report.NewLineCount)
-			p.AddWarning(err)
+			p.AddError(err)
 			return report, nil
 		}
 	}

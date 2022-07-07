@@ -15,7 +15,7 @@ func NewUnusedWarning(definition ModuleDef) *UnusedWarning {
 	return &UnusedWarning{definition: definition}
 }
 
-func (e *UnusedWarning) Warning() string {
+func (e *UnusedWarning) Error() string {
 	return fmt.Sprintf("unused definition '%v'", e.definition.Identifier().Name())
 }
 
@@ -31,7 +31,7 @@ func NewUnusedTypeWarning(unusedType dtype.Type) *UnusedTypeWarning {
 	return &UnusedTypeWarning{unusedType: unusedType}
 }
 
-func (e *UnusedTypeWarning) Warning() string {
+func (e *UnusedTypeWarning) Error() string {
 	return fmt.Sprintf("unused type '%v'", e.unusedType.HumanReadable())
 }
 
@@ -51,7 +51,7 @@ func NewUnusedImportWarning(definition *ImportedModule, description string) *Unu
 	return &UnusedImportWarning{definition: definition, description: description}
 }
 
-func (e *UnusedImportWarning) Warning() string {
+func (e *UnusedImportWarning) Error() string {
 	if e.definition == nil {
 		return fmt.Sprintf("unused import (%v)", e.description)
 	}

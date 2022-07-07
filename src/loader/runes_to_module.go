@@ -6,13 +6,12 @@
 package loader
 
 import (
-	"fmt"
-
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/verbosity"
+	"log"
 )
 
 type RunesToModuleConverter interface {
@@ -35,7 +34,7 @@ func NewModuleReaderAndDecorator(runesLoader ModuleRunes, runesToModule RunesToM
 func (r *ModuleReaderAndDecorator) ReadModule(moduleType decorated.ModuleType, repository deccy.ModuleRepository, moduleName dectype.PackageRelativeModuleName, namespacePrefix dectype.PackageRootModuleName) (*decorated.Module, decshared.DecoratedError) {
 	const verboseFlag = verbosity.None
 	if verboseFlag > verbosity.None {
-		fmt.Printf("* read module %v\n", moduleName)
+		log.Printf("* read module %v\n", moduleName)
 	}
 
 	fullyQualifiedName := namespacePrefix.Join(moduleName)

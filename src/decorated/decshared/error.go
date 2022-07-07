@@ -11,8 +11,3 @@ type DecoratedError interface {
 	FetchPositionLength() token.SourceFileReference
 	Error() string
 }
-
-type DecoratedWarning interface {
-	FetchPositionLength() token.SourceFileReference
-	Warning() string
-}

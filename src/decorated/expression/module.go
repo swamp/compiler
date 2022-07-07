@@ -96,7 +96,6 @@ type Module struct {
 	nodes                    []TypeOrToken
 	references               []*ModuleReference
 	errors                   []decshared.DecoratedError
-	warnings                 []decshared.DecoratedWarning
 	moduleType               ModuleType
 }
 
@@ -132,28 +131,12 @@ func (m *Module) AddReference(ref *ModuleReference) {
 	m.references = append(m.references, ref)
 }
 
-func (m *Module) AddWarning(warning decshared.DecoratedWarning) {
-	m.warnings = append(m.warnings, warning)
-}
-
-func (m *Module) Warnings() []decshared.DecoratedWarning {
-	return m.warnings
-}
-
 func (m *Module) References() []*ModuleReference {
 	return m.references
 }
 
 func (m *Module) SetProgram(program *ast.SourceFile) {
 	m.program = program
-}
-
-func (m *Module) SetErrors(errors []decshared.DecoratedError) {
-	m.errors = errors
-}
-
-func (m *Module) Errors() []decshared.DecoratedError {
-	return m.errors
 }
 
 func (m *Module) Document() *token.SourceFileDocument {

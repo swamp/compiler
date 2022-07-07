@@ -18,6 +18,26 @@ type ParseError interface {
 	Error() string
 }
 
+type MultiError struct {
+	errors []ParseError
+}
+
+func NewMultiError(errors []ParseError) MultiError {
+	return MultiError{errors: errors}
+}
+
+func (m MultiError) Error() string {
+	return fmt.Sprintf("%v", m.errors)
+}
+
+func (m MultiError) Errors() []ParseError {
+	return m.errors
+}
+
+func (m MultiError) FetchPositionLength() token.SourceFileReference {
+	return m.errors[0].FetchPositionLength()
+}
+
 type SubError struct {
 	SubErr tokenize.TokenError
 }
@@ -325,7 +345,7 @@ func NewExpectedVariableIdentifierError(err tokenize.TokenError) ExpectedVariabl
 }
 
 type UnknownKeywordError struct {
-	pos token.SourceFileReference
+	pos      token.SourceFileReference
 	subError error
 }
 
@@ -340,7 +360,6 @@ func (e UnknownKeywordError) Error() string {
 func (e UnknownKeywordError) FetchPositionLength() token.SourceFileReference {
 	return e.pos
 }
-
 
 func (e ExpectedVariableIdentifierError) Error() string {
 	return fmt.Sprintf("expected a variable identifier (start with lowercase) %v", e.SubError)

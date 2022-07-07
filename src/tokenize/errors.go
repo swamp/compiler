@@ -73,7 +73,7 @@ func NewLineIsLongerThanRecommendedError(posLength token.SourceFileReference) Li
 }
 
 func (e LineIsLongerThanRecommendedError) Error() string {
-	return fmt.Sprintf("line exceeds recommended line length (%v of 110).", e.StandardTokenError.posLength.Range.End().Column())
+	return fmt.Sprintf("line exceeds recommended line length (%v of 115).", e.StandardTokenError.posLength.Range.End().Column())
 }
 
 type MultiErrors struct {

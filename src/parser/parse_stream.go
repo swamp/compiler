@@ -13,8 +13,6 @@ import (
 )
 
 type ParseStream interface {
-	AddWarning(parserError parerr.ParseError)
-	Warnings() []parerr.ParseError
 	addNode(node ast.Node)
 
 	// -----------------------------------------------------------------------------------------------------------------

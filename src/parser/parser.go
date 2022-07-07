@@ -63,10 +63,6 @@ func (p *Parser) Errors() []parerr.ParseError {
 	return p.stream.Errors()
 }
 
-func (p *Parser) Warnings() []parerr.ParseError {
-	return p.stream.Warnings()
-}
-
 func writeAllNodes(nodes []ast.Node) {
 	lastLine := -1
 
@@ -85,10 +81,12 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 
 	linesToPad := -2
 
+	var errors []parerr.ParseError
+
 	for !p.stream.tokenizer.MaybeEOF() {
 		report, mustHaveLineAfterStatementErr := p.stream.eatNewLinesAfterStatement(linesToPad)
 		if mustHaveLineAfterStatementErr != nil {
-			return nil, parerr.NewExpectedTwoLinesAfterStatement(mustHaveLineAfterStatementErr)
+			errors = append(errors, mustHaveLineAfterStatementErr)
 		}
 
 		if p.stream.tokenizer.MaybeEOF() {
@@ -96,7 +94,7 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 		}
 
 		if (report.SpacesUntilMaybeNewline > 0 || linesToPad == -1) && report.IndentationSpaces > 0 {
-			return nil, parerr.NewExtraSpacing(p.stream.sourceFileReference())
+			errors = append(errors, parerr.NewExtraSpacing(p.stream.sourceFileReference()))
 		}
 
 		astMultilineComments := ast.CommentBlockToAst(report.Comments)
@@ -113,7 +111,11 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 
 		expression, expressionErr := p.parseExpressionStatement(lastComment)
 		if expressionErr != nil {
-			return nil, expressionErr
+			errors = append(errors, expressionErr)
+		}
+
+		if IsCompileError(expressionErr) {
+			return nil, parerr.NewMultiError(errors)
 		}
 
 		statements = append(statements, expression)
@@ -121,11 +123,15 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 		linesToPad = ast.ExpectedLinePaddingAfter(expression)
 	}
 
+	var returnErr parerr.ParseError
+	if len(errors) > 0 {
+		returnErr = parerr.NewMultiError(errors)
+	}
 	program := ast.NewSourceFile(statements)
 
 	program.SetNodes(p.stream.nodes)
 
-	return program, nil
+	return program, returnErr
 }
 
 func (p *Parser) ParseExpression() (*ast.SourceFile, parerr.ParseError) {

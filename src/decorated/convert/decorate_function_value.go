@@ -8,7 +8,6 @@ package decorator
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -34,23 +33,6 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	}
 
 	return newVariableContext
-}
-
-func checkParameterCount(forcedFunctionType *dectype.FunctionAtom, potentialFunc *ast.FunctionValue) decshared.DecoratedError {
-	foundAnyMatching, minimalCount := dectype.HasAnyMatchingTypes(forcedFunctionType.FunctionParameterTypes())
-	if foundAnyMatching {
-		if (len(potentialFunc.Parameters()) + 1) < minimalCount {
-			return decorated.NewWrongNumberOfArgumentsInFunctionValue(potentialFunc, forcedFunctionType, forcedFunctionType.FunctionParameterTypes())
-		}
-		return nil
-	}
-
-	parameterTypes, _ := forcedFunctionType.ParameterAndReturn()
-	if len(parameterTypes) != len(potentialFunc.Parameters()) {
-		return decorated.NewWrongNumberOfArgumentsInFunctionValue(potentialFunc, forcedFunctionType, parameterTypes)
-	}
-
-	return nil
 }
 
 func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionValue *decorated.FunctionValue, context *VariableContext) decshared.DecoratedError {
@@ -86,13 +68,13 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionVal
 		}
 
 		/*
-		checkForNoLint := "a" // CheckForNoLint(comments)
-		if checkForNoLint != "unused" {
-		} else {
-			// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
-		}
+			checkForNoLint := "a" // CheckForNoLint(comments)
+			if checkForNoLint != "unused" {
+			} else {
+				// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
+			}
 
-		 */
+		*/
 	} else {
 		decoratedExpression = annotation
 	}

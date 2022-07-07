@@ -71,7 +71,6 @@ func (l *LetVariable) FetchPositionLength() token.SourceFileReference {
 type LetAssignment struct {
 	expression       Expression
 	letVariables     []*LetVariable
-	inclusive        token.SourceFileReference
 	astLetAssignment ast.LetAssignment
 }
 

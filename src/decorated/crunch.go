@@ -7,6 +7,7 @@ package deccy
 
 import (
 	"fmt"
+	parerr "github.com/swamp/compiler/src/parser/errors"
 	"reflect"
 	"strings"
 
@@ -47,39 +48,55 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 
 func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose verbosity.Verbosity) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
 	ioReader := strings.NewReader(code)
+
+	var errors []decshared.DecoratedError
+
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, absoluteFilename)
 	if runeReaderErr != nil {
 		return nil, nil, decorated.NewInternalError(runeReaderErr)
 	}
 
 	tokenizer, tokenizerErr := tokenize.NewTokenizer(runeReader, enforceStyle)
+	if parser.IsCompileError(tokenizerErr) {
+		return tokenizer, nil, tokenizerErr
+	}
 	if tokenizerErr != nil {
-		parser.ShowWarningOrError(tokenizer, tokenizerErr)
+		errors = append(errors, tokenizerErr)
 	}
 
 	p := parser.NewParser(tokenizer, enforceStyle)
 	program, programErr := p.Parse()
-	parserErrors := p.Errors()
-	if len(parserErrors) > 0 {
-		for _, parserErr := range parserErrors {
-			parser.ShowWarningOrError(tokenizer, parserErr)
-		}
-	}
-
-	parserWarnings := p.Warnings()
-	if len(parserWarnings) > 0 {
-		for _, parserErr := range parserWarnings {
-			parser.ShowWarningOrError(tokenizer, parserErr)
-		}
-	}
-
 	if programErr != nil {
-		return tokenizer, nil, programErr
+		errors = append(errors, programErr)
+	}
+	if parser.IsCompileError(programErr) {
+		var returnErr parerr.ParseError
+		if len(errors) > 0 {
+			returnErr = decorated.NewMultiErrors(errors)
+		}
+		return tokenizer, program, returnErr
+	}
+
+	if program == nil {
+		panic("program must be valid since it was not a compile error")
+	}
+
+	parserErrors := p.Errors()
+	for _, parserErr := range parserErrors {
+		errors = append(errors, parserErr)
+		if parser.IsCompileError(parserErr) {
+			return tokenizer, nil, parserErr
+		}
 	}
 
 	program.SetNodes(p.Nodes())
 
-	return tokenizer, program, nil
+	var returnErr parerr.ParseError
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return tokenizer, program, returnErr
 }
 
 func isInternalType(typeToCheck dtype.Type) bool {
@@ -88,37 +105,36 @@ func isInternalType(typeToCheck dtype.Type) bool {
 	return isPrimitive
 }
 
-func checkUnusedImports(module *decorated.Module, importModules []*decorated.Module) {
+func checkUnusedImports(module *decorated.Module) []decshared.DecoratedError {
+	var errors []decshared.DecoratedError
 	for _, definition := range module.ImportedModules().AllModules() {
 		if !definition.WasReferenced() && !definition.ReferencedModule().IsInternal() {
 			warning := decorated.NewUnusedImportWarning(definition, "importedModules.All()")
-			module.AddWarning(warning)
+			errors = append(errors, warning)
 		}
 	}
 
 	for _, definition := range module.ImportedDefinitions().ReferencedDefinitions() {
 		if !definition.WasReferenced() && !definition.IsInternal() {
 			warning := decorated.NewUnusedImportWarning(definition.CreatedBy(), "referenced definitions")
-			module.AddWarning(warning)
+			errors = append(errors, warning)
 		}
 	}
-	/*
-		for importedTypeName, importedType := range module.ImportedTypes().AllTypes() {
-			if !importedType.WasReferenced() && importedType.CreatedByModuleImport() != nil && !isInternalType(importedType.ReferencedType()) {
-				warning := decorated.NewUnusedImportWarning(importedType.CreatedByModuleImport(), fmt.Sprintf("imported types '%v'", importedTypeName))
-				module.AddWarning(warning)
-			}
+	for _, importedType := range module.ImportedTypes().AllTypes() {
+		if !importedType.WasReferenced() && importedType.CreatedByModuleImport() != nil && !isInternalType(importedType.ReferencedType()) {
+			//warning := decorated.NewUnusedImportWarning(importedType.CreatedByModuleImport(), fmt.Sprintf("imported types '%v'", importedTypeName))
+			//module.AddWarning(warning)
 		}
+	}
 
-	*/
+	return errors
 }
 
 func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository ModuleRepository, rootModule *decorated.Module,
 	moduleName dectype.ArtifactFullyQualifiedModuleName, absoluteFilename string, code string,
 	enforceStyle bool, verbose verbosity.Verbosity, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
 	tokenizer, program, programErr := InternalCompileToProgram(absoluteFilename, code, enforceStyle, verbose)
-	if programErr != nil {
-		parser.ShowAsError(tokenizer, programErr)
+	if parser.IsCompileError(programErr) {
 		return nil, programErr
 	}
 
@@ -156,7 +172,8 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	}
 	allErrors = append(allErrors, converter.Errors()...)
 
-	// checkUnusedImports(module, importModules)
+	//importErrors := checkUnusedImports(module)
+	//allErrors = append(allErrors, importErrors...)
 
 	var returnErr decshared.DecoratedError
 

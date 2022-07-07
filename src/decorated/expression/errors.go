@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -473,7 +472,6 @@ func (e *ConstructorArgumentTypeMismatch) FetchPositionLength() token.SourceFile
 
 type ExpectedCustomTypeVariantConstructor struct {
 	call *ast.ConstructorCall
-	err  error
 }
 
 func NewExpectedCustomTypeVariantConstructor(call *ast.ConstructorCall) *ExpectedCustomTypeVariantConstructor {
@@ -1139,6 +1137,15 @@ func NewMultiErrors(errors []decshared.DecoratedError) *MultiErrors {
 	if len(errors) == 0 {
 		panic("must have one or more errors in multi errors")
 	}
+	if errors == nil {
+		panic("not good")
+	}
+	for _, e := range errors {
+		if e == nil {
+			panic("invalid slice")
+		}
+	}
+
 	return &MultiErrors{errors: errors}
 }
 

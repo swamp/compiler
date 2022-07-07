@@ -118,7 +118,7 @@ func (i *Guard) AstGuard() *ast.GuardExpression {
 }
 
 func (i *Guard) DebugString() string {
-	return fmt.Sprintf("[dguard]")
+	return "[dguard]"
 }
 
 func (i *Guard) FetchPositionLength() token.SourceFileReference {

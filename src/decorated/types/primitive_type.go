@@ -42,6 +42,12 @@ func IsListAny(checkType dtype.Type) bool {
 	return IsAny(listAtom.GenericTypes()[0])
 }
 
+func IsLocalType(checkType dtype.Type) bool {
+	unliased := UnaliasWithResolveInvoker(checkType)
+	_, wasLocalType := unliased.(*LocalType)
+	return wasLocalType
+}
+
 func IsTypeIdRef(checkType dtype.Type) bool {
 	unliased := UnaliasWithResolveInvoker(checkType)
 	primitive, wasPrimitive := unliased.(*PrimitiveAtom)
