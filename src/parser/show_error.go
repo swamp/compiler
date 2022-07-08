@@ -124,6 +124,7 @@ type ReportAsSeverity uint8
 
 const (
 	ReportAsSeverityNote ReportAsSeverity = iota
+	ReportAsSeverityInfo
 	ReportAsSeverityWarning
 	ReportAsSeverityError
 )
@@ -174,7 +175,7 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 
 	errorString := fmt.Sprintf("%v:%d:%d: %v", pathToShow, highlightLine+1, highlightColumn+1,
 		coloredErrorMessage)
-	log.Printf("%v %T\n", errorString, parserError)
+	fmt.Fprintf(os.Stderr, "%v %T\n", errorString, parserError)
 
 	color.NoColor = false
 

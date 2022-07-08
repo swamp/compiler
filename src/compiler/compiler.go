@@ -77,16 +77,25 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 		resourceNameLookup := resourceid.NewResourceNameLookupImpl()
 		if solutionSettings, err := solution.LoadIfExists(mainSourceFile); err == nil {
 			var packages []*loader.Package
+			var errors []decshared.DecoratedError
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
 				compiledPackage, err := CompileAndLink(typeInformationChunk, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, showAssembler, verboseFlag)
-				if parser.IsCompileError(err) {
-					return packages, err
+				if err != nil {
+					errors = append(errors, err)
 				}
+				if parser.IsCompileError(err) {
+					return packages, decorated.NewMultiErrors(errors)
+				}
+
 				packages = append(packages, compiledPackage)
 			}
-			return packages, nil
+			var returnErr decshared.DecoratedError
+			if len(errors) > 0 {
+				returnErr = decorated.NewMultiErrors(errors)
+			}
+			return packages, returnErr
 		} else {
 			return nil, fmt.Errorf("must have a solution file in this version")
 		}
@@ -385,14 +394,24 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 
 func CompileAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup resourceid.ResourceNameLookup, configuration environment.Environment, name string,
 	filename string, outputFilename string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+	var errors []decshared.DecoratedError
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
 	if parser.IsCompileError(compileErr) {
 		return nil, compileErr
 	}
-
-	if err := GenerateAndLink(typeInformationChunk, resourceNameLookup, compiledPackage, outputFilename, showAssembler, verboseFlag); err != nil {
-		return compiledPackage, err
+	if compileErr != nil {
+		errors = append(errors, compileErr)
 	}
 
-	return compiledPackage, nil
+	linkErr := GenerateAndLink(typeInformationChunk, resourceNameLookup, compiledPackage, outputFilename, showAssembler, verboseFlag)
+	if linkErr != nil {
+		errors = append(errors, linkErr)
+	}
+
+	var returnErr decshared.DecoratedError
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return compiledPackage, returnErr
 }
