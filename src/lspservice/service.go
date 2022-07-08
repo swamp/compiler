@@ -857,6 +857,17 @@ func sendToLspError(allDiagnostics *DiagnosticsForDocuments, compileErr error) e
 		}
 		return nil
 	}
+
+	parMultiErr, wasParMultiErr := compileErr.(parerr.MultiError)
+	if wasParMultiErr {
+		for _, foundErr := range parMultiErr.Errors() {
+			if err := sendToLspError(allDiagnostics, foundErr); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
 	decErr, wasDecErr := compileErr.(decshared.DecoratedError)
 	if wasDecErr {
 		if addErr := addLspError(allDiagnostics, decErr); addErr != nil {
@@ -865,6 +876,7 @@ func sendToLspError(allDiagnostics *DiagnosticsForDocuments, compileErr error) e
 		}
 		return nil
 	}
+
 	parErr, wasParErr := compileErr.(parerr.ParseError)
 	if wasParErr {
 		if addErr := addLspError(allDiagnostics, parErr); addErr != nil {

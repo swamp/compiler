@@ -849,10 +849,9 @@ func addSemanticTokenConstantReference(constantReference *decorated.ConstantRefe
 		return err
 	}
 
-	if err := builder.EncodeSymbol(constantReference.Identifier().FetchPositionLength().Range, "macro", nil); err != nil {
+	if err := builder.EncodeSymbol(constantReference.Identifier().Symbol().FetchPositionLength().Range, "macro", nil); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -1048,8 +1047,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticToken(&t.BinaryOperator, builder)
 	case *decorated.PipeRightOperator: // TODO: must do a proper implementation of pipe right
 		{
-			addSemanticToken(t.BinaryOperator.Right(), builder)
 			addSemanticToken(t.BinaryOperator.Left(), builder)
+			addSemanticToken(t.BinaryOperator.Right(), builder)
 		}
 	case *decorated.BitwiseOperator:
 		return addSemanticToken(&t.BinaryOperator, builder)
