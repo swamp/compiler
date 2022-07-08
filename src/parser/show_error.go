@@ -214,6 +214,11 @@ func HighestSeverity(err error) ReportAsSeverity {
 		return highestError
 	}
 
+	moduleErr, wasModuleErr := err.(*decorated.ModuleError)
+	if wasModuleErr {
+		return HighestSeverity(moduleErr.WrappedError())
+	}
+
 	switch t := err.(type) {
 	case *decorated.MultiErrors:
 		for _, subErr := range t.Errors() {
@@ -223,7 +228,7 @@ func HighestSeverity(err error) ReportAsSeverity {
 			}
 		}
 		return highestError
-	case *parerr.MultiError:
+	case parerr.MultiError:
 		for _, subErr := range t.Errors() {
 			detectedError := HighestSeverity(subErr)
 			if detectedError > highestError {

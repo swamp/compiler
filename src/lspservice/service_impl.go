@@ -35,7 +35,6 @@ func (l *LspImpl) Compile(filename string) (*decorated.Module, error) {
 
 	world, module, err := swampcompiler.CompileMainFindLibraryRoot(filename, l.documentCache, l.configuration, enforceStyle, verboseFlag)
 	if parser.IsCompileErr(err) {
-		log.Printf("this is a compile err %v", err)
 		return nil, err
 	}
 	if module == nil {

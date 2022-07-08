@@ -834,8 +834,7 @@ func addLspError(allDiagnostics *DiagnosticsForDocuments, foundErr decshared.Dec
 func sendToLspError(allDiagnostics *DiagnosticsForDocuments, compileErr error) error {
 	moduleErr, wasModuleErr := compileErr.(*decorated.ModuleError)
 	if wasModuleErr {
-		compileErr = moduleErr.WrappedError()
-		log.Printf("wrapped err %T", compileErr)
+		return sendToLspError(allDiagnostics, moduleErr.WrappedError())
 	}
 
 	tokenizeErrors, wasTokenizeErrors := compileErr.(*tokenize.MultiErrors)
