@@ -12,16 +12,26 @@ import (
 )
 
 type StringInterpolation struct {
-	stringToken token.StringToken
-	expression  Expression
+	stringToken           token.StringToken
+	expression            Expression
+	referencedExpressions []Expression
 }
 
 func (i *StringInterpolation) String() string {
 	return fmt.Sprintf("'%v'", i.stringToken)
 }
 
-func NewStringInterpolation(stringToken token.StringToken, expression Expression) *StringInterpolation {
-	return &StringInterpolation{expression: expression, stringToken: stringToken}
+func NewStringInterpolation(stringToken token.StringToken, expression Expression, referencedExpressions []Expression) *StringInterpolation {
+	var lastExpression Expression
+	for _, expr := range referencedExpressions {
+		if lastExpression != nil {
+			if !expr.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
+				panic(fmt.Sprintf("not allowed %v %v", expr.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
+			}
+		}
+		lastExpression = expr
+	}
+	return &StringInterpolation{expression: expression, stringToken: stringToken, referencedExpressions: referencedExpressions}
 }
 
 func (i *StringInterpolation) FetchPositionLength() token.SourceFileReference {
@@ -30,6 +40,10 @@ func (i *StringInterpolation) FetchPositionLength() token.SourceFileReference {
 
 func (i *StringInterpolation) StringLiteral() token.StringToken {
 	return i.stringToken
+}
+
+func (i *StringInterpolation) ReferencedExpressions() []Expression {
+	return i.referencedExpressions
 }
 
 func (i *StringInterpolation) Expression() Expression {

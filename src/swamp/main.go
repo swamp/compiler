@@ -21,7 +21,6 @@ import (
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	"github.com/swamp/compiler/src/decorated/decshared"
-	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/lspservice"
@@ -181,8 +180,8 @@ func (c *EnvironmentListCmd) Run() error {
 }
 
 type EnvironmentCmd struct {
-	Set  EnvironmentSetCmd  `help:"fmt" cmd:"" help:"set swamp environment package"`
-	List EnvironmentListCmd `help:"fmt" cmd:"" default:"1" help:"list swamp environment packages"`
+	Set  EnvironmentSetCmd  `cmd:"" help:"set swamp environment package"`
+	List EnvironmentListCmd `cmd:"" default:"1" help:"list swamp environment packages"`
 }
 
 func (c *EnvironmentCmd) Run() error {
@@ -205,29 +204,49 @@ type Options struct {
 	Version VersionCmd     `cmd:"" help:"shows the version information"`
 }
 
+/*
+	highestError := parser.ReportAsSeverityNote
+	multiErr, wasMultiErr := decErr.(*decorated.MultiErrors)
+	if wasMultiErr {
+		for _, subErr := range multiErr.Errors() {
+
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+	} else {
+		multiErrPar, wasMultiErr := decErr.(parerr.MultiError)
+		if wasMultiErr {
+			for _, subErr := range multiErrPar.Errors() {
+				detectedError := parser.ShowWarningOrError(nil, subErr)
+				if detectedError > highestError {
+					highestError = detectedError
+				}
+			}
+		} else if decErr != nil {
+			detectedError := parser.ShowWarningOrError(nil, decErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		} else {
+			fmt.Fprintf(os.Stderr, "Unknown ERROR!!: '%v'\n", err)
+		}
+	}
+
+*/
 func main() {
 	ctx := kong.Parse(&Options{})
 
 	err := ctx.Run()
 	if err != nil {
 		decErr, wasDecorated := err.(decshared.DecoratedError)
+		highestError := parser.ReportAsSeverityError
 		if wasDecorated {
-			moduleErr, wasModuleErr := decErr.(*decorated.ModuleError)
-			if wasModuleErr {
-				decErr = moduleErr.WrappedError()
-			}
+			highestError = parser.ShowWarningOrError(nil, decErr)
 		}
-		multiErr, _ := decErr.(*decorated.MultiErrors)
-		if multiErr != nil {
-			for _, subErr := range multiErr.Errors() {
-				parser.ShowWarningOrError(nil, subErr)
-			}
-		} else if decErr != nil {
-			parser.ShowWarningOrError(nil, decErr)
-		} else {
-			fmt.Fprintf(os.Stderr, "Unknown ERROR!!: '%v'\n", err)
+		if highestError >= parser.ReportAsSeverityError {
+			os.Exit(-1)
 		}
-		os.Exit(-1)
 	}
 
 	os.Exit(0)

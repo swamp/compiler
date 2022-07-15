@@ -73,7 +73,7 @@ func (c *CustomTypeVariantConstructor) String() string {
 }
 
 func (c *CustomTypeVariantConstructor) HumanReadable() string {
-	return fmt.Sprintf("Custom Type Variant Constructor")
+	return "Custom Type Variant Constructor"
 }
 
 func (c *CustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {

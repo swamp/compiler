@@ -27,7 +27,7 @@ func (g *FunctionParameterReference) String() string {
 }
 
 func (g *FunctionParameterReference) HumanReadable() string {
-	return fmt.Sprintf("FunctionParamRef")
+	return "FunctionParamRef"
 }
 
 func (g *FunctionParameterReference) Identifier() ast.ScopedOrNormalVariableIdentifier {

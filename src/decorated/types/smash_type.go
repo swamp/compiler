@@ -43,23 +43,6 @@ func Unalias(t dtype.Type) dtype.Type {
 }
 
 func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
-	/*
-		alias, wasAlias := t.(*Alias)
-		if wasAlias {
-			return Unalias(alias.referencedType)
-		}
-
-		typeRef, wasTypeRef := t.(*TypeReference)
-		if wasTypeRef {
-			return Unalias(typeRef.Next())
-		}
-
-		scopedTypeRef, wasScopedTypeRef := t.(*TypeReferenceScoped)
-		if wasScopedTypeRef {
-			return Unalias(scopedTypeRef.Next())
-		}
-
-	*/
 	unaliased := Unalias(t)
 
 	call, wasCall := unaliased.(*InvokerType)
@@ -395,10 +378,10 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 			return originalUnchanged, nil
 		}
 	default:
-		return nil, fmt.Errorf("smash type: Not handled:%T %v\n", t, t)
+		return nil, fmt.Errorf("smash type: Not handled:%T %v", t, t)
 	}
 
-	return nil, fmt.Errorf("unhandled type: %T %v\n", original, original)
+	return nil, fmt.Errorf("unhandled type: %T %v", original, original)
 }
 
 func SmashFunctions(original *FunctionAtom, otherFunc *FunctionAtom) (*FunctionAtom, error) {

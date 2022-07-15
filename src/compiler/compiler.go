@@ -7,6 +7,7 @@ package swampcompiler
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/parser"
 	"log"
 	"os"
 	"path"
@@ -30,32 +31,33 @@ import (
 	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
-func CheckUnused(world *loader.Package) {
+func CheckUnused(world *loader.Package) []decshared.DecoratedError {
+	var errors []decshared.DecoratedError
 	for _, module := range world.AllModules() {
 		if module.IsInternal() {
 			continue
 		}
 		for _, def := range module.LocalDefinitions().Definitions() {
 			if !def.WasReferenced() {
-				module := def.OwnedByModule()
 				warning := decorated.NewUnusedWarning(def)
-				module.AddWarning(warning)
+				errors = append(errors, warning)
 			}
 		}
 		for _, def := range module.LocalTypes().AllTypes() {
 			if !def.WasReferenced() {
 				warning := decorated.NewUnusedTypeWarning(def)
-				module.AddWarning(warning)
+				errors = append(errors, warning)
 			}
 		}
 
 		for _, importModule := range module.ImportedModules().AllModules() {
 			if !importModule.ImportStatementInModule().WasReferenced() && importModule.ImportStatementInModule().AstImport().ModuleName().ModuleName() != "" {
-				warning := decorated.NewUnusedImportStatementWarning(importModule.ImportStatementInModule())
-				module.AddWarning(warning)
+				//warning := decorated.NewUnusedImportStatementWarning(importModule.ImportStatementInModule())
+				//module.AddWarning(warning)
 			}
 		}
 	}
+	return errors
 }
 
 func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
@@ -74,16 +76,25 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 		resourceNameLookup := resourceid.NewResourceNameLookupImpl()
 		if solutionSettings, err := solution.LoadIfExists(mainSourceFile); err == nil {
 			var packages []*loader.Package
+			var errors []decshared.DecoratedError
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectoryName))
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
 				compiledPackage, err := CompileAndLink(typeInformationChunk, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, outputFilename, enforceStyle, showAssembler, verboseFlag)
 				if err != nil {
-					return packages, err
+					errors = append(errors, err)
 				}
+				if parser.IsCompileError(err) {
+					return packages, decorated.NewMultiErrors(errors)
+				}
+
 				packages = append(packages, compiledPackage)
 			}
-			return packages, nil
+			var returnErr decshared.DecoratedError
+			if len(errors) > 0 {
+				returnErr = decorated.NewMultiErrors(errors)
+			}
+			return packages, returnErr
 		} else {
 			return nil, fmt.Errorf("must have a solution file in this version")
 		}
@@ -111,7 +122,7 @@ func BuildMainOnlyCompile(mainSourceFile string, enforceStyle bool, verboseFlag 
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
 				compiledPackage, err := CompileMainDefaultDocumentProvider(packageSubDirectoryName, absoluteSubDirectory, config, enforceStyle, verboseFlag)
-				if err != nil {
+				if parser.IsCompileError(err) {
 					return packages, err
 				}
 				packages = append(packages, compiledPackage)
@@ -151,7 +162,11 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	}
 	// color.Cyan(fmt.Sprintf("=> importing package %v as top package", mainPrefix))
 
-	CheckUnused(world)
+	unusedErrors := CheckUnused(world)
+	var returnErr decshared.DecoratedError
+	if len(unusedErrors) > 0 {
+		returnErr = decorated.NewMultiErrors(unusedErrors)
+	}
 
 	rootModule, err := deccy.CreateDefaultRootModule(true)
 	if err != nil {
@@ -162,7 +177,7 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	}
 	// world.AddModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), rootModule)
 
-	return world, libraryModule, nil
+	return world, libraryModule, returnErr
 }
 
 func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, configuration environment.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, error) {
@@ -203,7 +218,7 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup re
 
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.High {
-			fmt.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())
+			log.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())
 		}
 	}
 
@@ -301,12 +316,10 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup re
 
 	var constants *assembler_sp.PackageConstants
 
-
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.High {
 			log.Printf("============================================== generating for module %v\n", module)
 		}
-
 
 		//createdConstants, functions
 		// packageConstants
@@ -340,33 +353,33 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup re
 	}
 
 	/*
-	constants.AllocateDebugInfoFiles(fileUrlCache.FileUrls())
-	typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(typeInformationChunk)
-	if typeInformationErr != nil {
-		return decorated.NewInternalError(typeInformationErr)
-	}
+		constants.AllocateDebugInfoFiles(fileUrlCache.FileUrls())
+		typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(typeInformationChunk)
+		if typeInformationErr != nil {
+			return decorated.NewInternalError(typeInformationErr)
+		}
 
-	if verboseFlag >= verbosity.High {
-		fmt.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
-		typeInformationChunk.DebugOutput()
-	}
+		if verboseFlag >= verbosity.High {
+			fmt.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
+			typeInformationChunk.DebugOutput()
+		}
 
-	for _, resourceName := range resourceNameLookup.SortedResourceNames() {
-		constants.AllocateResourceNameConstant(resourceName)
-	}
+		for _, resourceName := range resourceNameLookup.SortedResourceNames() {
+			constants.AllocateResourceNameConstant(resourceName)
+		}
 
-	constants.Finalize()
-	dynamicMemoryOctets := constants.DynamicMemory().Octets()
+		constants.Finalize()
+		dynamicMemoryOctets := constants.DynamicMemory().Octets()
 
-	packed, packedErr := generate_sp.Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)
-	if packedErr != nil {
-		return decorated.NewInternalError(packedErr)
-	}
+		packed, packedErr := generate_sp.Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)
+		if packedErr != nil {
+			return decorated.NewInternalError(packedErr)
+		}
 
-	if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
-		return decorated.NewInternalError(err)
-	}
-*/
+		if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
+			return decorated.NewInternalError(err)
+		}
+	*/
 	// color.Cyan("wrote output file '%v'\n", outputFilename)
 	return nil
 }
@@ -385,14 +398,24 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 
 func CompileAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup resourceid.ResourceNameLookup, configuration environment.Environment, name string,
 	filename string, outputFilename string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+	var errors []decshared.DecoratedError
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
-	if compileErr != nil {
+	if parser.IsCompileError(compileErr) {
 		return nil, compileErr
 	}
-
-	if err := GenerateAndLink(typeInformationChunk, resourceNameLookup, compiledPackage, outputFilename, showAssembler, verboseFlag); err != nil {
-		return compiledPackage, err
+	if compileErr != nil {
+		errors = append(errors, compileErr)
 	}
 
-	return compiledPackage, nil
+	linkErr := GenerateAndLink(typeInformationChunk, resourceNameLookup, compiledPackage, outputFilename, showAssembler, verboseFlag)
+	if linkErr != nil {
+		errors = append(errors, linkErr)
+	}
+
+	var returnErr decshared.DecoratedError
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return compiledPackage, returnErr
 }

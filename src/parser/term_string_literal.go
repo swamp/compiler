@@ -17,15 +17,7 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
-const interpolationRegExp = `\$\{.*?\}`
-
-func isInterpolation(s string) (bool, error) {
-	didMatch, matchErr := regexp.MatchString(interpolationRegExp, s)
-	if matchErr != nil {
-		return false, matchErr
-	}
-	return didMatch, nil
-}
+const interpolationRegExp = `\{.*?\}`
 
 func parseInterpolationString(s string) [][]int {
 	re, reErr := regexp.Compile(interpolationRegExp)
@@ -38,53 +30,94 @@ func parseInterpolationString(s string) [][]int {
 	return locations
 }
 
-func replaceInterpolationString(s string) string {
-	ranges := parseInterpolationString(s)
+func replaceInterpolationString(stringToken token.StringToken) ([]ast.Expression, parerr.ParseError) {
+	ranges := parseInterpolationString(stringToken.Text())
 
-	result := ""
+	var expressions []ast.Expression
+	var lastExpression ast.Expression
 	lastPos := 0
 
-	for index, item := range ranges {
+	for _, item := range ranges {
 		start := item[0]
 		end := item[1]
 
-		if index > 0 {
-			result += " ++ "
+		stringPart := stringToken.Text()[lastPos:start]
+		stringPartRanges := stringToken.CalculateRangesWithOffset(lastPos, start, lastPos)
+		if len(stringPart) > 0 {
+			completeRange := token.RangeFromSameLineRanges(stringPartRanges)
+
+			sourceFileReference := token.SourceFileReference{
+				Range:    completeRange,
+				Document: stringToken.Document,
+			}
+			stringToken := token.NewStringToken(stringPart, stringPart, sourceFileReference, stringPartRanges)
+
+			if lastExpression != nil && !stringToken.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
+				panic(fmt.Sprintf("not allowed %v %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
+			}
+
+			expression := ast.NewStringLiteral(stringToken)
+
+			expressions = append(expressions, expression)
+			lastExpression = expression
 		}
 
-		result += fmt.Sprintf("\"%s\"", s[lastPos:start])
+		expressionString := stringToken.Text()[start+1 : end-1]
+		if strings.HasSuffix(expressionString, "=") { // TODO, must store in expressions
+			end--
+			expressionString = stringToken.Text()[start+1 : end-1]
+		}
+		expressionStringRanges := stringToken.CalculateRangesWithOffset(start+1, end-1, 0)
+		if len(expressionString) > 0 {
+			expressionSourceFileReference := token.SourceFileReference{
+				Range:    token.RangeFromSameLineRanges(expressionStringRanges),
+				Document: stringToken.Document,
+			}
+			expression, expressionErr := stringToExpression(expressionString, expressionSourceFileReference)
+			if expressionErr != nil {
+				return nil, expressionErr
+			}
 
-		inside := s[start+2 : end-1]
+			if lastExpression != nil && !expression.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
+				panic(fmt.Sprintf("not allowed expression string %v last was %v %T %T %v", expression.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range, expression, lastExpression, lastExpression))
+			}
 
-		result += fmt.Sprintf(" ++ Debug.toString(%v)", inside)
+			expressions = append(expressions, expression)
+			lastExpression = expression
+		}
 
 		lastPos = end
 	}
 
-	remaining := s[lastPos:]
-
-	if len(remaining) > 0 {
-		if len(ranges) > 0 {
-			result += " ++ "
+	remainingString := stringToken.Text()[lastPos:]
+	if len(remainingString) > 0 {
+		remainingPartRange := stringToken.CalculateRangesWithOffset(lastPos, len(stringToken.Text()), lastPos)
+		sourceFileReference := token.SourceFileReference{
+			Range:    token.RangeFromSameLineRanges(remainingPartRange),
+			Document: stringToken.Document,
 		}
 
-		result += fmt.Sprintf("\"%s\"", remaining)
+		stringToken := token.NewStringToken(remainingString, remainingString, sourceFileReference, remainingPartRange)
+		expression := ast.NewStringLiteral(stringToken)
+		if lastExpression != nil && !stringToken.FetchPositionLength().Range.IsAfter(lastExpression.FetchPositionLength().Range) {
+			panic(fmt.Sprintf("not allowed %v %v", stringToken.FetchPositionLength().Range, lastExpression.FetchPositionLength().Range))
+		}
+		expressions = append(expressions, expression)
 	}
 
-	return result
+	return expressions, nil
 }
 
-func replaceInterpolationStringToExpression(stringToken token.StringToken) (*ast.StringInterpolation, parerr.ParseError) {
-	replaced := replaceInterpolationString(stringToken.Text())
+func stringToExpression(replaced string, sourceFileReference token.SourceFileReference) (ast.Expression, parerr.ParseError) {
 	reader := strings.NewReader(replaced)
-	localPath, localErr := stringToken.Document.Uri.ToLocalFilePath()
+	localPath, localErr := sourceFileReference.Document.Uri.ToLocalFilePath()
 	if localErr != nil {
 		panic(localErr)
 	}
 	runeReader, _ := runestream.NewRuneReader(reader, localPath)
 
 	const exactWhitespace = true
-	tokenizer, tokenizerErr := tokenize.NewTokenizerInternalWithStartPosition(runeReader, stringToken.FetchPositionLength().Range.Start(), exactWhitespace)
+	tokenizer, tokenizerErr := tokenize.NewTokenizerInternalWithStartPosition(runeReader, sourceFileReference.Range.Start(), exactWhitespace)
 	if tokenizerErr != nil {
 		return nil, tokenizerErr
 	}
@@ -94,20 +127,60 @@ func replaceInterpolationStringToExpression(stringToken token.StringToken) (*ast
 		return nil, exprErr
 	}
 
-	return ast.NewStringInterpolation(stringToken, expr), nil
+	return expr, nil
 }
 
-func parseStringLiteral(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
-	lit := ast.NewStringConstant(stringToken, stringToken.Text())
-
-	wasInterpolation, interpolationErr := isInterpolation(stringToken.Text())
-	if interpolationErr != nil {
-		return nil, parerr.NewInternalError(p.positionLength(), interpolationErr)
+func parseInterpolationStringToTupleExpression(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
+	expressions, interpolateErr := replaceInterpolationString(stringToken)
+	if interpolateErr != nil {
+		return nil, interpolateErr
 	}
 
-	if wasInterpolation {
-		return replaceInterpolationStringToExpression(stringToken)
+	startParen := token.NewParenToken("(", token.LeftParen, stringToken.FetchPositionLength(), "(")
+	endParen := token.NewParenToken(")", token.RightParen, stringToken.FetchPositionLength(), ")")
+
+	tupleLiteral := ast.NewTupleLiteral(startParen, endParen, expressions)
+
+	return ast.NewStringInterpolation(stringToken, tupleLiteral, expressions), nil
+}
+
+func makeItString(expression ast.Expression, stringToken token.StringToken) ast.Expression {
+	_, wasStringLiteral := expression.(*ast.StringLiteral)
+	if wasStringLiteral {
+		return expression
 	}
+
+	debugModuleName := token.NewTypeSymbolToken("Debug", stringToken.FetchPositionLength(), 0)
+	debugModuleNamePart := ast.NewModuleNamePart(ast.NewTypeIdentifier(debugModuleName))
+	debugModuleRef := ast.NewModuleReference([]*ast.ModuleNamePart{debugModuleNamePart})
+	toStringVar := ast.NewVariableIdentifier(token.NewVariableSymbolToken("toString", stringToken.FetchPositionLength(), 0))
+	debugToString := ast.NewQualifiedVariableIdentifierScoped(debugModuleRef, toStringVar)
+	return ast.NewFunctionCall(debugToString, []ast.Expression{expression})
+}
+
+func parseInterpolationStringToStringExpression(p ParseStream, stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
+	expressions, interpolateErr := replaceInterpolationString(stringToken)
+	if interpolateErr != nil {
+		return nil, interpolateErr
+	}
+
+	var lastExpression ast.Expression
+	for _, expression := range expressions {
+		convertedExpression := makeItString(expression, stringToken)
+
+		if lastExpression != nil {
+			appendOperatorToken := token.NewOperatorToken(token.OperatorAppend, stringToken.FetchPositionLength(), "++", "++")
+			convertedExpression = ast.NewBinaryOperator(appendOperatorToken, appendOperatorToken, lastExpression, convertedExpression)
+
+		}
+		lastExpression = convertedExpression
+	}
+
+	return ast.NewStringInterpolation(stringToken, lastExpression, expressions), nil
+}
+
+func parseStringLiteral(stringToken token.StringToken) (ast.Expression, parerr.ParseError) {
+	lit := ast.NewStringLiteral(stringToken)
 
 	return lit, nil
 }

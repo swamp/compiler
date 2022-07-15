@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -382,7 +381,7 @@ func NewUnMatchingFunctionReturnTypesInFunctionValue(fn *ast.FunctionValue, expr
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) Error() string {
-	return fmt.Sprintf("%v unmatching function return types %v and %v\n%v", e.FetchPositionLength(), e.HasType.HumanReadable(), e.ExpectedType.HumanReadable(), e.err)
+	return fmt.Sprintf("unmatching function return types %v and %v\n%v", e.HasType.HumanReadable(), e.ExpectedType.HumanReadable(), e.err)
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) FetchPositionLength() token.SourceFileReference {
@@ -473,7 +472,6 @@ func (e *ConstructorArgumentTypeMismatch) FetchPositionLength() token.SourceFile
 
 type ExpectedCustomTypeVariantConstructor struct {
 	call *ast.ConstructorCall
-	err  error
 }
 
 func NewExpectedCustomTypeVariantConstructor(call *ast.ConstructorCall) *ExpectedCustomTypeVariantConstructor {
@@ -1076,7 +1074,6 @@ func (e *TooFewIdentifiersForFunctionType) FetchPositionLength() token.SourceFil
 	return e.functionValue.FetchPositionLength()
 }
 
-
 type TooManyIdentifiersForFunctionType struct {
 	forcedFunctionType    *dectype.FunctionAtom
 	functionValue         *ast.FunctionValue
@@ -1094,7 +1091,6 @@ func (e *TooManyIdentifiersForFunctionType) Error() string {
 func (e *TooManyIdentifiersForFunctionType) FetchPositionLength() token.SourceFileReference {
 	return e.functionValue.FetchPositionLength()
 }
-
 
 type ModuleError struct {
 	err        decshared.DecoratedError
@@ -1141,6 +1137,15 @@ func NewMultiErrors(errors []decshared.DecoratedError) *MultiErrors {
 	if len(errors) == 0 {
 		panic("must have one or more errors in multi errors")
 	}
+	if errors == nil {
+		panic("not good")
+	}
+	for _, e := range errors {
+		if e == nil {
+			panic("invalid slice")
+		}
+	}
+
 	return &MultiErrors{errors: errors}
 }
 

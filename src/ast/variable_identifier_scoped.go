@@ -12,10 +12,12 @@ import (
 type VariableIdentifierScoped struct {
 	symbol          *VariableIdentifier
 	moduleReference *ModuleReference
+	inclusive       token.SourceFileReference
 }
 
 func NewQualifiedVariableIdentifierScoped(moduleReference *ModuleReference, variable *VariableIdentifier) *VariableIdentifierScoped {
-	return &VariableIdentifierScoped{symbol: variable, moduleReference: moduleReference}
+	inclusive := token.MakeInclusiveSourceFileReference(moduleReference.FetchPositionLength(), variable.FetchPositionLength())
+	return &VariableIdentifierScoped{symbol: variable, moduleReference: moduleReference, inclusive: inclusive}
 }
 
 func (i *VariableIdentifierScoped) AstVariableReference() *VariableIdentifier {
@@ -31,7 +33,7 @@ func (i *VariableIdentifierScoped) Symbol() token.VariableSymbolToken {
 }
 
 func (i *VariableIdentifierScoped) FetchPositionLength() token.SourceFileReference {
-	return i.symbol.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *VariableIdentifierScoped) Name() string {

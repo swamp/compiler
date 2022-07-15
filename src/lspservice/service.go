@@ -1,7 +1,11 @@
 package lspservice
 
 import (
+	"errors"
 	"fmt"
+	"github.com/swamp/compiler/src/parser"
+	parerr "github.com/swamp/compiler/src/parser/errors"
+	"github.com/swamp/compiler/src/tokenize"
 	"log"
 
 	"github.com/piot/go-lsp"
@@ -11,7 +15,6 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -250,9 +253,11 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 		return t.FetchPositionLength(), nil
 	case *dectype.CustomTypeReference:
 		return t.CustomTypeAtom().FetchPositionLength(), nil
+	case *decorated.AliasReference:
+		return tokenToDefinition(t.Type())
 	}
 
-	err := fmt.Errorf("couldn't find anything for %T", decoratedToken)
+	err := fmt.Errorf("tokenToDefinition: couldn't find anything for %T", decoratedToken)
 
 	log.Printf(err.Error())
 
@@ -515,6 +520,9 @@ func findAllLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filter
 		}
 	case *decorated.FunctionReference:
 		return findAllLinkedSymbolsInDocument(t.FunctionValue(), filterDocument)
+
+	case *decorated.CastOperator:
+		return findAllLinkedSymbolsInDocument(t.AliasReference(), filterDocument)
 	}
 
 	return sourceFileReferences
@@ -565,6 +573,10 @@ func findLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filterDoc
 	case *decorated.FunctionReference:
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
 			sourceFileReferences = append(sourceFileReferences, t.FunctionValue().FetchPositionLength())
+		}
+	case *decorated.CastOperator:
+		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
+			sourceFileReferences = append(sourceFileReferences, t.Type().FetchPositionLength())
 		}
 	default:
 		log.Printf("not sure how to find linked symbols to %T", decoratedToken)
@@ -687,7 +699,8 @@ func (s *Service) HandleDidChangeWatchedFiles(params lsp.DidChangeWatchedFilesPa
 }
 
 func (s *Service) HandleDidOpen(params lsp.DidOpenTextDocumentParams, conn lspserv.Connection) error {
-	return s.CompileAndReportErrors(params.TextDocument.URI, uint(params.TextDocument.Version), conn)
+	s.CompileAndReportErrors(params.TextDocument.URI, uint(params.TextDocument.Version), conn)
+	return nil
 }
 
 func (s *Service) getDocumentHelper(documentIdentifier lsp.VersionedTextDocumentIdentifier) (*InMemoryDocument, error) {
@@ -761,15 +774,31 @@ func (d *DiagnosticsForDocuments) Add(localPath LocalFileSystemPath, lspDiagnost
 	existingDiagDocument.Add(lspDiagnostic)
 }
 
+func convertErrorLevelToLsp(severity parser.ReportAsSeverity) lsp.DiagnosticSeverity {
+	switch severity {
+	case parser.ReportAsSeverityNote:
+		return lsp.Information
+	case parser.ReportAsSeverityWarning:
+		return lsp.Warning
+	case parser.ReportAsSeverityError:
+		return lsp.Error
+	default:
+		return lsp.Hint
+	}
+}
+
 func createLspError(foundErr decshared.DecoratedError) (lsp.Diagnostic, error) {
 	sourcePosition := foundErr.FetchPositionLength()
 	if sourcePosition.Document == nil {
 		return lsp.Diagnostic{}, fmt.Errorf("source position document is nil")
 	}
 
+	typeOfWarning := parser.TypeOfWarning(foundErr)
+	lspSeverity := convertErrorLevelToLsp(typeOfWarning)
+
 	lspDiagnostic := lsp.Diagnostic{
 		Range:           *tokenToLspRange(sourcePosition.Range),
-		Severity:        lsp.Error,
+		Severity:        lspSeverity,
 		Code:            fmt.Sprintf("%T", foundErr),
 		CodeDescription: nil,
 		Source:          "swamp",
@@ -802,9 +831,73 @@ func addLspError(allDiagnostics *DiagnosticsForDocuments, foundErr decshared.Dec
 	return nil
 }
 
+func sendToLspError(allDiagnostics *DiagnosticsForDocuments, compileErr error) error {
+	moduleErr, wasModuleErr := compileErr.(*decorated.ModuleError)
+	if wasModuleErr {
+		return sendToLspError(allDiagnostics, moduleErr.WrappedError())
+	}
+
+	tokenizeErrors, wasTokenizeErrors := compileErr.(*tokenize.MultiErrors)
+	if wasTokenizeErrors {
+		for _, tokenizeError := range tokenizeErrors.Errors() {
+			if err := sendToLspError(allDiagnostics, tokenizeError); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	multiErr, wasMultiErr := compileErr.(*decorated.MultiErrors)
+	if wasMultiErr {
+		for _, foundErr := range multiErr.Errors() {
+			if err := sendToLspError(allDiagnostics, foundErr); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	parMultiErr, wasParMultiErr := compileErr.(parerr.MultiError)
+	if wasParMultiErr {
+		for _, foundErr := range parMultiErr.Errors() {
+			if err := sendToLspError(allDiagnostics, foundErr); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	decErr, wasDecErr := compileErr.(decshared.DecoratedError)
+	if wasDecErr {
+		if addErr := addLspError(allDiagnostics, decErr); addErr != nil {
+			log.Printf("could not add a lsp error")
+			return addErr
+		}
+		return nil
+	}
+
+	parErr, wasParErr := compileErr.(parerr.ParseError)
+	if wasParErr {
+		if addErr := addLspError(allDiagnostics, parErr); addErr != nil {
+			log.Printf("could not add a lsp error")
+			return addErr
+		}
+		return nil
+	}
+
+	unwrapped := errors.Unwrap(compileErr)
+	if unwrapped != nil {
+		log.Printf("must handle error %T %v", unwrapped, unwrapped)
+		return nil
+	}
+
+	panic(fmt.Errorf("do not know what this error is %T", compileErr))
+}
+
 func (s *Service) CompileAndReportErrors(uri lsp.DocumentURI, version uint, conn lspserv.Connection) error {
 	localPath, localPathErr := toDocumentURI(uri).ToLocalFilePath()
 	if localPathErr != nil {
+		log.Printf("local path err %v", localPathErr)
 		return localPathErr
 	}
 
@@ -812,53 +905,7 @@ func (s *Service) CompileAndReportErrors(uri lsp.DocumentURI, version uint, conn
 	_, compileErr := s.compiler.Compile(localPath)
 	allDiagnostics := s.diagnostics
 	if compileErr != nil {
-		log.Printf("received err %T", compileErr)
-		moduleErr, wasModuleErr := compileErr.(*decorated.ModuleError)
-		if wasModuleErr {
-			compileErr = moduleErr.WrappedError()
-			log.Printf("wrapped err %T", compileErr)
-		}
-		multiErr, wasMultiErr := compileErr.(*decorated.MultiErrors)
-		if !wasMultiErr {
-			decErr, wasDecErr := compileErr.(decshared.DecoratedError)
-			if wasDecErr {
-				addLspError(allDiagnostics, decErr)
-			}
-			parErr, wasParErr := compileErr.(parerr.ParseError)
-			if wasParErr {
-				addLspError(allDiagnostics, parErr)
-			}
-
-		} else {
-			for _, foundErr := range multiErr.Errors() {
-				if addErr := addLspError(allDiagnostics, foundErr); addErr != nil {
-					return addErr
-				}
-			}
-		}
-	}
-
-	for _, workspaceModule := range s.workspacer.AllModules() {
-		for _, warning := range workspaceModule.Warnings() {
-			sourcePosition := warning.FetchPositionLength()
-			if sourcePosition.Document == nil {
-				continue
-			}
-			foundLocalPath, errLocalPath := sourcePosition.Document.Uri.ToLocalFilePath()
-			if errLocalPath != nil {
-				return errLocalPath
-			}
-
-			lspDiagnostic := lsp.Diagnostic{
-				Range:           *tokenToLspRange(sourcePosition.Range),
-				Severity:        lsp.Warning,
-				Code:            fmt.Sprintf("%T", warning),
-				CodeDescription: nil,
-				Source:          "swamp",
-				Message:         warning.Warning(),
-			}
-			allDiagnostics.Add(LocalFileSystemPath(foundLocalPath), lspDiagnostic)
-		}
+		sendToLspError(allDiagnostics, compileErr)
 	}
 
 	for uri, diagDocument := range allDiagnostics.All() {
@@ -889,7 +936,9 @@ func (s *Service) HandleDidChange(params lsp.DidChangeTextDocumentParams, conn l
 	}
 	foundDocument.UpdateVersion(DocumentVersion(params.TextDocument.Version))
 
-	return s.CompileAndReportErrors(params.TextDocument.URI, uint(params.TextDocument.Version), conn)
+	s.CompileAndReportErrors(params.TextDocument.URI, uint(params.TextDocument.Version), conn)
+
+	return nil
 }
 
 func (s *Service) HandleDidClose(params lsp.DidCloseTextDocumentParams, conn lspserv.Connection) error {

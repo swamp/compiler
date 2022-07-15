@@ -101,8 +101,6 @@ func (s *SemanticBuilder) EncodedValues() []uint {
 }
 
 func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string, modifiers []string) error {
-	log.Printf("encoding symbol %v %v %v", tokenRange, tokenType, modifiers)
-
 	if !tokenRange.IsAfter(s.lastRange) {
 		return fmt.Errorf("they must be in order! %v to %v and \n%v", s.lastRange, tokenRange, s.lastDebug)
 	}

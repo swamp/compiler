@@ -110,8 +110,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 			if dectype.IsTypeIdRef(arg.Type()) {
 				unaliased := dectype.UnaliasWithResolveInvoker(arg.Type())
 				primitiveAtom, _ := unaliased.(*dectype.PrimitiveAtom)
-				pointingToType := primitiveAtom.GenericTypes()[0]
-				typeID, err = genContext.lookup.Lookup(pointingToType)
+				typeID, err = genContext.lookup.Lookup(primitiveAtom)
 				if err != nil {
 					return assembler_sp.SourceStackPosRange{}, err
 				}

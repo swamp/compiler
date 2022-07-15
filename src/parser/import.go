@@ -113,7 +113,7 @@ func parseImport(p ParseStream, keywordImport token.Keyword,
 	if alias != nil {
 		if alias.Name() != moduleReference.Parts()[len(moduleReference.Parts())-1].Name() {
 			err := parerr.NewUnexpectedImportAlias(importStatement)
-			p.AddWarning(err)
+			return importStatement, err
 		}
 	}
 

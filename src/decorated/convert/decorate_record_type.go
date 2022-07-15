@@ -20,12 +20,9 @@ func DecorateRecordType(info *ast.Record, t decorated.TypeAddAndReferenceMaker) 
 			return nil, convertedFieldTypeErr
 		}
 
-		concreteType, isConcreteType := convertedFieldType.(dtype.Type)
-		if isConcreteType {
-			fieldName := dectype.NewRecordFieldName(field.VariableIdentifier())
-			convertedField := dectype.NewRecordField(fieldName, field, concreteType)
-			convertedFields = append(convertedFields, convertedField)
-		}
+		fieldName := dectype.NewRecordFieldName(field.VariableIdentifier())
+		convertedField := dectype.NewRecordField(fieldName, field, convertedFieldType)
+		convertedFields = append(convertedFields, convertedField)
 	}
 
 	var convertedParameters []dtype.Type

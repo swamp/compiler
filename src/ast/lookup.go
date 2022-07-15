@@ -39,5 +39,5 @@ func (i *Lookups) String() string {
 }
 
 func (i *Lookups) DebugString() string {
-	return fmt.Sprintf("[Lookups]")
+	return "[Lookups]"
 }

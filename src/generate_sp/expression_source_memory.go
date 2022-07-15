@@ -76,6 +76,8 @@ func generateExpressionWithSourceVar(code *assembler_sp.Code, expr decorated.Exp
 		return generateExpressionWithSourceVar(code, t.Constant(), genContext, "constant reference")
 	case *decorated.Constant:
 		return generateExpressionWithSourceVar(code, t.Expression(), genContext, "constant")
+	case *decorated.StringInterpolation:
+		return generateExpressionWithSourceVar(code, t.Expression(), genContext, "string interpolation")
 	case *decorated.CaseConsequenceParameterReference:
 		parameterReferenceName := t.Identifier().Name()
 

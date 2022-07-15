@@ -7,6 +7,7 @@ package execute
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/parser"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -86,7 +87,7 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	typeInformationChunk := &typeinfo.Chunk{}
 	resourceNameLookup := resourceid.NewResourceNameLookupImpl()
 	_, compileErr := swampcompiler.CompileAndLink(typeInformationChunk, resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, showAssembly, enforceStyle, verbose)
-	if compileErr != nil {
+	if parser.IsCompileError(compileErr) {
 		return "", compileErr
 	}
 

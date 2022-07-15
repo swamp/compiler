@@ -39,3 +39,7 @@ func (c *CastOperator) HumanReadable() string {
 func (c *CastOperator) Type() dtype.Type {
 	return c.castToType.Type()
 }
+
+func (c *CastOperator) AliasReference() *AliasReference {
+	return c.castToType
+}

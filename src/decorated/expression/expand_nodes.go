@@ -193,6 +193,15 @@ func expandChildNodesListLiteral(listLiteral *ListLiteral) []TypeOrToken {
 	return tokens
 }
 
+func expandChildNodesStringInterpolation(stringInterpolation *StringInterpolation) []TypeOrToken {
+	var tokens []TypeOrToken
+	for _, expression := range stringInterpolation.IncludedExpressions() {
+		tokens = append(tokens, expandChildNodes(expression)...)
+	}
+
+	return tokens
+}
+
 func expandChildNodesTupleLiteral(tupleLiteral *TupleLiteral) []TypeOrToken {
 	var tokens []TypeOrToken
 	for _, expression := range tupleLiteral.Expressions() {
@@ -293,7 +302,7 @@ func expandChildNodesCustomTypeVariantReference(constructor *dectype.CustomTypeV
 
 func expandChildNodesCaseForTypeAlias(typeAlias *dectype.Alias) []TypeOrToken {
 	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(typeAlias.TypeIdentifier())...)
+	//tokens = append(tokens, expandChildNodes(typeAlias.TypeIdentifier())...)
 	tokens = append(tokens, expandChildNodes(typeAlias.Next())...)
 
 	return tokens
@@ -344,7 +353,7 @@ func expandChildNodesBinaryOperator(namedFunctionValue *BinaryOperator) []TypeOr
 func expandChildNodesForCastOperator(castOperator *CastOperator) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(castOperator.Expression())...)
-	tokens = append(tokens, expandChildNodes(castOperator.Type())...)
+	tokens = append(tokens, expandChildNodes(castOperator.AliasReference())...)
 	return tokens
 }
 
@@ -385,6 +394,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	}
 	tokens := []TypeOrToken{node}
 	switch t := node.(type) {
+
 	case *ModuleReference:
 		return tokens
 	case *AnnotationStatement:
@@ -471,8 +481,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return tokens
 	case *ResourceNameLiteral: // Should not be expanded
 		return tokens
-	case *StringInterpolation: // Should not be expanded
-		return tokens
+	case *StringInterpolation:
+		return append(tokens, expandChildNodesStringInterpolation(t)...)
 	case *BooleanLiteral: // Should not be expanded
 		return tokens
 	case *StringLiteral: // Should not be expanded
@@ -491,6 +501,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesConstant(t)...)
 	case *ConstantReference:
 		return tokens
+	case *AliasReference:
+		return append(tokens, expandChildNodes(t.Type())...)
 	case *BinaryOperator:
 		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:
@@ -500,7 +512,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *dectype.AnyMatchingTypes:
 		return tokens
 	case *dectype.Alias:
-		return append(tokens, expandChildNodes(t.Next())...)
+		return append(tokens, expandChildNodesCaseForTypeAlias(t)...)
 	case *dectype.PrimitiveAtom:
 		return append(tokens, expandChildNodesPrimitive(t)...)
 	case *dectype.InvokerType:

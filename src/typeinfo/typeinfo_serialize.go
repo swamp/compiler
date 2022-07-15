@@ -30,6 +30,7 @@ const (
 	SwtiTypeResourceName
 	SwtiTypeChar
 	SwtiTypeTuple
+	SwtiTypeRefId
 	SwtiTypeAny
 	SwtiTypeAnyMatchingTypes
 	SwtiTypeUnmanaged
@@ -156,15 +157,12 @@ func writeMemoryOffset(writer io.Writer, offset MemoryOffset) error {
 }
 
 func writeMemorySize(writer io.Writer, size MemorySize) error {
-	if size == 0 {
-		//	panic(fmt.Errorf("illegal memory size"))
-	}
 	return writeUint16(writer, int(size))
 }
 
 func writeMemoryAlign(writer io.Writer, align MemoryAlign) error {
-	if align == 0 {
-		// panic(fmt.Errorf("illegal memory align"))
+	if align > 8 {
+		panic(fmt.Errorf("illegal memory align"))
 	}
 	return writeUint8(writer, uint8(align))
 }
@@ -229,6 +227,18 @@ func writeAlias(writer io.Writer, alias *AliasType) error {
 	}
 
 	if err := writeTypeRef(writer, alias.realType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeTypeRefId(writer io.Writer, typeRefId *TypeRefIdType) error {
+	if err := writeTypeID(writer, SwtiTypeRefId); err != nil {
+		return err
+	}
+
+	if err := writeTypeRef(writer, typeRefId.originalType); err != nil {
 		return err
 	}
 
@@ -343,9 +353,8 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		return writeFunction(writer, t)
 	case *CustomType:
 		return writeCustom(writer, t)
-	case *TypeRefType:
-		// TODO:
-		return writePrimitive(writer, SwtiTypeResourceName)
+	case *TypeRefIdType:
+		return writeTypeRefId(writer, t)
 	case *TupleType:
 		return writeTuple(writer, t)
 	case *AnyType:

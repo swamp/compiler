@@ -192,9 +192,7 @@ func (n ArtifactFullyQualifiedModuleName) JoinTypeIdentifierScoped(relative *ast
 		newPaths = append(newPaths, n.path.Parts()...)
 	}
 
-	for _, mRef := range relative.ModuleReference().Parts() {
-		newPaths = append(newPaths, mRef)
-	}
+	newPaths = append(newPaths, relative.ModuleReference().Parts()...)
 	newPaths = append(newPaths, ast.NewModuleNamePart(relative.Symbol()))
 
 	return ArtifactFullyQualifiedTypeName{MakeModuleNameFromParts(newPaths)}

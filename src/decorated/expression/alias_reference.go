@@ -9,11 +9,12 @@ import (
 )
 
 type AliasReference struct {
-	referencedType *dectype.AliasReference
+	referencedType      *dectype.AliasReference
+	definitionReference *dectype.NamedDefinitionTypeReference
 }
 
-func NewAliasReference(referencedType *dectype.AliasReference) *AliasReference {
-	return &AliasReference{referencedType: referencedType}
+func NewAliasReference(definitionReference *dectype.NamedDefinitionTypeReference, referencedType *dectype.AliasReference) *AliasReference {
+	return &AliasReference{definitionReference: definitionReference, referencedType: referencedType}
 }
 
 func (c *AliasReference) FetchPositionLength() token.SourceFileReference {
@@ -25,5 +26,17 @@ func (c *AliasReference) String() string {
 }
 
 func (c *AliasReference) Type() dtype.Type {
-	return c.referencedType.Type()
+	return c.referencedType
+}
+
+func (c *AliasReference) TypeAliasReference() *dectype.AliasReference {
+	return c.referencedType
+}
+
+func (c *AliasReference) NameReference() *dectype.NamedDefinitionTypeReference {
+	return c.definitionReference
+}
+
+func (c *AliasReference) HumanReadable() string {
+	return c.referencedType.HumanReadable()
 }

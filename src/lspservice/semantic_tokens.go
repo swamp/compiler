@@ -628,11 +628,10 @@ func addSemanticTokenCastOperator(operator *decorated.CastOperator, builder *Sem
 	if err := addSemanticToken(operator.Expression(), builder); err != nil {
 		return err
 	}
-	/*
-		if err := addSemanticToken(operator.Type(), builder); err != nil {
-			return err
-		}
-	*/
+
+	if err := addSemanticToken(operator.AliasReference(), builder); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -682,9 +681,15 @@ func addSemanticTokenLetVariableReference(letVarReference *decorated.LetVariable
 
 func addSemanticTokenString(stringLiteral *decorated.StringLiteral, builder *SemanticBuilder) error {
 	log.Printf("encoding string '%v'", stringLiteral)
-	if err := builder.EncodeSymbol(stringLiteral.FetchPositionLength().Range, "string", nil); err != nil {
-		return err
+
+	// Strings can continue over several lines
+	for _, sameLineRange := range stringLiteral.AstString().Token.StringLines() {
+		tempRange := token.RangeFromSingleSameLineRange(sameLineRange)
+		if err := builder.EncodeSymbol(tempRange, "string", nil); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -703,11 +708,15 @@ func addSemanticTokenBooleanLiteral(stringLiteral *decorated.BooleanLiteral, bui
 }
 
 func addSemanticTokenStringInterpolation(stringInterpolation *decorated.StringInterpolation, builder *SemanticBuilder) error {
-	/*
-		if err := builder.EncodeSymbol(stringInterpolation.FetchPositionLength().Range, "string", nil); err != nil {
+	log.Printf("decorate string interpolation '%v'", stringInterpolation.String())
+	for _, expression := range stringInterpolation.IncludedExpressions() {
+		log.Printf("%T %v", expression, expression.FetchPositionLength().ToCompleteReferenceString())
+		if err := addSemanticToken(expression, builder); err != nil {
+			panic(err)
 			return err
 		}
-	*/
+	}
+
 	return nil
 }
 
@@ -840,7 +849,18 @@ func addSemanticTokenConstantReference(constantReference *decorated.ConstantRefe
 		return err
 	}
 
-	if err := builder.EncodeSymbol(constantReference.Identifier().FetchPositionLength().Range, "macro", nil); err != nil {
+	if err := builder.EncodeSymbol(constantReference.Identifier().Symbol().FetchPositionLength().Range, "macro", nil); err != nil {
+		return err
+	}
+	return nil
+}
+
+func addSemanticAliasReference(constantReference *decorated.AliasReference, builder *SemanticBuilder) error {
+	if err := addSemanticTokenNamedTypeReference(constantReference.NameReference(), builder); err != nil {
+		return err
+	}
+
+	if err := addSemanticToken(constantReference.TypeAliasReference().NameReference(), builder); err != nil {
 		return err
 	}
 
@@ -873,6 +893,8 @@ func typeReferenceHelper(next dtype.Type, referenceRange token.Range, builder *S
 		return addTypeReferenceInvoker(referenceRange, t, builder)
 	case *dectype.Alias:
 		return addTypeReferenceAlias(referenceRange, t, builder)
+	case *dectype.AliasReference:
+		return addTypeReferenceAlias(referenceRange, t.Alias(), builder)
 	case *dectype.CustomTypeAtom:
 		return addTypeReferenceCustomType(referenceRange, t, builder)
 	case *dectype.FunctionAtom:
@@ -905,7 +927,7 @@ func typeReferenceParamHelper(param dtype.Type, builder *SemanticBuilder) error 
 	case *dectype.CustomTypeReference:
 		return addSemanticToken(t, builder)
 	case *dectype.AliasReference:
-		return addSemanticTokenTypeReference(t, builder)
+		return addSemanticToken(t, builder)
 	case *dectype.InvokerType:
 		return addSemanticToken(t, builder)
 	case *dectype.FunctionAtom:
@@ -1025,8 +1047,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticToken(&t.BinaryOperator, builder)
 	case *decorated.PipeRightOperator: // TODO: must do a proper implementation of pipe right
 		{
-			addSemanticToken(t.BinaryOperator.Right(), builder)
 			addSemanticToken(t.BinaryOperator.Left(), builder)
+			addSemanticToken(t.BinaryOperator.Right(), builder)
 		}
 	case *decorated.BitwiseOperator:
 		return addSemanticToken(&t.BinaryOperator, builder)
@@ -1042,7 +1064,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenConstant(t, builder)
 	case *decorated.ConstantReference:
 		return addSemanticTokenConstantReference(t, builder)
-
+	case *decorated.AliasReference:
+		return addSemanticAliasReference(t, builder)
 	case *decorated.FunctionReference:
 		return addSemanticTokenFunctionReference(t, builder)
 	case *decorated.FunctionParameterReference:

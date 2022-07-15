@@ -7,6 +7,7 @@ package loader
 
 import (
 	"fmt"
+	"log"
 	"path"
 	"path/filepath"
 	"strings"
@@ -51,7 +52,7 @@ func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verb
 	}
 	completeFilename = filepath.ToSlash(completeFilename)
 	if verboseFlag >= verbosity.Low {
-		fmt.Printf("* loading file %v\n", completeFilename)
+		log.Printf("* loading file %v\n", completeFilename)
 	}
 
 	completeDocumentFilename := LocalFileSystemPath(completeFilename)

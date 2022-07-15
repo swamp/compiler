@@ -39,7 +39,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 		{
 			_, wasPrimitive := unaliasedConstructor.(*dectype.PrimitiveAtom)
 			if wasPrimitive {
-				return decorated.NewAliasReference(t), nil
+				return decorated.NewAliasReference(variantConstructor.NameReference(), t), nil
 			}
 
 			e, wasRecordType := unaliasedConstructor.(*dectype.RecordAtom)

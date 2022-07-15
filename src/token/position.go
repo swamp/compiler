@@ -8,17 +8,21 @@ package token
 import "fmt"
 
 type Position struct {
-	line        int
-	column      int
-	octetOffset int
+	line                            int
+	column                          int
+	originalOctetOffsetInSourceFile int
 }
 
 func NewPositionTopLeft() Position {
-	return Position{line: 0, column: 0, octetOffset: 0}
+	return Position{line: 0, column: 0, originalOctetOffsetInSourceFile: 0}
 }
 
 func MakePosition(line int, column int, octetOffset int) Position {
-	return Position{line: line, column: column, octetOffset: octetOffset}
+	return Position{line: line, column: column, originalOctetOffsetInSourceFile: octetOffset}
+}
+
+func (p Position) IsOnOrAfter(other Position) bool {
+	return p.line > other.line || (p.line == other.line && p.column >= other.column)
 }
 
 func (p Position) Line() int {
@@ -30,27 +34,39 @@ func (p Position) Column() int {
 }
 
 func (p Position) NextLine(octetOffset int) Position {
-	return Position{line: p.line + 1, column: p.column, octetOffset: octetOffset}
+	return Position{line: p.line + 1, column: p.column, originalOctetOffsetInSourceFile: octetOffset}
 }
 
 func (p Position) FirstColumn(octetOffset int) Position {
-	return Position{line: p.line, column: 0, octetOffset: octetOffset}
+	return Position{line: p.line, column: 0, originalOctetOffsetInSourceFile: octetOffset}
 }
 
 func (p Position) NewLine() Position {
-	return Position{line: p.line + 1, column: 0, octetOffset: p.octetOffset + 1}
+	return Position{line: p.line + 1, column: 0, originalOctetOffsetInSourceFile: p.originalOctetOffsetInSourceFile + 1}
 }
 
 func (p Position) NextColumn() Position {
-	return Position{line: p.line, column: p.column + 1, octetOffset: p.octetOffset + 1}
+	return Position{line: p.line, column: p.column + 1, originalOctetOffsetInSourceFile: p.originalOctetOffsetInSourceFile + 1}
 }
 
 func (p Position) PreviousColumn() Position {
-	return Position{line: p.line, column: p.column - 1, octetOffset: p.octetOffset - 1}
+	return Position{line: p.line, column: p.column - 1, originalOctetOffsetInSourceFile: p.originalOctetOffsetInSourceFile - 1}
+}
+
+func (p Position) AddColumn(length int) Position {
+	return Position{
+		line:                            p.line,
+		column:                          p.column + length - 1,
+		originalOctetOffsetInSourceFile: p.originalOctetOffsetInSourceFile + length - 1,
+	}
 }
 
 func (p Position) OctetOffset() int {
-	return p.octetOffset
+	return p.originalOctetOffsetInSourceFile
+}
+
+func (p *Position) SetOctetOffset(offset int) {
+	p.originalOctetOffsetInSourceFile = offset
 }
 
 func (p Position) String() string {
@@ -58,5 +74,5 @@ func (p Position) String() string {
 }
 
 func (p Position) DebugString() string {
-	return fmt.Sprintf("[%d:%d](%d)", p.line+1, p.column+1, p.octetOffset)
+	return fmt.Sprintf("[%d:%d](%d)", p.line+1, p.column+1, p.originalOctetOffsetInSourceFile)
 }

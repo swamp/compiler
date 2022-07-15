@@ -41,6 +41,8 @@ type Tokenizer struct {
 func verifyOctets(octets []byte, relativeFilename string) TokenError {
 	pos := token.NewPositionTopLeft()
 	fileDocument := token.MakeSourceFileDocumentFromLocalPath(relativeFilename)
+	var errors []TokenError
+
 	if len(relativeFilename) == 0 {
 		panic("must have relative filename")
 	}
@@ -55,26 +57,27 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 		}
 		if r == '\n' || r == 0 {
 			const maxColumn = 120
-			const recommendedMaxColumn = 110
+			const recommendedMaxColumn = 115
 
 			sourceFileReference := token.SourceFileReference{
 				Range:    token.MakeRange(pos, pos),
 				Document: fileDocument,
 			}
 			if pos.Column() > maxColumn {
-				fmt.Fprintf(os.Stderr, "%v: Warning: line is too long (%v of max %v).\n", sourceFileReference.ToStandardReferenceString(),
-					pos.Column(), maxColumn)
+				err := NewLineIsTooLongError(sourceFileReference)
+				errors = append(errors, err)
 			} else if pos.Column() > recommendedMaxColumn {
-				fmt.Fprintf(os.Stderr, "%v: Note: exceeds recommended line length (%v of recommended %v).\n", sourceFileReference.ToStandardReferenceString(),
-					pos.Column(), recommendedMaxColumn)
-				/*
-					fmt.Fprintf(os.Stderr, "%s Warning: %v\n", warning.FetchPositionLength().ToStandardReferenceString(), warning.Warning())
-
-				*/
+				err := NewLineIsLongerThanRecommendedError(sourceFileReference)
+				errors = append(errors, err)
 			}
 		}
 		pos = nextPosition(pos, r)
 	}
+
+	if len(errors) > 0 {
+		return NewMultiErrors(errors)
+	}
+
 	return nil
 }
 
@@ -107,11 +110,12 @@ func NewTokenizerInternalWithStartPosition(r *runestream.RuneReader, position to
 // NewTokenizer :
 func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
 	verifyErr := verifyOctets(r.Octets(), r.RelativeFilename())
-	if verifyErr != nil {
-		return nil, verifyErr
+	tokenizer, createErr := NewTokenizerInternal(r, exactWhitespace)
+	if createErr != nil {
+		return nil, createErr
 	}
 
-	return NewTokenizerInternal(r, exactWhitespace)
+	return tokenizer, verifyErr
 }
 
 func (t *Tokenizer) SourceFile() *token.SourceFileURI {
@@ -639,6 +643,9 @@ func (t *Tokenizer) ParseCharacter(startPosition token.PositionToken) (token.Cha
 func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, TokenError) {
 	var a string
 	raw := string(startStringRune)
+	var lines []token.SameLineRange
+	currentLineStart := startPosition.Position().NextColumn() // Skip first "
+	currentStringIndex := 0
 	for {
 		ch := t.nextRune()
 		raw += string(ch)
@@ -650,9 +657,19 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 		}
 
 		if ch == '\\' {
+			potentialEnd := t.ParsingPosition()
 			next := t.nextRune()
-			if next == '\n' || next == '\r' {
+			if next == '\n' {
+				length := potentialEnd.Position().Column() - currentLineStart.Column() - 1
+				newLine := token.SameLineRange{
+					Position:         currentLineStart,
+					Length:           length,
+					LocalOctetOffset: currentStringIndex,
+				}
+				lines = append(lines, newLine)
 				t.skipSpaces()
+				currentLineStart = t.ParsingPosition().Position()
+				currentStringIndex = len(a)
 				continue
 			} else {
 				t.unreadRune()
@@ -661,13 +678,26 @@ func (t *Tokenizer) ParseString(startStringRune rune, startPosition token.Positi
 
 		if ch == '\n' || ch == '\r' {
 			// we ignore new line (LF) in normal string literals. See verbatim strings (triple quote strings) for other behavior.
-			continue
+			return token.StringToken{}, NewUnexpectedEatTokenError(t.MakeSourceFileReference(t.ParsingPosition()), ' ', ' ')
 		}
 
 		a += string(ch)
 	}
+
+	currentLineStart.SetOctetOffset(0)
+
+	length := len(a) - currentStringIndex
+	if length > 0 {
+		newLine := token.SameLineRange{
+			Position:         currentLineStart,
+			Length:           length,
+			LocalOctetOffset: currentStringIndex,
+		}
+
+		lines = append(lines, newLine)
+	}
 	posLen := t.MakeSourceFileReference(startPosition)
-	return token.NewStringToken(raw, a, posLen), nil
+	return token.NewStringToken(raw, a, posLen, lines), nil
 }
 
 func (t *Tokenizer) isTriple(ch rune, startStringRune rune) (bool, error) {
@@ -692,7 +722,14 @@ func (t *Tokenizer) isTriple(ch rune, startStringRune rune) (bool, error) {
 func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.PositionToken) (token.StringToken, TokenError) {
 	var a string
 	raw := string(startStringRune + startStringRune + startStringRune)
+
+	currentLineStart := startPosition.Position().NextColumn().NextColumn().NextColumn()
+	currentIndexStart := 0
+
+	var lines []token.SameLineRange
+	var potentialEnd token.Position
 	for {
+		potentialEnd = t.ParsingPosition().Position()
 		ch := t.nextRune()
 		raw += string(ch)
 		if ch == 0 {
@@ -708,9 +745,29 @@ func (t *Tokenizer) parseTripleString(startStringRune rune, startPosition token.
 			break
 		}
 		a += string(ch)
+		if ch == '\n' {
+			length := potentialEnd.Column() - currentLineStart.Column()
+			newLine := token.SameLineRange{
+				Position:         currentLineStart,
+				Length:           length,
+				LocalOctetOffset: currentIndexStart,
+			}
+			lines = append(lines, newLine)
+			currentLineStart = t.position.Position()
+			currentIndexStart = len(a)
+		}
+	}
+	stringLength := len(a) - currentIndexStart
+	if stringLength > 0 {
+		newLine := token.SameLineRange{
+			Position:         currentLineStart,
+			Length:           stringLength,
+			LocalOctetOffset: currentIndexStart,
+		}
+		lines = append(lines, newLine)
 	}
 	posLen := t.MakeSourceFileReference(startPosition)
-	return token.NewStringToken(raw, a, posLen), nil
+	return token.NewStringToken(raw, a, posLen, lines), nil
 }
 
 func (t *Tokenizer) ReadStringUntilEndOfLine() string {
@@ -893,6 +950,14 @@ func (t *Tokenizer) ReadOpenOperatorToken(r rune, singleCharLength token.SourceF
 	return nil, NewNotAnOpenOperatorError(t.MakeSourceFileReference(posToken), r)
 }
 
+func (t *Tokenizer) parseNormalOrTripleString(r rune, positionToken token.PositionToken) (token.StringToken, TokenError) {
+	if wasTriple, _ := t.isTriple(r, r); wasTriple {
+		return t.parseTripleString(r, positionToken)
+	}
+	return t.ParseString(r, positionToken)
+
+}
+
 func (t *Tokenizer) readTermToken() (token.Token, TokenError) {
 	posToken := t.position
 	r := t.nextRune()
@@ -904,6 +969,24 @@ func (t *Tokenizer) readTermToken() (token.Token, TokenError) {
 		return token.NewLineDelimiter(t.MakeSourceFileReference(posToken)), nil
 	}
 	t.lastTokenWasDelimiter = false
+	if r == '%' || r == '$' {
+		beforeToken := t.position
+		n := t.nextRune()
+		if n == '"' {
+			parsedString, parsedErr := t.parseNormalOrTripleString(n, beforeToken)
+			if parsedErr != nil {
+				return nil, parsedErr
+			}
+			if r == '%' {
+				return t.ParseStringInterpolationTuple(parsedString)
+			} else {
+				return t.ParseStringInterpolationString(parsedString)
+			}
+		} else {
+			t.unreadRune()
+		}
+	}
+
 	if isLetter(r) {
 		t.unreadRune()
 		return t.parseAnySymbol(posToken)
@@ -917,10 +1000,7 @@ func (t *Tokenizer) readTermToken() (token.Token, TokenError) {
 	} else if r == '\'' {
 		return t.ParseCharacter(posToken)
 	} else if isStartString(r) {
-		if wasTriple, _ := t.isTriple(r, r); wasTriple {
-			return t.parseTripleString(r, posToken)
-		}
-		return t.ParseString(r, posToken)
+		return t.parseNormalOrTripleString(r, posToken)
 	} else if isUnaryOperator(r) {
 		t.unreadRune()
 		return t.ParseUnaryOperator()

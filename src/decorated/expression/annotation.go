@@ -17,7 +17,6 @@ import (
 type AnnotationStatement struct {
 	astAnnotation *ast.Annotation
 	t             dtype.Type
-	comment       token.Comment
 	hasLocalTypes bool
 }
 

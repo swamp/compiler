@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -123,6 +124,7 @@ type ReportAsSeverity uint8
 
 const (
 	ReportAsSeverityNote ReportAsSeverity = iota
+	ReportAsSeverityInfo
 	ReportAsSeverityWarning
 	ReportAsSeverityError
 )
@@ -132,14 +134,23 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	if parserError == nil {
 		panic("parserError is nil. internal error.")
 	}
-	moduleErr, isModuleErr := parserError.(*decorated.ModuleError)
+	_, isModuleErr := parserError.(*decorated.ModuleError)
 	if isModuleErr {
-		parserError = moduleErr.WrappedError()
+		panic("can not have multi errors")
 	}
 
 	parseAliasErr, _ := parserError.(*parerr.ParseAliasError)
 	if parseAliasErr != nil {
-		parserError = parseAliasErr.Unwrap()
+		panic("can not have multi errors")
+	}
+	_, wasMulti := parserError.(*tokenize.MultiErrors)
+	if wasMulti {
+		panic("can not have multi errors")
+	}
+
+	_, wasMultiParErr := parserError.(parerr.MultiError)
+	if wasMultiParErr {
+		panic("can not have multi errors")
 	}
 
 	posLength := parserError.FetchPositionLength()
@@ -167,7 +178,10 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	fmt.Fprintf(os.Stderr, "%v %T\n", errorString, parserError)
 
 	color.NoColor = false
-	ShowSourceCode(tokenizer, highlightLine, highlightColumn, posLength)
+
+	if errorAsWarning == ReportAsSeverityError {
+		ShowSourceCode(tokenizer, highlightLine, highlightColumn, posLength)
+	}
 
 	const useColor = true
 	var colorer coloring.Colorer
@@ -194,29 +208,141 @@ func ShowError(tokenizer *tokenize.Tokenizer, filename string, parserError parer
 	return nil
 }
 
-func typeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
+func HighestSeverity(err error) ReportAsSeverity {
+	highestError := ReportAsSeverityNote
+	if err == nil {
+		return highestError
+	}
+
+	moduleErr, wasModuleErr := err.(*decorated.ModuleError)
+	if wasModuleErr {
+		return HighestSeverity(moduleErr.WrappedError())
+	}
+
+	switch t := err.(type) {
+	case *decorated.MultiErrors:
+		for _, subErr := range t.Errors() {
+			detectedError := HighestSeverity(subErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	case parerr.MultiError:
+		for _, subErr := range t.Errors() {
+			detectedError := HighestSeverity(subErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	case *tokenize.MultiErrors:
+		for _, subErr := range t.Errors() {
+			detectedError := HighestSeverity(subErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	}
+
+	parserErr, wasParserErr := err.(parerr.ParseError)
+	if wasParserErr {
+		return TypeOfWarning(parserErr)
+	}
+
+	log.Printf("unknown err %v %T", err, err)
+	return ReportAsSeverityError
+}
+
+func IsCompileError(parseError parerr.ParseError) bool {
+	return HighestSeverity(parseError) == ReportAsSeverityError
+}
+
+func IsCompileErr(parseError error) bool {
+	return HighestSeverity(parseError) == ReportAsSeverityError
+}
+
+func TypeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
 	switch parserError.(type) {
 	case parerr.ExpectedOneSpace:
 		return ReportAsSeverityWarning
 	case parerr.UnexpectedImportAlias:
+		return ReportAsSeverityNote
+	case *decorated.UnusedWarning:
+		return ReportAsSeverityNote
+	case *decorated.UnusedTypeWarning:
+		return ReportAsSeverityNote
+	case tokenize.LineIsLongerThanRecommendedError:
+		return ReportAsSeverityNote
+	case tokenize.LineIsTooLongError:
 		return ReportAsSeverityWarning
 	}
 	return ReportAsSeverityError
 }
 
-func ShowWarningOrError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) {
-	showAsWarning := typeOfWarning(parserError)
+func ShowWarningOrError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) ReportAsSeverity {
+	moduleErr, isModuleErr := parserError.(*decorated.ModuleError)
+	if isModuleErr {
+		parserError = moduleErr.WrappedError()
+	}
+	parseAliasErr, _ := parserError.(*parerr.ParseAliasError)
+	if parseAliasErr != nil {
+		parserError = parseAliasErr.Unwrap()
+	}
+
+	multi, wasMulti := parserError.(*tokenize.MultiErrors)
+	if wasMulti {
+		highestError := ReportAsSeverityNote
+		for _, tokenizeErr := range multi.Errors() {
+			detectedError := ShowWarningOrError(tokenizer, tokenizeErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	}
+
+	parErrMulti, wasParErrMulti := parserError.(parerr.MultiError)
+	if wasParErrMulti {
+		highestError := ReportAsSeverityNote
+		for _, tokenizeErr := range parErrMulti.Errors() {
+			detectedError := ShowWarningOrError(tokenizer, tokenizeErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	}
+
+	decoratedMultiErr, wasDecoratedMultiErr := parserError.(*decorated.MultiErrors)
+	if wasDecoratedMultiErr {
+		highestError := ReportAsSeverityNote
+		for _, tokenizeErr := range decoratedMultiErr.Errors() {
+			detectedError := ShowWarningOrError(tokenizer, tokenizeErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	}
+	showAsWarning := TypeOfWarning(parserError)
 	localPath := ""
 	if parserError.FetchPositionLength().Document != nil {
 		localPath, _ = parserError.FetchPositionLength().Document.Uri.ToLocalFilePath()
 	}
 	ShowError(tokenizer, localPath, parserError, verbosity.High, showAsWarning)
+
+	return showAsWarning
 }
 
-func ShowAsError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) {
+func ShowAsError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) ReportAsSeverity {
 	localPath := ""
 	if parserError.FetchPositionLength().Document != nil {
 		localPath, _ = parserError.FetchPositionLength().Document.Uri.ToLocalFilePath()
 	}
+
 	ShowError(tokenizer, localPath, parserError, verbosity.High, ReportAsSeverityError)
+
+	return ReportAsSeverityError
 }

@@ -27,7 +27,7 @@ func (g *CaseConsequenceParameterReference) String() string {
 }
 
 func (g *CaseConsequenceParameterReference) HumanReadable() string {
-	return fmt.Sprintf("custom type variant Parameter Reference")
+	return "custom type variant Parameter Reference"
 }
 
 func (g *CaseConsequenceParameterReference) Identifier() ast.ScopedOrNormalVariableIdentifier {

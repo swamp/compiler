@@ -7,7 +7,6 @@ package tokenize
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -51,6 +50,53 @@ func NewUnexpectedEatTokenError(posLength token.SourceFileReference, requiredRun
 
 func (e UnexpectedEatTokenError) Error() string {
 	return fmt.Sprintf("unexpected rune. required %v, but encountered %v", string(e.requiredRune), string(e.encounteredRune))
+}
+
+type LineIsTooLongError struct {
+	StandardTokenError
+}
+
+func NewLineIsTooLongError(posLength token.SourceFileReference) LineIsTooLongError {
+	return LineIsTooLongError{StandardTokenError: StandardTokenError{posLength}}
+}
+
+func (e LineIsTooLongError) Error() string {
+	return fmt.Sprintf("line is too long (%v of max 120).", e.StandardTokenError.posLength.Range.End().Column())
+}
+
+type LineIsLongerThanRecommendedError struct {
+	StandardTokenError
+}
+
+func NewLineIsLongerThanRecommendedError(posLength token.SourceFileReference) LineIsLongerThanRecommendedError {
+	return LineIsLongerThanRecommendedError{StandardTokenError: StandardTokenError{posLength}}
+}
+
+func (e LineIsLongerThanRecommendedError) Error() string {
+	return fmt.Sprintf("line exceeds recommended line length (%v of 115).", e.StandardTokenError.posLength.Range.End().Column())
+}
+
+type MultiErrors struct {
+	errors []TokenError
+}
+
+func NewMultiErrors(errors []TokenError) *MultiErrors {
+	if len(errors) == 0 {
+		panic("must have one or more errors in multi errors")
+	}
+	return &MultiErrors{errors: errors}
+}
+
+func (e MultiErrors) Error() string {
+	return fmt.Sprintf("%v", e.errors)
+}
+
+func (e MultiErrors) Errors() []TokenError {
+	return e.errors
+}
+
+func (e MultiErrors) FetchPositionLength() token.SourceFileReference {
+	return e.errors[0].FetchPositionLength()
 }
 
 type NotAnOpenOperatorError struct {

@@ -52,9 +52,11 @@ func parseRecordDestructuring(p ParseStream, keywordIndentation int) ([]*ast.Var
 		if _, wasComma := p.maybeComma(); !wasComma {
 			break
 		}
-		if _, err := p.eatOneSpace("afterComma"); err != nil {
+		newIndentation, _, err := p.eatContinuationReturnIndentation(keywordIndentation)
+		if err != nil {
 			return nil, err
 		}
+		keywordIndentation = newIndentation
 	}
 
 	if _, spaceAfterIdentifierErr := p.eatOneSpace("after variable identifier"); spaceAfterIdentifierErr != nil {
@@ -88,6 +90,9 @@ func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expre
 		if _, wasCurly := p.maybeLeftCurly(); wasCurly {
 			wasCurlyDestructuring = true
 			identifiers, identifiersErr = parseRecordDestructuring(p, keywordIndentation)
+			if identifiersErr != nil {
+				return nil, identifiersErr
+			}
 		} else {
 			wasCurlyDestructuring = false
 			identifiers, identifiersErr = parseMultipleIdentifiers(p)

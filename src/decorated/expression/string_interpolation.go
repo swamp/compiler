@@ -14,12 +14,13 @@ import (
 )
 
 type StringInterpolation struct {
-	str        *ast.StringInterpolation
-	expression Expression
+	str                 *ast.StringInterpolation
+	expression          Expression
+	includedExpressions []Expression
 }
 
-func NewStringInterpolation(str *ast.StringInterpolation, expression Expression) *StringInterpolation {
-	return &StringInterpolation{str: str, expression: expression}
+func NewStringInterpolation(str *ast.StringInterpolation, expression Expression, includedExpressions []Expression) *StringInterpolation {
+	return &StringInterpolation{str: str, expression: expression, includedExpressions: includedExpressions}
 }
 
 func (i *StringInterpolation) Type() dtype.Type {
@@ -28,6 +29,10 @@ func (i *StringInterpolation) Type() dtype.Type {
 
 func (i *StringInterpolation) Expression() Expression {
 	return i.expression
+}
+
+func (i *StringInterpolation) IncludedExpressions() []Expression {
+	return i.includedExpressions
 }
 
 func (i *StringInterpolation) AstStringInterpolation() *ast.StringInterpolation {

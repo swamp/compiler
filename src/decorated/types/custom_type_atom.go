@@ -14,10 +14,9 @@ import (
 )
 
 type CustomTypeAtom struct {
-	nameToField map[string]*CustomTypeVariant
-	parameters  []dtype.Type
-	variants    []*CustomTypeVariant
-	// name                  *ast.TypeIdentifier
+	nameToField           map[string]*CustomTypeVariant
+	parameters            []dtype.Type
+	variants              []*CustomTypeVariant
 	astCustomType         *ast.CustomType
 	artifactTypeName      ArtifactFullyQualifiedTypeName
 	genericLocalTypeNames []*dtype.TypeArgumentName

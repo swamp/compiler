@@ -148,13 +148,6 @@ func (s SourceFileReference) String() string {
 	return s.ToReferenceString()
 }
 
-func MakeSourceFileReferenceFromString(uri string, tokenRange Range) SourceFileReference {
-	return SourceFileReference{
-		Range:    tokenRange,
-		Document: MakeSourceFileDocument(uri),
-	}
-}
-
 func MakeSourceFileReference(uri *SourceFileDocument, tokenRange Range) SourceFileReference {
 	return SourceFileReference{
 		Range:    tokenRange,
@@ -163,15 +156,6 @@ func MakeSourceFileReference(uri *SourceFileDocument, tokenRange Range) SourceFi
 }
 
 func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileReference) SourceFileReference {
-	/*
-		if start.Document == nil {
-			panic("document can not be nil")
-		}
-		if start.Document != end.Document {
-			panic("source file reference can not span files")
-		}
-
-	*/
 	tokenRange := MakeInclusiveRange(start.Range, end.Range)
 	return SourceFileReference{
 		Range:    tokenRange,
@@ -183,14 +167,47 @@ type SourceFileReferenceProvider interface {
 	FetchPositionLength() SourceFileReference
 }
 
-func MakeInclusiveSourceFileReferenceSlice(references []SourceFileReferenceProvider) SourceFileReference {
-	if len(references) < 1 {
-		panic("MakeInclusiveSourceFileReferenceSlice can not be empty")
-	}
+type SameLineRange struct {
+	Position         Position
+	Length           int
+	LocalOctetOffset int
+}
 
-	first := references[0]
-	last := references[len(references)-1]
-	return MakeInclusiveSourceFileReference(first.FetchPositionLength(), last.FetchPositionLength())
+func (s SameLineRange) String() string {
+	return fmt.Sprintf("[stringline %v->%v (local offset: %v)]", s.Position, s.Length, s.LocalOctetOffset)
+}
+
+func (s SameLineRange) LocalStringOffset() int {
+	return s.LocalOctetOffset
+}
+
+func (s SameLineRange) EndLocalStringOffset() int {
+	return s.LocalOctetOffset + s.Length - 1
+}
+
+func MakeSameLineRange(start Position, length int, localOffset int) SameLineRange {
+	if length == 0 {
+		panic("how is this possible")
+	}
+	return SameLineRange{
+		Position:         start,
+		Length:           length,
+		LocalOctetOffset: localOffset,
+	}
+}
+
+func RangeFromSameLineRanges(ranges []SameLineRange) Range {
+	if len(ranges) == 0 {
+		return Range{}
+	}
+	first := ranges[0]
+	last := ranges[len(ranges)-1]
+
+	return MakeRange(first.Position, last.Position.AddColumn(last.Length))
+}
+
+func RangeFromSingleSameLineRange(singleRange SameLineRange) Range {
+	return MakeRange(singleRange.Position, singleRange.Position.AddColumn(singleRange.Length))
 }
 
 type Range struct {
@@ -223,6 +240,10 @@ func (p Range) IsAfter(other Range) bool {
 	return (p.start.line > other.end.line) || ((p.start.line == other.end.line) && p.start.column > other.end.column)
 }
 
+func (p Range) IsEqual(other Range) bool {
+	return p.start.line == other.start.line && p.start.column == other.start.column && p.end.line == other.end.line && p.end.column == other.end.column
+}
+
 func MakeInclusiveRange(start Range, end Range) Range {
 	return Range{
 		start: start.Start(),
@@ -232,21 +253,21 @@ func MakeInclusiveRange(start Range, end Range) Range {
 
 func NewPositionLength(start Position, octetCountIncludingWhitespace int) Range {
 	return Range{start: start, end: Position{
-		line:        start.line,
-		column:      start.column + octetCountIncludingWhitespace - 1,
-		octetOffset: start.octetOffset + octetCountIncludingWhitespace,
+		line:                            start.line,
+		column:                          start.column + octetCountIncludingWhitespace - 1,
+		originalOctetOffsetInSourceFile: start.originalOctetOffsetInSourceFile + octetCountIncludingWhitespace,
 	}}
 }
 
 func NewPositionLengthFromEndPosition(start Position, endPosition Position) Range {
-	if endPosition.octetOffset < 0 {
+	if endPosition.originalOctetOffsetInSourceFile < 0 {
 		panic("octet offset is wrong")
 	}
 	return Range{start: start, end: endPosition}
 }
 
 func (p Range) RuneWidth() int {
-	return p.end.octetOffset - p.start.octetOffset + 1
+	return p.end.originalOctetOffsetInSourceFile - p.start.originalOctetOffsetInSourceFile + 1
 }
 
 func (p Range) Contains(pos Position) bool {
@@ -271,6 +292,14 @@ func (p Range) Contains(pos Position) bool {
 	panic("what happened")
 }
 
+func (p Range) ContainsRange(other Range) bool {
+	return other.Start().IsOnOrAfter(other.Start()) && p.end.IsOnOrAfter(other.End())
+}
+
+func (p Range) ContainsSameLineRanges(other []SameLineRange) bool {
+	return true
+}
+
 func (p Range) Position() Position {
 	return p.start
 }
@@ -284,9 +313,9 @@ func (p Range) End() Position {
 }
 
 func (p Range) OctetCount() int {
-	return p.end.octetOffset - p.start.octetOffset + 1
+	return p.end.originalOctetOffsetInSourceFile - p.start.originalOctetOffsetInSourceFile + 1
 }
 
 func (p Range) String() string {
-	return fmt.Sprintf("[%v to %v (%v)] ", p.start, p.end, p.OctetCount())
+	return fmt.Sprintf("[%v to %v (%v)] ", p.start.DebugString(), p.end.DebugString(), p.OctetCount())
 }

@@ -2,8 +2,8 @@ package lspservice
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/parser"
 	"log"
-	"os"
 	"reflect"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
@@ -34,30 +34,16 @@ func (l *LspImpl) Compile(filename string) (*decorated.Module, error) {
 	const verboseFlag = verbosity.None
 
 	world, module, err := swampcompiler.CompileMainFindLibraryRoot(filename, l.documentCache, l.configuration, enforceStyle, verboseFlag)
-	if err != nil {
+	if parser.IsCompileErr(err) {
 		return nil, err
 	}
 	if module == nil {
 		return nil, fmt.Errorf("module can not be nil")
 	}
-	fmt.Fprintf(os.Stderr, "COMPILE DONE!\n")
+	log.Printf("Compile worked, adding world")
 	l.workspace.AddOrReplacePackage(world)
 
-	return module, nil
-}
-
-func findModuleFromSourceFile(world *loader.Package, sourceFileURI token.DocumentURI) (*decorated.Module, error) {
-	localFilePath, convertErr := sourceFileURI.ToLocalFilePath()
-	if convertErr != nil {
-		return nil, convertErr
-	}
-
-	foundModule := world.FindModuleFromAbsoluteFilePath(loader.LocalFileSystemPath(localFilePath))
-	if foundModule == nil {
-		return nil, fmt.Errorf("couldn't find module for path %v", localFilePath)
-	}
-
-	return foundModule, nil
+	return module, err
 }
 
 func (l *LspImpl) AllModules() []*decorated.Module {
