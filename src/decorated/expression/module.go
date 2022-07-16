@@ -243,8 +243,8 @@ func (m *Module) LocalAndImportedDefinitions() *ModuleDefinitionsCombine {
 }
 
 func (m *Module) DebugOutput(debug string) {
-	fmt.Printf("%v: \n", debug)
-	fmt.Println(m.String())
+	log.Printf("%v: \n", debug)
+	log.Println(m.String())
 }
 
 func (m *Module) ShortString() string {

@@ -7,17 +7,21 @@ package generate_sp
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
+	swampdisasmsp "github.com/swamp/disassembler/lib"
 	"github.com/swamp/opcodes/instruction_sp"
 	"github.com/swamp/opcodes/opcode_sp"
+	"io/ioutil"
+	"log"
+	"path"
+	"strings"
 )
 
 type AnyPosAndRange interface {
@@ -72,11 +76,32 @@ func (f *Function) DebugLines() []opcode_sp.OpcodeInfo {
 }
 
 type Generator struct {
-	code *assembler_sp.Code
+	code              *assembler_sp.Code
+	packageConstants  *assembler_sp.PackageConstants
+	functionConstants []*assembler_sp.Constant
+	lookup            typeinfo.TypeLookup
+	chunk             *typeinfo.Chunk
+	fileUrlCache      *assembler_sp.FileUrlCache
 }
 
 func NewGenerator() *Generator {
-	return &Generator{code: assembler_sp.NewCode()}
+	g := &Generator{chunk: &typeinfo.Chunk{}, fileUrlCache: assembler_sp.NewFileUrlCache()}
+	g.lookup = g.chunk
+	return g
+}
+
+func (g *Generator) PrepareForNewPackage() {
+	g.code = assembler_sp.NewCode()
+	g.packageConstants = assembler_sp.NewPackageConstants()
+	g.fileUrlCache = assembler_sp.NewFileUrlCache()
+}
+
+func (g *Generator) PackageConstants() *assembler_sp.PackageConstants {
+	return g.packageConstants
+}
+
+func (g *Generator) LastFunctionConstants() []*assembler_sp.Constant {
+	return g.functionConstants
 }
 
 func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperatorType) instruction_sp.UnaryOperatorType {
@@ -155,9 +180,95 @@ func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembl
 	return targetToSourceStackPosRange(functionPointer), nil
 }
 
-func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
-	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
-	moduleContext := NewContext(packageConstants, "root")
+func (g *Generator) Before(compilePackage *loader.Package) error {
+	g.PrepareForNewPackage()
+	err := typeinfo.GeneratePackageToChunk(compilePackage, g.chunk)
+	if err != nil {
+		return decorated.NewInternalError(err)
+	}
+
+	return nil
+}
+
+func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) error {
+	g.Before(compilePackage)
+
+	packageConstants, allConstantsErr := preparePackageConstants(compilePackage, g.lookup)
+	if allConstantsErr != nil {
+		return allConstantsErr
+	}
+	g.packageConstants = packageConstants
+	for _, mod := range compilePackage.AllModules() {
+		standardError := g.GenerateModule(mod, resourceNameLookup, verboseFlag)
+		if standardError != nil {
+			return decorated.NewInternalError(standardError)
+		}
+	}
+
+	const showAssembler = true
+	return g.After(resourceNameLookup, absoluteOutputDirectory, packageSubDirectory, showAssembler, verboseFlag)
+}
+
+func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, showAssembler bool, verboseFlag verbosity.Verbosity) error {
+	var allFunctions []*assembler_sp.Constant
+	constants := g.packageConstants
+
+	if verboseFlag >= verbosity.Mid || showAssembler {
+		constants.DynamicMemory().DebugOutput()
+	}
+
+	if verboseFlag >= verbosity.Mid || showAssembler {
+		var assemblerOutput string
+
+		for _, f := range allFunctions {
+			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
+				opcodes := constants.FetchOpcodes(f)
+				lines := swampdisasmsp.Disassemble(opcodes)
+
+				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
+			}
+		}
+
+		fmt.Println(assemblerOutput)
+	}
+
+	constants.AllocateDebugInfoFiles(g.fileUrlCache.FileUrls())
+	typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(g.chunk)
+	if typeInformationErr != nil {
+		return decorated.NewInternalError(typeInformationErr)
+	}
+
+	if verboseFlag >= verbosity.High {
+		log.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
+		g.chunk.DebugOutput()
+	}
+
+	for _, resourceName := range resourceNameLookup.SortedResourceNames() {
+		constants.AllocateResourceNameConstant(resourceName)
+	}
+
+	constants.Finalize()
+	dynamicMemoryOctets := constants.DynamicMemory().Octets()
+
+	packed, packedErr := Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)
+	if packedErr != nil {
+		return packedErr
+	}
+
+	outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectory))
+
+	if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
+		return decorated.NewInternalError(err)
+	}
+
+	log.Printf("wrote output file '%v'", outputFilename)
+
+	return nil
+}
+
+func (g *Generator) GenerateModule(module *decorated.Module,
+	resourceNameLookup resourceid.ResourceNameLookup, verboseFlag verbosity.Verbosity) error {
+	moduleContext := NewContext(g.packageConstants, "root")
 
 	var functionConstants []*assembler_sp.Constant
 
@@ -179,7 +290,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
-				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+				log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
 			rootContext := moduleContext.MakeFunctionContext(maybeFunction, fullyQualifiedName.String())
@@ -188,9 +299,9 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 				continue
 			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
-				rootContext, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
+				rootContext, g.lookup, resourceNameLookup, g.fileUrlCache, verboseFlag)
 			if genFuncErr != nil {
-				return nil, nil, genFuncErr
+				return genFuncErr
 			}
 
 			if generatedFunctionInfo == nil {
@@ -206,7 +317,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 
 			debugLinesOctets, debugLinesErr := opcode_sp.SerializeDebugLines(generatedFunctionInfo.debugLines)
 			if debugLinesErr != nil {
-				return nil, nil, debugLinesErr
+				return debugLinesErr
 			}
 
 			moduleContext.Constants().DefineFunctionDebugLines(preparedFuncConstant, uint(len(generatedFunctionInfo.debugLines)), debugLinesOctets)
@@ -221,13 +332,13 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 			maybeConstant, _ := unknownType.(*decorated.Constant)
 			if maybeConstant != nil {
 				if verboseFlag >= verbosity.Mid {
-					fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+					log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 				}
 			} else {
-				return nil, nil, fmt.Errorf("generate: unknown type %T", unknownType)
+				return fmt.Errorf("generate: unknown type %T", unknownType)
 			}
 		}
 	}
 
-	return moduleContext.constants, functionConstants, nil
+	return nil
 }

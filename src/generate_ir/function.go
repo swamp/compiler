@@ -14,6 +14,22 @@ import (
 	"log"
 )
 
+type IrFunctions struct {
+	functions map[string]*ir.Func
+}
+
+func NewIrFunctions() *IrFunctions {
+	return &IrFunctions{functions: make(map[string]*ir.Func)}
+}
+
+func (i *IrFunctions) AddFunc(name *decorated.FullyQualifiedPackageVariableName, p *ir.Func) {
+	i.functions[name.ResolveToString()] = p
+}
+
+func (i *IrFunctions) GetFunc(name *decorated.FullyQualifiedPackageVariableName) *ir.Func {
+	return i.functions[name.ResolveToString()]
+}
+
 type IrTypeRepo struct {
 	string    *types.PointerType
 	blob      *types.PointerType
@@ -55,23 +71,70 @@ func NewIrTypeRepo() *IrTypeRepo {
 	}
 }
 
-func (r *IrTypeRepo) AddTypeDef(name string, newType types.Type) {
-	_, hasType := r.typeDefs[name]
+func (r *IrTypeRepo) AddTypeDef(decoratedType dtype.Type, newType types.Type) {
+	unreferenced := dectype.UnReference(decoratedType)
+	_, hasType := r.typeDefs[unreferenced.String()]
 	if hasType {
-		log.Printf("skipping %v", name)
+		log.Printf("skipping %v", decoratedType)
 		return
 	}
-
-	r.typeDefs[name] = newType
-}
-
-func (r *IrTypeRepo) GetTypeRef(name string) (types.Type, error) {
-	foundType, hasType := r.typeDefs[name]
-	if !hasType {
-		return nil, fmt.Errorf("can not find %v %v", name, r.typeDefs)
+	typeName := decoratedType.String()
+	switch t := unreferenced.(type) {
+	case *dectype.CustomTypeAtom:
+		typeName = t.ArtifactTypeName().String()
 	}
 
-	return foundType, nil
+	log.Printf("**** [%v] = %T", typeName, newType)
+	r.typeDefs[typeName] = newType
+}
+
+func (r *IrTypeRepo) GetTypeRef(decoratedType dtype.Type) (types.Type, error) {
+	unreferenced := dectype.UnReference(decoratedType)
+	unaliased := dectype.UnaliasWithResolveInvoker(decoratedType)
+	switch t := unaliased.(type) {
+	case *dectype.RecordAtom:
+		{
+			return generateRecordType(nil, r, t), nil
+		}
+	case *dectype.PrimitiveAtom:
+		switch t.AtomName() {
+		case "Int":
+			return types.I32, nil
+		case "Fixed":
+			return types.I32, nil
+		case "Bool":
+			return types.I8, nil
+		case "String":
+			return r.string, nil
+		case "ResourceName":
+			return r.string, nil
+		case "Blob":
+			return r.blob, nil
+		case "Array":
+			return r.array, nil
+		case "List":
+			return r.list, nil
+		default:
+			panic(fmt.Errorf("unknown primitive atom %v", t))
+		}
+	case *dectype.CustomTypeAtom:
+		typeName := t.ArtifactTypeName().String()
+		foundType, hasType := r.typeDefs[typeName]
+		if !hasType {
+			panic(fmt.Errorf("GetTypeRef: can not CustomTypeAtom '%v' '%v' '%v'", typeName, unreferenced, r.typeDefs))
+			return nil, fmt.Errorf("can not find %v %v", unreferenced, r.typeDefs)
+		}
+		return foundType, nil
+	default:
+
+		foundType, hasType := r.typeDefs[unreferenced.String()]
+		if !hasType {
+			panic(fmt.Errorf("GetTypeRef: can not find '%v' '%v'", unreferenced, r.typeDefs))
+			return nil, fmt.Errorf("can not find %v %v", unreferenced, r.typeDefs)
+		}
+
+		return foundType, nil
+	}
 }
 
 func makeIrForType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Type {
@@ -84,10 +147,10 @@ func makeIrForType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Ty
 	case *dectype.FunctionAtom:
 		return generateFunctionType(irModule, repo, t)
 	case *dectype.CustomTypeAtom:
-		foundType, foundErr := repo.GetTypeRef(t.ArtifactTypeName().String())
+		foundType, foundErr := repo.GetTypeRef(t)
 		if foundErr != nil {
 			generateCustomType(irModule, repo, t)
-			foundType2, foundErr2 := repo.GetTypeRef(t.ArtifactTypeName().String())
+			foundType2, foundErr2 := repo.GetTypeRef(t)
 			if foundErr2 != nil {
 				panic(foundErr2)
 			}
@@ -113,10 +176,11 @@ func makeIrForType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Ty
 		case "List":
 			return repo.list
 		default:
-			panic(fmt.Errorf("unknown atom %v", t))
+			panic(fmt.Errorf("unknown primitive atom %v", t))
 		}
 	case *dectype.UnmanagedType:
-		return repo.unmanaged
+		voidPointer := types.NewPointer(types.Void)
+		return voidPointer
 	default:
 		panic(fmt.Errorf("what is this %T", t))
 		return types.I1
@@ -129,13 +193,16 @@ func makeIrType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Type 
 
 func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo, functionParam *decorated.FunctionParameterDefinition) *ir.Param {
 	irType := makeIrType(irModule, repo, functionParam.Type())
+	if types.IsStruct(irType) {
+		irType = types.NewPointer(irType)
+	}
 	newParam := ir.NewParam(functionParam.Identifier().Name(), irType)
 
 	return newParam
 }
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
-	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, verboseFlag verbosity.Verbosity) (*ir.Func, error) {
+	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, irFunctions *IrFunctions, verboseFlag verbosity.Verbosity) (*ir.Func, error) {
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 	irReturnType := makeIrType(irModule, repo, functionType.ReturnType())
 	//unaliasedReturnType := dectype.UnaliasWithResolveInvoker()
@@ -155,14 +222,17 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		irModule:           irModule,
 		block:              ir.NewBlock("function"),
 		parameterContext:   paramContext,
+		irTypeRepo:         repo,
 		lookup:             lookup,
 		resourceNameLookup: resourceNameLookup,
 		fileCache:          fileCache,
+		irFunctions:        irFunctions,
 	}
 
 	newIrFunc := irModule.NewFunc(f.Annotation().Annotation().Identifier().Name(), irReturnType, irParams...)
+	irFunctions.AddFunc(fullyQualifiedVariableName, newIrFunc)
 
-	result, genErr := generateExpression(f.Expression(), genContext)
+	result, genErr := generateExpression(f.Expression(), true, genContext)
 	if genErr != nil {
 		return nil, genErr
 	}
@@ -174,5 +244,6 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 
 	log.Printf("result of function was %v in block %v", result.Ident(), genContext.block.LLString())
 
+	newIrFunc.Blocks = append(newIrFunc.Blocks, genContext.block)
 	return newIrFunc, nil
 }

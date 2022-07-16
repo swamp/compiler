@@ -28,17 +28,16 @@ func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assem
 	}
 
 	gen := NewGenerator()
-	packageConstants := assembler_sp.NewPackageConstants()
 	const verboseFlag = verbosity.None
-	_, lookup, resourceLookup, typeInfoErr := typeinfo.GenerateModule(module)
+	_, _, resourceLookup, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {
 		return nil, nil, typeInfoErr
 	}
-	constants, functions, genErr := gen.GenerateAllLocalDefinedFunctions(module, lookup, resourceLookup, nil, packageConstants, verboseFlag)
+	genErr := gen.GenerateModule(module, resourceLookup, verboseFlag)
 	if genErr != nil {
 		return nil, nil, genErr
 	}
-	return constants, functions, genErr
+	return gen.PackageConstants(), gen.LastFunctionConstants(), genErr
 }
 
 func checkGeneratedAssembler(constants *assembler_sp.PackageConstants, functions []*assembler_sp.Constant, expectedAsm string) error {
@@ -89,7 +88,7 @@ func testGenerateFail(t *testing.T, code string, expectedError interface{}) {
 	code = strings.TrimSpace(code)
 	_, _, testErr := testGenerateInternal(code)
 	if testErr == nil {
-		fmt.Printf("problem, should fail")
+		log.Printf("problem, should fail")
 		t.Errorf("was supposed to fail")
 		return
 	}

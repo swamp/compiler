@@ -18,6 +18,7 @@ import (
 
 type ModuleTypes struct {
 	identifierToType map[string]dtype.Type
+	allNamedTypes    []NamedType
 	sourceModule     *Module
 }
 
@@ -26,8 +27,8 @@ func NewModuleTypes(sourceModule *Module) *ModuleTypes {
 	return t
 }
 
-func (t *ModuleTypes) AllTypes() map[string]dtype.Type {
-	return t.identifierToType
+func (t *ModuleTypes) AllInOrderTypes() []NamedType {
+	return t.allNamedTypes
 }
 
 func (t *ModuleTypes) SourceModule() *Module {
@@ -165,19 +166,33 @@ func (t *ModuleTypes) internalAdd(identifier *ast.TypeIdentifier, realType dtype
 	t.internalAddWithString(identifier.Name(), realType)
 }
 
+type NamedType struct {
+	name     string
+	realType dtype.Type
+}
+
+func (n NamedType) Name() string {
+	return n.name
+}
+
+func (n NamedType) RealType() dtype.Type {
+	return n.realType
+}
+
 func (t *ModuleTypes) internalAddWithString(name string, realType dtype.Type) {
 	hasType := t.identifierToType[name]
 	if hasType != nil {
 		panic("already have name " + name)
 	}
 	t.identifierToType[name] = realType
+	t.allNamedTypes = append(t.allNamedTypes, NamedType{name: name, realType: realType})
 }
 
-func (t *ModuleTypes) CopyTypes(realTypes map[string]dtype.Type) decshared.DecoratedError {
-	for nameOfType, copyType := range realTypes {
-		symbol := token.NewTypeSymbolToken(nameOfType, t.sourceModule.FetchPositionLength(), 0)
+func (t *ModuleTypes) CopyTypes(realTypes []NamedType) decshared.DecoratedError {
+	for _, copyType := range realTypes {
+		symbol := token.NewTypeSymbolToken(copyType.name, t.sourceModule.FetchPositionLength(), 0)
 		fakeIdentifier := ast.NewTypeIdentifier(symbol)
-		copyErr := t.CopyType(fakeIdentifier, copyType)
+		copyErr := t.CopyType(fakeIdentifier, copyType.realType)
 		if copyErr != nil {
 			return copyErr
 		}

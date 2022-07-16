@@ -6,7 +6,7 @@
 package deccy
 
 import (
-	"fmt"
+	"log"
 	"testing"
 
 	"github.com/swamp/compiler/src/verbosity"
@@ -19,6 +19,6 @@ func TestCrunch(t *testing.T) {
 	}
 	const verboseFlag = verbosity.None
 	if verboseFlag > verbosity.None {
-		fmt.Printf("module\n%v\n", rootModule)
+		log.Printf("module\n%v\n", rootModule)
 	}
 }

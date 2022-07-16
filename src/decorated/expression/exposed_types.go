@@ -17,6 +17,7 @@ import (
 type ImportedType struct {
 	referencedType dtype.Type
 	createdBy      *ImportedModule
+	name           string
 	wasReferenced  bool
 }
 
@@ -45,6 +46,7 @@ func (i *ImportedType) ReferencedType() dtype.Type {
 
 type ExposedTypes struct {
 	identifierToType map[string]*ImportedType
+	allInOrderTypes  []*ImportedType
 }
 
 func NewExposedTypes(module *Module) *ExposedTypes {
@@ -52,18 +54,20 @@ func NewExposedTypes(module *Module) *ExposedTypes {
 }
 
 func (e *ExposedTypes) internalAddType(name string, t dtype.Type, importedModule *ImportedModule) {
-	e.identifierToType[name] = &ImportedType{referencedType: t, createdBy: importedModule}
+	importedType := &ImportedType{name: name, referencedType: t, createdBy: importedModule}
+	e.identifierToType[name] = importedType
+	e.allInOrderTypes = append(e.allInOrderTypes, importedType)
 }
 
-func (e *ExposedTypes) AddTypes(allTypes map[string]*ImportedType, importedModule *ImportedModule) {
-	for name, t := range allTypes {
-		e.internalAddType(name, t.referencedType, importedModule)
+func (e *ExposedTypes) AddTypes(allTypes []*ImportedType, importedModule *ImportedModule) {
+	for _, t := range allTypes {
+		e.internalAddType(t.name, t.referencedType, importedModule)
 	}
 }
 
-func (e *ExposedTypes) AddTypesFromModule(allTypes map[string]dtype.Type, module *Module) {
-	for name, t := range allTypes {
-		e.internalAddType(name, t, nil)
+func (e *ExposedTypes) AddTypesFromModule(allTypes []NamedType, module *Module) {
+	for _, t := range allTypes {
+		e.internalAddType(t.name, t.realType, nil)
 	}
 }
 
@@ -89,8 +93,8 @@ func (e *ExposedTypes) FindBuiltInType(s string) dtype.Type {
 	return e.identifierToType[s].referencedType
 }
 
-func (e *ExposedTypes) AllTypes() map[string]*ImportedType {
-	return e.identifierToType
+func (e *ExposedTypes) AllInOrderTypes() []*ImportedType {
+	return e.allInOrderTypes
 }
 
 func (e *ExposedTypes) DebugString() string {

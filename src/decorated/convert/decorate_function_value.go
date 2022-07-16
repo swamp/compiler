@@ -6,11 +6,10 @@
 package decorator
 
 import (
-	"fmt"
-
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"log"
 )
 
 /*
@@ -51,7 +50,7 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionVal
 
 		decoratedExpressionType := decoratedExpression.Type()
 		if decoratedExpressionType == nil {
-			fmt.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
+			log.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
 		}
 
 		compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)

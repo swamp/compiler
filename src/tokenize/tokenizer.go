@@ -7,6 +7,7 @@ package tokenize
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -167,7 +168,7 @@ func (t *Tokenizer) internalDebugInfo(rowCount int) string {
 	}
 
 	if focusStartColumn > len(line) {
-		fmt.Printf("!!!!!!!!!!!!!! cant be right focusCol:%v lineLength:%v\n", focusStartColumn, len(line))
+		log.Printf("!!!!!!!!!!!!!! cant be right focusCol:%v lineLength:%v\n", focusStartColumn, len(line))
 	}
 
 	startColumn := 0
@@ -188,7 +189,7 @@ func (t *Tokenizer) internalDebugInfo(rowCount int) string {
 	extract := line[startColumn:endColumn+1] + "↵"
 	underlineIndex := focusStartColumn - startColumn
 	if underlineIndex > len(extract) {
-		fmt.Printf("!!!!!!!!!!!!!! we have a problem startCol:%v endCol:%v focusCol:%v\n", startColumn, endColumn, focusStartColumn)
+		log.Printf("!!!!!!!!!!!!!! we have a problem startCol:%v endCol:%v focusCol:%v\n", startColumn, endColumn, focusStartColumn)
 	}
 	prefix := strings.Repeat(" ", underlineIndex)
 	showLine := fmt.Sprintf("%v\n%v^", extract, prefix)

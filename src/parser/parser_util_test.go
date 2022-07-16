@@ -57,7 +57,6 @@ func testParse(t *testing.T, code string, ast string) {
 	}
 	ast = strings.TrimSpace(ast)
 	generatedAst := strings.TrimSpace(program.String())
-	// fmt.Printf("ast:%v\n", generatedAst)
 	if ast != generatedAst {
 		t.Errorf("wrong ast generated:\n\n%v\nexpected\n\n%v\n", generatedAst, ast)
 	}
@@ -85,7 +84,6 @@ func testParseExpressionNoStyle(t *testing.T, code string, ast string) {
 
 func testParseError(t *testing.T, code string, expectedErrorType interface{}) {
 	const errorsAsWarnings = ReportAsSeverityNote
-
 
 	_, _, programErr := testParseInternal(code, errorsAsWarnings)
 	if programErr == nil {

@@ -47,7 +47,8 @@ func (i *ImportedModule) ModuleName() *ast.ModuleReference {
 }
 
 type ModuleImports struct {
-	modules map[string]*ImportedModule
+	modules    map[string]*ImportedModule
+	allModules []*ImportedModule
 }
 
 func NewModuleImports() *ModuleImports {
@@ -64,6 +65,7 @@ func (m *ModuleImports) ImportModule(moduleName *ast.ModuleReference, module *Mo
 		panic("not allowed to add this")
 	}
 	m.modules[moduleName.ModuleName()] = importedModule
+	m.allModules = append(m.allModules, importedModule)
 
 	return importedModule
 }
@@ -72,8 +74,8 @@ func (m *ModuleImports) FindModule(moduleName *ast.ModuleReference) *ImportedMod
 	return m.modules[moduleName.ModuleName()]
 }
 
-func (m *ModuleImports) AllModules() map[string]*ImportedModule {
-	return m.modules
+func (m *ModuleImports) AllInOrderModules() []*ImportedModule {
+	return m.allModules
 }
 
 func (m *ModuleImports) String() string {

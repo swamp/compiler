@@ -42,7 +42,7 @@ func FilterOutDocRoot(packages []*loader.Package) *DocRoot {
 				continue
 			}
 
-			filteredTypes := filterTypes(foundModule.LocalTypes().AllTypes())
+			filteredTypes := filterTypes(foundModule.LocalTypes().AllInOrderTypes())
 
 			filteredFunctions, filteredConstants := filterDefinitions(foundModule.LocalDefinitions().Definitions())
 			if len(filteredFunctions) == 0 && len(filteredConstants) == 0 && len(filteredTypes) == 0 {
