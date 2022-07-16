@@ -66,6 +66,7 @@ func (r *IrTypeRepo) AddTypeDef(name string, newType types.Type) {
 }
 
 func (r *IrTypeRepo) GetTypeRef(name string) (types.Type, error) {
+	log.Printf("can not find typeref '%v'", name)
 	foundType, hasType := r.typeDefs[name]
 	if !hasType {
 		return nil, fmt.Errorf("can not find %v %v", name, r.typeDefs)
@@ -116,7 +117,12 @@ func makeIrForType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Ty
 			panic(fmt.Errorf("unknown atom %v", t))
 		}
 	case *dectype.UnmanagedType:
-		return repo.unmanaged
+		foundType, err := repo.GetTypeRef(t.Identifier().NativeLanguageTypeName().Name())
+		if err != nil {
+
+			panic(fmt.Errorf("what is this %v", err))
+		}
+		return foundType
 	default:
 		panic(fmt.Errorf("what is this %T", t))
 		return types.I1

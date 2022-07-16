@@ -115,8 +115,8 @@ func NewGenerator() *Generator {
 	return &Generator{}
 }
 
-func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, irModule *ir.Module,  repo *IrTypeRepo,
-lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*ir.Module, error) {
+func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, irModule *ir.Module, repo *IrTypeRepo,
+	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*ir.Module, error) {
 	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
 		_, isConstant := unknownType.(*decorated.Constant)
@@ -161,7 +161,7 @@ lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fi
 	return irModule, nil
 }
 
-func generateRecordType(irModule* ir.Module, repo *IrTypeRepo, recordType *dectype.RecordAtom) *types.StructType {
+func generateRecordType(irModule *ir.Module, repo *IrTypeRepo, recordType *dectype.RecordAtom) *types.StructType {
 	var recordFieldIrTypes []types.Type
 
 	for _, recordField := range recordType.SortedFields() {
@@ -174,7 +174,7 @@ func generateRecordType(irModule* ir.Module, repo *IrTypeRepo, recordType *decty
 	return recordStruct
 }
 
-func generateTupleType(irModule* ir.Module, repo *IrTypeRepo, tupleType *dectype.TupleTypeAtom) *types.StructType {
+func generateTupleType(irModule *ir.Module, repo *IrTypeRepo, tupleType *dectype.TupleTypeAtom) *types.StructType {
 	var tupleFieldIrTypes []types.Type
 
 	for _, tupleField := range tupleType.Fields() {
@@ -187,7 +187,7 @@ func generateTupleType(irModule* ir.Module, repo *IrTypeRepo, tupleType *dectype
 	return tupleStruct
 }
 
-func generateFunctionType(irModule* ir.Module, repo *IrTypeRepo, functionType *dectype.FunctionAtom) *types.StructType {
+func generateFunctionType(irModule *ir.Module, repo *IrTypeRepo, functionType *dectype.FunctionAtom) *types.StructType {
 	var functionFieldIrTypes []types.Type
 
 	for _, functionField := range functionType.FunctionParameterTypes() {
@@ -201,7 +201,6 @@ func generateFunctionType(irModule* ir.Module, repo *IrTypeRepo, functionType *d
 
 	return functionStruct
 }
-
 
 // generateCustomType generates Ir types for a swamp custom type.
 // A custom type in swamp is in principle the same as a tagged union.
@@ -237,7 +236,7 @@ func generateCustomType(irModule *ir.Module, repo *IrTypeRepo, customType *decty
 	return nil
 }
 
-func generateAlias(irModule *ir.Module,  repo *IrTypeRepo, alias *dectype.Alias) error {
+func generateAlias(irModule *ir.Module, repo *IrTypeRepo, alias *dectype.Alias) error {
 	log.Printf("alias: %T", alias.Next())
 	switch t := alias.Next().(type) {
 	case *dectype.RecordAtom:
@@ -258,6 +257,14 @@ func generateType(irModule *ir.Module, repo *IrTypeRepo, definedType dtype.Type)
 		return nil
 	case *dectype.PrimitiveAtom:
 		return nil
+	case *dectype.UnmanagedType:
+		x := types.NewPointer(types.Void)
+		y := &ir.Alias{Typ: x}
+		storeName := t.Identifier().NativeLanguageTypeName().Name()
+		globalType := ir.NewGlobal(storeName, x)
+		repo.AddTypeDef(storeName, globalType.Type())
+		y.SetName(storeName)
+		log.Printf("alias$$$$$$$$ %v", storeName)
 	default:
 		log.Printf("what is this %T", unAliased)
 	}
@@ -281,5 +288,3 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 
 	return irModule, nil
 }
-
-
