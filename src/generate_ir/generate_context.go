@@ -28,7 +28,7 @@ func (c *parameterContext) String() string {
 	output.WriteString(fmt.Sprintf("parameterContext\n"))
 
 	for name, param := range c.lookup {
-		output.WriteString(fmt.Sprintf(  "  %v : %v\n", name, param.LLString()))
+		output.WriteString(fmt.Sprintf("  %v : %v\n", name, param.LLString()))
 	}
 
 	return output.String()
@@ -46,8 +46,23 @@ func (c *parameterContext) AddParam(param *ir.Param) {
 type generateContext struct {
 	irModule           *ir.Module
 	block              *ir.Block
+	irTypeRepo         *IrTypeRepo
 	parameterContext   *parameterContext
 	lookup             typeinfo.TypeLookup
 	resourceNameLookup resourceid.ResourceNameLookup
 	fileCache          *assembler_sp.FileUrlCache
+}
+
+func (x *generateContext) NewBlock(name string) *generateContext {
+	newContext := &generateContext{
+		irModule:           x.irModule,
+		block:              ir.NewBlock(name),
+		irTypeRepo:         x.irTypeRepo,
+		parameterContext:   newParameterContext(nil),
+		lookup:             x.lookup,
+		resourceNameLookup: x.resourceNameLookup,
+		fileCache:          x.fileCache,
+	}
+
+	return newContext
 }

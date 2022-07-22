@@ -218,7 +218,7 @@ func generateCustomType(irModule *ir.Module, repo *IrTypeRepo, customType *decty
 	completeUnionStruct.SetName(irCompleteUnionName)
 	completeUnionTypeDef := irModule.NewTypeDef(irCompleteUnionName, completeUnionStruct)
 
-	repo.AddTypeDef(irCompleteUnionName, completeUnionTypeDef)
+	repo.AddTypeDef(customType, completeUnionTypeDef)
 
 	for _, variant := range customType.Variants() {
 		var variantParamIrTypes []types.Type
@@ -258,13 +258,7 @@ func generateType(irModule *ir.Module, repo *IrTypeRepo, definedType dtype.Type)
 	case *dectype.PrimitiveAtom:
 		return nil
 	case *dectype.UnmanagedType:
-		x := types.NewPointer(types.Void)
-		y := &ir.Alias{Typ: x}
-		storeName := t.Identifier().NativeLanguageTypeName().Name()
-		globalType := ir.NewGlobal(storeName, x)
-		repo.AddTypeDef(storeName, globalType.Type())
-		y.SetName(storeName)
-		log.Printf("alias$$$$$$$$ %v", storeName)
+		log.Printf("unmanagedType %v", t.Identifier())
 	default:
 		log.Printf("what is this %T", unAliased)
 	}

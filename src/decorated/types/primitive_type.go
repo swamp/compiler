@@ -33,6 +33,32 @@ func IsAny(checkType dtype.Type) bool {
 	return primitive.PrimitiveName().Name() == "Any"
 }
 
+func IsListLike(typeToCheck dtype.Type) bool {
+	unaliasType := UnaliasWithResolveInvoker(typeToCheck)
+
+	primitiveAtom, _ := unaliasType.(*PrimitiveAtom)
+	if primitiveAtom == nil {
+		return false
+	}
+
+	name := primitiveAtom.PrimitiveName().Name()
+
+	return name == "List"
+}
+
+func IsIntLike(typeToCheck dtype.Type) bool {
+	unaliasType := UnaliasWithResolveInvoker(typeToCheck)
+
+	primitiveAtom, _ := unaliasType.(*PrimitiveAtom)
+	if primitiveAtom == nil {
+		return false
+	}
+
+	name := primitiveAtom.AtomName()
+
+	return name == "Int" || name == "Fixed" || name == "Char"
+}
+
 func IsListAny(checkType dtype.Type) bool {
 	unliased := UnaliasWithResolveInvoker(checkType)
 	listAtom, err := GetListType(unliased)
