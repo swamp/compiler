@@ -27,6 +27,8 @@ func generateExpressionHelper(expr decorated.Expression, isLeafNode bool, genCon
 		return generateIf(e, isLeafNode, genContext)
 	case *decorated.IntegerLiteral:
 		return generateIntLiteral(e, genContext)
+	case *decorated.LogicalOperator:
+		return generateLogical(e, genContext)
 	}
 
 	/*
@@ -42,8 +44,6 @@ func generateExpressionHelper(expr decorated.Expression, isLeafNode bool, genCon
 		case *decorated.ArithmeticUnaryOperator:
 			return generateUnaryArithmetic(code, target, e, genContext)
 
-		case *decorated.LogicalOperator:
-			return generateLogical(code, target, e, genContext)
 
 
 		case *decorated.PipeLeftOperator:
@@ -145,7 +145,7 @@ func generateExpression(expr decorated.Expression, isLeafNode bool, genContext *
 
 	result, resultErr := generateExpressionHelper(expr, isLeafNode, genContext)
 
-	log.Printf("result:%v, err:%v", result, resultErr)
+	log.Printf("result from %T:  %v, err:%v", expr, result, resultErr)
 
 	return result, resultErr
 }

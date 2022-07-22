@@ -62,8 +62,14 @@ func (r *IrTypeRepo) AddTypeDef(decoratedType dtype.Type, newType types.Type) {
 		log.Printf("skipping %v", decoratedType)
 		return
 	}
+	typeName := decoratedType.String()
+	switch t := unreferenced.(type) {
+	case *dectype.CustomTypeAtom:
+		typeName = t.ArtifactTypeName().String()
+	}
 
-	r.typeDefs[decoratedType.String()] = newType
+	log.Printf("**** [%v] = %T", typeName, newType)
+	r.typeDefs[typeName] = newType
 }
 
 func (r *IrTypeRepo) GetTypeRef(decoratedType dtype.Type) (types.Type, error) {
@@ -95,10 +101,19 @@ func (r *IrTypeRepo) GetTypeRef(decoratedType dtype.Type) (types.Type, error) {
 		default:
 			panic(fmt.Errorf("unknown primitive atom %v", t))
 		}
+	case *dectype.CustomTypeAtom:
+		typeName := t.ArtifactTypeName().String()
+		foundType, hasType := r.typeDefs[typeName]
+		if !hasType {
+			panic(fmt.Errorf("GetTypeRef: can not CustomTypeAtom '%v' '%v' '%v'", typeName, unreferenced, r.typeDefs))
+			return nil, fmt.Errorf("can not find %v %v", unreferenced, r.typeDefs)
+		}
+		return foundType, nil
 	default:
+
 		foundType, hasType := r.typeDefs[unreferenced.String()]
 		if !hasType {
-			panic(fmt.Errorf("can not find '%v' '%v'", unreferenced, r.typeDefs))
+			panic(fmt.Errorf("GetTypeRef: can not find '%v' '%v'", unreferenced, r.typeDefs))
 			return nil, fmt.Errorf("can not find %v %v", unreferenced, r.typeDefs)
 		}
 

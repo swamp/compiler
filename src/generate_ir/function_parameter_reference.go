@@ -1,12 +1,16 @@
 package generate_ir
 
 import (
+	"fmt"
 	"github.com/llir/llvm/ir/value"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
 func handleNormalVariableLookup(varName string, ctx *parameterContext) (value.Value, error) {
 	irParameter := ctx.Find(varName)
+	if irParameter == nil {
+		return nil, fmt.Errorf("couldn't find any function parameter called '%v'", varName)
+	}
 	return irParameter, nil
 }
 

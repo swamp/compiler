@@ -109,10 +109,11 @@ func Example() {
 }
 
 type Generator struct {
+	repo *IrTypeRepo
 }
 
 func NewGenerator() *Generator {
-	return &Generator{}
+	return &Generator{repo: NewIrTypeRepo()}
 }
 
 func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, irModule *ir.Module, repo *IrTypeRepo,
@@ -270,15 +271,13 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*ir.Module, error) {
 	irModule := ir.NewModule()
 
-	repo := NewIrTypeRepo()
-
 	for _, definedType := range module.LocalTypes().AllTypes() {
-		if err := generateType(irModule, repo, definedType); err != nil {
+		if err := generateType(irModule, g.repo, definedType); err != nil {
 			return nil, err
 		}
 	}
 
-	g.GenerateAllLocalDefinedFunctions(module, irModule, repo, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
+	g.GenerateAllLocalDefinedFunctions(module, irModule, g.repo, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
 
 	return irModule, nil
 }

@@ -1,12 +1,14 @@
 package generate_ir
 
 import (
+	"fmt"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	"log"
 )
 
 func GetIrType(p dtype.Type) types.Type {
@@ -27,10 +29,8 @@ func generateCaseCustomType(caseExpr *decorated.CaseCustomType, genContext *gene
 
 	var consequenceBlocks []customTypeCaseConsequence
 
-	for _, consequence := range caseExpr.Consequences() {
-		caseBlock := ir.NewBlock("case")
-		customTypeCaseConsequence := customTypeCaseConsequence{Block: caseBlock}
-		consequenceBlocks = append(consequenceBlocks, customTypeCaseConsequence)
+	for consequenceIndex, consequence := range caseExpr.Consequences() {
+		customTypeCaseConsequence := customTypeCaseConsequence{}
 
 		fields := consequence.VariantReference().CustomTypeVariant().Fields()
 		for index, param := range consequence.Parameters() {
@@ -40,12 +40,18 @@ func generateCaseCustomType(caseExpr *decorated.CaseCustomType, genContext *gene
 			consequenceParameter.LocalIdent.SetName(param.Identifier().Name())
 		}
 
-		consequenceValue, caseExprErr := generateExpression(consequence.Expression(), false, genContext)
+		consequenceContext := genContext.NewBlock(fmt.Sprintf("consequnce%d", consequenceIndex))
+		consequenceValue, caseExprErr := generateExpression(consequence.Expression(), false, consequenceContext)
 		if caseExprErr != nil {
 			return nil, caseExprErr
 		}
+		if consequenceValue == nil {
+			panic(fmt.Errorf("this should have been reported as error"))
+		}
 		customTypeCaseConsequence.Value = consequenceValue
+		customTypeCaseConsequence.Block = consequenceContext.block
 		customTypeCaseConsequence.Incoming = ir.NewIncoming(customTypeCaseConsequence.Value, customTypeCaseConsequence.Block)
+		consequenceBlocks = append(consequenceBlocks, customTypeCaseConsequence)
 	}
 
 	defaultCase := customTypeCaseConsequence{Block: nil}
@@ -69,7 +75,26 @@ func generateCaseCustomType(caseExpr *decorated.CaseCustomType, genContext *gene
 
 	genContext.block.NewSwitch(testVar, defaultCase.Block, cases...)
 
-	phiInstruction := genContext.block.NewPhi(defaultIncoming)
+	var incomingInfos []*ir.Incoming
+
+	if defaultIncoming != nil {
+		incomingInfos = append(incomingInfos, defaultIncoming)
+	}
+
+	for _, consequenceBlock := range consequenceBlocks {
+		incoming := ir.NewIncoming(consequenceBlock.Value, consequenceBlock.Block)
+		if consequenceBlock.Value == nil {
+			panic("consequenceBlock.Value is nil")
+		}
+		if consequenceBlock.Block == nil {
+			panic("consequenceBlock.Block is nil")
+		}
+		incomingInfos = append(incomingInfos, incoming)
+	}
+
+	log.Printf("incoming infos %v", incomingInfos)
+
+	phiInstruction := genContext.block.NewPhi(incomingInfos...)
 
 	return phiInstruction, nil
 }
