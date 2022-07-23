@@ -29,11 +29,11 @@ func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assem
 
 	gen := NewGenerator()
 	const verboseFlag = verbosity.None
-	_, lookup, resourceLookup, typeInfoErr := typeinfo.GenerateModule(module)
+	_, _, resourceLookup, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {
 		return nil, nil, typeInfoErr
 	}
-	genErr := gen.GenerateModule(module, lookup, resourceLookup, nil, verboseFlag)
+	genErr := gen.GenerateModule(module, resourceLookup, verboseFlag)
 	if genErr != nil {
 		return nil, nil, genErr
 	}

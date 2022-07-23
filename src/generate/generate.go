@@ -7,5 +7,5 @@ import (
 )
 
 type Generator interface {
-	GenerateFromPackage(module *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, verboseFlag verbosity.Verbosity) error
+	GenerateFromPackage(module *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, outputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) error
 }

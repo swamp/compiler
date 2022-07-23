@@ -15,9 +15,13 @@ import (
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
+	swampdisasmsp "github.com/swamp/disassembler/lib"
 	"github.com/swamp/opcodes/instruction_sp"
 	"github.com/swamp/opcodes/opcode_sp"
+	"io/ioutil"
 	"log"
+	"path"
+	"strings"
 )
 
 type AnyPosAndRange interface {
@@ -179,81 +183,84 @@ func (g *Generator) Before(compilePackage *loader.Package) error {
 	return nil
 }
 
-func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, verboseFlag verbosity.Verbosity) error {
+func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) error {
 	g.Before(compilePackage)
 
-	_, allConstantsErr := preparePackageConstants(compilePackage, g.lookup)
+	packageConstants, allConstantsErr := preparePackageConstants(compilePackage, g.lookup)
 	if allConstantsErr != nil {
 		return allConstantsErr
 	}
+	g.packageConstants = packageConstants
 	for _, mod := range compilePackage.AllModules() {
-		standardError := g.GenerateModule(mod, g.lookup, resourceNameLookup, g.fileUrlCache, verboseFlag)
+		standardError := g.GenerateModule(mod, resourceNameLookup, verboseFlag)
 		if standardError != nil {
 			return decorated.NewInternalError(standardError)
 		}
 	}
 
-	g.After(true, verboseFlag)
+	const showAssembler = false
+	return g.After(resourceNameLookup, absoluteOutputDirectory, packageSubDirectory, showAssembler, verboseFlag)
+}
+
+func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, showAssembler bool, verboseFlag verbosity.Verbosity) error {
+	var allFunctions []*assembler_sp.Constant
+	constants := g.packageConstants
+
+	if verboseFlag >= verbosity.Mid || showAssembler {
+		constants.DynamicMemory().DebugOutput()
+	}
+
+	if verboseFlag >= verbosity.Mid || showAssembler {
+		var assemblerOutput string
+
+		for _, f := range allFunctions {
+			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
+				opcodes := constants.FetchOpcodes(f)
+				lines := swampdisasmsp.Disassemble(opcodes)
+
+				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
+			}
+		}
+
+		fmt.Println(assemblerOutput)
+	}
+
+	constants.AllocateDebugInfoFiles(g.fileUrlCache.FileUrls())
+	typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(g.chunk)
+	if typeInformationErr != nil {
+		return decorated.NewInternalError(typeInformationErr)
+	}
+
+	if verboseFlag >= verbosity.High {
+		fmt.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
+		g.chunk.DebugOutput()
+	}
+
+	for _, resourceName := range resourceNameLookup.SortedResourceNames() {
+		constants.AllocateResourceNameConstant(resourceName)
+	}
+
+	constants.Finalize()
+	dynamicMemoryOctets := constants.DynamicMemory().Octets()
+
+	packed, packedErr := Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)
+	if packedErr != nil {
+		return packedErr
+	}
+
+	outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectory))
+
+	if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
+		return decorated.NewInternalError(err)
+	}
+
+	log.Printf("wrote output file '%v'", outputFilename)
+
 	return nil
 }
 
-func (g *Generator) After(showAssembler bool, verboseFlag verbosity.Verbosity) {
-	/*
-		var allFunctions []*assembler_sp.Constant
-		var constants *assembler_sp.PackageConstants
-
-			if verboseFlag >= verbosity.Mid || showAssembler {
-			constants.DynamicMemory().DebugOutput()
-		}
-
-		if verboseFlag >= verbosity.Mid || showAssembler {
-			var assemblerOutput string
-
-			for _, f := range allFunctions {
-				if f.ConstantType() == assembler_sp.ConstantTypeFunction {
-					opcodes := constants.FetchOpcodes(f)
-					lines := swampdisasmsp.Disassemble(opcodes)
-
-					assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
-				}
-			}
-
-			fmt.Println(assemblerOutput)
-		}
-
-			constants.AllocateDebugInfoFiles(fileUrlCache.FileUrls())
-			typeInformationOctets, typeInformationErr := typeinfo.ChunkToOctets(typeInformationChunk)
-			if typeInformationErr != nil {
-				return decorated.NewInternalError(typeInformationErr)
-			}
-
-			if verboseFlag >= verbosity.High {
-				fmt.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
-				typeInformationChunk.DebugOutput()
-			}
-
-			for _, resourceName := range resourceNameLookup.SortedResourceNames() {
-				constants.AllocateResourceNameConstant(resourceName)
-			}
-
-			constants.Finalize()
-			dynamicMemoryOctets := constants.DynamicMemory().Octets()
-
-			packed, packedErr := generate_sp.Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)
-			if packedErr != nil {
-				return decorated.NewInternalError(packedErr)
-			}
-
-			if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
-				return decorated.NewInternalError(err)
-			}
-	*/
-	// color.Cyan("wrote output file '%v'\n", outputFilename)
-
-}
-
 func (g *Generator) GenerateModule(module *decorated.Module,
-	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) error {
+	resourceNameLookup resourceid.ResourceNameLookup, verboseFlag verbosity.Verbosity) error {
 	moduleContext := NewContext(g.packageConstants, "root")
 
 	var functionConstants []*assembler_sp.Constant
@@ -285,7 +292,7 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 				continue
 			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
-				rootContext, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
+				rootContext, g.lookup, resourceNameLookup, g.fileUrlCache, verboseFlag)
 			if genFuncErr != nil {
 				return genFuncErr
 			}
