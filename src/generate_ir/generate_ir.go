@@ -7,6 +7,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
@@ -190,4 +191,8 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 	}
 
 	return g.GenerateAllLocalDefinedFunctions(module, irModule, g.repo, g.irFunctions, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
+}
+
+func (g *Generator) GenerateFromPackage(compiledPackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, verboseFlag verbosity.Verbosity) error {
+	return nil
 }
