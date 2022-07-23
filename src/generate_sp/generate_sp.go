@@ -85,9 +85,15 @@ type Generator struct {
 }
 
 func NewGenerator() *Generator {
-	g := &Generator{code: assembler_sp.NewCode(), packageConstants: assembler_sp.NewPackageConstants(), chunk: &typeinfo.Chunk{}, fileUrlCache: assembler_sp.NewFileUrlCache()}
+	g := &Generator{chunk: &typeinfo.Chunk{}, fileUrlCache: assembler_sp.NewFileUrlCache()}
 	g.lookup = g.chunk
 	return g
+}
+
+func (g *Generator) PrepareForNewPackage() {
+	g.code = assembler_sp.NewCode()
+	g.packageConstants = assembler_sp.NewPackageConstants()
+	g.fileUrlCache = assembler_sp.NewFileUrlCache()
 }
 
 func (g *Generator) PackageConstants() *assembler_sp.PackageConstants {
@@ -175,6 +181,7 @@ func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembl
 }
 
 func (g *Generator) Before(compilePackage *loader.Package) error {
+	g.PrepareForNewPackage()
 	err := typeinfo.GeneratePackageToChunk(compilePackage, g.chunk)
 	if err != nil {
 		return decorated.NewInternalError(err)
@@ -198,7 +205,7 @@ func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resource
 		}
 	}
 
-	const showAssembler = false
+	const showAssembler = true
 	return g.After(resourceNameLookup, absoluteOutputDirectory, packageSubDirectory, showAssembler, verboseFlag)
 }
 
