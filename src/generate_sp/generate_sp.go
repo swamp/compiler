@@ -72,11 +72,21 @@ func (f *Function) DebugLines() []opcode_sp.OpcodeInfo {
 }
 
 type Generator struct {
-	code *assembler_sp.Code
+	code              *assembler_sp.Code
+	packageConstants  *assembler_sp.PackageConstants
+	functionConstants []*assembler_sp.Constant
 }
 
 func NewGenerator() *Generator {
-	return &Generator{code: assembler_sp.NewCode()}
+	return &Generator{code: assembler_sp.NewCode(), packageConstants: assembler_sp.NewPackageConstants()}
+}
+
+func (g *Generator) PackageConstants() *assembler_sp.PackageConstants {
+	return g.packageConstants
+}
+
+func (g *Generator) LastFunctionConstants() []*assembler_sp.Constant {
+	return g.functionConstants
 }
 
 func arithmeticToUnaryOperatorType(operatorType decorated.ArithmeticUnaryOperatorType) instruction_sp.UnaryOperatorType {
@@ -155,9 +165,9 @@ func constantToSourceStackPosRange(code *assembler_sp.Code, stackMemory *assembl
 	return targetToSourceStackPosRange(functionPointer), nil
 }
 
-func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
-	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, packageConstants *assembler_sp.PackageConstants, verboseFlag verbosity.Verbosity) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
-	moduleContext := NewContext(packageConstants, "root")
+func (g *Generator) GenerateModule(module *decorated.Module,
+	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) error {
+	moduleContext := NewContext(g.packageConstants, "root")
 
 	var functionConstants []*assembler_sp.Constant
 
@@ -190,7 +200,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
 				rootContext, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
 			if genFuncErr != nil {
-				return nil, nil, genFuncErr
+				return genFuncErr
 			}
 
 			if generatedFunctionInfo == nil {
@@ -206,7 +216,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 
 			debugLinesOctets, debugLinesErr := opcode_sp.SerializeDebugLines(generatedFunctionInfo.debugLines)
 			if debugLinesErr != nil {
-				return nil, nil, debugLinesErr
+				return debugLinesErr
 			}
 
 			moduleContext.Constants().DefineFunctionDebugLines(preparedFuncConstant, uint(len(generatedFunctionInfo.debugLines)), debugLinesOctets)
@@ -224,10 +234,10 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module,
 					fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 				}
 			} else {
-				return nil, nil, fmt.Errorf("generate: unknown type %T", unknownType)
+				return fmt.Errorf("generate: unknown type %T", unknownType)
 			}
 		}
 	}
 
-	return moduleContext.constants, functionConstants, nil
+	return nil
 }

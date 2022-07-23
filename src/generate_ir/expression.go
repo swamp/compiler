@@ -29,6 +29,10 @@ func generateExpressionHelper(expr decorated.Expression, isLeafNode bool, genCon
 		return generateIntLiteral(e, genContext)
 	case *decorated.LogicalOperator:
 		return generateLogical(e, genContext)
+	case *decorated.FunctionCall:
+		return generateFunctionCall(e, isLeafNode, genContext)
+	case *decorated.FunctionReference:
+		return generateFunctionReference(e, genContext)
 	}
 
 	/*
@@ -91,9 +95,6 @@ func generateExpressionHelper(expr decorated.Expression, isLeafNode bool, genCon
 		case *decorated.ArrayLiteral:
 			return generateArray(code, target, e, genContext)
 
-		case *decorated.FunctionCall:
-			return generateFunctionCall(code, target, e, leafNode, genContext)
-
 		case *decorated.RecurCall:
 			return generateRecurCall(code, e, genContext)
 
@@ -114,9 +115,6 @@ func generateExpressionHelper(expr decorated.Expression, isLeafNode bool, genCon
 
 		case *decorated.LetVariableReference:
 			return generateLetVariableReference(code, target, e, genContext)
-
-		case *decorated.FunctionReference:
-			return generateFunctionReference(code, target, e, genContext)
 
 		case *decorated.CaseConsequenceParameterReference:
 			return generateLocalConsequenceParameterReference(code, target, e, genContext)

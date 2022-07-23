@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/llir/llvm/ir"
 	"github.com/swamp/assembler/lib/assembler_sp"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"strings"
@@ -47,10 +48,12 @@ type generateContext struct {
 	irModule           *ir.Module
 	block              *ir.Block
 	irTypeRepo         *IrTypeRepo
+	irFunctions        *IrFunctions
 	parameterContext   *parameterContext
 	lookup             typeinfo.TypeLookup
 	resourceNameLookup resourceid.ResourceNameLookup
 	fileCache          *assembler_sp.FileUrlCache
+	inFunction         *decorated.FunctionValue
 }
 
 func (x *generateContext) NewBlock(name string) *generateContext {
@@ -62,6 +65,7 @@ func (x *generateContext) NewBlock(name string) *generateContext {
 		lookup:             x.lookup,
 		resourceNameLookup: x.resourceNameLookup,
 		fileCache:          x.fileCache,
+		irFunctions:        x.irFunctions,
 	}
 
 	return newContext

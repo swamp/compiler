@@ -970,6 +970,9 @@ func (e *ModuleNotFoundInDocumentProvider) Error() string {
 }
 
 func (e *ModuleNotFoundInDocumentProvider) FetchPositionLength() token.SourceFileReference {
+	if e.relativeModuleName.ModuleName.Path() == nil {
+		return token.SourceFileReference{}
+	}
 	return e.relativeModuleName.ModuleName.Path().FetchPositionLength()
 }
 

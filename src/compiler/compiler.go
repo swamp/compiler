@@ -7,6 +7,8 @@ package swampcompiler
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/generate"
+	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/parser"
 	"log"
 	"os"
@@ -207,8 +209,13 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 }
 
 func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputFilename string, showAssembler bool, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
-	//gen := generate_sp.NewGenerator()
-	gen := generate_ir.NewGenerator()
+	const useLlvmOutput = false
+	var gen generate.Generator
+	if useLlvmOutput {
+		gen = generate_ir.NewGenerator()
+	} else {
+		gen = generate_sp.NewGenerator()
+	}
 	var allFunctions []*assembler_sp.Constant
 
 	err := typeinfo.GeneratePackageToChunk(compiledPackage, typeInformationChunk)
@@ -323,11 +330,11 @@ func GenerateAndLink(typeInformationChunk *typeinfo.Chunk, resourceNameLookup re
 
 		//createdConstants, functions
 		// packageConstants
-		irModule, genErr := gen.GenerateModule(module, typeInformationChunk, resourceNameLookup, fileUrlCache, verboseFlag)
+		genErr := gen.GenerateModule(module, typeInformationChunk, resourceNameLookup, fileUrlCache, verboseFlag)
 		if genErr != nil {
 			return decorated.NewInternalError(genErr)
 		}
-		log.Printf("Module %v\n%v\n", module.FullyQualifiedModuleName(), irModule)
+		log.Printf("Module %v\n\n", module.FullyQualifiedModuleName())
 		constants = nil // createdConstants
 
 		//allFunctions = append(allFunctions, functions...)

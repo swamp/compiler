@@ -14,6 +14,22 @@ import (
 	"log"
 )
 
+type IrFunctions struct {
+	functions map[string]*ir.Func
+}
+
+func NewIrFunctions() *IrFunctions {
+	return &IrFunctions{functions: make(map[string]*ir.Func)}
+}
+
+func (i *IrFunctions) AddFunc(name *decorated.FullyQualifiedPackageVariableName, p *ir.Func) {
+	i.functions[name.ResolveToString()] = p
+}
+
+func (i *IrFunctions) GetFunc(name *decorated.FullyQualifiedPackageVariableName) *ir.Func {
+	return i.functions[name.ResolveToString()]
+}
+
 type IrTypeRepo struct {
 	string    *types.PointerType
 	blob      *types.PointerType
@@ -186,7 +202,7 @@ func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo, functionPa
 }
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
-	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, verboseFlag verbosity.Verbosity) (*ir.Func, error) {
+	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, irFunctions *IrFunctions, verboseFlag verbosity.Verbosity) (*ir.Func, error) {
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 	irReturnType := makeIrType(irModule, repo, functionType.ReturnType())
 	//unaliasedReturnType := dectype.UnaliasWithResolveInvoker()
@@ -210,9 +226,11 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		lookup:             lookup,
 		resourceNameLookup: resourceNameLookup,
 		fileCache:          fileCache,
+		irFunctions:        irFunctions,
 	}
 
 	newIrFunc := irModule.NewFunc(f.Annotation().Annotation().Identifier().Name(), irReturnType, irParams...)
+	irFunctions.AddFunc(fullyQualifiedVariableName, newIrFunc)
 
 	result, genErr := generateExpression(f.Expression(), true, genContext)
 	if genErr != nil {
