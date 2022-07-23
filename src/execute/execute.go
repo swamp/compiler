@@ -18,7 +18,6 @@ import (
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/resourceid"
-	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 )
 
@@ -84,9 +83,9 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	tmpFile.Close()
 	const enforceStyle = true
 	const showAssembly = false
-	typeInformationChunk := &typeinfo.Chunk{}
 	resourceNameLookup := resourceid.NewResourceNameLookupImpl()
-	_, compileErr := swampcompiler.CompileAndLink(typeInformationChunk, resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, showAssembly, enforceStyle, verbose)
+	target := swampcompiler.SwampOpcode
+	_, compileErr := swampcompiler.CompileAndLink(resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, target, enforceStyle, verbose)
 	if parser.IsCompileError(compileErr) {
 		return "", compileErr
 	}
