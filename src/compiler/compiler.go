@@ -56,7 +56,14 @@ func CheckUnused(world *loader.Package) []decshared.DecoratedError {
 	return errors
 }
 
-func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, showAssembler bool, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
+type Target uint8
+
+const (
+	SwampOpcode Target = iota
+	LlvmIr
+)
+
+func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceStyle bool, showAssembler bool, target Target, verboseFlag verbosity.Verbosity) ([]*loader.Package, error) {
 	statInfo, statErr := os.Stat(mainSourceFile)
 	if statErr != nil {
 		return nil, statErr
@@ -74,7 +81,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 			var errors []decshared.DecoratedError
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				compiledPackage, err := CompileAndLink(resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, enforceStyle, verboseFlag)
+				compiledPackage, err := CompileAndLink(resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, target, enforceStyle, verboseFlag)
 				if err != nil {
 					errors = append(errors, err)
 				}
@@ -200,12 +207,10 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 	return offset
 }
 
-func GenerateAndLink(resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
-	const useLlvmOutput = false
-
+func GenerateAndLink(resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputDirectory string, packageSubDirectory string, target Target, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	var gen generate.Generator
 
-	if useLlvmOutput {
+	if target == LlvmIr {
 		gen = generate_ir.NewGenerator()
 	} else {
 		gen = generate_sp.NewGenerator()
@@ -238,7 +243,7 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 }
 
 func CompileAndLink(resourceNameLookup resourceid.ResourceNameLookup, configuration environment.Environment, name string,
-	filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+	filename string, outputFilename string, target Target, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
 	var errors []decshared.DecoratedError
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
 	if parser.IsCompileError(compileErr) {
@@ -248,7 +253,7 @@ func CompileAndLink(resourceNameLookup resourceid.ResourceNameLookup, configurat
 		errors = append(errors, compileErr)
 	}
 
-	linkErr := GenerateAndLink(resourceNameLookup, compiledPackage, outputFilename, name, verboseFlag)
+	linkErr := GenerateAndLink(resourceNameLookup, compiledPackage, outputFilename, name, target, verboseFlag)
 	if linkErr != nil {
 		errors = append(errors, linkErr)
 	}
