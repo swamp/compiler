@@ -7,6 +7,7 @@ package execute
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/parser"
 	"io/ioutil"
 	"os"
@@ -84,8 +85,9 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	const enforceStyle = true
 	const showAssembly = false
 	resourceNameLookup := resourceid.NewResourceNameLookupImpl()
-	target := swampcompiler.SwampOpcode
-	_, compileErr := swampcompiler.CompileAndLink(resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, target, enforceStyle, verbose)
+
+	gen := generate_sp.NewGenerator()
+	_, compileErr := swampcompiler.CompileAndLink(gen, resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, enforceStyle, verbose)
 	if parser.IsCompileError(compileErr) {
 		return "", compileErr
 	}

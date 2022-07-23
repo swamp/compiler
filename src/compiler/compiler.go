@@ -80,7 +80,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 			var packages []*loader.Package
 			var errors []decshared.DecoratedError
 			var gen generate.Generator
-			
+
 			if target == LlvmIr {
 				gen = generate_ir.NewGenerator()
 			} else {
@@ -89,7 +89,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				compiledPackage, err := CompileAndLink(gen, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, target, enforceStyle, verboseFlag)
+				compiledPackage, err := CompileAndLink(gen, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, enforceStyle, verboseFlag)
 				if err != nil {
 					errors = append(errors, err)
 				}
@@ -215,7 +215,7 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 	return offset
 }
 
-func GenerateAndLink(gen generate.Generator, resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputDirectory string, packageSubDirectory string, target Target, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+func GenerateAndLink(gen generate.Generator, resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.High {
@@ -244,7 +244,7 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 }
 
 func CompileAndLink(gen generate.Generator, resourceNameLookup resourceid.ResourceNameLookup, configuration environment.Environment, name string,
-	filename string, outputFilename string, target Target, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+	filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
 	var errors []decshared.DecoratedError
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
 	if parser.IsCompileError(compileErr) {
@@ -254,7 +254,7 @@ func CompileAndLink(gen generate.Generator, resourceNameLookup resourceid.Resour
 		errors = append(errors, compileErr)
 	}
 
-	linkErr := GenerateAndLink(gen, resourceNameLookup, compiledPackage, outputFilename, name, target, verboseFlag)
+	linkErr := GenerateAndLink(gen, resourceNameLookup, compiledPackage, outputFilename, name, verboseFlag)
 	if linkErr != nil {
 		errors = append(errors, linkErr)
 	}
