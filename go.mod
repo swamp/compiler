@@ -10,7 +10,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/piot/go-lsp v0.0.0-20210308100331-e96ace6e5b0d
 	github.com/piot/lsp-server v0.0.0-20210308100659-f6871334c685
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.8.0
 	github.com/swamp/assembler v0.0.0-20220724075217-f4d2ce36e4d4
 	github.com/swamp/disassembler v0.0.0-20220302164004-9d62adc80845
 	github.com/swamp/opcodes v0.0.0-20220302163745-47703b09858c
