@@ -13,7 +13,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-// TODO: Hack. It is a bit of a hack to set the number of decimals in precision here
+// FixedDecimals TODO: Hack. It is a bit of a hack to set the number of decimals in precision here
 const FixedDecimals = 3
 
 type ParseNumberType uint8

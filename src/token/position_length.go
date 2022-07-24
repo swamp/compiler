@@ -107,7 +107,7 @@ func MakeSourceFileDocumentFromURI(uri DocumentURI) *SourceFileDocument {
 
 func (s SourceFileReference) ToReferenceString() string {
 	if s.Document == nil {
-		return fmt.Sprintf("document is nil in sourcefilereference")
+		panic(fmt.Errorf("document is nil in sourcefilereference"))
 	}
 	return fmt.Sprintf("%v:%d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1)
 }

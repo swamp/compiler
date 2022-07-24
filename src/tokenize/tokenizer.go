@@ -214,7 +214,7 @@ func (t *Tokenizer) DebugInfoLinesWithComment(s string, rowCount int) string {
 }
 
 func (t *Tokenizer) DebugPrint(s string) {
-	fmt.Fprintf(os.Stderr, t.DebugInfoWithComment(s))
+	fmt.Fprint(os.Stderr, t.DebugInfoWithComment(s))
 }
 
 func nextPosition(pos token.Position, ch rune) token.Position {

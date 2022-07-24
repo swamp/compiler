@@ -47,9 +47,7 @@ func convertAdmonition(multiline string) (string, error) {
 				lines = append(lines, "<p class='admonition-title'>warning</p>")
 				lines = append(lines, "<p>")
 
-				for _, admonitionLine := range admonitionLines {
-					lines = append(lines, admonitionLine)
-				}
+				lines = append(lines, admonitionLines...)
 
 				lines = append(lines, "</p></div>\n\n")
 

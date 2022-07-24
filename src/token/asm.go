@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-// Keyword :
+// ExternalFunctionToken :
 type ExternalFunctionToken struct {
 	SourceFileReference
 }
@@ -23,14 +23,14 @@ func (s ExternalFunctionToken) Type() Type {
 }
 
 func (s ExternalFunctionToken) String() string {
-	return fmt.Sprintf("[externalfn]")
+	return "[externalfn]"
 }
 
 func (s ExternalFunctionToken) FetchPositionLength() SourceFileReference {
 	return s.SourceFileReference
 }
 
-// Keyword :
+// ExternalVarFunction :
 type ExternalVarFunction struct {
 	SourceFileReference
 }
@@ -51,7 +51,7 @@ func (s ExternalVarFunction) FetchPositionLength() SourceFileReference {
 	return s.SourceFileReference
 }
 
-// Keyword :
+// ExternalVarExFunction :
 type ExternalVarExFunction struct {
 	SourceFileReference
 }

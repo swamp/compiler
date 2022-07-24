@@ -6,8 +6,6 @@
 package parser
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -61,19 +59,6 @@ func (p *Parser) Nodes() []ast.Node {
 
 func (p *Parser) Errors() []parerr.ParseError {
 	return p.stream.Errors()
-}
-
-func writeAllNodes(nodes []ast.Node) {
-	lastLine := -1
-
-	for _, node := range nodes {
-		rangeFound := node.FetchPositionLength().Range
-		if rangeFound.Start().Line() != lastLine {
-			log.Printf("\n")
-			lastLine = rangeFound.End().Line()
-		}
-		log.Printf("node pos %v ", node.FetchPositionLength())
-	}
 }
 
 func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {

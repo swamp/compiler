@@ -27,7 +27,7 @@ func testParseInternal(code string, errorsAsWarnings ReportAsSeverity) (*ast.Sou
 	p := NewParser(tokenizer, enforceStyle)
 	program, programErr := p.Parse()
 	if programErr != nil {
-		ShowError(tokenizer, "test.swamp", programErr, verbosity.Mid, errorsAsWarnings)
+		ShowWarningOrError(tokenizer, programErr)
 	}
 	return program, p.stream, programErr
 }
@@ -76,10 +76,6 @@ func testParseExpressionHelper(t *testing.T, code string, ast string, enforceSty
 
 func testParseExpression(t *testing.T, code string, ast string) {
 	testParseExpressionHelper(t, code, ast, true)
-}
-
-func testParseExpressionNoStyle(t *testing.T, code string, ast string) {
-	testParseExpressionHelper(t, code, ast, false)
 }
 
 func testParseError(t *testing.T, code string, expectedErrorType interface{}) {

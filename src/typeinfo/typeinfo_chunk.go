@@ -1320,7 +1320,7 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 	}
 
 	err := fmt.Errorf("chunk: consume: unknown thing %T", p)
-	log.Printf(err.Error())
+	log.Print(err.Error())
 	return nil, err
 }
 

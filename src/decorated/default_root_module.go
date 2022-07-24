@@ -6,9 +6,10 @@
 package deccy
 
 import (
-	"github.com/swamp/compiler/src/parser"
 	"log"
 	"strings"
+
+	"github.com/swamp/compiler/src/parser"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -103,28 +104,10 @@ __externalvarexfn withDefault : a -> Maybe a -> a
 `
 
 const tupleCode = `
-__externalfn coreTupleFirst 1
-first : (a, b) -> a
-first tuple =
-    __asm callexternal 00 coreTupleFirst 01
-
-
-__externalfn coreTupleSecond 1
-second : (a, b) -> b
-second tuple =
-    __asm callexternal 00 coreTupleSecond 01
-
-
-__externalfn coreTupleThird 1
-third : (a, b, c) -> c
-third tuple =
-    __asm callexternal 00 coreTupleThird 01
-
-
-__externalfn coreTupleFourth 1
-third : (a, b, c, d) -> d
-third tuple =
-    __asm callexternal 00 coreTupleFourth 01
+__externalfn first : (a, b) -> a
+__externalfn second : (a, b) -> b
+__externalfn third : (a, b, c) -> c
+__externalfn forth : (a, b, c, d) -> d
 `
 
 const debugCode = `
@@ -260,17 +243,13 @@ func addCores(globalPrimitiveModule *decorated.Module) decshared.DecoratedError 
 	}
 
 	/*
-		tupleModule, tupleModuleErr := compileToModule(stdModule, globalPrimitiveModule, "Tuple", tupleCode)
-		if tupleModuleErr != nil {
-			return nil, listModuleErr
+		if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Tuple", tupleCode); maybeModuleErr != nil {
+			return maybeModuleErr
 		}
-		importModules = append(importModules, tupleModule)
 
-		typeId, typeIdErr := compileToModule(stdModule, globalPrimitiveModule, "TypeRef", typeIdCode)
-		if typeIdErr != nil {
-			return nil, typeIdErr
+		if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "TypeRef", typeIdCode); maybeModuleErr != nil {
+			return maybeModuleErr
 		}
-		importModules = append(importModules, typeId)
 	*/
 
 	return nil

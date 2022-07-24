@@ -7,6 +7,7 @@ package tokenize
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -193,7 +194,7 @@ func NewEncounteredEOF() EncounteredEOF {
 }
 
 func (e EncounteredEOF) Error() string {
-	return fmt.Sprintf("EOF")
+	return "EOF"
 }
 
 type ExpectedNewLineError struct {
@@ -205,7 +206,7 @@ func NewExpectedNewLineError(eatError TokenError) ExpectedNewLineError {
 }
 
 func (e ExpectedNewLineError) Error() string {
-	return fmt.Sprintf("expected newline ")
+	return "expected newline"
 }
 
 func (e ExpectedNewLineError) FetchPositionLength() token.SourceFileReference {
@@ -297,7 +298,7 @@ func NewExpectedIndentationError(err TokenError) ExpectedIndentationError {
 }
 
 func (e ExpectedIndentationError) Error() string {
-	return fmt.Sprintf("expected exact indentation ")
+	return "expected exact indentation"
 }
 
 type IllegalCharacterError struct {

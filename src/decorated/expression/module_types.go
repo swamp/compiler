@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -139,27 +138,6 @@ func (t *ModuleTypes) DebugString() string {
 
 func (t *ModuleTypes) String() string {
 	return t.DebugString()
-}
-
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if strings.HasPrefix(a, b) {
-			return true
-		}
-	}
-	return false
-}
-
-func isTypeToIgnoreForDebugOutput(repoType dtype.Type) bool {
-	_, isPrimitive := repoType.(*dectype.PrimitiveAtom)
-	if isPrimitive {
-		return true
-	}
-
-	if stringInSlice(repoType.String(), []string{"Nothing", "Just", "Maybe(a)", "Maybe", "List", "Array", "TypeRef", "{test:", "{atest:"}) {
-		return true
-	}
-	return false
 }
 
 func (t *ModuleTypes) internalAdd(identifier *ast.TypeIdentifier, realType dtype.Type) {

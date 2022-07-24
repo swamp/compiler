@@ -1,6 +1,9 @@
 package generate_ir
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/types"
 	"github.com/swamp/assembler/lib/assembler_sp"
@@ -11,11 +14,6 @@ import (
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
-	"log"
-)
-
-import (
-	"fmt"
 )
 
 type Generator struct {
@@ -147,16 +145,6 @@ func generateCustomType(irModule *ir.Module, repo *IrTypeRepo, customType *decty
 		irModule.NewTypeDef(ilVariantName, variantStruct)
 	}
 
-	return nil
-}
-
-func generateAlias(irModule *ir.Module, repo *IrTypeRepo, alias *dectype.Alias) error {
-	log.Printf("alias: %T", alias.Next())
-	switch t := alias.Next().(type) {
-	case *dectype.RecordAtom:
-		irType := generateRecordType(irModule, repo, t)
-		log.Printf("irType:%v", irType)
-	}
 	return nil
 }
 

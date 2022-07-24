@@ -7,9 +7,10 @@ package deccy
 
 import (
 	"fmt"
-	parerr "github.com/swamp/compiler/src/parser/errors"
 	"reflect"
 	"strings"
+
+	parerr "github.com/swamp/compiler/src/parser/errors"
 
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
