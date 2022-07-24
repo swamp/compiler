@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
-	"github.com/swamp/compiler/src/ast"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	opcode_sp_type "github.com/swamp/opcodes/type"
@@ -16,20 +15,6 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 		offset += dectype.MemoryOffset(memoryAlign - rest)
 	}
 	return offset
-}
-
-func callIsExternal(fn decorated.Expression) (*ast.Annotation, bool) {
-	functionReference, isFunctionReference := fn.(*decorated.FunctionReference)
-	if isFunctionReference {
-		annotation := functionReference.FunctionValue().Annotation().Annotation()
-		if annotation.IsSomeKindOfExternal() {
-			return annotation, true
-		} else {
-			return nil, false
-		}
-	}
-
-	return nil, false
 }
 
 func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, isLeafNode bool,
@@ -133,7 +118,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 	}
 
 	filePosition := genContext.toFilePosition(call.FetchPositionLength())
-	annotation, isExternal := callIsExternal(fn)
+	annotation, isExternal := decorated.CallIsExternal(fn)
 	if callSelf && isExternal {
 		panic(fmt.Errorf("can not be external and self"))
 	}

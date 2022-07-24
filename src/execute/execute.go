@@ -7,8 +7,10 @@ package execute
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/parser"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -18,7 +20,6 @@ import (
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	"github.com/swamp/compiler/src/environment"
 	"github.com/swamp/compiler/src/resourceid"
-	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
 )
 
@@ -31,7 +32,7 @@ func Execute(verboseFlag verbosity.Verbosity, executableName string, arguments .
 		return "", err
 	}
 	if verboseFlag > verbosity.None {
-		fmt.Printf("execute returned %s", output)
+		log.Printf("execute returned %s", output)
 	}
 	if !command.ProcessState.Success() {
 		color.Red("couldn't execute")
@@ -74,7 +75,7 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	tempSwampFilename := tmpFile.Name()
 	const verbose = verbosity.None
 	if verbose > verbosity.None {
-		fmt.Printf("=========== TEMPFILE:%v =============\n", tempSwampFilename)
+		log.Printf("=========== TEMPFILE:%v =============\n", tempSwampFilename)
 	}
 
 	if _, err := tmpFile.WriteString(swampCode); err != nil {
@@ -84,9 +85,10 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	tmpFile.Close()
 	const enforceStyle = true
 	const showAssembly = false
-	typeInformationChunk := &typeinfo.Chunk{}
 	resourceNameLookup := resourceid.NewResourceNameLookupImpl()
-	_, compileErr := swampcompiler.CompileAndLink(typeInformationChunk, resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, showAssembly, enforceStyle, verbose)
+
+	gen := generate_sp.NewGenerator()
+	_, compileErr := swampcompiler.CompileAndLink(gen, resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, enforceStyle, verbose)
 	if parser.IsCompileError(compileErr) {
 		return "", compileErr
 	}

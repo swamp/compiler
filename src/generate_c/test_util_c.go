@@ -78,7 +78,7 @@ func testGenerateFail(t *testing.T, code string, expectedError interface{}) {
 	buf := &strings.Builder{}
 	testErr := testGenerateInternal(code, buf)
 	if testErr == nil {
-		fmt.Printf("problem, should fail")
+		log.Printf("problem, should fail")
 		t.Errorf("was supposed to fail")
 		return
 	}

@@ -2,12 +2,13 @@ package generate_sp
 
 import (
 	"github.com/swamp/assembler/lib/assembler_sp"
+	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/opcodes/opcode_sp"
 )
 
-func allocateForType(stackMemory *assembler_sp.StackMemoryMapper, debugName string, variableType dtype.Type) (assembler_sp.SourceStackPosRange, error) {
+func allocateForType(stackMemory *assembler_sp.StackMemoryMapper, debugName string, variableType dtype.Type) (assembler_sp.SourceStackPosRange, decshared.DecoratedError) {
 	targetPosRange := allocMemoryForType(stackMemory, variableType, debugName)
 	sourcePosRange := targetToSourceStackPosRange(targetPosRange)
 	return sourcePosRange, nil

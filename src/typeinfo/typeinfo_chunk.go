@@ -1345,9 +1345,9 @@ func (c *Chunk) DebugOutput() {
 		if isAlias {
 			s = alias.HumanReadableExpanded()
 		}
-		fmt.Printf("%d : %v\n", index, s)
+		log.Printf("%d : %v\n", index, s)
 	}
 	for index, t := range c.infoTypes {
-		fmt.Printf("%d : %v\n", index, t)
+		log.Printf("%d : %v\n", index, t)
 	}
 }

@@ -119,15 +119,18 @@ func shouldIncludeCommentBlock(commentBlock *ast.MultilineComment) bool {
 	return commentBlock != nil && commentBlock.Token().ForDocumentation
 }
 
-func sortTypeKeys(types map[string]dtype.Type) []string {
+/*
+func sortTypeKeys(types []decorated.NamedType) []string {
 	keys := make([]string, 0, len(types))
 	for k := range types {
-		keys = append(keys, k)
+		keys = append(keys, x)
 	}
 	sort.Strings(keys)
 
 	return keys
 }
+
+*/
 
 func sortFunctionKeys(functions map[*decorated.FullyQualifiedPackageVariableName]*decorated.FunctionValue) []*decorated.FullyQualifiedPackageVariableName {
 	keys := make([]*decorated.FullyQualifiedPackageVariableName, 0, len(functions))
@@ -155,25 +158,25 @@ func sortConstantKeys(constants map[*decorated.FullyQualifiedPackageVariableName
 	return keys
 }
 
-func filterTypes(types map[string]dtype.Type) map[string]dtype.Type {
-	filteredTypes := make(map[string]dtype.Type)
-	for name, localType := range types {
-		switch t := localType.(type) {
+func filterTypes(types []decorated.NamedType) []dtype.Type {
+	var filteredTypes []dtype.Type
+	for _, localType := range types {
+		switch t := localType.RealType().(type) {
 		case *dectype.Alias:
 			comment := t.AstAlias().Comment()
 			if comment != nil && comment.Token().ForDocumentation {
-				filteredTypes[name] = t
+				filteredTypes = append(filteredTypes, t)
 			}
 		case *dectype.CustomTypeAtom:
 			comment := t.AstCustomType().Comment()
 			if comment != nil && comment.Token().ForDocumentation {
-				filteredTypes[name] = t
+				filteredTypes = append(filteredTypes, t)
 			}
 		case *dectype.RecordAtom:
 			{
 				comment := t.AstRecord().Comment()
 				if comment != nil && comment.Token().ForDocumentation {
-					filteredTypes[name] = t
+					filteredTypes = append(filteredTypes, t)
 				}
 			}
 		}
@@ -277,7 +280,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) error {
 
 	colorer := &HtmlColorer{writer: writer}
 
-	filteredTypes := filterTypes(module.LocalTypes().AllTypes())
+	filteredTypes := filterTypes(module.LocalTypes().AllInOrderTypes())
 
 	filteredFunctions, filteredConstants := filterDefinitions(module.LocalDefinitions().Definitions())
 	if len(filteredFunctions) == 0 && len(filteredConstants) == 0 && len(filteredTypes) == 0 {
@@ -294,9 +297,8 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) error {
 		}
 	}
 
-	sortedTypeKeys := sortTypeKeys(filteredTypes)
-	for _, localTypeName := range sortedTypeKeys {
-		localType := filteredTypes[localTypeName]
+	//sortedTypeKeys := filteredTypes //sortTypeKeys(filteredTypes)
+	for _, localType := range filteredTypes {
 		switch t := localType.(type) {
 		case *dectype.Alias:
 			{

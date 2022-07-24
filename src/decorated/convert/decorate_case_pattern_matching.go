@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -43,7 +44,7 @@ func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CaseForPa
 
 			incompatibleErr := dectype.CompatibleTypes(testType, decoratedLiteralExpression.Type())
 			if incompatibleErr != nil {
-				fmt.Printf("test type and literal must be compatible %v %v\n", testType, decoratedLiteralExpression.Type())
+				log.Printf("test type and literal must be compatible %v %v\n", testType, decoratedLiteralExpression.Type())
 				return nil, decorated.NewUnMatchingTypes(consequence.Expression(), testType,
 					decoratedLiteralExpression.Type(), incompatibleErr)
 			}

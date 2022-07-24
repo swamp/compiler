@@ -3,6 +3,7 @@ package generate_c
 import (
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -40,7 +41,7 @@ typedef uint8_t Bool;
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
-				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+				log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
 			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
@@ -54,7 +55,7 @@ typedef uint8_t Bool;
 			maybeConstant, _ := unknownType.(*decorated.Constant)
 			if maybeConstant != nil {
 				if verboseFlag >= verbosity.Mid {
-					fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+					log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 				}
 			} else {
 				return fmt.Errorf("generate: unknown type %T", unknownType)

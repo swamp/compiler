@@ -1,0 +1,3 @@
+someFn : Int -> Int
+someFn a =
+    if a > 10 then 23 else 0

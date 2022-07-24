@@ -103,10 +103,6 @@ func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorat
 	return someReference, nil
 }
 
-func (c *VariableContext) InternalLookups() map[string]*decorated.NamedDecoratedExpression {
-	return c.lookup
-}
-
 func (c *VariableContext) FindNamedDecoratedExpression(name *ast.VariableIdentifier) *decorated.NamedDecoratedExpression {
 	def := c.lookup[name.Name()]
 	if def == nil {

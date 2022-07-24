@@ -6,6 +6,7 @@ import (
 	"github.com/swamp/compiler/src/runestream"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/tokenize"
+	"log"
 	"strings"
 	"testing"
 )
@@ -29,8 +30,8 @@ func Test(t *testing.T) {
 	stringToken := tuple.StringToken()
 	stringLines := stringToken.StringLines()
 
-	fmt.Printf("Range for example: %v\n", stringLines)
-	fmt.Printf("totalRange : %v\n", stringToken.Range)
+	log.Printf("Range for example: %v\n", stringLines)
+	log.Printf("totalRange : %v\n", stringToken.Range)
 
 	if len(stringLines) != 2 {
 		t.Fail()
@@ -67,8 +68,8 @@ func Test2(t *testing.T) {
 	stringToken := tuple.StringToken()
 	stringLines := stringToken.StringLines()
 
-	fmt.Printf("Range for example: %v\n", stringLines)
-	fmt.Printf("totalRange : %v\n", stringToken.Range)
+	log.Printf("Range for example: %v\n", stringLines)
+	log.Printf("totalRange : %v\n", stringToken.Range)
 
 	if len(stringLines) != 2 {
 		t.Fail()

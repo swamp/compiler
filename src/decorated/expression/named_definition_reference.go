@@ -26,6 +26,10 @@ func (r *NamedDefinitionReference) AstIdentifier() ast.ScopedOrNormalVariableIde
 	return r.ident
 }
 
+func (r *NamedDefinitionReference) FullyQualified() *FullyQualifiedPackageVariableName {
+	return NewFullyQualifiedVariableName(r.optionalModuleReference.module, ast.NewVariableIdentifier(r.ident.Symbol()))
+}
+
 func (r *NamedDefinitionReference) FullyQualifiedName() string {
 	if r.optionalModuleReference != nil {
 		return r.optionalModuleReference.module.fullyQualifiedModuleName.String() + "." + r.ident.Symbol().Name()

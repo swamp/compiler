@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
@@ -47,7 +48,7 @@ func (t *TypeParameterContextOther) LookupTypeFromName(name string) dtype.Type {
 func (t *TypeParameterContextOther) LookupType(name string) (dtype.Type, error) {
 	found := t.LookupTypeFromName(name)
 	if found == nil {
-		fmt.Printf("%p couldn't find '%v' count:%d \n%v", t, name, len(t.resolvedArguments), t.DebugString())
+		log.Printf("%p couldn't find '%v' count:%d \n%v", t, name, len(t.resolvedArguments), t.DebugString())
 		return nil, fmt.Errorf("couldn't find '%v' name", name)
 	}
 

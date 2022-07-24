@@ -6,7 +6,6 @@
 package loader
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/swamp/compiler/src/ast"
@@ -70,10 +69,9 @@ func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleTyp
 	if module != nil {
 		return module, nil
 	}
-	// fmt.Printf("world:%v\n", l.world)
 
 	if verboseFlag >= verbosity.Mid {
-		fmt.Printf("* didn't have %v (%v), must load and parse\n", artifactFullyModuleName, packageRelativeModuleName)
+		log.Printf("* didn't have %v (%v), must load and parse\n", artifactFullyModuleName, packageRelativeModuleName)
 	}
 	if l.isReadingModule(packageRelativeModuleName) {
 		return nil, decorated.NewCircularDependencyDetected(packageRelativeModuleName, l.resolutionModules, artifactFullyModuleName)
