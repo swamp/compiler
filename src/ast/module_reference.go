@@ -53,7 +53,7 @@ func (m *ModuleReference) Prefix() []*ModuleNamePart {
 }
 
 func (m *ModuleReference) String() string {
-	return fmt.Sprintf("[moduleref %v]", m.parts)
+	return fmt.Sprintf("[ModuleRef %v]", m.parts)
 }
 
 func (m *ModuleReference) ModuleName() string {

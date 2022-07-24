@@ -28,8 +28,8 @@ func testColor(t *testing.T, code string) {
 		parser.ColorType(expr.Expression().Type(), 0, false, colorer)
 	}
 
-	for _, definedType := range module.LocalTypes().AllTypes() {
-		parser.ColorType(definedType, 0, false, colorer)
+	for _, definedType := range module.LocalTypes().AllInOrderTypes() {
+		parser.ColorType(definedType.RealType(), 0, false, colorer)
 	}
 }
 
@@ -45,7 +45,7 @@ type alias Cell =
 test : Array Cell -> Cell
 test cells =
     let
-        count = Array.length cells
+        _ = Array.length cells
     in
     { x = 10, name = "hello", z = Nothing }
 `)

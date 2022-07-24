@@ -22,7 +22,7 @@ func (c *AliasReference) FetchPositionLength() token.SourceFileReference {
 }
 
 func (c *AliasReference) String() string {
-	return fmt.Sprintf("[AliasRef %v]", c.referencedType)
+	return fmt.Sprintf("[AliasRefExpr %v]", c.referencedType)
 }
 
 func (c *AliasReference) Type() dtype.Type {

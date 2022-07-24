@@ -20,7 +20,7 @@ type CustomType struct {
 }
 
 func (i *CustomType) String() string {
-	return fmt.Sprintf("[custom-type %v %v]", i.name, i.variants)
+	return fmt.Sprintf("[CustomType %v %v]", i.name, i.variants)
 }
 
 func (i *CustomType) Identifier() *TypeIdentifier {
@@ -52,7 +52,7 @@ func (i *CustomType) Comment() *MultilineComment {
 }
 
 func (i *CustomType) DebugString() string {
-	return fmt.Sprintf("[custom-type-statement %v]", i.name)
+	return fmt.Sprintf("[CustomType %v]", i.name)
 }
 
 func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter, comment *MultilineComment) *CustomType {

@@ -40,7 +40,7 @@ func (c *CaseConsequenceForCustomType) Comment() token.Comment {
 }
 
 func (c *CaseConsequenceForCustomType) String() string {
-	return fmt.Sprintf("[casecons %v (%v) => %v]", c.variantName, c.arguments, c.expression)
+	return fmt.Sprintf("[CaseConsCustomType %v (%v) => %v]", c.variantName, c.arguments, c.expression)
 }
 
 func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceForCustomType, ch string) string {
@@ -69,7 +69,7 @@ func NewCaseForCustomType(keywordCase token.Keyword, keywordOf token.Keyword, te
 }
 
 func (i *CaseForCustomType) String() string {
-	return fmt.Sprintf("[case: %v of %v]", i.test, caseConsequenceArrayToStringEx(i.cases, ";"))
+	return fmt.Sprintf("[CaseCustomType %v of %v]", i.test, caseConsequenceArrayToStringEx(i.cases, ";"))
 }
 
 func (i *CaseForCustomType) Test() Expression {

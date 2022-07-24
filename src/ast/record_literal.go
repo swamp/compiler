@@ -34,9 +34,9 @@ func NewRecordLiteral(parenToken token.ParenToken, templateExpression Expression
 
 func (i *RecordLiteral) String() string {
 	if i.templateExpression != nil {
-		return fmt.Sprintf("[record-literal: %v (%v)]", i.assignments, i.templateExpression)
+		return fmt.Sprintf("[RecordUpdate %v (%v)]", i.assignments, i.templateExpression)
 	}
-	return fmt.Sprintf("[record-literal: %v]", i.assignments)
+	return fmt.Sprintf("[RecordLiteral %v]", i.assignments)
 }
 
 func (i *RecordLiteral) DebugString() string {

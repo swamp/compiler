@@ -79,7 +79,7 @@ func (i *Import) FetchPositionLength() token.SourceFileReference {
 }
 
 func (i *Import) String() string {
-	s := fmt.Sprintf("[import %v", i.moduleReference)
+	s := fmt.Sprintf("[Import %v", i.moduleReference)
 	if i.optionalAlias != nil {
 		s += fmt.Sprintf(" as %v", i.optionalAlias)
 	}

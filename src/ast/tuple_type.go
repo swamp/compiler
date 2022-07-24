@@ -19,11 +19,11 @@ type TupleType struct {
 }
 
 func (i *TupleType) String() string {
-	return fmt.Sprintf("[tuple-type %v]", i.types)
+	return fmt.Sprintf("[TupleType %v]", i.types)
 }
 
 func (i *TupleType) DebugString() string {
-	return fmt.Sprintf("[tuple-type %v]", i.types)
+	return fmt.Sprintf("[TupleType %v]", i.types)
 }
 
 func (i *TupleType) DecoratedName() string {

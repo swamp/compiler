@@ -106,7 +106,7 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 func (r *LibraryReaderAndDecorator) ReadLibraryModule(moduleType decorated.ModuleType, world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName, documentProvider DocumentProvider, configuration environment.Environment) (*decorated.Module, decshared.DecoratedError) {
 	const verboseFlag = verbosity.Low
 	if strings.HasSuffix(absoluteDirectory, ".swamp") {
-		panic("problem")
+		panic(fmt.Sprintf("the directory should not end with .swamp '%v'", absoluteDirectory))
 	}
 	if verboseFlag >= verbosity.Mid {
 		log.Printf("* read library %v -> %v  \n", namespacePrefix, absoluteDirectory)

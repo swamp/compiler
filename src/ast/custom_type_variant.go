@@ -52,7 +52,7 @@ func (i *CustomTypeVariant) Index() int {
 }
 
 func (i *CustomTypeVariant) String() string {
-	return fmt.Sprintf("[variant %v%v]", i.typeIdentifier, i.userTypes)
+	return fmt.Sprintf("[CustomTypeVariant %v %v]", i.typeIdentifier, i.userTypes)
 }
 
 func (i *CustomTypeVariant) FetchPositionLength() token.SourceFileReference {

@@ -43,9 +43,9 @@ func (i *ConstructorCall) FetchPositionLength() token.SourceFileReference {
 
 func (i *ConstructorCall) String() string {
 	if i.arguments != nil {
-		return fmt.Sprintf("[ccall %v %v]", i.functionValue, i.arguments)
+		return fmt.Sprintf("[CCall %v %v]", i.functionValue, i.arguments)
 	}
-	return fmt.Sprintf("[ccall %v]", i.functionValue)
+	return fmt.Sprintf("[CCall %v]", i.functionValue)
 }
 
 func (i *ConstructorCall) DebugString() string {

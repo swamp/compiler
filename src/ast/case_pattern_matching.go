@@ -40,7 +40,13 @@ func (c *CaseConsequencePatternMatching) Comment() token.Comment {
 }
 
 func (c *CaseConsequencePatternMatching) String() string {
-	return fmt.Sprintf("[caseconspm %v => %v]", c.literal, c.expression)
+	var literalString string
+	if c.literal == nil {
+		literalString = "'_'"
+	} else {
+		literalString = c.literal.String()
+	}
+	return fmt.Sprintf("[CaseConsPm %v => %v]", literalString, c.expression)
 }
 
 func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequencePatternMatching, ch string) string {
@@ -70,7 +76,7 @@ func NewCaseForPatternMatching(keywordCase token.Keyword, keywordOf token.Keywor
 }
 
 func (i *CaseForPatternMatching) String() string {
-	return fmt.Sprintf("[casepm: %v of %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"))
+	return fmt.Sprintf("[CasePm %v of %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"))
 }
 
 func (i *CaseForPatternMatching) Test() Expression {
@@ -94,5 +100,5 @@ func (i *CaseForPatternMatching) Consequences() []*CaseConsequencePatternMatchin
 }
 
 func (i *CaseForPatternMatching) DebugString() string {
-	return "[casepm]"
+	return "[CasePm]"
 }

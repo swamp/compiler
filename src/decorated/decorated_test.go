@@ -67,7 +67,7 @@ another =
     in
     b >= 32
 `, `
-[ModuleDef $another = [FunctionValue ([]) -> [Let [[LetAssign [[LetVar $b]] = [Cast [Integer 32] [AliasRef [LetVarRef [Alias Something [PrimitiveTypeVariantRef NamedDefTypeRef [Primitive Int]]]]]]]] in [BoolOp [LetVarRef [LetVar $b]] GRE [Integer 32]]]]]
+[ModuleDef $another = [FunctionValue ([]) -> [Let [[LetAssign [[LetVar $b]] = [Cast [Integer 32] [AliasRefExpr [AliasRef [Alias Something [PrimitiveTypeVariantRef NamedDefTypeRef [Primitive Int]]]]]]]] in [BoolOp [LetVarRef [LetVar $b]] GRE [Integer 32]]]]]
 `)
 }
 

@@ -38,9 +38,9 @@ func (i *ConstantDefinition) FetchPositionLength() token.SourceFileReference {
 }
 
 func (i *ConstantDefinition) String() string {
-	return fmt.Sprintf("[constant: %v = %v]", i.identifier, i.expression)
+	return fmt.Sprintf("[Constant %v = %v]", i.identifier, i.expression)
 }
 
 func (i *ConstantDefinition) DebugString() string {
-	return "[constant]"
+	return "[Constant]"
 }

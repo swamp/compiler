@@ -55,7 +55,7 @@ func (i *IfExpression) FetchPositionLength() token.SourceFileReference {
 }
 
 func (i *IfExpression) String() string {
-	return fmt.Sprintf("[if: %v then %v else %v]", i.condition, i.consequence, i.alternative)
+	return fmt.Sprintf("[If %v then %v else %v]", i.condition, i.consequence, i.alternative)
 }
 
 func (i *IfExpression) DebugString() string {

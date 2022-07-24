@@ -41,5 +41,5 @@ func (i *RecordTypeField) Comment() *MultilineComment {
 }
 
 func (i *RecordTypeField) String() string {
-	return fmt.Sprintf("[field: %v %v]", i.symbol, i.userType)
+	return fmt.Sprintf("[Field: %v %v]", i.symbol, i.userType)
 }

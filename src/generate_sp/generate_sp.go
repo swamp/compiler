@@ -7,6 +7,11 @@ package generate_sp
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"path"
+	"strings"
+
 	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -18,10 +23,6 @@ import (
 	swampdisasmsp "github.com/swamp/disassembler/lib"
 	"github.com/swamp/opcodes/instruction_sp"
 	"github.com/swamp/opcodes/opcode_sp"
-	"io/ioutil"
-	"log"
-	"path"
-	"strings"
 )
 
 type AnyPosAndRange interface {
@@ -52,13 +53,6 @@ func NewFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName
 		name: fullyQualifiedName, signature: signature, opcodes: opcodes, debugParameterCount: debugParameterCount,
 		debugLines: debugInfos,
 	}
-
-	return f
-}
-
-func NewExternalFunction(fullyQualifiedName *decorated.FullyQualifiedPackageVariableName,
-	signature TypeRef, parameterCount uint) *ExternalFunction {
-	f := &ExternalFunction{name: fullyQualifiedName, signature: signature, parameterCount: parameterCount}
 
 	return f
 }

@@ -35,9 +35,9 @@ func (i *Lookups) FieldNames() []*VariableIdentifier {
 }
 
 func (i *Lookups) String() string {
-	return fmt.Sprintf("[lookups %v %v]", i.contextIdentifier, i.fieldNames)
+	return fmt.Sprintf("[RecordLookups %v %v]", i.contextIdentifier, i.fieldNames)
 }
 
 func (i *Lookups) DebugString() string {
-	return "[Lookups]"
+	return "[RecordLookups]"
 }

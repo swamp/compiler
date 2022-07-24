@@ -31,7 +31,7 @@ func (i *FunctionType) FunctionParameters() []Type {
 }
 
 func (i *FunctionType) String() string {
-	s := "[func-type "
+	s := "[FnType "
 	for index, arg := range i.functionParameters {
 		if index > 0 {
 			s += " -> "

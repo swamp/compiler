@@ -96,7 +96,7 @@ func (s *RecordField) Type() dtype.Type {
 }
 
 func (s *RecordField) String() string {
-	return fmt.Sprintf("[record-type-field %v %v (%v)]", s.name.Name(), s.fieldType, s.index)
+	return fmt.Sprintf("[RecordTypeField %v %v (%v)]", s.name.Name(), s.fieldType, s.index)
 }
 
 func (s *RecordField) HumanReadable() string {

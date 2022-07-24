@@ -55,7 +55,7 @@ func (i *FunctionCall) FunctionExpression() Expression {
 }
 
 func (i *FunctionCall) String() string {
-	return fmt.Sprintf("[call %v %v]", i.functionExpression, i.arguments)
+	return fmt.Sprintf("[Call %v %v]", i.functionExpression, i.arguments)
 }
 
 func (i *FunctionCall) DebugString() string {

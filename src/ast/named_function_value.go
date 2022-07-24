@@ -33,7 +33,7 @@ func (i *FunctionValueNamedDefinition) FetchPositionLength() token.SourceFileRef
 }
 
 func (i *FunctionValueNamedDefinition) String() string {
-	return fmt.Sprintf("[fndefinition: %v = %v]", i.identifier, i.functionValue)
+	return fmt.Sprintf("[FnDef %v = %v]", i.identifier, i.functionValue)
 }
 
 func (i *FunctionValueNamedDefinition) DebugString() string {

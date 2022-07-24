@@ -18,7 +18,7 @@ func TestCrunch(t *testing.T) {
 		t.Fatal(mErr)
 	}
 	const verboseFlag = verbosity.None
-	if verboseFlag > verbosity.None {
+	if verboseFlag >= verbosity.None {
 		log.Printf("module\n%v\n", rootModule)
 	}
 }

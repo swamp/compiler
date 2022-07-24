@@ -65,7 +65,7 @@ func (d *Annotation) FetchPositionLength() token.SourceFileReference {
 }
 
 func (d *Annotation) String() string {
-	return fmt.Sprintf("[annotation: %v %v]", d.symbol, d.annotatedType)
+	return fmt.Sprintf("[Annotation %v %v]", d.symbol, d.annotatedType)
 }
 
 func (d *Annotation) DebugString() string {

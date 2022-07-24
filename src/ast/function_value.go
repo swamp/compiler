@@ -52,7 +52,7 @@ func (i *FunctionValue) DebugFunctionIdentifier() token.VariableSymbolToken {
 }
 
 func (i *FunctionValue) String() string {
-	return fmt.Sprintf("[func (%v) -> %v]", i.parameters, i.expression)
+	return fmt.Sprintf("[Fn (%v) -> %v]", i.parameters, i.expression)
 }
 
 func (i *FunctionValue) DebugString() string {

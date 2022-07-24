@@ -24,7 +24,7 @@ func NewTupleLiteral(startListParen token.ParenToken, endListParen token.ParenTo
 }
 
 func (i *TupleLiteral) String() string {
-	return fmt.Sprintf("[tuple-literal: %v]", i.expressions)
+	return fmt.Sprintf("[TupleLiteral %v]", i.expressions)
 }
 
 func (i *TupleLiteral) Expressions() []Expression {

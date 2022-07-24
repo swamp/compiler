@@ -2,12 +2,13 @@ package generate_ir
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	"log"
 )
 
 func generateArithmeticInt(operator *decorated.ArithmeticOperator, genContext *generateContext) (value.Value, error) {
@@ -40,6 +41,6 @@ func generateArithmeticInt(operator *decorated.ArithmeticOperator, genContext *g
 	case decorated.ArithmeticFixedDivide:
 		return ir.NewSDiv(ir.NewSRem(irValueLeft, irValueRight), constant.NewInt(types.I32, 100)), nil
 	default:
-		return nil, fmt.Errorf("Unknown int operator")
+		return nil, fmt.Errorf("unknown int operator")
 	}
 }

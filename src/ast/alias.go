@@ -20,11 +20,11 @@ type Alias struct {
 }
 
 func (i *Alias) String() string {
-	return fmt.Sprintf("[alias-type %v %v]", i.aliasName, i.xreferencedType)
+	return fmt.Sprintf("[AliasType %v %v]", i.aliasName, i.xreferencedType)
 }
 
 func (i *Alias) DebugString() string {
-	return fmt.Sprintf("[alias-type %v]", i.xreferencedType)
+	return fmt.Sprintf("[AliasType %v %v]", i.aliasName, i.xreferencedType)
 }
 
 func (i *Alias) DecoratedName() string {
