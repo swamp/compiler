@@ -42,7 +42,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, i
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
-				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+				log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
 			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
@@ -64,7 +64,7 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, i
 			maybeConstant, _ := unknownType.(*decorated.Constant)
 			if maybeConstant != nil {
 				if verboseFlag >= verbosity.Mid {
-					fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+					log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 				}
 			} else {
 				return fmt.Errorf("generate: unknown type %T", unknownType)
@@ -184,8 +184,8 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) error {
 	irModule := ir.NewModule()
 
-	for _, definedType := range module.LocalTypes().AllTypes() {
-		if err := generateType(irModule, g.repo, definedType); err != nil {
+	for _, definedType := range module.LocalTypes().AllInOrderTypes() {
+		if err := generateType(irModule, g.repo, definedType.RealType()); err != nil {
 			return err
 		}
 	}

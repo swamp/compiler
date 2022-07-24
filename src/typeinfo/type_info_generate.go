@@ -6,7 +6,7 @@
 package typeinfo
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -23,14 +23,14 @@ func generateModuleToChunk(module *decorated.Module, chunk *Chunk, verboseFlag v
 	for _, exposedDef := range module.LocalDefinitions().Definitions() {
 		exposedType := exposedDef.Expression().Type()
 		if verboseFlag >= verbosity.Low {
-			fmt.Printf("generateModuleToChunkTypeInfo definition: %s\n", exposedType.String())
+			log.Printf("generateModuleToChunkTypeInfo definition: %s\n", exposedType.String())
 		}
 		convertedType, err := chunk.ConsumeType(exposedType)
 		if err != nil {
 			continue
 		}
 		if verboseFlag >= verbosity.Low {
-			fmt.Printf("converted: %v\n", convertedType)
+			log.Printf("converted: %v\n", convertedType)
 		}
 	}
 

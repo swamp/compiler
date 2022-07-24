@@ -10,6 +10,7 @@ import (
 	"github.com/swamp/compiler/src/generate_sp"
 	"github.com/swamp/compiler/src/parser"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -31,7 +32,7 @@ func Execute(verboseFlag verbosity.Verbosity, executableName string, arguments .
 		return "", err
 	}
 	if verboseFlag > verbosity.None {
-		fmt.Printf("execute returned %s", output)
+		log.Printf("execute returned %s", output)
 	}
 	if !command.ProcessState.Success() {
 		color.Red("couldn't execute")
@@ -74,7 +75,7 @@ func ExecuteSwamp(swampCode string) (string, error) {
 	tempSwampFilename := tmpFile.Name()
 	const verbose = verbosity.None
 	if verbose > verbosity.None {
-		fmt.Printf("=========== TEMPFILE:%v =============\n", tempSwampFilename)
+		log.Printf("=========== TEMPFILE:%v =============\n", tempSwampFilename)
 	}
 
 	if _, err := tmpFile.WriteString(swampCode); err != nil {

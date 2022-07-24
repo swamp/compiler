@@ -39,14 +39,14 @@ func CheckUnused(world *loader.Package) []decshared.DecoratedError {
 				errors = append(errors, warning)
 			}
 		}
-		for _, def := range module.LocalTypes().AllTypes() {
-			if !def.WasReferenced() {
-				warning := decorated.NewUnusedTypeWarning(def)
+		for _, def := range module.LocalTypes().AllInOrderTypes() {
+			if !def.RealType().WasReferenced() {
+				warning := decorated.NewUnusedTypeWarning(def.RealType())
 				errors = append(errors, warning)
 			}
 		}
 
-		for _, importModule := range module.ImportedModules().AllModules() {
+		for _, importModule := range module.ImportedModules().AllInOrderModules() {
 			if !importModule.ImportStatementInModule().WasReferenced() && importModule.ImportStatementInModule().AstImport().ModuleName().ModuleName() != "" {
 				//warning := decorated.NewUnusedImportStatementWarning(importModule.ImportStatementInModule())
 				//module.AddWarning(warning)
@@ -181,7 +181,7 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	if err != nil {
 		return nil, nil, err
 	}
-	for _, importedRootSubModule := range rootModule.ImportedModules().AllModules() {
+	for _, importedRootSubModule := range rootModule.ImportedModules().AllInOrderModules() {
 		world.AddModule(importedRootSubModule.ReferencedModule().FullyQualifiedModuleName(), importedRootSubModule.ReferencedModule())
 	}
 	// world.AddModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), rootModule)

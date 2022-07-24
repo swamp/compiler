@@ -239,7 +239,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 	}
 
 	if verboseFlag >= verbosity.High {
-		fmt.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
+		log.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
 		g.chunk.DebugOutput()
 	}
 
@@ -290,7 +290,7 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
-				fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+				log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
 			rootContext := moduleContext.MakeFunctionContext(maybeFunction, fullyQualifiedName.String())
@@ -332,7 +332,7 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 			maybeConstant, _ := unknownType.(*decorated.Constant)
 			if maybeConstant != nil {
 				if verboseFlag >= verbosity.Mid {
-					fmt.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+					log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 				}
 			} else {
 				return fmt.Errorf("generate: unknown type %T", unknownType)

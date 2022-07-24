@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -336,7 +337,7 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 		}
 	case *CustomTypeVariant:
 		{
-			fmt.Printf("\n\nFOUND CUSTOM TYPE ATOM variant:%v\n\n", t)
+			log.Printf("\n\nFOUND CUSTOM TYPE ATOM variant:%v\n\n", t)
 		}
 	case *RecordAtom:
 		{

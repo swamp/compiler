@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/swamp/compiler/src/ast"
@@ -841,7 +842,7 @@ func (p *ParseStreamImpl) eatCommaSeparatorOrTermination(expectedIndentation int
 		if tokenize.LegalSameIndentationOrOptionalOneSpace(report, expectedIndentation, !p.disableEnforceStyle) {
 			return false, report, nil
 		}
-		fmt.Printf("%d\n", report.SpacesUntilMaybeNewline)
+		log.Printf("%d\n", report.SpacesUntilMaybeNewline)
 	} else {
 		wasNextLineOrOneSpace := tokenize.LegalSameIndentationOrOptionalOneSpace(report, expectedIndentation, !p.disableEnforceStyle)
 		if wasNextLineOrOneSpace {

@@ -213,7 +213,5 @@ func (n PackageRelativeModuleName) JoinLocalName(relative *ast.VariableIdentifie
 
 	str := n.String() + "." + relative.Name()
 
-	// fmt.Printf("packageRelative and add local name %v + %v = %v\n", n, relative, str)
-
 	return str
 }

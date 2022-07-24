@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
@@ -85,7 +86,7 @@ func (t *TypeParameterContextDynamic) LookupTypeFromName(name string) dtype.Type
 func (t *TypeParameterContextDynamic) LookupType(name string) (dtype.Type, error) {
 	foundType := t.LookupTypeFromName(name)
 	if foundType == nil {
-		fmt.Printf("couldn't find '%v'\n%v", name, t.DebugString())
+		log.Printf("couldn't find '%v'\n%v", name, t.DebugString())
 		return nil, fmt.Errorf("couldn't find the name %v", name)
 	}
 
@@ -99,7 +100,7 @@ func (t *TypeParameterContextDynamic) SpecialSet(name string, resolved dtype.Typ
 			if existing != nil {
 				compatibleErr := CompatibleTypes(existing, resolved)
 				if compatibleErr != nil {
-					fmt.Printf("not compatible!!!\n")
+					log.Printf("not compatible!!!\n")
 					return fmt.Errorf("it didn't work %w", compatibleErr)
 				}
 			}

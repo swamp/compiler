@@ -8,6 +8,7 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"testing"
 
@@ -100,13 +101,13 @@ func testStyleInternal(t *testing.T, code string, expected string) {
 	}
 
 	if recodedResult != result {
-		fmt.Printf("recompile mismatch expected:\n%v\n\nBut received:\n%v\n", result, recodedResult)
+		log.Printf("recompile mismatch expected:\n%v\n\nBut received:\n%v\n", result, recodedResult)
 		t.Errorf("recompile mismatch:\n'%v'\n\n'%v'", result, recodedResult)
 	}
 
 	expected = strings.TrimSpace(expected)
 	if result != expected {
-		fmt.Printf("%v\n%v\n", resultWithColor, expected)
+		log.Printf("%v\n%v\n", resultWithColor, expected)
 		t.Errorf("mismatch:\n'%v'\n\nexpected:\n\n'%v'", result, expected)
 	}
 }

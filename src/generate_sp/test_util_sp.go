@@ -88,7 +88,7 @@ func testGenerateFail(t *testing.T, code string, expectedError interface{}) {
 	code = strings.TrimSpace(code)
 	_, _, testErr := testGenerateInternal(code)
 	if testErr == nil {
-		fmt.Printf("problem, should fail")
+		log.Printf("problem, should fail")
 		t.Errorf("was supposed to fail")
 		return
 	}

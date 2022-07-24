@@ -8,6 +8,7 @@ package loader
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -59,8 +60,6 @@ func ModuleTypeFromMapped(moduleMap settings.ModuleMap) decorated.ModuleType {
 func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, repository deccy.ModuleRepository, swampDirectory string, documentProvider DocumentProvider, configuration environment.Environment, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
 	settingsFilename := path.Join(swampDirectory, ".swamp.toml")
 
-	mapping := make(map[string]settings.Module)
-
 	settingsFile, settingsFileErr := os.Open(settingsFilename)
 	if settingsFileErr != nil {
 		return nil
@@ -75,19 +74,17 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 
 	for _, m := range foundSettings.Module {
 		if verboseFlag >= verbosity.Mid {
-			fmt.Printf("  * found mapping %s => %s\n", m.Name, m.Path)
+			log.Printf("  * found mapping %s => %s\n", m.Name, m.Path)
 		}
-
-		mapping[m.Name] = m
 	}
 
-	for packageRootModuleNameString, packagePath := range mapping {
+	for _, packagePath := range foundSettings.Module {
 		dependencyFilePrefix := packagePath.Path
 		if !filepath.IsAbs(packagePath.Path) {
 			dependencyFilePrefix = path.Join(swampDirectory, packagePath.Path)
 		}
 
-		rootNamespace := dectype.MakePackageRootModuleNameFromString(packageRootModuleNameString)
+		rootNamespace := dectype.MakePackageRootModuleNameFromString(packagePath.Name)
 		dependencyFilePrefix = filepath.ToSlash(dependencyFilePrefix)
 		if !file.IsDir(dependencyFilePrefix) {
 			full, err := filepath.Abs(dependencyFilePrefix)
@@ -112,7 +109,7 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(moduleType decorated.Modul
 		panic("problem")
 	}
 	if verboseFlag >= verbosity.Mid {
-		fmt.Printf("* read library %v -> %v  \n", namespacePrefix, absoluteDirectory)
+		log.Printf("* read library %v -> %v  \n", namespacePrefix, absoluteDirectory)
 	}
 	const enforceStyle = true
 
@@ -142,7 +139,7 @@ func (r *LibraryReaderAndDecorator) CompileAllInLibrary(moduleType decorated.Mod
 		panic("problem")
 	}
 	if verboseFlag >= verbosity.Mid {
-		fmt.Printf("* read library %v -> %v  \n", namespacePrefix, absoluteDirectory)
+		log.Printf("* read library %v -> %v  \n", namespacePrefix, absoluteDirectory)
 	}
 	const enforceStyle = true
 

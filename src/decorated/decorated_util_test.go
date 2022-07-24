@@ -6,7 +6,7 @@
 package deccy
 
 import (
-	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"testing"
@@ -26,7 +26,7 @@ func testDecorateInternal(code string, useCores bool, errorsAsWarnings bool) (st
 func testDecorate(t *testing.T, code string, ast string) {
 	decorationString, decorateErr := testDecorateInternal(code, true, false)
 	if decorateErr != nil {
-		fmt.Printf("problem %v\n", decorateErr)
+		log.Printf("problem %v\n", decorateErr)
 
 		t.Fatal(decorateErr)
 	}
@@ -44,8 +44,8 @@ func testDecorate(t *testing.T, code string, ast string) {
 			trimmedDecoratedLine := strings.TrimSpace(decoratedLine)
 			trimmedAstLine := strings.TrimSpace(astLine)
 			if trimmedAstLine != trimmedDecoratedLine {
-				fmt.Printf("detected line diff: \ncorrect: \n%v\n", trimmedAstLine)
-				fmt.Printf("wrong: \n%v\n", trimmedDecoratedLine)
+				log.Printf("detected line diff: \ncorrect: \n%v\n", trimmedAstLine)
+				log.Printf("wrong: \n%v\n", trimmedDecoratedLine)
 				break
 			}
 		}
@@ -56,7 +56,7 @@ func testDecorate(t *testing.T, code string, ast string) {
 func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
 	decorationString, decorateErr := testDecorateInternal(code, false, false)
 	if decorateErr != nil {
-		fmt.Printf("problem %v\n", decorateErr)
+		log.Printf("problem %v\n", decorateErr)
 
 		t.Fatal(decorateErr)
 	}
@@ -74,8 +74,8 @@ func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
 			trimmedDecoratedLine := strings.TrimSpace(decoratedLine)
 			trimmedAstLine := strings.TrimSpace(astLine)
 			if trimmedAstLine != trimmedDecoratedLine {
-				fmt.Printf("correct: \n%v\n", trimmedAstLine)
-				fmt.Printf("wrong: \n%v\n", trimmedDecoratedLine)
+				log.Printf("correct: \n%v\n", trimmedAstLine)
+				log.Printf("wrong: \n%v\n", trimmedDecoratedLine)
 				break
 			}
 		}

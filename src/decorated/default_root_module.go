@@ -6,8 +6,8 @@
 package deccy
 
 import (
-	"fmt"
 	"github.com/swamp/compiler/src/parser"
+	"log"
 	"strings"
 
 	"github.com/swamp/compiler/src/ast"
@@ -343,7 +343,7 @@ func CreateDefaultRootModule(includeCores bool) (*decorated.Module, decshared.De
 	if stdModuleErr != nil {
 		return nil, stdModuleErr
 	}
-	if err := primitiveModule.LocalTypes().CopyTypes(stdModule.LocalTypes().AllTypes()); err != nil {
+	if err := primitiveModule.LocalTypes().CopyTypes(stdModule.LocalTypes().AllInOrderTypes()); err != nil {
 		return nil, err
 	}
 	primitiveModule.LocalDefinitions().CopyFrom(stdModule.LocalDefinitions())
@@ -358,7 +358,7 @@ func CreateDefaultRootModule(includeCores bool) (*decorated.Module, decshared.De
 		var importModulesErr decshared.DecoratedError
 		importModulesErr = addCores(primitiveModule)
 		if importModulesErr != nil {
-			fmt.Printf("ERROR:%v\n", importModulesErr)
+			log.Printf("ERROR:%v\n", importModulesErr)
 			return nil, importModulesErr
 		}
 	}
