@@ -39,7 +39,7 @@ func (r *NamedDefinitionTypeReference) String() string {
 }
 
 func (r *NamedDefinitionTypeReference) DebugString() string {
-	return fmt.Sprintf("[NamedDefTypeRef %v:%v]", r.optionalModuleReference, r.ident)
+	return fmt.Sprintf("[NamedDefTypeRef %v:%v]", moduleReferenceString(r.optionalModuleReference), r.ident)
 }
 
 func (r *NamedDefinitionTypeReference) FetchPositionLength() token.SourceFileReference {
