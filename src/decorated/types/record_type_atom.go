@@ -110,7 +110,7 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	case *TupleTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	case *LocalType:
-		return 0, 0
+		return 0, 8
 	default:
 		panic(fmt.Errorf("calc: do not know memory size of %v %T", p, unaliased))
 	}
@@ -118,9 +118,6 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 
 func GetMemorySizeAndAlignment(p dtype.Type) (MemorySize, MemoryAlign) {
 	memorySize, memoryAlign := GetMemorySizeAndAlignmentInternal(p)
-	if memorySize == 0 || memoryAlign == 0 {
-		panic(fmt.Errorf("can not be correct size and align %T %v", p, p))
-	}
 
 	return memorySize, memoryAlign
 }
