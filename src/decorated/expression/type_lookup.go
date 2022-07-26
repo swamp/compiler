@@ -96,7 +96,7 @@ func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifi
 	switch t := lookedUpType.(type) {
 	case *dectype.Alias:
 		reference = dectype.NewAliasReference(named, t)
-	case *dectype.CustomTypeVariant:
+	case *dectype.CustomTypeVariantAtom:
 		reference = dectype.NewCustomTypeVariantReference(named, t)
 	case *dectype.PrimitiveAtom:
 		reference = dectype.NewPrimitiveTypeReference(named, t)

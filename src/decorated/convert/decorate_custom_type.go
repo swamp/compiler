@@ -15,7 +15,12 @@ import (
 
 func DecorateCustomType(customTypeDefinition *ast.CustomType,
 	typeRepo decorated.TypeAddAndReferenceMaker) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
-	var variants []*dectype.CustomTypeVariant
+	var variants []*dectype.CustomTypeVariantAtom
+
+	decoratedNames := AstParametersToArgumentNames(customTypeDefinition.FindAllLocalTypes())
+	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
+
+	s := dectype.NewCustomTypePrepare(customTypeDefinition, artifactTypeName, decoratedNames)
 
 	for astVariantIndex, astVariant := range customTypeDefinition.Variants() {
 		var astVariantTypes []dtype.Type
@@ -28,14 +33,12 @@ func DecorateCustomType(customTypeDefinition *ast.CustomType,
 			astVariantTypes = append(astVariantTypes, newType)
 		}
 
-		variant := dectype.NewCustomTypeVariant(astVariantIndex, astVariant, astVariantTypes)
+		variant := dectype.NewCustomTypeVariant(astVariantIndex, s, astVariant, astVariantTypes)
 
 		variants = append(variants, variant)
 	}
 
-	decoratedNames := AstParametersToArgumentNames(customTypeDefinition.FindAllLocalTypes())
-	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
-	s := dectype.NewCustomType(customTypeDefinition, artifactTypeName, decoratedNames, variants)
+	s.FinalizeVariants(variants)
 
 	return s, nil
 }

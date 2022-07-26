@@ -23,7 +23,7 @@ func (g *CustomTypeReference) Type() dtype.Type {
 }
 
 func (g *CustomTypeReference) String() string {
-	return fmt.Sprintf("[CustomTypeVariantRef %v]", g.named)
+	return fmt.Sprintf("[VariantRef %v]", g.named)
 }
 
 func (g *CustomTypeReference) Next() dtype.Type {

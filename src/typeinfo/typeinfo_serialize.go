@@ -317,7 +317,7 @@ func writeCustom(writer io.Writer, custom *CustomType) error {
 	}
 
 	for _, variant := range custom.variants {
-		if err := writeCustomTypeVariant(writer, &variant); err != nil {
+		if err := writeCustomTypeVariant(writer, variant); err != nil {
 			return err
 		}
 	}

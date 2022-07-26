@@ -11,7 +11,7 @@ import (
 
 func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, call *decorated.CurryFunction,
 	genContext *generateContext) error {
-	if decorated.TypeIsTemplateHasLocalTypes(call.FunctionAtom()) {
+	if dectype.TypeIsTemplateHasLocalTypes(call.FunctionAtom()) {
 		panic(fmt.Errorf("we can not call functions that has local types %v", call.FunctionAtom()))
 	}
 

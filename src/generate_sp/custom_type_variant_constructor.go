@@ -11,13 +11,13 @@ import (
 
 func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	constructor *decorated.CustomTypeVariantConstructor, genContext *generateContext) error {
-	smashedCustomType := constructor.Type().(*dectype.CustomTypeAtom)
+	unaliasedTypeVariant := dectype.UnaliasWithResolveInvoker(constructor.Type())
+	smashedVariant := unaliasedTypeVariant.(*dectype.CustomTypeVariantAtom)
 
-	smashedVariant := smashedCustomType.FindVariant(constructor.CustomTypeVariant().Name().Name())
-	unionMemorySize, _ := dectype.GetMemorySizeAndAlignment(smashedCustomType)
-	if smashedVariant.Name().Name() != "Nothing" && uint(target.Size) != uint(unionMemorySize) {
-		log.Printf("smashedVariant:%v\n\nsmashedCustomType:%v\n\n", smashedVariant, smashedCustomType)
-		return fmt.Errorf("internal error, target size is not exactly right at %v, target is:%v and unionMemorySize is:%v", constructor.FetchPositionLength().ToCompleteReferenceString(), target.Size, unionMemorySize)
+	variantMemorySize, _ := dectype.GetMemorySizeAndAlignment(smashedVariant)
+	if smashedVariant.ParameterCount() > 0 && uint(variantMemorySize) > uint(target.Size) {
+		log.Printf("smashedVariant:%v\n\nsmashedCustomType:%v\n\n", smashedVariant, smashedVariant.InCustomType())
+		return fmt.Errorf("internal error, target size is not exactly right at %v, target is:%v and unionMemorySize is:%v", constructor.FetchPositionLength().ToCompleteReferenceString(), target.Size, variantMemorySize)
 	}
 
 	filePosition := genContext.toFilePosition(constructor.FetchPositionLength())

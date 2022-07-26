@@ -36,7 +36,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 	var previousConsequenceType dtype.Type
 
 	for _, consequenceField := range caseExpression.Consequences() {
-		var foundVariant *dectype.CustomTypeVariant
+		var foundVariant *dectype.CustomTypeVariantAtom
 		var parameters []*decorated.CaseConsequenceParameterForCustomType
 
 		consequenceVariableContext := context.MakeVariableContext()
@@ -90,7 +90,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 		}
 
 		if previousConsequenceType != nil {
-			incompatibleErr := dectype.CompatibleTypes(previousConsequenceType, decoratedExpression.Type())
+			incompatibleErr := dectype.CompatibleTypesCheckCustomType(previousConsequenceType, decoratedExpression.Type())
 			if incompatibleErr != nil {
 				return nil, decorated.NewUnMatchingTypes(consequenceField.Expression(), previousConsequenceType,
 					decoratedExpression.Type(), incompatibleErr)
@@ -120,7 +120,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 	}
 
 	if defaultCase == nil {
-		var unhandledVariants []*dectype.CustomTypeVariant
+		var unhandledVariants []*dectype.CustomTypeVariantAtom
 		for index, isHandled := range handledCustomTypeVariants {
 			if !isHandled {
 				unhandledVariants = append(unhandledVariants, customType.Variants()[index])

@@ -20,6 +20,10 @@ type CustomTypeVariantField struct {
 	parameterType dtype.Type
 }
 
+func NewCustomTypeVariantField(index uint, fieldType dtype.Type) *CustomTypeVariantField {
+	return &CustomTypeVariantField{index: index, parameterType: fieldType}
+}
+
 func (c *CustomTypeVariantField) MemoryOffset() MemoryOffset {
 	return c.memoryOffset
 }
@@ -32,10 +36,13 @@ func (c *CustomTypeVariantField) Type() dtype.Type {
 	return c.parameterType
 }
 
-type CustomTypeVariant struct {
+func (c *CustomTypeVariantField) String() string {
+	return c.parameterType.String()
+}
+
+type CustomTypeVariantAtom struct {
 	index                int
 	astCustomTypeVariant *ast.CustomTypeVariant
-	parameterTypes       []dtype.Type
 	parameterFields      []*CustomTypeVariantField
 	parent               dtype.Type
 	inCustomType         *CustomTypeAtom
@@ -44,7 +51,10 @@ type CustomTypeVariant struct {
 	debugMemoryAlign     MemoryAlign
 }
 
-func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant, parameterTypes []dtype.Type) *CustomTypeVariant {
+func NewCustomTypeVariant(index int, inCustomType *CustomTypeAtom, astCustomTypeVariant *ast.CustomTypeVariant, parameterTypes []dtype.Type) *CustomTypeVariantAtom {
+	if inCustomType == nil {
+		panic("must have valid in custom type")
+	}
 	for _, paramType := range parameterTypes {
 		if paramType == nil {
 			panic("paramtype is nil")
@@ -55,6 +65,7 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 
 	pos := MemoryOffset(1) // Leave room for the custom type identifier
 	var biggestMemoryAlign MemoryAlign
+	biggestMemoryAlign = 1
 	for index, paramType := range parameterTypes {
 		if paramType == nil {
 			panic("paramtype is nil")
@@ -97,94 +108,126 @@ func NewCustomTypeVariant(index int, astCustomTypeVariant *ast.CustomTypeVariant
 		}
 	}
 
-	return &CustomTypeVariant{
-		index: index, astCustomTypeVariant: astCustomTypeVariant, parameterTypes: parameterTypes,
+	return &CustomTypeVariantAtom{
+		index: index, astCustomTypeVariant: astCustomTypeVariant, inCustomType: inCustomType,
 		parameterFields: fields, debugMemorySize: MemorySize(pos), debugMemoryAlign: biggestMemoryAlign,
 	}
 }
 
-func (s *CustomTypeVariant) AttachToCustomType(c *CustomTypeAtom) {
-	if s.parent != nil {
-		panic("already attached")
-	}
-
-	s.parent = c
-	s.inCustomType = c
-}
-
-func (s *CustomTypeVariant) AstCustomTypeVariant() *ast.CustomTypeVariant {
+func (s *CustomTypeVariantAtom) AstCustomTypeVariant() *ast.CustomTypeVariant {
 	return s.astCustomTypeVariant
 }
 
-func (s *CustomTypeVariant) FetchPositionLength() token.SourceFileReference {
+func (s *CustomTypeVariantAtom) FetchPositionLength() token.SourceFileReference {
 	return s.astCustomTypeVariant.FetchPositionLength()
 }
 
-func (s *CustomTypeVariant) Fields() []*CustomTypeVariantField {
+func (s *CustomTypeVariantAtom) Fields() []*CustomTypeVariantField {
 	return s.parameterFields
 }
 
-func (s *CustomTypeVariant) InCustomType() *CustomTypeAtom {
+func (s *CustomTypeVariantAtom) InCustomType() *CustomTypeAtom {
 	return s.inCustomType
 }
 
-func (s *CustomTypeVariant) ParentType() dtype.Type {
+func (s *CustomTypeVariantAtom) ParameterTypes() []dtype.Type {
+	var types []dtype.Type
+
+	for _, x := range s.parameterFields {
+		types = append(types, x.parameterType)
+	}
+
+	return types
+}
+
+func (s *CustomTypeVariantAtom) ParentType() dtype.Type {
 	if s.parent == nil {
 		panic("can not fetch nil parent type")
 	}
 	return s.parent
 }
 
-func (s *CustomTypeVariant) Index() int {
+func (s *CustomTypeVariantAtom) Index() int {
 	return s.index
 }
 
-func (s *CustomTypeVariant) Resolve() (dtype.Atom, error) {
-	return nil, nil
+func (s *CustomTypeVariantAtom) Resolve() (dtype.Atom, error) {
+	return s, nil
 }
 
-func (s *CustomTypeVariant) Next() dtype.Type {
+func (s *CustomTypeVariantAtom) AtomName() string {
+	return "CustomTypeVariant"
+}
+
+func (s *CustomTypeVariantAtom) IsEqual(other_ dtype.Atom) error {
+	other, wasCustomTypeVariant := other_.(*CustomTypeVariantAtom)
+	if !wasCustomTypeVariant {
+		return fmt.Errorf("was not even a custom type variant %T %v", other_, other_)
+	}
+
+	// If our union is the same, then it is ok
+
+	if s.index != other.index {
+		return fmt.Errorf("different index %d vs %d", s.index, other.index)
+	}
+
+	if s.astCustomTypeVariant.Name() != other.astCustomTypeVariant.Name() {
+		return fmt.Errorf("custom type must have same name %s vs %s", s.astCustomTypeVariant.Name(), other.astCustomTypeVariant.Name())
+	}
+
+	if s.ParameterCount() != other.ParameterCount() {
+		return fmt.Errorf("wrong parameter count %d vs %d", s.ParameterCount(), other.ParameterCount())
+	}
+
+	otherParams := other.parameterFields
+	for index, parameter := range s.parameterFields {
+		equalErr := CompatibleTypes(parameter.parameterType, otherParams[index].parameterType)
+		if equalErr != nil {
+			return FunctionAtomMismatch{parameter.parameterType, otherParams[index].parameterType}
+		}
+	}
+
+	return nil
+}
+
+func (s *CustomTypeVariantAtom) Next() dtype.Type {
 	return s.parent
 }
 
-func (s *CustomTypeVariant) Name() *ast.TypeIdentifier {
+func (s *CustomTypeVariantAtom) Name() *ast.TypeIdentifier {
 	return s.astCustomTypeVariant.TypeIdentifier()
 }
 
-func (s *CustomTypeVariant) ParameterTypes() []dtype.Type {
-	return s.parameterTypes
+func (s *CustomTypeVariantAtom) ParameterCount() int {
+	return len(s.parameterFields)
 }
 
-func (s *CustomTypeVariant) ParameterCount() int {
-	return len(s.parameterTypes)
+func (s *CustomTypeVariantAtom) String() string {
+	return fmt.Sprintf("[Variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), s.parameterFields)
 }
 
-func (s *CustomTypeVariant) String() string {
-	return fmt.Sprintf("[variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), TypesToStringSuffix(s.parameterTypes))
-}
-
-func (s *CustomTypeVariant) HumanReadable() string {
+func (s *CustomTypeVariantAtom) HumanReadable() string {
 	str := fmt.Sprintf("%v", s.astCustomTypeVariant.TypeIdentifier().Name())
-	for _, parameterType := range s.parameterTypes {
+	for _, parameterType := range s.parameterFields {
 		str += " "
-		str += parameterType.HumanReadable()
+		str += parameterType.parameterType.HumanReadable()
 	}
 
 	return str
 }
 
-func (s *CustomTypeVariant) DecoratedName() string {
+func (s *CustomTypeVariantAtom) DecoratedName() string {
 	return s.Name().Name()
 }
 
-func (s *CustomTypeVariant) AddReferee(reference *CustomTypeVariantReference) {
+func (s *CustomTypeVariantAtom) AddReferee(reference *CustomTypeVariantReference) {
 	s.references = append(s.references, reference)
 }
 
-func (s *CustomTypeVariant) References() []*CustomTypeVariantReference {
+func (s *CustomTypeVariantAtom) References() []*CustomTypeVariantReference {
 	return s.references
 }
 
-func (s *CustomTypeVariant) WasReferenced() bool {
+func (s *CustomTypeVariantAtom) WasReferenced() bool {
 	return len(s.references) > 0
 }

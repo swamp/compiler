@@ -10,7 +10,6 @@ import (
 	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
-	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
@@ -321,6 +320,7 @@ func (t VariantField) HumanReadable() string {
 }
 
 type Variant struct {
+	Type
 	name       string
 	fields     []VariantField
 	memoryInfo MemoryInfo
@@ -344,18 +344,18 @@ func Refs(types []InfoType) string {
 	return s
 }
 
-func (t Variant) String() string {
+func (t *Variant) String() string {
 	return fmt.Sprintf("variant %s parameters:%v", t.name, t.fields)
 }
 
-func (t Variant) HumanReadable() string {
+func (t *Variant) HumanReadable() string {
 	return fmt.Sprintf("%s%s", t.name, t.fields)
 }
 
 type CustomType struct {
 	Type
 	name       string
-	variants   []Variant
+	variants   []*Variant
 	memoryInfo MemoryInfo
 }
 
@@ -363,7 +363,7 @@ func (t *CustomType) String() string {
 	return fmt.Sprintf("custom %d variants:%v", t.index, t.variants)
 }
 
-func variantsToHumanReadable(variants []Variant) string {
+func variantsToHumanReadable(variants []*Variant) string {
 	s := ""
 	for index, variant := range variants {
 		if index > 0 {
@@ -741,45 +741,55 @@ func (c *Chunk) doWeHaveResourceName() int {
 	return -1
 }
 
+func (c *Chunk) consumeCustomVariant(variant *dectype.CustomTypeVariantAtom) (*Variant, error) {
+	consumedTypes, consumeErr := c.ConsumeTypes(variant.ParameterTypes())
+	if consumeErr != nil {
+		return nil, consumeErr
+	}
+
+	if len(variant.ParameterTypes()) != len(variant.Fields()) {
+		panic("illegal custom type parametercount field count")
+	}
+
+	var fields []VariantField
+
+	for index, field := range variant.Fields() {
+		var memInfo MemoryOffsetInfo
+		if !dectype.TypeIsTemplateHasLocalTypes(field.Type()) {
+			memInfo = memoryOffsetInfo(field.MemoryOffset(), field.Type())
+		}
+
+		newFields := VariantField{
+			index:        uint(index),
+			fieldType:    consumedTypes[index],
+			memoryOffset: memInfo,
+		}
+		fields = append(fields, newFields)
+	}
+
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(variant)
+
+	consumedVariant := &Variant{
+		name:   variant.Name().Name(),
+		fields: fields,
+		memoryInfo: MemoryInfo{
+			MemorySize:  MemorySize(memorySize),
+			MemoryAlign: MemoryAlign(memoryAlign),
+		},
+	}
+
+	return consumedVariant, nil
+}
+
 func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, error) {
-	var consumedVariants []Variant
+	var consumedVariants []*Variant
 
 	for _, variant := range custom.Variants() {
-		consumedTypes, consumeErr := c.ConsumeTypes(variant.ParameterTypes())
-		if consumeErr != nil {
-			return nil, consumeErr
+		newVariant, err := c.consumeCustomVariant(variant)
+		if err != nil {
+			return nil, err
 		}
-
-		if len(variant.ParameterTypes()) != len(variant.Fields()) {
-			panic("illegal custom type parametercount field count")
-		}
-
-		var fields []VariantField
-
-		for index, field := range variant.Fields() {
-			var memInfo MemoryOffsetInfo
-			if !decorated.TypeIsTemplateHasLocalTypes(field.Type()) {
-				memInfo = memoryOffsetInfo(field.MemoryOffset(), field.Type())
-			}
-
-			newFields := VariantField{
-				index:        uint(index),
-				fieldType:    consumedTypes[index],
-				memoryOffset: memInfo,
-			}
-			fields = append(fields, newFields)
-		}
-
-		memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(variant)
-
-		consumedVariants = append(consumedVariants, Variant{
-			name:   variant.Name().Name(),
-			fields: fields,
-			memoryInfo: MemoryInfo{
-				MemorySize:  MemorySize(memorySize),
-				MemoryAlign: MemoryAlign(memoryAlign),
-			},
-		})
+		consumedVariants = append(consumedVariants, newVariant)
 	}
 
 	customName := custom.ArtifactTypeName().String()
@@ -1254,6 +1264,8 @@ func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 	switch t := a.(type) {
 	case *dectype.CustomTypeAtom:
 		return c.consumeCustom(t)
+	case *dectype.CustomTypeVariantAtom:
+		return c.consumeCustomVariant(t)
 	case *dectype.RecordAtom:
 		return c.consumeRecord(t)
 	case *dectype.FunctionAtom:

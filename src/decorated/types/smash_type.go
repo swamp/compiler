@@ -7,11 +7,51 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
+
+func TypesIsTemplateHasLocalTypes(p []dtype.Type) bool {
+	for _, x := range p {
+		if TypeIsTemplateHasLocalTypes(x) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func TypeIsTemplateHasLocalTypes(p dtype.Type) bool {
+	unalias := UnaliasWithResolveInvoker(p)
+	switch t := unalias.(type) {
+	case *CustomTypeAtom:
+		for _, variant := range t.Variants() {
+			if TypesIsTemplateHasLocalTypes(variant.ParameterTypes()) {
+				return true
+			}
+		}
+	case *CustomTypeVariantAtom:
+		if TypesIsTemplateHasLocalTypes(t.ParameterTypes()) {
+			return true
+		}
+	case *FunctionAtom:
+		if TypesIsTemplateHasLocalTypes(t.FunctionParameterTypes()) && !IsAnyOrFunctionWithAnyMatching(t) {
+			return true
+		}
+	case *InvokerType:
+		if TypeIsTemplateHasLocalTypes(t.TypeGenerator()) {
+			return true
+		}
+		if TypesIsTemplateHasLocalTypes(t.Params()) {
+			return true
+		}
+	case *LocalType:
+		return true
+	}
+
+	return false
+}
 
 func UnReference(t dtype.Type) dtype.Type {
 	fnTypeRef, wasFnTypeRef := t.(*FunctionTypeReference)
@@ -26,6 +66,8 @@ func UnReference(t dtype.Type) dtype.Type {
 		return UnReference(info.primitiveType)
 	case *CustomTypeReference:
 		return UnReference(info.customType)
+	case *CustomTypeVariantReference:
+		return UnReference(info.customTypeVariant)
 	case *FunctionTypeReference:
 		return UnReference(info.referencedType)
 	}
@@ -112,37 +154,47 @@ func fillContextFromRecordType(context *TypeParameterContextOther, original *Rec
 	return NewRecordType(original.AstRecord(), other.SortedFields(), converted), nil
 }
 
+func fillContextFromCustomTypeVariant2(context *TypeParameterContextOther, originalVariant *CustomTypeVariantAtom, otherVariant *CustomTypeVariantAtom) (*CustomTypeVariantAtom, error) {
+	if otherVariant.index != originalVariant.index {
+		return nil, fmt.Errorf("index error")
+	}
+	if len(originalVariant.ParameterTypes()) != len(otherVariant.ParameterTypes()) {
+		return nil, fmt.Errorf("wrong number of parameter types in variant %v", otherVariant)
+	}
+	var convertedParams []dtype.Type
+	for paramIndex, originalParam := range originalVariant.ParameterTypes() {
+		otherParam := otherVariant.ParameterTypes()[paramIndex]
+		convertedParam, smashErr := smashTypes(context, originalParam, otherParam)
+		if smashErr != nil {
+			return nil, smashErr
+		}
+		if convertedParam != originalParam {
+			//wasConverted = true
+		}
+		convertedParams = append(convertedParams, convertedParam)
+	}
+
+	convertedVariant := NewCustomTypeVariant(originalVariant.index, originalVariant.inCustomType, originalVariant.astCustomTypeVariant, convertedParams)
+
+	return convertedVariant, nil
+}
+
 func fillContextFromCustomType(context *TypeParameterContextOther, original *CustomTypeAtom, other *CustomTypeAtom) (*CustomTypeAtom, error) {
 	if len(original.Variants()) != len(other.Variants()) {
 		return nil, fmt.Errorf("not the same number of variants")
 	}
 
+	customType := NewCustomTypePrepare(original.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil)
 	wasConverted := false
-	var convertedVariants []*CustomTypeVariant
+	var convertedVariants []*CustomTypeVariantAtom
 	for index, originalVariant := range original.Variants() {
 		otherVariant := other.Variants()[index]
-		if otherVariant.index != originalVariant.index {
-			return nil, fmt.Errorf("index error")
+		convertedVariant, convertedErr := fillContextFromCustomTypeVariant2(context, originalVariant, otherVariant)
+		if convertedErr != nil {
+			panic(convertedErr)
+			return nil, convertedErr
 		}
-		if len(originalVariant.ParameterTypes()) != len(otherVariant.ParameterTypes()) {
-			return nil, fmt.Errorf("wrong number of parameter types in variant %v", otherVariant)
-		}
-		NewCustomTypeVariantReference(nil, originalVariant)
-		NewCustomTypeVariantReference(nil, otherVariant)
-		var convertedParams []dtype.Type
-		for paramIndex, originalParam := range originalVariant.ParameterTypes() {
-			otherParam := otherVariant.ParameterTypes()[paramIndex]
-			convertedParam, smashErr := smashTypes(context, originalParam, otherParam)
-			if smashErr != nil {
-				return nil, smashErr
-			}
-			if convertedParam != originalParam {
-				wasConverted = true
-			}
-			convertedParams = append(convertedParams, convertedParam)
-		}
-
-		convertedVariant := NewCustomTypeVariant(originalVariant.index, originalVariant.astCustomTypeVariant, convertedParams)
+		wasConverted = true
 		convertedVariants = append(convertedVariants, convertedVariant)
 	}
 
@@ -150,7 +202,9 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 		return original, nil
 	}
 
-	return NewCustomType(original.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil, convertedVariants), nil
+	customType.FinalizeVariants(convertedVariants)
+
+	return customType, nil
 }
 
 func fillContextFromFunctions(context *TypeParameterContextOther, original *FunctionAtom, other *FunctionAtom) (*FunctionAtom, error) {
@@ -284,6 +338,14 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 	}
 
 	if !otherIsAny && !originalIsAny {
+		customType, wasCustomType := original.(*CustomTypeAtom)
+		if wasCustomType {
+			otherVariant, wasOtherVariant := other.(*CustomTypeVariantAtom)
+			if wasOtherVariant {
+				originalVariant := customType.FindVariant(otherVariant.Name().Name())
+				return fillContextFromCustomTypeVariant2(context, originalVariant, otherVariant)
+			}
+		}
 		sameType := reflect.TypeOf(original) == reflect.TypeOf(other)
 		if !sameType {
 			checkAnyAgain := IsAny(other)
@@ -297,6 +359,10 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 			return originalUnchanged, nil
 		}
 	case *CustomTypeReference:
+		{
+			return originalUnchanged, nil
+		}
+	case *CustomTypeVariantReference:
 		{
 			return originalUnchanged, nil
 		}
@@ -335,9 +401,10 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 			otherCustomType := other.(*CustomTypeAtom)
 			return fillContextFromCustomType(context, t, otherCustomType)
 		}
-	case *CustomTypeVariant:
+	case *CustomTypeVariantAtom:
 		{
-			log.Printf("\n\nFOUND CUSTOM TYPE ATOM variant:%v\n\n", t)
+			otherCustomTypeVariant := other.(*CustomTypeVariantAtom)
+			return fillContextFromCustomTypeVariant2(context, t, otherCustomTypeVariant)
 		}
 	case *RecordAtom:
 		{

@@ -6,10 +6,11 @@
 package decorator
 
 import (
+	"log"
+
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
 /*
