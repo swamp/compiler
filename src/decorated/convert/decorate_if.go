@@ -41,7 +41,7 @@ func decorateIf(d DecorateStream, ifExpression *ast.IfExpression,
 		return nil, alternativeErr
 	}
 
-	compatibleErr := dectype.CompatibleTypes(consequence.Type(), alternative.Type())
+	compatibleErr := dectype.CompatibleTypesCheckCustomType(consequence.Type(), alternative.Type())
 
 	if compatibleErr != nil {
 		consPureType := dectype.UnaliasWithResolveInvoker(consequence.Type())

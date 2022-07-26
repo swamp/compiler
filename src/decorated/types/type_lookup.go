@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
@@ -28,12 +29,50 @@ func compareAtoms(pureExpected dtype.Atom, pureActual dtype.Atom) error {
 		return fmt.Errorf("can not have nil stuff here")
 	}
 
+	if reflect.TypeOf(pureExpected) == nil {
+		panic(fmt.Errorf("pureExpected is nil"))
+	}
+
 	equalErr := pureExpected.IsEqual(pureActual)
 	if equalErr != nil {
 		return fmt.Errorf("*** NOT EQUAL:\n %v\nvs\n %v\n %w", pureExpected.AtomName(), pureActual.AtomName(), equalErr)
 	}
 
 	return nil
+}
+
+func CompatibleTypesCheckCustomType(expectedType dtype.Type, actualType dtype.Type) error {
+	if expectedType == nil {
+		panic(fmt.Sprintf("shouldn't happen. expected is nil, actualType is %v", actualType))
+	}
+
+	if actualType == nil {
+		panic(fmt.Sprintf("shouldn't happen. actualType is nil, expectedType is %v", expectedType))
+	}
+
+	pureExpected, expectedErr := expectedType.Resolve()
+	pureActual, actualErr := actualType.Resolve()
+
+	if pureExpected == nil || pureActual == nil {
+		panic("error")
+	}
+
+	if expectedErr == nil && actualErr == nil {
+		expectedVariant, wasExpectedVariant := pureExpected.(*CustomTypeVariantAtom)
+		if wasExpectedVariant {
+			actualVariant, wasActualVariant := pureActual.(*CustomTypeVariantAtom)
+			if wasActualVariant {
+				return CompatibleTypes(actualVariant.inCustomType, expectedVariant.inCustomType)
+			}
+			actualCustom, wasActualCustom := pureActual.(*CustomTypeAtom)
+			if wasActualCustom {
+				actualFoundVariant := actualCustom.FindVariant(expectedVariant.Name().Name())
+				return CompatibleTypes(actualFoundVariant, expectedVariant)
+			}
+		}
+	}
+
+	return CompatibleTypes(expectedType, actualType)
 }
 
 func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
@@ -45,16 +84,14 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 		panic(fmt.Sprintf("shouldn't happen. actualType is nil, expectedType is %v", expectedType))
 	}
 
-	customType, wasCustomType := expectedType.(*CustomTypeAtom)
-	if wasCustomType {
-		otherVariant, wasVariant := actualType.(*CustomTypeVariant)
-		if wasVariant {
-			return customType.IsVariantEqual(otherVariant)
-		}
-	}
-
 	pureExpected, expectedErr := expectedType.Resolve()
 	pureActual, actualErr := actualType.Resolve()
+	if pureActual == nil {
+		panic(fmt.Errorf("pureActual is nil"))
+	}
+	if pureExpected == nil {
+		panic(fmt.Errorf("pureExpected is nil"))
+	}
 
 	isAny := IsAtomAny(pureActual)
 	if isAny {
@@ -73,7 +110,9 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 		return expectedErr
 	}
 
-	return compareAtoms(pureExpected, pureActual)
+	err := compareAtoms(pureExpected, pureActual)
+
+	return err
 }
 
 func ResolveToRecordType(expectedRecord dtype.Type) (*RecordAtom, error) {

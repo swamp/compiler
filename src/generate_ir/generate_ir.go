@@ -153,7 +153,7 @@ func generateType(irModule *ir.Module, repo *IrTypeRepo, definedType dtype.Type)
 	switch t := unAliased.(type) {
 	case *dectype.CustomTypeAtom:
 		return generateCustomType(irModule, repo, t)
-	case *dectype.CustomTypeVariant:
+	case *dectype.CustomTypeVariantAtom:
 		return nil // All variants are generated along side customType
 	case *dectype.RecordAtom:
 		return nil

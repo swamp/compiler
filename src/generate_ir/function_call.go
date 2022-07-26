@@ -28,7 +28,7 @@ func handleFunctionCall(call *decorated.FunctionCall, isLeafNode bool,
 	functionAtom := dectype.UnaliasWithResolveInvoker(call.SmashedFunctionType()).(*dectype.FunctionAtom)
 	maybeOriginalFunctionType := dectype.UnaliasWithResolveInvoker(call.FunctionExpression().Type())
 	originalFunctionType, _ := maybeOriginalFunctionType.(*dectype.FunctionAtom)
-	if decorated.TypeIsTemplateHasLocalTypes(functionAtom) {
+	if dectype.TypeIsTemplateHasLocalTypes(functionAtom) {
 		panic(fmt.Errorf("we can not call functions that has local types %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), functionAtom))
 	}
 

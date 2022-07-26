@@ -47,6 +47,8 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 		return replaceRecordFromContext(info, lookup)
 	case *TupleTypeAtom:
 		return replaceTupleTypeFromContext(info, lookup)
+	case *CustomTypeVariantAtom:
+		return replaceCustomTypeVariantFromContext(info.inCustomType, info, lookup)
 	case *InvokerType:
 		return replaceInvokerTypeFromContext(info, lookup)
 	case *CustomTypeAtom:
@@ -102,25 +104,44 @@ func replaceInvokerTypeFromContext(invoker *InvokerType, lookup Lookup) (*Invoke
 }
 
 func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*CustomTypeAtom, error) {
-	var replacedVariants []*CustomTypeVariant
+	var replacedVariants []*CustomTypeVariantAtom
 
-	for index, field := range customType.Variants() {
+	var replacedGenerics []dtype.Type
+	for _, genericType := range customType.Parameters() {
+		localType, wasLocalType := genericType.(*LocalType)
+		foundGeneric := genericType
+		if wasLocalType {
+			lookedUpType, err := lookup.LookupType(localType.identifier.Name())
+			if err != nil {
+				return nil, err
+			}
+			foundGeneric = lookedUpType
+		}
+		replacedGenerics = append(replacedGenerics, foundGeneric)
+	}
+
+	newCustomType := NewCustomTypePrepare(customType.astCustomType, customType.artifactTypeName, replacedGenerics)
+	for _, field := range customType.Variants() {
 		var variantParameters []dtype.Type
-		for _, param := range field.parameterTypes {
-			converted, convertedErr := ReplaceTypeFromContext(param, lookup)
+		for _, param := range field.parameterFields {
+			converted, convertedErr := ReplaceTypeFromContext(param.parameterType, lookup)
 			if convertedErr != nil {
 				return nil, convertedErr
 			}
 			variantParameters = append(variantParameters, converted)
 		}
 
-		NewCustomTypeVariantReference(nil, field)
-		newField := NewCustomTypeVariant(index, field.astCustomTypeVariant, variantParameters)
+		newField, newErr := replaceCustomTypeVariantFromContext(newCustomType, field, lookup)
+		if newErr != nil {
+			return nil, newErr
+		}
 
 		replacedVariants = append(replacedVariants, newField)
 	}
 
-	return NewCustomType(customType.astCustomType, customType.artifactTypeName, nil, replacedVariants), nil
+	newCustomType.FinalizeVariants(replacedVariants)
+
+	return newCustomType, nil
 }
 
 func replaceTupleTypeFromContext(tupleType *TupleTypeAtom, lookup Lookup) (dtype.Type, error) {
@@ -135,6 +156,19 @@ func replaceTupleTypeFromContext(tupleType *TupleTypeAtom, lookup Lookup) (dtype
 	}
 
 	return NewTupleTypeAtom(tupleType.astTupleType, convertedTypes), nil
+}
+
+func replaceCustomTypeVariantFromContext(inCustomType *CustomTypeAtom, customTypeVariant *CustomTypeVariantAtom, lookup Lookup) (*CustomTypeVariantAtom, error) {
+	var convertedTypes []dtype.Type
+	for _, someType := range customTypeVariant.parameterFields {
+		convertedType, convertedErr := ReplaceTypeFromContext(someType.parameterType, lookup)
+		if convertedErr != nil {
+			return nil, convertedErr
+		}
+		convertedTypes = append(convertedTypes, convertedType)
+	}
+
+	return NewCustomTypeVariant(customTypeVariant.index, inCustomType, customTypeVariant.astCustomTypeVariant, convertedTypes), nil
 }
 
 func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, error) {
@@ -172,44 +206,62 @@ func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, err
 	return NewRecordType(record.AstRecord(), record.SortedFields(), convertedTypes), nil
 }
 
-func callCustomType(customType *CustomTypeAtom, arguments []dtype.Type) (dtype.Type, error) {
-	argumentNames := customType.genericLocalTypeNames
-	if len(argumentNames) == 0 {
-		return nil, fmt.Errorf("no arguments for type %v", customType)
+func callCustomType(customType *CustomTypeAtom, calledGenericTypes []dtype.Type) (dtype.Type, error) {
+	generics := customType.parameters
+	if len(generics) == 0 {
+		return nil, fmt.Errorf("no calledGenericTypes for type %v", customType)
 	}
 
-	if len(argumentNames) != len(arguments) {
+	if len(generics) != len(calledGenericTypes) {
 		return nil, fmt.Errorf("call custom type: illegal count %v %v %v", customType,
-			arguments, argumentNames)
+			calledGenericTypes, generics)
 	}
 
-	context := NewTypeParameterContextDynamic(argumentNames)
-	for index, name := range argumentNames {
-		context.SpecialSet(name.Name(), arguments[index])
+	context := NewTypeParameterContextDynamic(customType.GenericNames())
+	for index, genericType := range generics {
+		localType, wasLocalType := genericType.(*LocalType)
+		if wasLocalType {
+			context.SpecialSet(localType.identifier.Name(), calledGenericTypes[index])
+		}
 	}
 
 	return replaceCustomTypeFromContext(customType, context)
 }
 
-func callCustomTypeVariant(variant *CustomTypeVariant, arguments []dtype.Type) (dtype.Type, error) {
-	params := variant.parameterTypes
+func callCustomTypeVariant(variant *CustomTypeVariantAtom, arguments []dtype.Type) (*CustomTypeVariantAtom, error) {
+	params := variant.parameterFields
+
+	if len(arguments) == 0 {
+		panic("no arguments")
+	}
 
 	if len(params) != len(arguments) {
 		return nil, fmt.Errorf("call custom type variant: illegal count %v %v %v", variant, arguments, params)
 	}
 
-	argumentNames := variant.InCustomType().genericLocalTypeNames
-	context := NewTypeParameterContextDynamic(argumentNames)
+	var convertedTypes []dtype.Type
 
-	for index, param := range params {
-		localType, wasLocalType := param.(*LocalType)
-		if wasLocalType {
-			context.SpecialSet(localType.identifier.Name(), arguments[index])
+	foundLocal := false
+	for index, foundType := range variant.ParameterTypes() {
+		_, wasLocal := foundType.(*LocalType)
+		argument := arguments[index]
+		convertedType := foundType
+		if wasLocal {
+			convertedType = argument
+			foundLocal = true
+		} else {
+			if compatibleErr := CompatibleTypes(foundType, argument); compatibleErr != nil {
+				return nil, compatibleErr
+			}
 		}
+		convertedTypes = append(convertedTypes, convertedType)
 	}
 
-	context.FillOutTheRestWithAny()
-	return replaceCustomTypeFromContext(variant.InCustomType(), context)
+	if !foundLocal {
+		//return nil, fmt.Errorf("no local types, why did you call it? %v", variant)
+	}
+
+	return NewCustomTypeVariant(variant.index, variant.inCustomType, variant.astCustomTypeVariant, convertedTypes), nil
 }
 
 func callPrimitiveType(primitive *PrimitiveAtom, arguments []dtype.Type) (*PrimitiveAtom, error) {
@@ -248,8 +300,7 @@ func callPrimitiveType(primitive *PrimitiveAtom, arguments []dtype.Type) (*Primi
 	return NewPrimitiveType(primitive.name, convertedTypes), nil
 }
 
-func CallType(target dtype.Type, arguments []dtype.Type) (dtype.Type, error) {
-	unaliasTarget := Unalias(target)
+func callTypeHelper(unaliasTarget dtype.Type, arguments []dtype.Type) (dtype.Type, error) {
 	switch info := unaliasTarget.(type) {
 	case *RecordAtom:
 		{
@@ -263,11 +314,17 @@ func CallType(target dtype.Type, arguments []dtype.Type) (dtype.Type, error) {
 		{
 			return callCustomType(info, arguments)
 		}
-	case *CustomTypeVariant:
+	case *CustomTypeVariantAtom:
 		{
 			return callCustomTypeVariant(info, arguments)
 		}
-	}
 
-	return nil, fmt.Errorf(" noot found %T", unaliasTarget)
+	}
+	return nil, fmt.Errorf("not found %T", unaliasTarget)
+}
+
+func CallType(target dtype.Type, arguments []dtype.Type) (dtype.Type, error) {
+	unaliasTarget := Unalias(target)
+	calledType, err := callTypeHelper(unaliasTarget, arguments)
+	return calledType, err
 }

@@ -2,6 +2,7 @@ package generate_sp
 
 import (
 	"fmt"
+
 	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -23,7 +24,7 @@ func preparePackageConstants(compiledPackage *loader.Package, typeInformationChu
 				isExternal := maybeFunction.Annotation().Annotation().IsSomeKindOfExternal()
 				if isExternal {
 					var paramPosRanges []assembler_sp.SourceStackPosRange
-					hasLocalTypes := decorated.TypeIsTemplateHasLocalTypes(maybeFunction.ForcedFunctionType())
+					hasLocalTypes := dectype.TypeIsTemplateHasLocalTypes(maybeFunction.ForcedFunctionType())
 					// parameterCount := len(maybeFunction.Parameters())
 					pos := dectype.MemoryOffset(0)
 					if hasLocalTypes {

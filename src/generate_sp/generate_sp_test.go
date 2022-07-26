@@ -106,7 +106,7 @@ type SomeEnum =
 
 
 a : Bool -> SomeEnum
-a dummy =
+a _ =
     First "Hello"
 `, `
 func [function a func(Bool -> SomeEnum) 1 [[constant1 Hello #2]]]

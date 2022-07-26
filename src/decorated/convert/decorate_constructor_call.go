@@ -87,9 +87,13 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 		}
 	}
 
-	switch e := unaliasedConstructor.(type) {
-	case *dectype.CustomTypeVariantReference:
-		return decorated.NewCustomTypeVariantConstructor(e, decoratedExpressions), nil
+	switch unaliasedConstructor.(type) {
+	case *dectype.CustomTypeVariantAtom:
+		variantRef, wasVariantRef := variantConstructor.(*dectype.CustomTypeVariantReference)
+		if !wasVariantRef {
+			panic("can not create variant constructor")
+		}
+		return decorated.NewCustomTypeVariantConstructor(variantRef, decoratedExpressions), nil
 	case *dectype.RecordAtom:
 
 	default:
