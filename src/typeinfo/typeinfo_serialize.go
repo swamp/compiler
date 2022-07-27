@@ -17,6 +17,7 @@ type SwtiType uint8
 
 const (
 	SwtiTypeCustom SwtiType = iota
+	SwtiTypeCustomVariant
 	SwtiTypeFunction
 	SwtiTypeAlias
 	SwtiTypeRecord
@@ -274,7 +275,7 @@ func writeCustomTypeVariantField(writer io.Writer, variantField VariantField) er
 	return nil
 }
 
-func writeCustomTypeVariant(writer io.Writer, variant *Variant) error {
+func writeCustomTypeVariantEmbedded(writer io.Writer, variant *Variant) error {
 	if err := writeName(writer, variant.name); err != nil {
 		return err
 	}
@@ -286,6 +287,7 @@ func writeCustomTypeVariant(writer io.Writer, variant *Variant) error {
 	if err := writeCount(writer, len(variant.fields)); err != nil {
 		return err
 	}
+
 	for _, variantField := range variant.fields {
 		if err := writeCustomTypeVariantField(writer, variantField); err != nil {
 			return err
@@ -293,6 +295,18 @@ func writeCustomTypeVariant(writer io.Writer, variant *Variant) error {
 	}
 
 	return nil
+}
+
+func writeCustomTypeVariant(writer io.Writer, variant *Variant) error {
+	if err := writeTypeID(writer, SwtiTypeCustomVariant); err != nil {
+		return err
+	}
+
+	if err := writeUint8(writer, variant.variantId); err != nil {
+		return err
+	}
+
+	return writeCustomTypeVariantEmbedded(writer, variant)
 }
 
 func writeCustom(writer io.Writer, custom *CustomType) error {
@@ -317,7 +331,7 @@ func writeCustom(writer io.Writer, custom *CustomType) error {
 	}
 
 	for _, variant := range custom.variants {
-		if err := writeCustomTypeVariant(writer, variant); err != nil {
+		if err := writeCustomTypeVariantEmbedded(writer, variant); err != nil {
 			return err
 		}
 	}
@@ -353,6 +367,8 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		return writeFunction(writer, t)
 	case *CustomType:
 		return writeCustom(writer, t)
+	case *Variant:
+		return writeCustomTypeVariant(writer, t)
 	case *TypeRefIdType:
 		return writeTypeRefId(writer, t)
 	case *TupleType:
@@ -374,7 +390,7 @@ func writeVersion(writer io.Writer) error {
 	const (
 		major byte = 0
 		minor byte = 1
-		patch byte = 8
+		patch byte = 9
 	)
 
 	if err := writeUint8(writer, major); err != nil {

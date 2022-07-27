@@ -321,6 +321,7 @@ func (t VariantField) HumanReadable() string {
 
 type Variant struct {
 	Type
+	variantId  uint8
 	name       string
 	fields     []VariantField
 	memoryInfo MemoryInfo
@@ -577,6 +578,43 @@ func (c *Chunk) doWeHaveTuple(fn *TupleType) int {
 	return -1
 }
 
+func variantsAreSame(variant *Variant, other *Variant) bool {
+	if len(other.fields) != len(variant.fields) {
+		return false
+	}
+
+	if variant.name != other.name {
+		return false
+	}
+
+	if variant.variantId != other.variantId {
+		return false
+	}
+
+	for paramIndex, parameterType := range variant.fields {
+		otherParamType := other.fields[paramIndex].fieldType
+
+		if parameterType.fieldType.Index() != otherParamType.Index() {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (c *Chunk) doWeHaveCustomVariant(variant *Variant) int {
+	for index, infoType := range c.infoTypes {
+		other, isVariant := infoType.(*Variant)
+		if isVariant {
+			if variantsAreSame(variant, other) {
+				return index
+			}
+		}
+	}
+
+	return -1
+}
+
 func (c *Chunk) doWeHaveArray(array *ArrayType) int {
 	for index, infoType := range c.infoTypes {
 		other, isArray := infoType.(*ArrayType)
@@ -769,16 +807,26 @@ func (c *Chunk) consumeCustomVariant(variant *dectype.CustomTypeVariantAtom) (*V
 
 	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(variant)
 
-	consumedVariant := &Variant{
-		name:   variant.Name().Name(),
-		fields: fields,
+	proposedNewVariant := &Variant{
+		variantId: uint8(variant.Index()),
+		Type:      Type{},
+		name:      variant.Name().Name(),
+		fields:    fields,
 		memoryInfo: MemoryInfo{
 			MemorySize:  MemorySize(memorySize),
 			MemoryAlign: MemoryAlign(memoryAlign),
 		},
 	}
 
-	return consumedVariant, nil
+	indexCustom := c.doWeHaveCustomVariant(proposedNewVariant)
+	if indexCustom != -1 {
+		return c.infoTypes[indexCustom].(*Variant), nil
+	}
+
+	proposedNewVariant.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, proposedNewVariant)
+
+	return proposedNewVariant, nil
 }
 
 func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, error) {
@@ -1310,7 +1358,7 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 		return c.Consume(t.Next())
 	case *dectype.CustomTypeVariantReference:
 		// intentionally ignore
-		return nil, fmt.Errorf("not supporting CustomTypeVariantConstructorType types")
+		return c.Consume(t.Next())
 	case *dectype.LocalType:
 		// intentionally ignore
 		return nil, fmt.Errorf("not supporting local types")

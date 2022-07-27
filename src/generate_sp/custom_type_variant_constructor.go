@@ -21,10 +21,12 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 	}
 
 	filePosition := genContext.toFilePosition(constructor.FetchPositionLength())
+	log.Printf("setting enum %d for size:%d", constructor.CustomTypeVariantIndex(), target.Size)
 	code.SetEnum(target.Pos, uint8(constructor.CustomTypeVariant().Index()), target.Size, filePosition)
 
 	for index, arg := range constructor.Arguments() {
 		variantField := smashedVariant.Fields()[index]
+		log.Printf(" setting enum argument %d at %d with size %d", index, variantField.MemoryOffset(), variantField.MemorySize())
 		fieldTarget := assembler_sp.TargetStackPosRange{
 			Pos:  assembler_sp.TargetStackPos(uint(target.Pos) + uint(variantField.MemoryOffset())),
 			Size: assembler_sp.StackRange(variantField.MemorySize()),
