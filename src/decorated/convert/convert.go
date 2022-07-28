@@ -23,6 +23,15 @@ func AstParametersToArgumentNames(typeParameters []*ast.TypeParameter) []*dtype.
 	return argumentNames
 }
 
+func AstParametersToLocalTypes(typeParameters []*ast.TypeParameter) []dtype.Type {
+	var argumentNames []dtype.Type
+	for _, param := range typeParameters {
+		astLocalType := ast.NewLocalType(param)
+		argumentNames = append(argumentNames, dectype.NewLocalType(astLocalType.TypeParameter()))
+	}
+	return argumentNames
+}
+
 func newInvokerType(astTypeReference ast.TypeReferenceScopedOrNormal, foundType dectype.TypeReferenceScopedOrNormal, t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
 	unaliasedTypeToCheck := dectype.Unalias(foundType)
 

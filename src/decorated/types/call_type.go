@@ -106,7 +106,21 @@ func replaceInvokerTypeFromContext(invoker *InvokerType, lookup Lookup) (*Invoke
 func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*CustomTypeAtom, error) {
 	var replacedVariants []*CustomTypeVariantAtom
 
-	newCustomType := NewCustomTypePrepare(customType.astCustomType, customType.artifactTypeName, nil)
+	var replacedGenerics []dtype.Type
+	for _, genericType := range customType.Parameters() {
+		localType, wasLocalType := genericType.(*LocalType)
+		foundGeneric := genericType
+		if wasLocalType {
+			lookedUpType, err := lookup.LookupType(localType.identifier.Name())
+			if err != nil {
+				return nil, err
+			}
+			foundGeneric = lookedUpType
+		}
+		replacedGenerics = append(replacedGenerics, foundGeneric)
+	}
+
+	newCustomType := NewCustomTypePrepare(customType.astCustomType, customType.artifactTypeName, replacedGenerics)
 	for _, field := range customType.Variants() {
 		var variantParameters []dtype.Type
 		for _, param := range field.parameterFields {
@@ -192,20 +206,23 @@ func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, err
 	return NewRecordType(record.AstRecord(), record.SortedFields(), convertedTypes), nil
 }
 
-func callCustomType(customType *CustomTypeAtom, arguments []dtype.Type) (dtype.Type, error) {
-	argumentNames := customType.genericLocalTypeNames
-	if len(argumentNames) == 0 {
-		return nil, fmt.Errorf("no arguments for type %v", customType)
+func callCustomType(customType *CustomTypeAtom, calledGenericTypes []dtype.Type) (dtype.Type, error) {
+	generics := customType.parameters
+	if len(generics) == 0 {
+		return nil, fmt.Errorf("no calledGenericTypes for type %v", customType)
 	}
 
-	if len(argumentNames) != len(arguments) {
+	if len(generics) != len(calledGenericTypes) {
 		return nil, fmt.Errorf("call custom type: illegal count %v %v %v", customType,
-			arguments, argumentNames)
+			calledGenericTypes, generics)
 	}
 
-	context := NewTypeParameterContextDynamic(argumentNames)
-	for index, name := range argumentNames {
-		context.SpecialSet(name.Name(), arguments[index])
+	context := NewTypeParameterContextDynamic(customType.GenericNames())
+	for index, genericType := range generics {
+		localType, wasLocalType := genericType.(*LocalType)
+		if wasLocalType {
+			context.SpecialSet(localType.identifier.Name(), calledGenericTypes[index])
+		}
 	}
 
 	return replaceCustomTypeFromContext(customType, context)

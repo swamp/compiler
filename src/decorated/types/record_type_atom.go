@@ -102,7 +102,7 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	case *CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	case *CustomTypeVariantAtom:
-		return t.debugMemorySize, t.debugMemoryAlign
+		return t.MemorySize(), t.MemoryAlignment()
 	case *FunctionAtom:
 		return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 	case *UnmanagedType:
@@ -119,7 +119,7 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 func GetMemorySizeAndAlignment(p dtype.Type) (MemorySize, MemoryAlign) {
 	memorySize, memoryAlign := GetMemorySizeAndAlignmentInternal(p)
 	if memoryAlign == 0 {
-		panic(fmt.Errorf("unsupported Type %T", p))
+		panic(fmt.Errorf("unsupported Type %T %v", p, p))
 	}
 
 	return memorySize, memoryAlign

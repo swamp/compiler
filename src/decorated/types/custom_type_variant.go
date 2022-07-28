@@ -206,6 +206,14 @@ func (s *CustomTypeVariantAtom) String() string {
 	return fmt.Sprintf("[Variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), s.parameterFields)
 }
 
+func (s *CustomTypeVariantAtom) MemorySize() MemorySize {
+	return s.inCustomType.MemorySize()
+}
+
+func (s *CustomTypeVariantAtom) MemoryAlignment() MemoryAlign {
+	return s.inCustomType.MemoryAlignment()
+}
+
 func (s *CustomTypeVariantAtom) HumanReadable() string {
 	str := fmt.Sprintf("%v", s.astCustomTypeVariant.TypeIdentifier().Name())
 	for _, parameterType := range s.parameterFields {

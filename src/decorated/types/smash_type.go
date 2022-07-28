@@ -184,7 +184,23 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 		return nil, fmt.Errorf("not the same number of variants")
 	}
 
-	customType := NewCustomTypePrepare(original.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, nil)
+	if original.ParameterCount() != other.ParameterCount() {
+		return nil, fmt.Errorf("not the same number of generics")
+	}
+
+	var replacedGenerics []dtype.Type
+	for genericIndex, genericType := range original.Parameters() {
+		localType, wasLocalType := genericType.(*LocalType)
+		foundGeneric := genericType
+		if wasLocalType {
+			otherGeneric := other.parameters[genericIndex]
+			foundGeneric = otherGeneric
+			context.SpecialSet(localType.identifier.Name(), otherGeneric)
+		}
+		replacedGenerics = append(replacedGenerics, foundGeneric)
+	}
+
+	customType := NewCustomTypePrepare(original.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, replacedGenerics)
 	wasConverted := false
 	var convertedVariants []*CustomTypeVariantAtom
 	for index, originalVariant := range original.Variants() {

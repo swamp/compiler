@@ -204,17 +204,15 @@ func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resource
 }
 
 func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, showAssembler bool, verboseFlag verbosity.Verbosity) error {
-	var allFunctions []*assembler_sp.Constant
 	constants := g.packageConstants
-
 	if verboseFlag >= verbosity.Mid || showAssembler {
 		constants.DynamicMemory().DebugOutput()
 	}
 
-	if verboseFlag >= verbosity.Mid || showAssembler {
+	if verboseFlag >= verbosity.Mid || showAssembler && false {
 		var assemblerOutput string
 
-		for _, f := range allFunctions {
+		for _, f := range g.functionConstants {
 			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
 				opcodes := constants.FetchOpcodes(f)
 				lines := swampdisasmsp.Disassemble(opcodes)
@@ -232,7 +230,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 		return decorated.NewInternalError(typeInformationErr)
 	}
 
-	if verboseFlag >= verbosity.High {
+	if verboseFlag >= verbosity.High || true {
 		log.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
 		g.chunk.DebugOutput()
 	}
@@ -333,6 +331,8 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 			}
 		}
 	}
+
+	g.functionConstants = append(g.functionConstants, functionConstants...)
 
 	return nil
 }

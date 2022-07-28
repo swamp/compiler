@@ -17,10 +17,10 @@ func DecorateCustomType(customTypeDefinition *ast.CustomType,
 	typeRepo decorated.TypeAddAndReferenceMaker) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	var variants []*dectype.CustomTypeVariantAtom
 
-	decoratedNames := AstParametersToArgumentNames(customTypeDefinition.FindAllLocalTypes())
+	genericLocalTypes := AstParametersToLocalTypes(customTypeDefinition.FindAllLocalTypes())
 	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
 
-	s := dectype.NewCustomTypePrepare(customTypeDefinition, artifactTypeName, decoratedNames)
+	s := dectype.NewCustomTypePrepare(customTypeDefinition, artifactTypeName, genericLocalTypes)
 
 	for astVariantIndex, astVariant := range customTypeDefinition.Variants() {
 		var astVariantTypes []dtype.Type
