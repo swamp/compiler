@@ -145,6 +145,11 @@ const stdCode = `
 type Maybe a =
     Nothing
     | Just a
+
+
+type Result value error =
+    Ok value
+    | Err error
 `
 
 func compileToModule(globalModule *decorated.Module, name string, code string) (*decorated.Module, decshared.DecoratedError) {
