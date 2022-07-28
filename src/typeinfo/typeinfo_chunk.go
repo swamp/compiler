@@ -1418,6 +1418,6 @@ func (c *Chunk) DebugOutputStrict() {
 }
 
 func (c *Chunk) DebugOutput() {
-	// c.DebugOutputHumanReadable()
+	c.DebugOutputHumanReadable()
 	c.DebugOutputStrict()
 }

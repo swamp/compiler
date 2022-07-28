@@ -199,7 +199,7 @@ func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resource
 		}
 	}
 
-	const showAssembler = true
+	const showAssembler = false
 	return g.After(resourceNameLookup, absoluteOutputDirectory, packageSubDirectory, showAssembler, verboseFlag)
 }
 
@@ -209,7 +209,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 		constants.DynamicMemory().DebugOutput()
 	}
 
-	if verboseFlag >= verbosity.Mid || showAssembler && false {
+	if verboseFlag >= verbosity.Mid || showAssembler {
 		var assemblerOutput string
 
 		for _, f := range g.functionConstants {
@@ -230,7 +230,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 		return decorated.NewInternalError(typeInformationErr)
 	}
 
-	if verboseFlag >= verbosity.High || true {
+	if verboseFlag >= verbosity.High {
 		log.Printf("writing type information (%d octets)\n", len(typeInformationOctets))
 		g.chunk.DebugOutput()
 	}
@@ -253,7 +253,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 		return decorated.NewInternalError(err)
 	}
 
-	log.Printf("wrote output file '%v'", outputFilename)
+	// log.Printf("wrote output file '%v'", outputFilename)
 
 	return nil
 }
