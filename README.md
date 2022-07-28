@@ -47,6 +47,7 @@ type Custom =
 { name : String, x : Int, y : Int }
 ```
 
+
 * TupleType (ordered types, minimum of two entries)
 
 ```haskell
@@ -119,7 +120,7 @@ addXYTuple pos =
     let
         x, y = pos
     in
-    x + y    
+    x + y
 
 ```
 
@@ -138,7 +139,7 @@ type CharacterState =
 speed : CharacterState -> Int
 speed state =
     case state of
-       
+
         Moving speed -> speed
 
         Jumping -> 10
@@ -295,6 +296,15 @@ type Custom =
 
 ```
 
+you can also use generics (Type Parameters):
+
+```haskell
+type Custom first second =
+    Idle
+    | Running first
+    | Sleeping second
+```
+
 #### import
 
 Import from another `.swamp` file:
@@ -307,6 +317,18 @@ sample : Int -> Int
 sample a =
     AnotherFile.Abs -10
 
+```
+
+it is also possible to import as an alias
+
+```haskell
+import Some.Longer.Path.AnotherFile as AnotherFile
+```
+
+and it is possible to expose them without the module name prefix:
+
+```elm
+import Some.Longer.Path.AnotherFile exposing (..)
 ```
 
 
@@ -351,6 +373,27 @@ False
 ```haskell
 "Hello, world"
 ```
+
+##### String interpolation
+
+###### To String
+```fsharp
+$"Hello, {variableName}"
+```
+
+###### To Tuple
+
+It can also be returned as a tuple:
+```fsharp
+%"Hello, {variableName} and {anotherName}"
+```
+above would result in:
+
+```haskell
+("Hello ,", variableName, " and ", anotherName)
+```
+
+
 
 #### Char
 
