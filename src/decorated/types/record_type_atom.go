@@ -101,8 +101,8 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		}
 	case *CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
-	case *CustomTypeVariant:
-		return t.debugMemorySize, t.debugMemoryAlign
+	case *CustomTypeVariantAtom:
+		return t.MemorySize(), t.MemoryAlignment()
 	case *FunctionAtom:
 		return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 	case *UnmanagedType:
@@ -118,6 +118,9 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 
 func GetMemorySizeAndAlignment(p dtype.Type) (MemorySize, MemoryAlign) {
 	memorySize, memoryAlign := GetMemorySizeAndAlignmentInternal(p)
+	if memoryAlign == 0 {
+		panic(fmt.Errorf("unsupported Type %T %v", p, p))
+	}
 
 	return memorySize, memoryAlign
 }
@@ -232,7 +235,7 @@ func (u *RecordAtom) IsEqual(other_ dtype.Atom) error {
 
 	other, wasFunctionAtom := other_.(*RecordAtom)
 	if !wasFunctionAtom {
-		return fmt.Errorf("wasn't a record even %v", other)
+		return fmt.Errorf("wasn't a record even %T %v", other_, other_)
 	}
 	otherFields := other.sortedFields
 	if len(u.sortedFields) != len(otherFields) {

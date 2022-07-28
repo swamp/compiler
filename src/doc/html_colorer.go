@@ -53,7 +53,7 @@ func (c *HtmlColorer) CustomTypeName(t *dectype.CustomTypeReference) {
 	spanWriteLink(c.writer, t.CustomTypeAtom(), t.CustomTypeAtom().Name())
 }
 
-func (c *HtmlColorer) CustomTypeVariant(t *dectype.CustomTypeVariant) {
+func (c *HtmlColorer) CustomTypeVariant(t *dectype.CustomTypeVariantAtom) {
 	spanWrite(c.writer, "customtypevariant", t.Name().Name())
 }
 

@@ -10,7 +10,6 @@ import (
 	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
-	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
@@ -313,7 +312,7 @@ type VariantField struct {
 }
 
 func (t VariantField) String() string {
-	return fmt.Sprintf("variantfield %d: %v", t.index, t.fieldType.Ref())
+	return fmt.Sprintf("variantfield %d: %v (%v)", t.index, t.fieldType.Ref(), t.fieldType)
 }
 
 func (t VariantField) HumanReadable() string {
@@ -321,9 +320,11 @@ func (t VariantField) HumanReadable() string {
 }
 
 type Variant struct {
-	name       string
-	fields     []VariantField
-	memoryInfo MemoryInfo
+	Type
+	inCustomType InfoType
+	name         string
+	fields       []VariantField
+	memoryInfo   MemoryInfo
 }
 
 func Refs(types []InfoType) string {
@@ -344,18 +345,19 @@ func Refs(types []InfoType) string {
 	return s
 }
 
-func (t Variant) String() string {
-	return fmt.Sprintf("variant %s parameters:%v", t.name, t.fields)
+func (t *Variant) String() string {
+	return fmt.Sprintf("variant index:%d %s  (inside:%d) parameters:%v", t.Type.index, t.name, t.inCustomType.Index(), t.fields)
 }
 
-func (t Variant) HumanReadable() string {
+func (t *Variant) HumanReadable() string {
 	return fmt.Sprintf("%s%s", t.name, t.fields)
 }
 
 type CustomType struct {
 	Type
 	name       string
-	variants   []Variant
+	generics   []InfoType
+	variants   []*Variant
 	memoryInfo MemoryInfo
 }
 
@@ -363,7 +365,7 @@ func (t *CustomType) String() string {
 	return fmt.Sprintf("custom %d variants:%v", t.index, t.variants)
 }
 
-func variantsToHumanReadable(variants []Variant) string {
+func variantsToHumanReadable(variants []*Variant) string {
 	s := ""
 	for index, variant := range variants {
 		if index > 0 {
@@ -440,28 +442,37 @@ func customsAreSame(custom *CustomType, other *CustomType) bool {
 	if custom.name != other.name {
 		return false
 	}
-	if len(other.variants) != len(custom.variants) {
-		return false
-	}
-	for variantIndex, variant := range custom.variants {
-		otherVariant := other.variants[variantIndex]
-		if variant.name != otherVariant.name {
-			return false
-		}
 
-		if len(variant.fields) != len(otherVariant.fields) {
+	for genericIndex, generic := range custom.generics {
+		otherGeneric := other.generics[genericIndex]
+		if generic.Index() != otherGeneric.Index() {
 			return false
 		}
-		for paramIndex, parameterType := range variant.fields {
-			otherParameterType := otherVariant.fields[paramIndex].fieldType
-			if otherParameterType == nil {
-				return false
-			}
-			if parameterType.fieldType.Index() != otherParameterType.Index() {
-				return false
-			}
-		}
 	}
+
+	/*
+			if len(other.variants) != len(custom.variants) {
+				return false
+			}
+		for variantIndex, variant := range custom.variants {
+				otherVariant := other.variants[variantIndex]
+				if variant.name != otherVariant.name {
+					return false
+				}
+
+				if len(variant.fields) != len(otherVariant.fields) {
+					return false
+				}
+				for paramIndex, parameterType := range variant.fields {
+					otherParameterType := otherVariant.fields[paramIndex].fieldType
+					if otherParameterType == nil {
+						return false
+					}
+					if parameterType.fieldType.Index() != otherParameterType.Index() {
+						return false
+					}
+				}
+			}*/
 
 	return true
 }
@@ -741,60 +752,83 @@ func (c *Chunk) doWeHaveResourceName() int {
 	return -1
 }
 
-func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, error) {
-	var consumedVariants []Variant
-
-	for _, variant := range custom.Variants() {
-		consumedTypes, consumeErr := c.ConsumeTypes(variant.ParameterTypes())
-		if consumeErr != nil {
-			return nil, consumeErr
-		}
-
-		if len(variant.ParameterTypes()) != len(variant.Fields()) {
-			panic("illegal custom type parametercount field count")
-		}
-
-		var fields []VariantField
-
-		for index, field := range variant.Fields() {
-			var memInfo MemoryOffsetInfo
-			if !decorated.TypeIsTemplateHasLocalTypes(field.Type()) {
-				memInfo = memoryOffsetInfo(field.MemoryOffset(), field.Type())
-			}
-
-			newFields := VariantField{
-				index:        uint(index),
-				fieldType:    consumedTypes[index],
-				memoryOffset: memInfo,
-			}
-			fields = append(fields, newFields)
-		}
-
-		memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(variant)
-
-		consumedVariants = append(consumedVariants, Variant{
-			name:   variant.Name().Name(),
-			fields: fields,
-			memoryInfo: MemoryInfo{
-				MemorySize:  MemorySize(memorySize),
-				MemoryAlign: MemoryAlign(memoryAlign),
-			},
-		})
+func (c *Chunk) consumeCustomVariant(variant *dectype.CustomTypeVariantAtom) (*Variant, error) {
+	consumedTypes, consumeErr := c.ConsumeTypes(variant.ParameterTypes())
+	if consumeErr != nil {
+		return nil, consumeErr
 	}
 
+	if len(variant.ParameterTypes()) != len(variant.Fields()) {
+		panic("illegal custom type parametercount field count")
+	}
+
+	var fields []VariantField
+
+	for index, field := range variant.Fields() {
+		var memInfo MemoryOffsetInfo
+		if !dectype.TypeIsTemplateHasLocalTypes(field.Type()) {
+			memInfo = memoryOffsetInfo(field.MemoryOffset(), field.Type())
+		}
+
+		newFields := VariantField{
+			index:        uint(index),
+			fieldType:    consumedTypes[index],
+			memoryOffset: memInfo,
+		}
+		fields = append(fields, newFields)
+	}
+
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(variant)
+
+	proposedNewVariant := &Variant{
+		inCustomType: &CustomType{},
+		Type:         Type{},
+		name:         variant.Name().Name(),
+		fields:       fields,
+		memoryInfo: MemoryInfo{
+			MemorySize:  MemorySize(memorySize),
+			MemoryAlign: MemoryAlign(memoryAlign),
+		},
+	}
+
+	/*
+		indexCustom := c.doWeHaveCustomVariant(proposedNewVariant)
+		if indexCustom != -1 {
+			return c.infoTypes[indexCustom].(*Variant), nil
+		}
+
+	*/
+
+	proposedNewVariant.index = len(c.infoTypes)
+	c.infoTypes = append(c.infoTypes, proposedNewVariant)
+
+	return proposedNewVariant, nil
+}
+
+func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, error) {
 	customName := custom.ArtifactTypeName().String()
 	if len(customName) == 0 {
 		panic("custom name must be set here")
 	}
 
-	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignment(custom)
+	var consumedParameters []InfoType
+	for _, generic := range custom.Parameters() {
+		consumedParameter, err := c.Consume(generic)
+		if err != nil {
+			return nil, err
+		}
+
+		consumedParameters = append(consumedParameters, consumedParameter)
+	}
+
 	proposedNewCustom := &CustomType{
 		Type:     Type{},
 		name:     customName,
-		variants: consumedVariants,
+		variants: nil,
+		generics: consumedParameters,
 		memoryInfo: MemoryInfo{
-			MemorySize:  MemorySize(memorySize),
-			MemoryAlign: MemoryAlign(memoryAlign),
+			MemorySize:  MemorySize(0),
+			MemoryAlign: MemoryAlign(0),
 		},
 	}
 
@@ -803,8 +837,29 @@ func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, erro
 		return c.infoTypes[indexCustom].(*CustomType), nil
 	}
 
+	var consumedVariants []*Variant
+	for _, variant := range custom.Variants() {
+		newVariant, err := c.consumeCustomVariant(variant)
+		if err != nil {
+			return nil, err
+		}
+
+		consumedVariants = append(consumedVariants, newVariant)
+	}
+
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignment(custom)
+	proposedNewCustom.memoryInfo = MemoryInfo{
+		MemorySize:  MemorySize(memorySize),
+		MemoryAlign: MemoryAlign(memoryAlign),
+	}
+	proposedNewCustom.variants = consumedVariants
+
 	proposedNewCustom.index = len(c.infoTypes)
 	c.infoTypes = append(c.infoTypes, proposedNewCustom)
+
+	for _, variant := range consumedVariants {
+		variant.inCustomType = proposedNewCustom
+	}
 
 	return proposedNewCustom, nil
 }
@@ -1254,6 +1309,13 @@ func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 	switch t := a.(type) {
 	case *dectype.CustomTypeAtom:
 		return c.consumeCustom(t)
+	case *dectype.CustomTypeVariantAtom:
+		customType, err := c.consumeCustom(t.InCustomType())
+		if err != nil {
+			return nil, err
+		}
+		createdVariant := customType.variants[t.Index()]
+		return createdVariant, nil
 	case *dectype.RecordAtom:
 		return c.consumeRecord(t)
 	case *dectype.FunctionAtom:
@@ -1298,7 +1360,7 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 		return c.Consume(t.Next())
 	case *dectype.CustomTypeVariantReference:
 		// intentionally ignore
-		return nil, fmt.Errorf("not supporting CustomTypeVariantConstructorType types")
+		return c.Consume(t.Next())
 	case *dectype.LocalType:
 		// intentionally ignore
 		return nil, fmt.Errorf("not supporting local types")
@@ -1338,7 +1400,7 @@ func (c *Chunk) ConsumeTypes(types []dtype.Type) ([]InfoType, error) {
 	return consumedTypes, nil
 }
 
-func (c *Chunk) DebugOutput() {
+func (c *Chunk) DebugOutputHumanReadable() {
 	for index, t := range c.infoTypes {
 		s := t.HumanReadable()
 		alias, isAlias := t.(*AliasType)
@@ -1347,7 +1409,15 @@ func (c *Chunk) DebugOutput() {
 		}
 		log.Printf("%d : %v\n", index, s)
 	}
+}
+
+func (c *Chunk) DebugOutputStrict() {
 	for index, t := range c.infoTypes {
 		log.Printf("%d : %v\n", index, t)
 	}
+}
+
+func (c *Chunk) DebugOutput() {
+	c.DebugOutputHumanReadable()
+	c.DebugOutputStrict()
 }

@@ -438,9 +438,36 @@ someFunc _ =
     receiveStatus Unknown
 `,
 		`
-[mdefx $receiveStatus = [functionvalue ([[arg $status = [customtypevariantref named definition reference [custom-type [[variant $Unknown] [variant $Something [[customtypevariantref named definition reference [primitive Int]]]]]]]]]) -> [functionparamref $status [arg $status = [customtypevariantref named definition reference [custom-type [[variant $Unknown] [variant $Something [[customtypevariantref named definition reference [primitive Int]]]]]]]]]]]
-[mdefx $someFunc = [functionvalue ([[arg $name = [customtypevariantref named definition reference [primitive String]]]]) -> [fcall [functionref named definition reference [functionvalue ([[arg $status = [customtypevariantref named definition reference [custom-type [[variant $Unknown] [variant $Something [[customtypevariantref named definition reference [primitive Int]]]]]]]]]) -> [functionparamref $status [arg $status = [customtypevariantref named definition reference [custom-type [[variant $Unknown] [variant $Something [[customtypevariantref named definition reference [primitive Int]]]]]]]]]]] [[variant-constructor [variant $Unknown] []]]]]]
+[ModuleDef $receiveStatus = [FunctionValue ([[Arg $status : [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]]) -> [FunctionParamRef [Arg $status : [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]]]]
+[ModuleDef $someFunc = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /receiveStatus]] [[VariantConstructor [Variant $Unknown[]] []]]]]]
+`)
+}
 
+func TestCustomTypeVariantAtomLiteral(t *testing.T) {
+	testDecorate(t,
+		`
+type Status =
+    Unknown
+    | Something Int
+
+
+type Unrelated =
+    ShouldNotMatch
+    | SomethingElse Int
+
+
+receiveStatus : Unknown -> Status
+receiveStatus status =
+    status
+
+
+someFunc : String -> Status
+someFunc _ =
+    receiveStatus Unknown
+`,
+		`
+[ModuleDef $receiveStatus = [FunctionValue ([[Arg $status : [VariantRef [NamedDefTypeRef :[TypeReference $Unknown]] [Variant $Unknown[]]]]]) -> [FunctionParamRef [Arg $status : [VariantRef [NamedDefTypeRef :[TypeReference $Unknown]] [Variant $Unknown[]]]]]]]
+[ModuleDef $someFunc = [FunctionValue ([[Arg $_ : [PrimitiveTypeVariantRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /receiveStatus]] [[VariantConstructor [Variant $Unknown[]] []]]]]]
 `)
 }
 

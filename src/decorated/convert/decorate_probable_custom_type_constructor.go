@@ -20,9 +20,13 @@ func decorateProbableConstructorCall(d DecorateStream, call ast.TypeIdentifierNo
 
 	unaliasedConstructor := dectype.Unalias(variantConstructor)
 
-	switch e := unaliasedConstructor.(type) {
-	case *dectype.CustomTypeVariantReference:
-		return decorated.NewCustomTypeVariantConstructor(e, nil), nil
+	switch unaliasedConstructor.(type) {
+	case *dectype.CustomTypeVariantAtom:
+		variantRef, wasVariantRef := variantConstructor.(*dectype.CustomTypeVariantReference)
+		if !wasVariantRef {
+			panic("illegal variant constructor")
+		}
+		return decorated.NewCustomTypeVariantConstructor(variantRef, nil), nil
 	default:
 		log.Printf("expected a constructor here %T", unaliasedConstructor)
 

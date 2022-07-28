@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -531,11 +532,11 @@ func (e *WrongNumberOfFieldsInConstructor) FetchPositionLength() token.SourceFil
 }
 
 type UnhandledCustomTypeVariants struct {
-	unhandledVariants []*dectype.CustomTypeVariant
+	unhandledVariants []*dectype.CustomTypeVariantAtom
 	caseExpression    *ast.CaseForCustomType
 }
 
-func NewUnhandledCustomTypeVariants(caseExpression *ast.CaseForCustomType, unhandledVariants []*dectype.CustomTypeVariant) *UnhandledCustomTypeVariants {
+func NewUnhandledCustomTypeVariants(caseExpression *ast.CaseForCustomType, unhandledVariants []*dectype.CustomTypeVariantAtom) *UnhandledCustomTypeVariants {
 	return &UnhandledCustomTypeVariants{unhandledVariants: unhandledVariants, caseExpression: caseExpression}
 }
 
@@ -548,12 +549,12 @@ func (e *UnhandledCustomTypeVariants) FetchPositionLength() token.SourceFileRefe
 }
 
 type AlreadyHandledCustomTypeVariant struct {
-	unhandledVariant *dectype.CustomTypeVariant
+	unhandledVariant *dectype.CustomTypeVariantAtom
 	caseExpression   *ast.CaseForCustomType
 	consequence      *ast.CaseConsequenceForCustomType
 }
 
-func NewAlreadyHandledCustomTypeVariant(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType, unhandledVariant *dectype.CustomTypeVariant) *AlreadyHandledCustomTypeVariant {
+func NewAlreadyHandledCustomTypeVariant(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType, unhandledVariant *dectype.CustomTypeVariantAtom) *AlreadyHandledCustomTypeVariant {
 	return &AlreadyHandledCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression, consequence: consequence}
 }
 
@@ -637,7 +638,7 @@ func (e *CouldNotSmashFunctions) FetchPositionLength() token.SourceFileReference
 }
 
 type CaseWrongParameterCountInCustomTypeVariant struct {
-	unhandledVariant *dectype.CustomTypeVariant
+	unhandledVariant *dectype.CustomTypeVariantAtom
 	caseExpression   *ast.CaseForCustomType
 	consequence      *ast.CaseConsequenceForCustomType
 }
@@ -660,7 +661,7 @@ func (e *ExtraFunctionArguments) FetchPositionLength() token.SourceFileReference
 	return e.posLength
 }
 
-func NewCaseWrongParameterCountInCustomTypeVariant(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType, unhandledVariant *dectype.CustomTypeVariant) *CaseWrongParameterCountInCustomTypeVariant {
+func NewCaseWrongParameterCountInCustomTypeVariant(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType, unhandledVariant *dectype.CustomTypeVariantAtom) *CaseWrongParameterCountInCustomTypeVariant {
 	return &CaseWrongParameterCountInCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression, consequence: consequence}
 }
 

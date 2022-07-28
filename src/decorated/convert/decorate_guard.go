@@ -47,7 +47,7 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 			detectedType = consequence.Type()
 			detectedExpression = consequence
 		} else {
-			allSameErr := dectype.CompatibleTypes(detectedType, consequence.Type())
+			allSameErr := dectype.CompatibleTypesCheckCustomType(detectedType, consequence.Type())
 			if allSameErr != nil {
 				return nil, decorated.NewGuardConsequenceAndAlternativeMustHaveSameType(guardExpression, detectedExpression, consequence, allSameErr)
 			}
@@ -60,7 +60,7 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 		return nil, defaultExpressionErr
 	}
 
-	compatibleErr := dectype.CompatibleTypes(detectedType, defaultDecoratedExpression.Type())
+	compatibleErr := dectype.CompatibleTypesCheckCustomType(detectedType, defaultDecoratedExpression.Type())
 	if compatibleErr != nil {
 		return nil, decorated.NewGuardConsequenceAndAlternativeMustHaveSameType(guardExpression, detectedExpression,
 			defaultDecoratedExpression, compatibleErr)

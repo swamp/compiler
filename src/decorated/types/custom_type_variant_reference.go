@@ -15,7 +15,7 @@ import (
 
 type CustomTypeVariantReference struct {
 	named             *NamedDefinitionTypeReference
-	customTypeVariant *CustomTypeVariant
+	customTypeVariant *CustomTypeVariantAtom
 }
 
 func (g *CustomTypeVariantReference) Type() dtype.Type {
@@ -23,7 +23,7 @@ func (g *CustomTypeVariantReference) Type() dtype.Type {
 }
 
 func (g *CustomTypeVariantReference) String() string {
-	return fmt.Sprintf("[customtypevariantref %v %v]", g.named, g.customTypeVariant)
+	return fmt.Sprintf("[VariantRef %v %v]", g.named, g.customTypeVariant)
 }
 
 func (g *CustomTypeVariantReference) Next() dtype.Type {
@@ -31,14 +31,14 @@ func (g *CustomTypeVariantReference) Next() dtype.Type {
 }
 
 func (g *CustomTypeVariantReference) HumanReadable() string {
-	return "Variant Reference"
+	return g.customTypeVariant.HumanReadable()
 }
 
 func (g *CustomTypeVariantReference) NameReference() *NamedDefinitionTypeReference {
 	return g.named
 }
 
-func (g *CustomTypeVariantReference) CustomTypeVariant() *CustomTypeVariant {
+func (g *CustomTypeVariantReference) CustomTypeVariant() *CustomTypeVariantAtom {
 	return g.customTypeVariant
 }
 
@@ -54,7 +54,7 @@ func (g *CustomTypeVariantReference) Resolve() (dtype.Atom, error) {
 	return g.customTypeVariant.Resolve()
 }
 
-func NewCustomTypeVariantReference(named *NamedDefinitionTypeReference, customTypeVariant *CustomTypeVariant) *CustomTypeVariantReference {
+func NewCustomTypeVariantReference(named *NamedDefinitionTypeReference, customTypeVariant *CustomTypeVariantAtom) *CustomTypeVariantReference {
 	ref := &CustomTypeVariantReference{named: named, customTypeVariant: customTypeVariant}
 
 	customTypeVariant.AddReferee(ref)

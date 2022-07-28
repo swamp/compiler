@@ -20,43 +20,6 @@ type AnnotationStatement struct {
 	hasLocalTypes bool
 }
 
-func TypeIsTemplateHasLocalTypes(p dtype.Type) bool {
-	unalias := dectype.UnaliasWithResolveInvoker(p)
-	switch t := unalias.(type) {
-	case *dectype.CustomTypeAtom:
-		for _, variant := range t.Variants() {
-			if TypesIsTemplateHasLocalTypes(variant.ParameterTypes()) {
-				return true
-			}
-		}
-	case *dectype.FunctionAtom:
-		if TypesIsTemplateHasLocalTypes(t.FunctionParameterTypes()) && !dectype.IsAnyOrFunctionWithAnyMatching(t) {
-			return true
-		}
-	case *dectype.InvokerType:
-		if TypeIsTemplateHasLocalTypes(t.TypeGenerator()) {
-			return true
-		}
-		if TypesIsTemplateHasLocalTypes(t.Params()) {
-			return true
-		}
-	case *dectype.LocalType:
-		return true
-	}
-
-	return false
-}
-
-func TypesIsTemplateHasLocalTypes(p []dtype.Type) bool {
-	for _, x := range p {
-		if TypeIsTemplateHasLocalTypes(x) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func NewAnnotation(astAnnotation *ast.Annotation, t dtype.Type) *AnnotationStatement {
 	funcType := t.(*dectype.FunctionTypeReference)
 	hasLocalTypes := false

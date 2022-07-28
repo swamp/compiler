@@ -521,7 +521,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return append(tokens, expandChildNodesFunctionType(t)...)
 	case *dectype.CustomTypeAtom:
 		return append(tokens, expandChildNodesCustomType(t)...)
-	case *dectype.CustomTypeVariant:
+	case *dectype.CustomTypeVariantAtom:
 		return tokens
 	case *dectype.RecordAtom:
 		return append(tokens, expandChildNodesRecordType(t)...)

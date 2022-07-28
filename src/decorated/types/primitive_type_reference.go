@@ -27,7 +27,7 @@ func (g *PrimitiveTypeReference) NameReference() *NamedDefinitionTypeReference {
 }
 
 func (g *PrimitiveTypeReference) String() string {
-	return fmt.Sprintf("[PrimitiveTypeVariantRef %v]", g.named)
+	return fmt.Sprintf("[PrimitiveTypeRef %v]", g.named)
 }
 
 func (g *PrimitiveTypeReference) Next() dtype.Type {

@@ -14,15 +14,27 @@ import (
 )
 
 type CustomTypeAtom struct {
-	nameToField           map[string]*CustomTypeVariant
-	parameters            []dtype.Type
-	variants              []*CustomTypeVariant
-	astCustomType         *ast.CustomType
-	artifactTypeName      ArtifactFullyQualifiedTypeName
-	genericLocalTypeNames []*dtype.TypeArgumentName
-	references            []*CustomTypeReference
-	memorySize            MemorySize
-	memoryAlign           MemoryAlign
+	nameToField      map[string]*CustomTypeVariantAtom
+	parameters       []dtype.Type
+	variants         []*CustomTypeVariantAtom
+	astCustomType    *ast.CustomType
+	artifactTypeName ArtifactFullyQualifiedTypeName
+	//genericLocalTypeNames []*dtype.TypeArgumentName
+	references  []*CustomTypeReference
+	memorySize  MemorySize
+	memoryAlign MemoryAlign
+}
+
+func (s *CustomTypeAtom) GenericNames() []*dtype.TypeArgumentName {
+	var argumentNames []*dtype.TypeArgumentName
+	for _, genericType := range s.parameters {
+		localType, wasLocalType := genericType.(*LocalType)
+		if wasLocalType {
+			argumentNames = append(argumentNames, dtype.NewTypeArgumentName(localType.identifier.Identifier()))
+		}
+	}
+
+	return argumentNames
 }
 
 func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
@@ -73,14 +85,14 @@ func (s *CustomTypeAtom) ArtifactTypeName() ArtifactFullyQualifiedTypeName {
 	return s.artifactTypeName
 }
 
-func calculateTotalSizeAndAlignment(variants []*CustomTypeVariant) (MemorySize, MemoryAlign) {
-	maxVariantSize := MemorySize(0)
-	maxVariantAlign := MemoryAlign(0)
+func calculateTotalSizeAndAlignment(variants []*CustomTypeVariantAtom) (MemorySize, MemoryAlign) {
+	maxVariantSize := MemorySize(1)
+	maxVariantAlign := MemoryAlign(1)
 	for _, variant := range variants {
 		offset := MemoryOffset(1) // The union custom type starts with uint8
 		maxAlign := MemoryAlign(1)
 		for index, field := range variant.parameterFields {
-			fieldType := variant.ParameterTypes()[index]
+			fieldType := variant.parameterFields[index].Type()
 			_, wasLocalType := fieldType.(*LocalType)
 			if wasLocalType {
 				return 0, 0
@@ -123,9 +135,19 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariant) (MemorySize, 
 	return maxVariantSize, maxVariantAlign
 }
 
-func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName,
-	genericLocalTypeNames []*dtype.TypeArgumentName, variants []*CustomTypeVariant) *CustomTypeAtom {
-	nameToField := make(map[string]*CustomTypeVariant)
+func NewCustomTypePrepare(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName,
+	generics []dtype.Type) *CustomTypeAtom {
+
+	s := &CustomTypeAtom{
+		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
+		parameters: generics,
+	}
+
+	return s
+}
+
+func (s *CustomTypeAtom) FinalizeVariants(variants []*CustomTypeVariantAtom) {
+	nameToField := make(map[string]*CustomTypeVariantAtom)
 	for index, variant := range variants {
 		key := variant.Name().Name()
 		if index != variant.Index() {
@@ -145,24 +167,13 @@ func NewCustomType(astCustomType *ast.CustomType, artifactTypeName ArtifactFully
 		memoryAlign = 1
 	}
 
-	s := &CustomTypeAtom{
-		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
-		genericLocalTypeNames: genericLocalTypeNames, variants: variants, nameToField: nameToField,
-		memorySize: memorySize, memoryAlign: memoryAlign,
-	}
-
-	s.finalize()
-
-	return s
+	s.variants = variants
+	s.nameToField = nameToField
+	s.memorySize = memorySize
+	s.memoryAlign = memoryAlign
 }
 
-func (s *CustomTypeAtom) finalize() {
-	for _, variant := range s.Variants() {
-		variant.AttachToCustomType(s)
-	}
-}
-
-func (s *CustomTypeAtom) HasVariant(variantToLookFor *CustomTypeVariant) bool {
+func (s *CustomTypeAtom) HasVariant(variantToLookFor *CustomTypeVariantAtom) bool {
 	for _, variant := range s.variants {
 		if variant == variantToLookFor {
 			return true
@@ -172,7 +183,11 @@ func (s *CustomTypeAtom) HasVariant(variantToLookFor *CustomTypeVariant) bool {
 }
 
 func (s *CustomTypeAtom) ParameterCount() int {
-	return len(s.genericLocalTypeNames)
+	return len(s.parameters)
+}
+
+func (s *CustomTypeAtom) Parameters() []dtype.Type {
+	return s.parameters
 }
 
 func (s *CustomTypeAtom) Resolve() (dtype.Atom, error) {
@@ -183,13 +198,13 @@ func (s *CustomTypeAtom) Next() dtype.Type {
 	return nil
 }
 
-func (s *CustomTypeAtom) IsVariantEqual(otherVariant *CustomTypeVariant) error {
+func (s *CustomTypeAtom) IsVariantEqual(otherVariant *CustomTypeVariantAtom) error {
 	for _, variant := range s.variants {
 		if variant.index == otherVariant.index && variant.astCustomTypeVariant.Name() == otherVariant.astCustomTypeVariant.Name() &&
-			len(variant.parameterTypes) == len(otherVariant.parameterTypes) {
-			for index, variantParam := range variant.parameterTypes {
-				otherParam := otherVariant.parameterTypes[index]
-				compatibleErr := CompatibleTypes(variantParam, otherParam)
+			len(variant.parameterFields) == len(otherVariant.parameterFields) {
+			for index, variantParam := range variant.parameterFields {
+				otherParam := otherVariant.parameterFields[index]
+				compatibleErr := CompatibleTypes(variantParam.parameterType, otherParam.parameterType)
 				if compatibleErr != nil {
 					return compatibleErr
 				}
@@ -201,28 +216,37 @@ func (s *CustomTypeAtom) IsVariantEqual(otherVariant *CustomTypeVariant) error {
 	return fmt.Errorf("couldn't find it")
 }
 
-func (u *CustomTypeAtom) IsEqual(other_ dtype.Atom) error {
-	other, wasFunctionAtom := other_.(*CustomTypeAtom)
-	if !wasFunctionAtom {
-		return fmt.Errorf("was not even a custom type %v", other)
+func compareCustomType(u *CustomTypeAtom, other *CustomTypeAtom) error {
+	otherVariants := other.variants
+	if len(u.variants) != len(otherVariants) {
+		return fmt.Errorf("different number of variants %v %v", u.variants, otherVariants)
 	}
-	otherParams := other.variants
-	if len(u.variants) != len(otherParams) {
-		return fmt.Errorf("different number of variants %v %v", u.variants, otherParams)
+
+	otherParameters := other.parameters
+
+	if len(u.parameters) != len(otherParameters) {
+		return fmt.Errorf("different number of variants %v %v", u.variants, otherVariants)
 	}
+
+	for index, param := range u.parameters {
+		if param != otherParameters[index] {
+			return fmt.Errorf("different generics %v %v", param, otherParameters[index])
+		}
+	}
+
 	for index, variant := range u.variants {
-		otherParam := otherParams[index]
+		otherParam := otherVariants[index]
 		if variant.Name().Name() != otherParam.Name().Name() {
 			return fmt.Errorf("not same variants %v %v", variant, otherParam)
 		}
-		types := variant.ParameterTypes()
-		otherTypes := otherParam.ParameterTypes()
+		types := variant.parameterFields
+		otherTypes := otherParam.parameterFields
 		if len(types) != len(otherTypes) {
 			return fmt.Errorf("variants had different number of type params %v %v", types, otherTypes)
 		}
 
 		for index, resolveType := range types {
-			if err := CompatibleTypes(resolveType, otherTypes[index]); err != nil {
+			if err := CompatibleTypes(resolveType.parameterType, otherTypes[index].parameterType); err != nil {
 				return fmt.Errorf("wrong in custom type '%s' variant: '%s' parameter:\n%v\nvs\n%v\n%w", u.Name(), variant.Name().Name(), resolveType, otherTypes[index], err)
 			}
 		}
@@ -231,7 +255,28 @@ func (u *CustomTypeAtom) IsEqual(other_ dtype.Atom) error {
 	return nil
 }
 
-func (s *CustomTypeAtom) Variants() []*CustomTypeVariant {
+func (u *CustomTypeAtom) IsEqual(other_ dtype.Atom) error {
+	otherCustomType, wasCustomType := other_.(*CustomTypeAtom)
+	if wasCustomType {
+		return compareCustomType(u, otherCustomType)
+	}
+
+	otherVariant, wasCustomTypeVariant := other_.(*CustomTypeVariantAtom)
+	if wasCustomTypeVariant {
+		if TypeIsTemplateHasLocalTypes(u) {
+			panic("i can not compare, since I am a template")
+		}
+
+		if TypeIsTemplateHasLocalTypes(otherVariant) {
+			panic(fmt.Errorf("can not compare variants that are not invoked %v %v", u.Name(), otherVariant.Name()))
+		}
+		return u.IsVariantEqual(otherVariant)
+	}
+
+	return fmt.Errorf("was not even a custom type or variant %T %v", other_, other_)
+}
+
+func (s *CustomTypeAtom) Variants() []*CustomTypeVariantAtom {
 	return s.variants
 }
 
@@ -239,7 +284,7 @@ func (s *CustomTypeAtom) VariantCount() int {
 	return len(s.variants)
 }
 
-func (s *CustomTypeAtom) FindVariant(name string) *CustomTypeVariant {
+func (s *CustomTypeAtom) FindVariant(name string) *CustomTypeVariantAtom {
 	return s.nameToField[name]
 }
 

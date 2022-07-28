@@ -199,14 +199,12 @@ func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resource
 		}
 	}
 
-	const showAssembler = true
+	const showAssembler = false
 	return g.After(resourceNameLookup, absoluteOutputDirectory, packageSubDirectory, showAssembler, verboseFlag)
 }
 
 func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, showAssembler bool, verboseFlag verbosity.Verbosity) error {
-	var allFunctions []*assembler_sp.Constant
 	constants := g.packageConstants
-
 	if verboseFlag >= verbosity.Mid || showAssembler {
 		constants.DynamicMemory().DebugOutput()
 	}
@@ -214,7 +212,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 	if verboseFlag >= verbosity.Mid || showAssembler {
 		var assemblerOutput string
 
-		for _, f := range allFunctions {
+		for _, f := range g.functionConstants {
 			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
 				opcodes := constants.FetchOpcodes(f)
 				lines := swampdisasmsp.Disassemble(opcodes)
@@ -255,7 +253,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 		return decorated.NewInternalError(err)
 	}
 
-	log.Printf("wrote output file '%v'", outputFilename)
+	// log.Printf("wrote output file '%v'", outputFilename)
 
 	return nil
 }
@@ -333,6 +331,8 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 			}
 		}
 	}
+
+	g.functionConstants = append(g.functionConstants, functionConstants...)
 
 	return nil
 }

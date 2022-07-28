@@ -13,7 +13,7 @@ type DecoratedColorer interface {
 	NewLine(indentation int)
 	OperatorString(s string)
 	OneSpace()
-	CustomTypeVariant(t *dectype.CustomTypeVariant)
+	CustomTypeVariant(t *dectype.CustomTypeVariantAtom)
 	InvokerType(t *dectype.InvokerType)
 	RecordTypeField(t *dectype.RecordField)
 	AliasName(t *dectype.Alias)

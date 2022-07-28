@@ -17,6 +17,7 @@ type SwtiType uint8
 
 const (
 	SwtiTypeCustom SwtiType = iota
+	SwtiTypeCustomVariant
 	SwtiTypeFunction
 	SwtiTypeAlias
 	SwtiTypeRecord
@@ -275,6 +276,14 @@ func writeCustomTypeVariantField(writer io.Writer, variantField VariantField) er
 }
 
 func writeCustomTypeVariant(writer io.Writer, variant *Variant) error {
+	if err := writeTypeID(writer, SwtiTypeCustomVariant); err != nil {
+		return err
+	}
+
+	if err := writeTypeRef(writer, variant.inCustomType); err != nil {
+		return err
+	}
+
 	if err := writeName(writer, variant.name); err != nil {
 		return err
 	}
@@ -286,8 +295,22 @@ func writeCustomTypeVariant(writer io.Writer, variant *Variant) error {
 	if err := writeCount(writer, len(variant.fields)); err != nil {
 		return err
 	}
+
 	for _, variantField := range variant.fields {
 		if err := writeCustomTypeVariantField(writer, variantField); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func writeGenerics(writer io.Writer, genericTypes []InfoType) error {
+	if err := writeCount(writer, len(genericTypes)); err != nil {
+		return err
+	}
+	for _, genericType := range genericTypes {
+		if err := writeTypeRef(writer, genericType); err != nil {
 			return err
 		}
 	}
@@ -312,12 +335,16 @@ func writeCustom(writer io.Writer, custom *CustomType) error {
 		return err
 	}
 
+	if err := writeGenerics(writer, custom.generics); err != nil {
+		return err
+	}
+
 	if err := writeCount(writer, len(custom.variants)); err != nil {
 		return err
 	}
 
 	for _, variant := range custom.variants {
-		if err := writeCustomTypeVariant(writer, &variant); err != nil {
+		if err := writeTypeRef(writer, variant); err != nil {
 			return err
 		}
 	}
@@ -353,6 +380,8 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 		return writeFunction(writer, t)
 	case *CustomType:
 		return writeCustom(writer, t)
+	case *Variant:
+		return writeCustomTypeVariant(writer, t)
 	case *TypeRefIdType:
 		return writeTypeRefId(writer, t)
 	case *TupleType:
@@ -373,8 +402,8 @@ func writeInfoType(writer io.Writer, entry InfoType) error {
 func writeVersion(writer io.Writer) error {
 	const (
 		major byte = 0
-		minor byte = 1
-		patch byte = 8
+		minor byte = 2
+		patch byte = 0
 	)
 
 	if err := writeUint8(writer, major); err != nil {
