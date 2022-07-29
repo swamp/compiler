@@ -39,16 +39,28 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomT
 	returnType = customTypeVariantReference.CustomTypeVariant()
 
 	if len(arguments) > 0 {
+		if len(arguments) != customTypeVariant.ParameterCount() {
+			panic("wrong number of parameters to variant constructor")
+		}
 		var types []dtype.Type
-		for _, x := range arguments {
+		foundLocal := false
+		for index, x := range arguments {
+			originalType := customTypeVariant.ParameterTypes()[index]
+			_, wasLocal := originalType.(*dectype.LocalType)
+			if wasLocal {
+				foundLocal = true
+			}
 			types = append(types, x.Type())
 		}
 
-		invokerType, typeErr := dectype.NewInvokerType(customTypeVariantReference, types)
-		if typeErr != nil {
-			panic(typeErr)
+		if foundLocal {
+			invokerType, typeErr := dectype.NewInvokerType(customTypeVariantReference, types)
+			if typeErr != nil {
+				panic(typeErr)
+			}
+			returnType = invokerType
+
 		}
-		returnType = invokerType
 	}
 
 	return &CustomTypeVariantConstructor{
