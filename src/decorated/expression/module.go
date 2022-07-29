@@ -248,7 +248,9 @@ func (m *Module) DebugOutput(debug string) {
 }
 
 func (m *Module) ShortString() string {
-	return m.localDefinitions.ShortString()
+	s := m.localTypes.DebugString()
+	s += "\n" + m.localDefinitions.ShortString()
+	return s
 }
 
 func (m *Module) String() string {

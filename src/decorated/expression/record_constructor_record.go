@@ -42,7 +42,7 @@ func (c *RecordConstructorFromRecord) NamedTypeReference() *dectype.NamedDefinit
 }
 
 func (c *RecordConstructorFromRecord) String() string {
-	return fmt.Sprintf("[record-constructor-record %v %v]", c.astConstructorCall, c.record)
+	return fmt.Sprintf("[RecordConstructorRecord %v %v]", c.astConstructorCall, c.record)
 }
 
 func (c *RecordConstructorFromRecord) FetchPositionLength() token.SourceFileReference {

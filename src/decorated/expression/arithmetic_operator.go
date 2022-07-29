@@ -83,7 +83,7 @@ func arithmeticOperatorToString(t ArithmeticOperatorType) string {
 }
 
 func (a *ArithmeticOperator) String() string {
-	return fmt.Sprintf("(arithmetic %v %v %v)", a.left, arithmeticOperatorToString(a.operatorType), a.right)
+	return fmt.Sprintf("(Arithmetic %v %v %v)", a.left, arithmeticOperatorToString(a.operatorType), a.right)
 }
 
 func (a *ArithmeticOperator) FetchPositionLength() token.SourceFileReference {

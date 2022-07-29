@@ -28,6 +28,7 @@ func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assem
 	}
 
 	gen := NewGenerator()
+	gen.PrepareForNewPackage()
 	const verboseFlag = verbosity.None
 	_, _, resourceLookup, typeInfoErr := typeinfo.GenerateModule(module)
 	if typeInfoErr != nil {

@@ -31,5 +31,5 @@ func (i *RecordLiteralFieldAssignment) String() string {
 }
 
 func (i *RecordLiteralFieldAssignment) DebugString() string {
-	return "[record-literal-field-assignment]"
+	return "[RecordLiteralFieldAssignment]"
 }

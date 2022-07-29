@@ -141,7 +141,7 @@ func (c *RecordLiteral) RecordTemplate() Expression {
 }
 
 func (c *RecordLiteral) String() string {
-	return fmt.Sprintf("[record-literal %v %v]", c.t, c.sortedAssignments)
+	return fmt.Sprintf("[RecordLiteral %v %v]", c.t, c.sortedAssignments)
 }
 
 func (c *RecordLiteral) FetchPositionLength() token.SourceFileReference {

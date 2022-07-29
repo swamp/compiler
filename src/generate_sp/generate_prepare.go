@@ -14,7 +14,6 @@ import (
 
 func preparePackageConstants(compiledPackage *loader.Package, typeInformationChunk typeinfo.TypeLookup) (*assembler_sp.PackageConstants, decshared.DecoratedError) {
 	packageConstants := assembler_sp.NewPackageConstants()
-	//fileUrlCache := assembler_sp.NewFileUrlCache()
 	for _, module := range compiledPackage.AllModules() {
 		for _, named := range module.LocalDefinitions().Definitions() {
 			unknownExpression := named.Expression()

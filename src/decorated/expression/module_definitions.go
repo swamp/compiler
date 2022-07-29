@@ -13,8 +13,9 @@ import (
 )
 
 type ModuleDefinitions struct {
-	definitions   map[string]*ModuleDefinition
-	ownedByModule *Module
+	definitions        map[string]*ModuleDefinition
+	orderedDefinitions []*ModuleDefinition
+	ownedByModule      *Module
 }
 
 func NewModuleDefinitions(ownedByModule *Module) *ModuleDefinitions {
@@ -28,9 +29,10 @@ func NewModuleDefinitions(ownedByModule *Module) *ModuleDefinitions {
 }
 
 func (d *ModuleDefinitions) CopyFrom(other *ModuleDefinitions) error {
-	for x, y := range other.definitions {
+	for x, y := range other.orderedDefinitions {
 		log.Printf("overwriting %v\n", x)
-		d.definitions[x] = y
+		d.definitions[y.FullyQualifiedVariableName().String()] = y
+		d.orderedDefinitions = append(d.orderedDefinitions, y)
 	}
 
 	return nil
@@ -42,8 +44,7 @@ func (d *ModuleDefinitions) OwnedByModule() *Module {
 
 func (d *ModuleDefinitions) Definitions() []ModuleDef {
 	var keys []ModuleDef
-	for _, exprKey := range sortedExpressionKeysDefinition(d.definitions) {
-		expr := d.definitions[exprKey]
+	for _, expr := range d.orderedDefinitions {
 		keys = append(keys, expr)
 	}
 
@@ -67,6 +68,7 @@ func (d *ModuleDefinitions) AddDecoratedExpression(identifier *ast.VariableIdent
 
 	def := NewModuleDefinition(d, identifier, expr)
 	d.definitions[identifier.Name()] = def
+	d.orderedDefinitions = append(d.orderedDefinitions, def)
 
 	return nil
 }
@@ -79,7 +81,7 @@ func (d *ModuleDefinitions) AddEmptyExternalDefinition(identifier *ast.VariableI
 
 	def := NewModuleDefinition(d, identifier, nil)
 	d.definitions[identifier.Name()] = def
-
+	d.orderedDefinitions = append(d.orderedDefinitions, def)
 	return nil
 }
 
@@ -99,9 +101,7 @@ func (t *ModuleDefinitions) DebugOutput() {
 func (t *ModuleDefinitions) ShortString() string {
 	s := ""
 
-	definitionKeys := sortedExpressionKeysDefinition(t.definitions)
-	for _, expressionKey := range definitionKeys {
-		expression := t.definitions[expressionKey]
+	for _, expression := range t.orderedDefinitions {
 		s += fmt.Sprintf("%s\n", expression.String())
 	}
 	return s

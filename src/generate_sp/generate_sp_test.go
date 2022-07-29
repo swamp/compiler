@@ -63,7 +63,7 @@ type alias Cool =
 
 
 a : Bool -> List Cool
-a x =
+a _ =
     [ { name = "hi" }, { name = "another" }, { name = "tjoho" } ]
 `, `
 func [function a func(Bool -> List<Cool>) 1 [[constant1 hi #5] [constant2 another #6] [constant3 tjoho #7]]]

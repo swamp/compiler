@@ -135,12 +135,6 @@ __externalfn fromInt : Int -> String
 const typeIdCode = `
 `
 
-/*
-TODO: Add this
-type Result a b =
-    Ok a
-    | Err b
-*/
 const stdCode = `
 type Maybe a =
     Nothing

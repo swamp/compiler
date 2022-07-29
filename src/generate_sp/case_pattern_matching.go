@@ -17,16 +17,6 @@ const (
 	PatternMatchingTypeString
 )
 
-/*
-	var instructionMatchingType instruction_sp.PatternMatchingType
-	switch matchingType {
-	case PatternMatchingTypeInt:
-		instructionMatchingType = instruction_sp.PatternMatchingTypeInt
-	case PatternMatchingTypeString:
-		instructionMatchingType = instruction_sp.PatternMatchingTypeString
-	}
-*/
-
 func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, caseExpr *decorated.CaseForPatternMatching, matchingType PatternMatchingType, genContext *generateContext) error {
 	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), genContext, "cast-test")
 	if testErr != nil {

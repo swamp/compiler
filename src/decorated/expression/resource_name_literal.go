@@ -31,7 +31,7 @@ func (i *ResourceNameLiteral) Value() string {
 }
 
 func (i *ResourceNameLiteral) String() string {
-	return fmt.Sprintf("[resource name %v]", i.resourceName.Value())
+	return fmt.Sprintf("[ResourceName %v]", i.resourceName.Value())
 }
 
 func (i *ResourceNameLiteral) HumanReadable() string {

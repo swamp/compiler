@@ -129,9 +129,9 @@ func TraverseToString(t dtype.Type) string {
 }
 
 func (t *ModuleTypes) DebugString() string {
-	s := "Type Repo:\n"
-	for k, v := range t.identifierToType {
-		s += fmt.Sprintf(".. %p %v : %v\n", v, k, TraverseToString(v))
+	s := ""
+	for _, v := range t.allNamedTypes {
+		s += fmt.Sprintf("%v : %v\n", v.name, TraverseToString(v.realType))
 	}
 	return s
 }

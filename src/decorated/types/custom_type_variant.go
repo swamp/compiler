@@ -203,7 +203,7 @@ func (s *CustomTypeVariantAtom) ParameterCount() int {
 }
 
 func (s *CustomTypeVariantAtom) String() string {
-	return fmt.Sprintf("[Variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), s.parameterFields)
+	return fmt.Sprintf("[Variant %v %v]", s.astCustomTypeVariant.TypeIdentifier(), s.parameterFields)
 }
 
 func (s *CustomTypeVariantAtom) MemorySize() MemorySize {

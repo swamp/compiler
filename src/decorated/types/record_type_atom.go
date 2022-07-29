@@ -43,7 +43,7 @@ func (s *RecordAtom) AstRecord() *ast.Record {
 }
 
 func (s *RecordAtom) String() string {
-	return fmt.Sprintf("record-type %v%v]", s.sortedFields, s.genericTypes)
+	return fmt.Sprintf("[RecordType %v%v]", s.sortedFields, s.genericTypes)
 }
 
 func (s *RecordAtom) HumanReadable() string {

@@ -29,7 +29,7 @@ func NewIf(astIf *ast.IfExpression, condition Expression, consequence Expression
 }
 
 func (l *If) String() string {
-	return fmt.Sprintf("[if %v then %v else %v]", l.condition, l.consequence, l.alternative)
+	return fmt.Sprintf("[If %v then %v else %v]", l.condition, l.consequence, l.alternative)
 }
 
 func (l *If) AstIf() *ast.IfExpression {

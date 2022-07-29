@@ -57,6 +57,8 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 	case *CustomTypeReference:
 		// TODO: fix this
 		return originalTarget, nil
+	case *FunctionTypeReference:
+		return originalTarget, nil
 	default:
 		log.Printf("warning: not sure what to do with %T %v. Returning same type for now", originalTarget, originalTarget)
 		return nil, fmt.Errorf("not sure what to do with %T %v. Returning same type for now", target, target)

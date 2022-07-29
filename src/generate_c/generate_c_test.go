@@ -19,7 +19,7 @@ func TestBooleanOperator(t *testing.T) {
 	testGenerate(t,
 		`
 main : Int -> Bool
-main x =
+main _ =
     let
         a = True
         b = False
@@ -37,17 +37,16 @@ main : String -> Int
 main name =
     if name == "Rebecca" then
         let
-            x = "Rebecca"
             y = let
                 a = 3
             in
             a
             z = 99
         in
-        y
+        y + z
     else
         let
-            x = "3"
+            _ = "3"
         in
         33
 
@@ -60,7 +59,7 @@ func TestGuardLetInChar(t *testing.T) {
 	testGenerate(t,
 		`
 tester : Int -> Char
-tester x =
+tester _ =
     let
         existingTile = 'a'
         isUpperLeft = False

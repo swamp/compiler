@@ -19,10 +19,9 @@ type CustomTypeAtom struct {
 	variants         []*CustomTypeVariantAtom
 	astCustomType    *ast.CustomType
 	artifactTypeName ArtifactFullyQualifiedTypeName
-	//genericLocalTypeNames []*dtype.TypeArgumentName
-	references  []*CustomTypeReference
-	memorySize  MemorySize
-	memoryAlign MemoryAlign
+	references       []*CustomTypeReference
+	memorySize       MemorySize
+	memoryAlign      MemoryAlign
 }
 
 func (s *CustomTypeAtom) GenericNames() []*dtype.TypeArgumentName {
@@ -35,6 +34,22 @@ func (s *CustomTypeAtom) GenericNames() []*dtype.TypeArgumentName {
 	}
 
 	return argumentNames
+}
+
+func genericNamesString(argumentNames []*dtype.TypeArgumentName) string {
+	s := ""
+	for index, argumentName := range argumentNames {
+		if index > 0 {
+			s += ", "
+		}
+		s += argumentName.Name()
+	}
+
+	if len(s) > 0 {
+		s = "<" + s + ">"
+	}
+
+	return s
 }
 
 func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
@@ -50,7 +65,8 @@ func (s *CustomTypeAtom) MemoryAlignment() MemoryAlign {
 }
 
 func (s *CustomTypeAtom) String() string {
-	return fmt.Sprintf("[custom-type %v %v]", s.artifactTypeName, s.variants)
+
+	return fmt.Sprintf("[CustomType %v%v %v]", s.artifactTypeName, genericNamesString(s.GenericNames()), s.variants)
 }
 
 func (s *CustomTypeAtom) HumanReadable() string {

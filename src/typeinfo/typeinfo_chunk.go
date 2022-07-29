@@ -246,25 +246,6 @@ func (t *AliasType) HumanReadableExpanded() string {
 	return fmt.Sprintf("%s => %v", t.name, t.realType.HumanReadable())
 }
 
-/*
-type TypeRefIdType struct {
-	Type
-	realType InfoType
-}
-
-func (t *TypeRefIdType) String() string {
-	return fmt.Sprintf("typerefid %s -> %v", t.realType.Ref())
-}
-
-func (t *TypeRefIdType) HumanReadable() string {
-	return t.String()
-}
-
-func (t *TypeRefIdType) HumanReadableExpanded() string {
-	return fmt.Sprintf("$%v", t.realType.HumanReadable())
-}
-*/
-
 type RecordField struct {
 	name             string
 	fieldType        InfoType
@@ -449,30 +430,6 @@ func customsAreSame(custom *CustomType, other *CustomType) bool {
 			return false
 		}
 	}
-
-	/*
-			if len(other.variants) != len(custom.variants) {
-				return false
-			}
-		for variantIndex, variant := range custom.variants {
-				otherVariant := other.variants[variantIndex]
-				if variant.name != otherVariant.name {
-					return false
-				}
-
-				if len(variant.fields) != len(otherVariant.fields) {
-					return false
-				}
-				for paramIndex, parameterType := range variant.fields {
-					otherParameterType := otherVariant.fields[paramIndex].fieldType
-					if otherParameterType == nil {
-						return false
-					}
-					if parameterType.fieldType.Index() != otherParameterType.Index() {
-						return false
-					}
-				}
-			}*/
 
 	return true
 }
@@ -790,14 +747,6 @@ func (c *Chunk) consumeCustomVariant(variant *dectype.CustomTypeVariantAtom) (*V
 			MemoryAlign: MemoryAlign(memoryAlign),
 		},
 	}
-
-	/*
-		indexCustom := c.doWeHaveCustomVariant(proposedNewVariant)
-		if indexCustom != -1 {
-			return c.infoTypes[indexCustom].(*Variant), nil
-		}
-
-	*/
 
 	proposedNewVariant.index = len(c.infoTypes)
 	c.infoTypes = append(c.infoTypes, proposedNewVariant)
@@ -1189,22 +1138,6 @@ func (c *Chunk) consumeAny() (InfoType, error) {
 
 	return proposedNewAnyType, nil
 }
-
-/*
-func (c *Chunk) consumeUnmanaged() (InfoType, error) {
-	indexArray := c.doWeHaveUnmanaged()
-	if indexArray != -1 {
-		return c.infoTypes[indexArray].(*UnmanagedType), nil
-	}
-
-	proposedNewAnyType := &UnmanagedType{} //nolint:exhaustivestruct
-
-	proposedNewAnyType.index = len(c.infoTypes)
-	c.infoTypes = append(c.infoTypes, proposedNewAnyType)
-
-	return proposedNewAnyType, nil
-}
-*/
 
 func (c *Chunk) consumeUnmanaged(unmanagedType *dectype.UnmanagedType) (InfoType, error) {
 	if len(unmanagedType.Identifier().NativeLanguageTypeName().Name()) == 0 {

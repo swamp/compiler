@@ -106,7 +106,7 @@ func (u *TupleTypeAtom) ParameterCount() int {
 }
 
 func (u *TupleTypeAtom) String() string {
-	return fmt.Sprintf("[tupletype %v]", u.parameterTypes)
+	return fmt.Sprintf("[TupleType %v]", u.parameterTypes)
 }
 
 func (u *TupleTypeAtom) HumanReadable() string {

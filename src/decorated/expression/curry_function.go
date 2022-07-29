@@ -46,7 +46,7 @@ func (c *CurryFunction) AstFunctionCall() *ast.FunctionCall {
 }
 
 func (c *CurryFunction) String() string {
-	return fmt.Sprintf("[curry %v %v]", c.functionValueExpression, c.argumentsToSave)
+	return fmt.Sprintf("[Curry %v %v]", c.functionValueExpression, c.argumentsToSave)
 }
 
 func (c *CurryFunction) HumanReadable() string {
