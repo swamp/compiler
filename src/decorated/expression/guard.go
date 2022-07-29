@@ -25,6 +25,10 @@ func NewGuardItemDefault(guardDefault *ast.GuardDefault, internalIndex int, cons
 	return &GuardItemDefault{guardDefault: guardDefault, internalIndex: internalIndex, consequence: consequence}
 }
 
+func (c *GuardItemDefault) String() string {
+	return c.consequence.String()
+}
+
 func (c *GuardItemDefault) Expression() Expression {
 	return c.consequence
 }
@@ -65,7 +69,7 @@ func (c *GuardItem) AstGuardItem() ast.GuardItem {
 }
 
 func (c *GuardItem) String() string {
-	return fmt.Sprintf("[dguarditem %v %v]", c.condition, c.consequence)
+	return fmt.Sprintf("[DGuardItem %v %v]", c.condition, c.consequence)
 }
 
 func guardConsequenceArrayToStringEx(expressions []*GuardItem, ch string) string {
@@ -100,9 +104,9 @@ func (i *Guard) Type() dtype.Type {
 
 func (i *Guard) String() string {
 	if i.defaultGuard != nil {
-		return fmt.Sprintf("[dguard: %v default: %v]", guardConsequenceArrayToStringEx(i.items, ";"), i.defaultGuard)
+		return fmt.Sprintf("[DGuard: %v default: %v]", guardConsequenceArrayToStringEx(i.items, ";"), i.defaultGuard)
 	}
-	return fmt.Sprintf("[dguard: %v]", guardConsequenceArrayToStringEx(i.items, ";"))
+	return fmt.Sprintf("[DGuard %v]", guardConsequenceArrayToStringEx(i.items, ";"))
 }
 
 func (i *Guard) Items() []*GuardItem {

@@ -205,7 +205,20 @@ func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, err
 		return nil, fmt.Errorf("no local types, why did you call it? %v", record)
 	}
 
-	return NewRecordType(record.AstRecord(), record.SortedFields(), convertedTypes), nil
+	if len(arguments) > 0 {
+		context := NewTypeParameterContextOther()
+		for index, arg := range arguments {
+			genericType := genericTypes[index]
+			localType, wasLocal := genericType.(*LocalType)
+			if wasLocal {
+				//argument := arguments[index]
+				context.SpecialSet(localType.Identifier().Name(), arg)
+			}
+		}
+		return replaceRecordFromContext(record, context)
+	}
+
+	return record, nil
 }
 
 func callCustomType(customType *CustomTypeAtom, calledGenericTypes []dtype.Type) (dtype.Type, error) {

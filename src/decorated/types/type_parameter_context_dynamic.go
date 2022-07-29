@@ -74,7 +74,7 @@ func (t *TypeParameterContextDynamic) LookupTypeFromName(name string) dtype.Type
 		if foundParam.Name() == name {
 			existing := t.resolvedArguments[index]
 			if existing == nil {
-				panic("how can existing be nil")
+				panic(fmt.Errorf("how can existing be nil '%v' %v", name, foundParam))
 			}
 
 			return existing

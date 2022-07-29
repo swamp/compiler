@@ -25,14 +25,7 @@ type CustomTypeAtom struct {
 }
 
 func (s *CustomTypeAtom) GenericNames() []*dtype.TypeArgumentName {
-	var argumentNames []*dtype.TypeArgumentName
-	for _, genericType := range s.parameters {
-		localType, wasLocalType := genericType.(*LocalType)
-		if wasLocalType {
-			argumentNames = append(argumentNames, dtype.NewTypeArgumentName(localType.identifier.Identifier()))
-		}
-	}
-
+	argumentNames := LocalTypesToArgumentNames(s.parameters)
 	return argumentNames
 }
 
