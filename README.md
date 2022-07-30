@@ -203,6 +203,22 @@ moveLeft pos =
 
 ```
 
+You can also explicitly set each field in the record:
+
+
+
+```haskell
+
+type alias Position = { x : Int, y : Int }
+
+
+moveLeft : Position -> Position
+moveLeft pos =
+    Position { x = pos.x - 10, y = pos.y }
+
+```
+
+
 #### cast
 
 Explicitly cast from one type to another. Usually this conversion happen automatically in Swamp (if the types are strictly the same).
