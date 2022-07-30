@@ -1167,6 +1167,37 @@ a = [functionvalue ([[arg $x = typeref $Bool [primitive Bool]]]) -> [fcall [func
 `)
 }
 
+func TestTupleGenerics(t *testing.T) {
+	testDecorate(t,
+		`
+createTuple : a -> b -> (a, b)
+createTuple first second =
+    (first, second)
+
+
+a : Bool -> (Int, String)
+a _ =
+    createTuple 2 "Hello"
+`, `
+[ModuleDef $createTuple = [FunctionValue ([[Arg $first : [GenericParam a]] [Arg $second : [GenericParam b]]]) -> [TupleLiteral [TupleType [[GenericParam a] [GenericParam b]]] [TupleLiteral [$first $second]] [[FunctionParamRef [Arg $first : [GenericParam a]]] [FunctionParamRef [Arg $second : [GenericParam b]]]]]]]
+[ModuleDef $a = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /createTuple]] [[Integer 2] [String Hello]]]]]
+`)
+}
+
+func TestTupleGenericsFail(t *testing.T) {
+	testDecorateFail(t,
+		`
+createTuple : a -> b -> (a, b)
+createTuple first second =
+    (first, second)
+
+
+a : Bool -> (Int, String)
+a _ =
+    createTuple "2" "Hello"
+`, &decorated.UnMatchingFunctionReturnTypesInFunctionValue{})
+}
+
 func TestArrayLiteral2(t *testing.T) {
 	testDecorate(t,
 		`
@@ -1213,6 +1244,24 @@ a x =
 }
 
 func TestRecordConstructor(t *testing.T) {
+	testDecorate(t,
+		`
+type alias Cool =
+    { name : Int
+    }
+
+
+a : Bool -> List Cool
+a _ =
+    [ Cool { name = 95 } ]
+`, `
+Cool : [Alias Cool [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]] => [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]
+
+[ModuleDef $a = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [ListLiteral [[RecordConstructorRecord [CCall [TypeReference $Cool] [[RecordLiteral [[$name = #95]]]]] [RecordLiteral [RecordType [[RecordTypeField $name [Primitive Int] (0)]][]] [0 = [Integer 95]]]]]]]]
+`)
+}
+
+func TestRecordConstructorWithoutSpace(t *testing.T) {
 	testDecorate(t,
 		`
 type alias Cool =
@@ -1353,7 +1402,7 @@ some = [functionvalue ([[arg $a = [primitive String]]]) -> [dpmcase: [getvar $a 
 `)
 }
 
-func TestGenerics(t *testing.T) {
+func TestRecordGenerics(t *testing.T) {
 	testDecorate(t,
 		`
 type alias Tinkering t =
@@ -1559,6 +1608,57 @@ main _ =
 [ModuleDef $simple = [FunctionValue ([[Arg $_ : [FunctionTypeRef [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[GenericParam a]> [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] [Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[GenericParam a]>]]) -> [Bool true]]]
 [ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /simple]] [[FunctionRef [NamedDefinitionReference /intConvert]] [ListLiteral [[Integer 1] [Integer 2] [Integer 3]]]]]]]
 `)
+}
+
+func TestFunctionTypeGenerics(t *testing.T) {
+	testDecorate(t,
+
+		`
+intConvert : Int -> Int
+intConvert _ =
+    42
+
+
+simple : a -> (a -> a)
+simple _ =
+    intConvert
+
+
+main : Bool -> Int
+main _ =
+    let
+        fn = simple 33
+    in
+    intConvert (fn 22)
+`, `
+[ModuleDef $intConvert = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Integer 42]]]
+[ModuleDef $simple = [FunctionValue ([[Arg $_ : [GenericParam a]]]) -> [FunctionRef [NamedDefinitionReference /intConvert]]]]
+[ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [Let [[LetAssign [[LetVar $fn]] = [FnCall [FunctionRef [NamedDefinitionReference /simple]] [[Integer 33]]]]] in [FnCall [FunctionRef [NamedDefinitionReference /intConvert]] [[FnCall [LetVarRef [LetVar $fn]] [[Integer 22]]]]]]]]
+`)
+}
+
+func TestFunctionTypeGenericsFail(t *testing.T) {
+	testDecorateFail(t,
+
+		`
+intConvert : Int -> Int
+intConvert _ =
+    42
+
+
+simple : a -> (a -> a)
+simple _ =
+    intConvert
+
+
+main : Bool -> Int
+main _ =
+    let
+        fn = simple "hello"
+    in
+    -- This should fail, since fn takes a String instead of an Int
+    intConvert (fn 22)
+`, &decorated.FunctionCallTypeMismatch{})
 }
 
 func TestUpdateComplex(t *testing.T) {
