@@ -45,25 +45,26 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		typeParameterIdentifier := ast.NewTypeParameter(typeParameterIdent)
 		typeParameterIdentifiers = append(typeParameterIdentifiers, typeParameterIdentifier)
 
-		if _, err := p.eatOneSpace("after typeParameterIdentifiers"); err != nil {
-			return nil, err
+		_, spaceErr := p.eatOneSpace("after generic parameter")
+		if spaceErr != nil {
+			return nil, spaceErr
 		}
+	}
+
+	continuationIndentation, report, afterAssignSpacingErr := p.eatContinuationReturnIndentationAllowComment(keywordIndentation)
+	if afterAssignSpacingErr != nil {
+		return nil, afterAssignSpacingErr
 	}
 
 	typeParameterContext := ast.NewTypeParameterIdentifierContext(typeParameterIdentifiers)
 
 	if isAlias {
-		return parseTypeAlias(p, keywordType, tokenAlias, keywordIndentation, nameOfType, typeParameterContext, precedingComments)
-	}
-
-	report, afterAssignSpacingErr := p.eatNewLineContinuationAllowComment(keywordIndentation)
-	if afterAssignSpacingErr != nil {
-		return nil, afterAssignSpacingErr
+		return parseTypeAlias(p, keywordType, tokenAlias, continuationIndentation, nameOfType, typeParameterContext, precedingComments)
 	}
 
 	previousComment := report.Comments.LastComment()
 
-	expectedIndentation := keywordIndentation + 1
+	expectedIndentation := continuationIndentation
 
 	var fields []*ast.CustomTypeVariant
 

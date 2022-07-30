@@ -740,8 +740,8 @@ func (p *ParseStreamImpl) eatOneSpaceInternal(reason string) (token.IndentationR
 	return report, nil
 }
 
-func (p *ParseStreamImpl) eatContinuationReturnIndentation(indentation int) (int, token.IndentationReport, parerr.ParseError) {
-	report, err := p.tokenizer.SkipWhitespaceToNextIndentation()
+func (p *ParseStreamImpl) eatContinuationReturnIndentationHelper(indentation int, allowComment tokenize.CommentAllowedType) (int, token.IndentationReport, parerr.ParseError) {
+	report, err := p.tokenizer.SkipWhitespaceToNextIndentationHelper(allowComment)
 	if err != nil {
 		return -1, report, err
 	}
@@ -770,7 +770,15 @@ func (p *ParseStreamImpl) eatContinuationReturnIndentation(indentation int) (int
 	return -1, report, parerr.NewExpectedOneSpaceOrExtraIndent(tokenErr)
 }
 
-func (p *ParseStreamImpl) eatNewLinesAfterStatement(count int) (token.IndentationReport, parerr.ParseError) {
+func (p *ParseStreamImpl) eatContinuationReturnIndentation(indentation int) (int, token.IndentationReport, parerr.ParseError) {
+	return p.eatContinuationReturnIndentationHelper(indentation, tokenize.NotAllowedAtAll)
+}
+
+func (p *ParseStreamImpl) eatContinuationReturnIndentationAllowComment(indentation int) (int, token.IndentationReport, parerr.ParseError) {
+	return p.eatContinuationReturnIndentationHelper(indentation, tokenize.OwnLine)
+}
+
+func (p *ParseStreamImpl) eatNewLinesAfterStatement(min int, max int) (token.IndentationReport, parerr.ParseError) {
 	report, err := p.tokenizer.SkipWhitespaceAllowCommentsToNextIndentation()
 	if err != nil {
 		return report, err
@@ -785,28 +793,28 @@ func (p *ParseStreamImpl) eatNewLinesAfterStatement(count int) (token.Indentatio
 			return report, nil
 		}
 	} else {
-		if count == -1 {
+		if min == -1 {
 			if (report.NewLineCount >= 1) && report.IndentationSpaces == 0 {
 				return report, nil
 			}
-		} else if count == -2 {
+		} else if min == -2 {
 			if (report.NewLineCount >= 0) && report.IndentationSpaces == 0 {
 				return report, nil
 			}
 		} else {
-			if (report.NewLineCount == count) && report.IndentationSpaces == 0 {
+			if (report.NewLineCount >= min && report.NewLineCount <= max) && report.IndentationSpaces == 0 {
 				return report, nil
 			}
 		}
 
 		if report.NewLineCount > 0 && report.IndentationSpaces == 0 {
-			err := parerr.NewExpectedNewLineCount(report.PositionLength, count, report.NewLineCount)
+			err := parerr.NewExpectedNewLineCount(report.PositionLength, min, report.NewLineCount)
 			p.AddError(err)
 			return report, nil
 		}
 	}
 
-	return report, parerr.NewExpectedNewLineCount(report.PositionLength, count, report.NewLineCount)
+	return report, parerr.NewExpectedNewLineCount(report.PositionLength, min, report.NewLineCount)
 }
 
 func (p *ParseStreamImpl) eatCommaSeparatorOrTermination(expectedIndentation int, allowComments tokenize.CommentAllowedType) (bool, token.IndentationReport, parerr.ParseError) {

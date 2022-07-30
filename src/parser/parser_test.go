@@ -62,8 +62,8 @@ fn =
     "Hello"
 `,
 		`
-[annotation: $fn [type-reference $String]]
-[definition: $fn = [func ([]) -> 'Hello']]
+[Annotation $fn [FnType [TypeReference $String]]]
+[Constant $fn = 'Hello']
 `)
 }
 
@@ -77,7 +77,7 @@ a
 `,
 
 		`
-[let: [[letassign $a = ((('' ++ [call Debug.$toString [$a]]) ++ ' ') ++ [call Debug.$toString [$b]])]] in $a]
+[Let: [[LetAssign [$a] = '${a} ${b}']] in $a]
 `)
 }
 

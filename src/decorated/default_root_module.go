@@ -325,10 +325,6 @@ func CreateDefaultRootModule(includeCores bool) (*decorated.Module, decshared.De
 		return nil, err
 	}
 	primitiveModule.LocalDefinitions().CopyFrom(stdModule.LocalDefinitions())
-	/*
-		primitiveModule.LocalDefinitions().CopyFrom(stdModule.LocalDefinitions())
-		importModules = append(importModules, stdModule)
-	*/
 
 	ExposeEverythingInModule(primitiveModule)
 

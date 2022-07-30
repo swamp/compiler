@@ -67,12 +67,6 @@ func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decor
 	return d.module.LocalDefinitions().AddDecoratedExpression(identifier, expr)
 }
 
-/*
-func (d *Decorator) AddEmptyExternalDefinition(identifier *ast.VariableIdentifier) error {
-	return d.module.LocalDefinitions().AddEmptyExternalDefinition(identifier)
-}
-*/
-
 func (d *Decorator) AddDecoratedError(decoratedError decshared.DecoratedError) {
 	d.errors = append(d.errors, decoratedError)
 }

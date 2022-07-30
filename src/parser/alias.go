@@ -14,12 +14,8 @@ import (
 func parseTypeAlias(p ParseStream, keywordType token.Keyword, keywordAlias token.Keyword, keywordIdentation int, nameOfAlias *ast.TypeIdentifier,
 	typeParameterContext *ast.TypeParameterIdentifierContext,
 	precedingComments *ast.MultilineComment) (*ast.Alias, parerr.ParseError) {
-	newIndentation, _, spaceAfterAssignAndBeforeActualReferenceErr := p.eatContinuationReturnIndentation(keywordIdentation)
-	if spaceAfterAssignAndBeforeActualReferenceErr != nil {
-		return nil, spaceAfterAssignAndBeforeActualReferenceErr
-	}
 
-	referencedType, referencedTypeErr := parseTypeTermReference(p, newIndentation, typeParameterContext, precedingComments)
+	referencedType, referencedTypeErr := parseTypeTermReference(p, keywordIdentation, typeParameterContext, precedingComments)
 	if referencedTypeErr != nil {
 		return nil, referencedTypeErr
 	}

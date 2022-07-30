@@ -44,6 +44,7 @@ type ParseStream interface {
 	maybeOneSpace() (bool, token.IndentationReport, parerr.ParseError)
 	eatOneSpace(reason string) (token.IndentationReport, parerr.ParseError)
 	eatContinuationReturnIndentation(indentation int) (int, token.IndentationReport, parerr.ParseError)
+	eatContinuationReturnIndentationAllowComment(indentation int) (int, token.IndentationReport, parerr.ParseError)
 
 	// eatCommaSeparatorOrTermination is mostly for items in lists and arrays.
 	eatCommaSeparatorOrTermination(indentation int, allowComments tokenize.CommentAllowedType) (bool, token.IndentationReport, parerr.ParseError)

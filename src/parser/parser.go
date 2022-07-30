@@ -64,12 +64,13 @@ func (p *Parser) Errors() []parerr.ParseError {
 func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 	var statements []ast.Expression
 
-	linesToPad := -2
+	linesToPadMin := -2
+	linesToPadMax := -2
 
 	var errors []parerr.ParseError
 
 	for !p.stream.tokenizer.MaybeEOF() {
-		report, mustHaveLineAfterStatementErr := p.stream.eatNewLinesAfterStatement(linesToPad)
+		report, mustHaveLineAfterStatementErr := p.stream.eatNewLinesAfterStatement(linesToPadMin, linesToPadMax)
 		if mustHaveLineAfterStatementErr != nil {
 			errors = append(errors, mustHaveLineAfterStatementErr)
 		}
@@ -78,7 +79,7 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 			break
 		}
 
-		if (report.SpacesUntilMaybeNewline > 0 || linesToPad == -1) && report.IndentationSpaces > 0 {
+		if (report.SpacesUntilMaybeNewline > 0 || linesToPadMin == -1) && report.IndentationSpaces > 0 {
 			errors = append(errors, parerr.NewExtraSpacing(p.stream.sourceFileReference()))
 		}
 
@@ -105,7 +106,7 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 
 		statements = append(statements, expression)
 
-		linesToPad = ast.ExpectedLinePaddingAfter(expression)
+		linesToPadMin, linesToPadMax = ast.ExpectedLinePaddingAfter(expression)
 	}
 
 	var returnErr parerr.ParseError

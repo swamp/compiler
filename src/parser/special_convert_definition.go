@@ -56,11 +56,11 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 			return nil, skipAfterIdentifierErr
 		}
 	}
-	_, indentationErr := p.eatNewLineContinuationAllowComment(keywordIndentation)
+	newIndentation, _, indentationErr := p.eatContinuationReturnIndentationAllowComment(keywordIndentation)
 	if indentationErr != nil {
 		return nil, indentationErr
 	}
-	expressionIndentation := keywordIndentation + 1
+	expressionIndentation := newIndentation
 	expr, exprErr := p.parseExpressionNormal(expressionIndentation)
 	if exprErr != nil {
 		return nil, exprErr
