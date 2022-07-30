@@ -43,7 +43,7 @@ func (c *CaseConsequenceForPatternMatching) AstConsequence() *ast.CaseConsequenc
 }
 
 func (c *CaseConsequenceForPatternMatching) String() string {
-	return fmt.Sprintf("[dpmcasecons %v => %v]", c.literal, c.expression)
+	return fmt.Sprintf("[PMCaseCons %v => %v]", c.literal, c.expression)
 }
 
 func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequenceForPatternMatching, ch string) string {
@@ -87,10 +87,10 @@ func (i *CaseForPatternMatching) AstCasePatternMatching() *ast.CaseForPatternMat
 
 func (i *CaseForPatternMatching) String() string {
 	if i.defaultCase != nil {
-		return fmt.Sprintf("[dpmcase: %v of %v default: %v]", i.test,
+		return fmt.Sprintf("[PMCase: %v of %v default: %v]", i.test,
 			caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"), i.defaultCase)
 	}
-	return fmt.Sprintf("[dpmcase: %v of %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"))
+	return fmt.Sprintf("[PMCase: %v of %v]", i.test, caseConsequencePatternMatchingArrayToStringEx(i.cases, ";"))
 }
 
 func (i *CaseForPatternMatching) Test() Expression {

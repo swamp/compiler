@@ -1288,15 +1288,12 @@ type alias Cool =
 
 
 a : Bool -> List Cool
-a x =
+a _ =
     [ Cool 2 ]
 `, `
-{name:Int} : [record-type  [record-field name [primitive Int]]]
-Cool : [alias Cool [record-type  [record-field name [primitive Int]]]]
-func(Bool -> List<Cool>) : [func  [primitive Bool] List<Cool>]
+Cool : [Alias Cool [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]] => [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]
 
-a = [functionvalue ([[arg $x = [primitive Bool]]]) -> [ListLiteral List<{name:Int}> [[record-constructor $Cool [0 = [integer 2]]]]]]
-
+[ModuleDef $a = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [ListLiteral [[record-constructor [AliasRef [Alias Cool [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]] [0 = [Integer 2]]]]]]]
 `)
 }
 
@@ -1396,9 +1393,7 @@ some a =
 
         _ -> -1
 `, `
-func(String -> Int) : [func  [primitive String] [primitive Int]]
-
-some = [functionvalue ([[arg $a = [primitive String]]]) -> [dpmcase: [getvar $a [primitive String]] of [dpmcasecons [str hello] => [integer 0]] default: [integer -1]]]
+[ModuleDef $some = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [PMCase: [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] of [PMCaseCons [String hello] => [Integer 0]] default: [Integer -1]]]]
 `)
 }
 
