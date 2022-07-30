@@ -297,6 +297,15 @@ moveRight pos =
 
 ```
 
+you can also have alias with generics (Type Parameters):
+
+
+```haskell
+type alias Position first second = { x : first, y : second }
+
+type PositionIntAndFixed = Position Int Fixed
+```
+
 #### Custom type
 
 Define own type with variants that can have parameters.
