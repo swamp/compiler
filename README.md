@@ -303,7 +303,7 @@ you can also have alias with generics (Type Parameters):
 ```haskell
 type alias Position first second = { x : first, y : second }
 
-type PositionIntAndFixed = Position Int Fixed
+type alias PositionIntAndFixed = Position Int Fixed
 ```
 
 #### Custom type
