@@ -47,6 +47,7 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 	if len(relativeFilename) == 0 {
 		panic("must have relative filename")
 	}
+
 	for _, octet := range octets {
 		r := rune(octet)
 		if r != 0 && r != 10 && (r < 32 || r > 126) {
@@ -73,6 +74,17 @@ func verifyOctets(octets []byte, relativeFilename string) TokenError {
 			}
 		}
 		pos = nextPosition(pos, r)
+	}
+
+	const recommendedMaxLineCount = 220
+	numberOfLinesInFile := pos.Line() + 1
+	if numberOfLinesInFile > recommendedMaxLineCount {
+		sourceFileReference := token.SourceFileReference{
+			Range:    token.MakeRange(pos, pos),
+			Document: fileDocument,
+		}
+		err := NewLineCountIsMoreThanRecommendedError(sourceFileReference)
+		errors = append(errors, err)
 	}
 
 	if len(errors) > 0 {
@@ -110,13 +122,22 @@ func NewTokenizerInternalWithStartPosition(r *runestream.RuneReader, position to
 
 // NewTokenizer :
 func NewTokenizer(r *runestream.RuneReader, exactWhitespace bool) (*Tokenizer, TokenError) {
+	var errors []TokenError
 	verifyErr := verifyOctets(r.Octets(), r.RelativeFilename())
+	if verifyErr != nil {
+		errors = append(errors, verifyErr)
+	}
 	tokenizer, createErr := NewTokenizerInternal(r, exactWhitespace)
 	if createErr != nil {
-		return nil, createErr
+		errors = append(errors, createErr)
 	}
 
-	return tokenizer, verifyErr
+	var returnErr TokenError
+	if len(errors) > 0 {
+		returnErr = NewMultiErrors(errors)
+	}
+
+	return tokenizer, returnErr
 }
 
 func (t *Tokenizer) SourceFile() *token.SourceFileURI {

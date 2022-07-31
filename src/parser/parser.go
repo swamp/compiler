@@ -97,6 +97,9 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 
 		expression, expressionErr := p.parseExpressionStatement(lastComment)
 		if expressionErr != nil {
+			if IsCompileErr(expressionErr) {
+				return nil, expressionErr
+			}
 			errors = append(errors, expressionErr)
 		}
 

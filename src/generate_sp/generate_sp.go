@@ -253,7 +253,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 		return decorated.NewInternalError(err)
 	}
 
-	// log.Printf("wrote output file '%v'", outputFilename)
+	log.Printf("wrote output file '%v'", outputFilename)
 
 	return nil
 }

@@ -77,6 +77,18 @@ func (e LineIsLongerThanRecommendedError) Error() string {
 	return fmt.Sprintf("line exceeds recommended line length (%v of 115).", e.StandardTokenError.posLength.Range.End().Column())
 }
 
+type LineCountIsMoreThanRecommendedError struct {
+	StandardTokenError
+}
+
+func NewLineCountIsMoreThanRecommendedError(posLength token.SourceFileReference) LineCountIsMoreThanRecommendedError {
+	return LineCountIsMoreThanRecommendedError{StandardTokenError: StandardTokenError{posLength}}
+}
+
+func (e LineCountIsMoreThanRecommendedError) Error() string {
+	return fmt.Sprintf("line count exceeds recommended limit (%v of 220).", e.StandardTokenError.posLength.Range.End().Line()+1)
+}
+
 type MultiErrors struct {
 	errors []TokenError
 }

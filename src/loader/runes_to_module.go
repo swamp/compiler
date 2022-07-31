@@ -6,12 +6,15 @@
 package loader
 
 import (
+	"log"
+
+	"github.com/swamp/compiler/src/parser"
+
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/verbosity"
-	"log"
 )
 
 type RunesToModuleConverter interface {
@@ -40,13 +43,31 @@ func (r *ModuleReaderAndDecorator) ReadModule(moduleType decorated.ModuleType, r
 	fullyQualifiedName := namespacePrefix.Join(moduleName)
 
 	absoluteFilename, runes, loadErr := r.runesLoader.Load(moduleName, verboseFlag)
+	var errors []decshared.DecoratedError
 	if loadErr != nil {
-		return nil, loadErr
+		if parser.IsCompileErr(loadErr) {
+			return nil, loadErr
+		}
+		errors = append(errors, loadErr)
 	}
 
 	// green := color.New(color.FgHiGreen)
 	// filepathToShow := pathutil.TryToMakeRelativePath(absoluteFilename)
 	// green.Fprintf(os.Stderr, "* compiling module '%v' %v\n", filepathToShow, fullyQualifiedName)
 
-	return r.runesToModule.RunesToModule(moduleType, repository, fullyQualifiedName, absoluteFilename, runes)
+	loadedModule, runesErr := r.runesToModule.RunesToModule(moduleType, repository, fullyQualifiedName, absoluteFilename, runes)
+	if runesErr != nil {
+		if parser.IsCompileErr(runesErr) {
+			return nil, runesErr
+		}
+		errors = append(errors, runesErr)
+	}
+
+	var returnErr decshared.DecoratedError
+
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return loadedModule, returnErr
 }

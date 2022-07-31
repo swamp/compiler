@@ -277,7 +277,10 @@ func TypeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
 		return ReportAsSeverityNote
 	case tokenize.LineIsTooLongError:
 		return ReportAsSeverityWarning
+	case tokenize.LineCountIsMoreThanRecommendedError:
+		return ReportAsSeverityWarning
 	}
+
 	return ReportAsSeverityError
 }
 

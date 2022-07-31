@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/swamp/compiler/src/parser"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -305,10 +307,14 @@ func (g *RootStatementHandler) compileFunctionExpression(preparedFunctionNamedVa
 func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
 	var rootNodes []decorated.TypeOrToken
 
+	var errors []decshared.DecoratedError
 	for _, statement := range program.Statements() {
 		convertedStatement, err := g.convertStatement(statement)
 		if err != nil {
-			return nil, err
+			if parser.IsCompileErr(err) {
+				return nil, err
+			}
+			errors = append(errors, err)
 		}
 
 		if convertedStatement != nil && !reflect.ValueOf(convertedStatement).IsNil() {
@@ -321,19 +327,23 @@ func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]dec
 	for _, statement := range rootNodes {
 		if v, ok := statement.(*decorated.NamedFunctionValue); ok {
 			if err := g.compileFunctionExpression(v); err != nil {
-				return nil, err
+				if parser.IsCompileErr(err) {
+					return nil, err
+				}
+				errors = append(errors, err)
 			}
 		}
 	}
 
-	return rootNodes, nil
+	var returnErr decshared.DecoratedError
+
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return rootNodes, returnErr
 }
 
 func (g *RootStatementHandler) HandleStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
-	rootNodes, err := g.convertStatements(program)
-	if err != nil {
-		return nil, err
-	}
-
-	return rootNodes, nil
+	return g.convertStatements(program)
 }

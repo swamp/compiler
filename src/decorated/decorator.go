@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/swamp/compiler/src/parser"
+
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -81,8 +83,12 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 
 func (d *Decorator) ImportModule(moduleType decorated.ModuleType, importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag verbosity.Verbosity) (*decorated.ImportStatement, decshared.DecoratedError) {
 	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(moduleType, relativeModuleName, verboseFlag)
+	var errors []decshared.DecoratedError
 	if importErr != nil {
-		return nil, importErr
+		if parser.IsCompileErr(importErr) {
+			return nil, importErr
+		}
+		errors = append(errors, importErr)
 	}
 
 	if moduleToImport == nil {
@@ -99,8 +105,18 @@ func (d *Decorator) ImportModule(moduleType decorated.ModuleType, importAst *ast
 
 	importModuleErr := d.Import(importStatement)
 	if importModuleErr != nil {
-		return nil, decorated.NewInternalError(importModuleErr)
+		if parser.IsCompileErr(importErr) {
+			return nil, decorated.NewInternalError(importModuleErr)
+		}
+
+		errors = append(errors, importErr)
 	}
 
-	return importStatement, nil
+	var returnErr decshared.DecoratedError
+
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return importStatement, returnErr
 }

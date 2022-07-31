@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/swamp/compiler/src/parser"
+
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -59,7 +61,9 @@ func (l *Loader) Load(relativeModuleName dectype.PackageRelativeModuleName, verb
 
 	str, err := l.documentProvider.ReadDocument(completeDocumentFilename)
 	if err != nil {
-		return "", "", decorated.NewModuleNotFoundInDocumentProvider(relativeModuleName, string(completeDocumentFilename), err)
+		if parser.IsCompileErr(err) {
+			return "", "", decorated.NewModuleNotFoundInDocumentProvider(relativeModuleName, string(completeDocumentFilename), err)
+		}
 	}
 
 	return fullPath, str, nil

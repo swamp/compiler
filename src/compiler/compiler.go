@@ -7,6 +7,11 @@ package swampcompiler
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path"
+	"path/filepath"
+
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -21,10 +26,6 @@ import (
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/solution"
 	"github.com/swamp/compiler/src/verbosity"
-	"log"
-	"os"
-	"path"
-	"path/filepath"
 )
 
 func CheckUnused(world *loader.Package) []decshared.DecoratedError {
@@ -89,11 +90,11 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				compiledPackage, err := CompileAndLink(gen, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, enforceStyle, verboseFlag)
-				if err != nil {
-					errors = append(errors, err)
+				compiledPackage, compileAndLinkErr := CompileAndLink(gen, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, enforceStyle, verboseFlag)
+				if compileAndLinkErr != nil {
+					errors = append(errors, compileAndLinkErr)
 				}
-				if parser.IsCompileError(err) {
+				if parser.IsCompileError(compileAndLinkErr) {
 					return packages, decorated.NewMultiErrors(errors)
 				}
 
@@ -167,25 +168,32 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	libraryReader := loader.NewLibraryReaderAndDecorator()
 	libraryModule, libErr := libraryReader.ReadLibraryModule(decorated.ModuleTypeNormal, world, rootPackage.repository, mainSourceFile, mainNamespace, documentProvider, configuration)
 	if libErr != nil {
-		return nil, nil, libErr
+		if parser.IsCompileErr(libErr) {
+			return nil, nil, libErr
+		}
 	}
 	// color.Cyan(fmt.Sprintf("=> importing package %v as top package", mainPrefix))
 
 	unusedErrors := CheckUnused(world)
-	var returnErr decshared.DecoratedError
-	if len(unusedErrors) > 0 {
-		returnErr = decorated.NewMultiErrors(unusedErrors)
+	if libErr != nil {
+		unusedErrors = append(unusedErrors, libErr)
 	}
 
 	rootModule, err := deccy.CreateDefaultRootModule(true)
 	if err != nil {
-		return nil, nil, err
+		if parser.IsCompileError(err) {
+			return nil, nil, err
+		}
+		unusedErrors = append(unusedErrors, err)
 	}
 	for _, importedRootSubModule := range rootModule.ImportedModules().AllInOrderModules() {
 		world.AddModule(importedRootSubModule.ReferencedModule().FullyQualifiedModuleName(), importedRootSubModule.ReferencedModule())
 	}
 	// world.AddModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), rootModule)
-
+	var returnErr decshared.DecoratedError
+	if len(unusedErrors) > 0 {
+		returnErr = decorated.NewMultiErrors(unusedErrors)
+	}
 	return world, libraryModule, returnErr
 }
 
@@ -252,6 +260,9 @@ func CompileAndLink(gen generate.Generator, resourceNameLookup resourceid.Resour
 	}
 	if compileErr != nil {
 		errors = append(errors, compileErr)
+	}
+	if compiledPackage == nil {
+		panic("not possible")
 	}
 
 	linkErr := GenerateAndLink(gen, resourceNameLookup, compiledPackage, outputFilename, name, verboseFlag)

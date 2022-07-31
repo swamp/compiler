@@ -8,6 +8,8 @@ package loader
 import (
 	"log"
 
+	"github.com/swamp/compiler/src/parser"
+
 	"github.com/swamp/compiler/src/ast"
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -76,6 +78,8 @@ func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleTyp
 	if l.isReadingModule(packageRelativeModuleName) {
 		return nil, decorated.NewCircularDependencyDetected(packageRelativeModuleName, l.resolutionModules, artifactFullyModuleName)
 	}
+
+	var errors []decshared.DecoratedError
 	l.resolutionModules = append(l.resolutionModules, packageRelativeModuleName)
 	readModule, readModuleErr := l.moduleReader.ReadModule(moduleType, l, packageRelativeModuleName, l.moduleNamespace)
 	if readModuleErr != nil {
@@ -83,13 +87,21 @@ func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleTyp
 		if isModuleErrAlready {
 			return nil, readModuleErr
 		}
-		return nil, decorated.NewModuleError(artifactFullyModuleName.String()+".swamp", readModuleErr)
+		if parser.IsCompileErr(readModuleErr) {
+			return nil, decorated.NewModuleError(artifactFullyModuleName.String()+".swamp", readModuleErr)
+		}
+		errors = append(errors, readModuleErr)
 	}
 	l.world.AddModule(artifactFullyModuleName, readModule)
 
 	l.resolutionModules = remove(l.resolutionModules, packageRelativeModuleName)
 
-	return readModule, nil
+	var returnErr decshared.DecoratedError
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return readModule, returnErr
 }
 
 func (l *ModuleRepository) FetchModuleInPackage(parentModuleType decorated.ModuleType, packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
@@ -104,11 +116,13 @@ func (l *ModuleRepository) FetchMainModuleInPackage(moduleType decorated.ModuleT
 
 	x, err := l.FetchModuleInPackageEx(moduleType, artifactFullyModuleName, emptyPackageRelativeModuleName, verboseFlag)
 	if err != nil {
-		return nil, err
+		if parser.IsCompileError(err) {
+			return nil, err
+		}
 	}
 
 	x.LocalDefinitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("main", token.SourceFileReference{}, 0)))
 	x.LocalDefinitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("init", token.SourceFileReference{}, 0)))
 
-	return x, nil
+	return x, err
 }

@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/swamp/compiler/src/parser"
+
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -78,6 +80,8 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 		}
 	}
 
+	var errors []decshared.DecoratedError
+
 	for _, packagePath := range foundSettings.Module {
 		dependencyFilePrefix := packagePath.Path
 		if !filepath.IsAbs(packagePath.Path) {
@@ -96,11 +100,20 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 		}
 		_, moduleErr := r.ReadLibraryModule(ModuleTypeFromMapped(packagePath.Mapped), world, repository, dependencyFilePrefix, rootNamespace, documentProvider, configuration)
 		if moduleErr != nil {
-			return moduleErr
+			if parser.IsCompileError(moduleErr) {
+				return moduleErr
+			}
+			errors = append(errors, moduleErr)
 		}
 	}
 
-	return nil
+	var returnErr decshared.DecoratedError
+
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return returnErr
 }
 
 func (r *LibraryReaderAndDecorator) ReadLibraryModule(moduleType decorated.ModuleType, world *Package, repository deccy.ModuleRepository, absoluteDirectory string, namespacePrefix dectype.PackageRootModuleName, documentProvider DocumentProvider, configuration environment.Environment) (*decorated.Module, decshared.DecoratedError) {
@@ -113,15 +126,23 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(moduleType decorated.Modul
 	}
 	const enforceStyle = true
 
+	var errors []decshared.DecoratedError
+
 	if err := r.loadAndApplySettings(world, repository, absoluteDirectory, documentProvider, configuration, verboseFlag); err != nil {
-		return nil, err
+		if parser.IsCompileErr(err) {
+			return nil, err
+		}
+		errors = append(errors, err)
 	}
 
 	fileLoader := NewLoader(absoluteDirectory, documentProvider)
 
 	worldDecorator, worldDecoratorErr := NewWorldDecorator(enforceStyle, verboseFlag)
 	if worldDecoratorErr != nil {
-		return nil, nil
+		if parser.IsCompileErr(worldDecoratorErr) {
+			return nil, worldDecoratorErr
+		}
+		errors = append(errors, worldDecoratorErr)
 	}
 
 	moduleReader := NewModuleReaderAndDecorator(fileLoader, worldDecorator)
@@ -130,7 +151,21 @@ func (r *LibraryReaderAndDecorator) ReadLibraryModule(moduleType decorated.Modul
 	// green := color.New(color.FgHiGreen)
 	// green.Fprintf(os.Stderr, "* compiling library '%v' {%v}\n", absoluteDirectory, namespacePrefix)
 
-	return newRepository.FetchMainModuleInPackage(moduleType, verboseFlag)
+	fetchedModule, fetchErr := newRepository.FetchMainModuleInPackage(moduleType, verboseFlag)
+	if fetchErr != nil {
+		if parser.IsCompileErr(fetchErr) {
+			return nil, fetchErr
+		}
+		errors = append(errors, fetchErr)
+	}
+
+	var returnErr decshared.DecoratedError
+
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
+
+	return fetchedModule, returnErr
 }
 
 func (r *LibraryReaderAndDecorator) CompileAllInLibrary(moduleType decorated.ModuleType, world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration environment.Environment) (*Package, decshared.DecoratedError) {
@@ -162,10 +197,12 @@ func (r *LibraryReaderAndDecorator) CompileAllInLibrary(moduleType decorated.Mod
 
 	_, err := newRepository.FetchMainModuleInPackage(moduleType, verboseFlag)
 	if err != nil {
-		return nil, err
+		if parser.IsCompileErr(err) {
+			return nil, err
+		}
 	}
 
-	return world, nil
+	return world, err
 }
 
 func (r *LibraryReaderAndDecorator) CompileAllInLibraryFindSettings(moduleType decorated.ModuleType, world *Package, repository deccy.ModuleRepository, absoluteDirectory string, documentProvider DocumentProvider, namespacePrefix dectype.PackageRootModuleName, configuration environment.Environment) (*Package, decshared.DecoratedError) {

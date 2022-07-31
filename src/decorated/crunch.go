@@ -135,8 +135,12 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	moduleName dectype.ArtifactFullyQualifiedModuleName, absoluteFilename string, code string,
 	enforceStyle bool, verbose verbosity.Verbosity, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
 	tokenizer, program, programErr := InternalCompileToProgram(absoluteFilename, code, enforceStyle, verbose)
-	if parser.IsCompileError(programErr) {
-		return nil, programErr
+	var errors []decshared.DecoratedError
+	if programErr != nil {
+		errors = append(errors, programErr)
+		if parser.IsCompileError(programErr) {
+			return nil, programErr
+		}
 	}
 
 	module := decorated.NewModule(moduleType, moduleName, tokenizer.Document())
@@ -149,7 +153,10 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	fakeImportStatement := decorated.NewImport(i, fakeModuleReference, fakeModuleReference, exposeAllImports)
 	importErr := ImportModuleToModule(module, fakeImportStatement)
 	if importErr != nil {
-		return nil, decorated.NewInternalError(importErr)
+		if parser.IsCompileErr(importErr) {
+			return nil, decorated.NewInternalError(importErr)
+		}
+		errors = append(errors, decorated.NewInternalError(importErr))
 	}
 
 	for _, importedSubModule := range rootModule.ImportedModules().AllInOrderModules() {
@@ -166,21 +173,23 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	converter := NewDecorator(moduleRepository, module, createAndLookup)
 
 	rootStatementHandler := decorator.NewRootStatementHandler(converter, createAndLookup, moduleType, "compiletomodule")
-	var allErrors []decshared.DecoratedError
+	if programErr != nil {
+		if parser.IsCompileErr(programErr) {
+			return nil, programErr
+		}
+		errors = append(errors, programErr)
+	}
 	rootNodes, generateErr := rootStatementHandler.HandleStatements(program)
 	if generateErr != nil {
-		allErrors = append(allErrors, generateErr)
+		if parser.IsCompileErr(generateErr) {
+			return nil, generateErr
+		}
+		errors = append(errors, generateErr)
 	}
-	allErrors = append(allErrors, converter.Errors()...)
+	errors = append(errors, converter.Errors()...)
 
 	//importErrors := checkUnusedImports(module)
 	//allErrors = append(allErrors, importErrors...)
-
-	var returnErr decshared.DecoratedError
-
-	if len(allErrors) > 0 {
-		returnErr = decorated.NewMultiErrors(allErrors)
-	}
 
 	// log.Printf("before EXPOSING LOCAL TYPES:%v\n", module.ExposedTypes().DebugString())
 	module.ExposedTypes().AddTypesFromModule(module.LocalTypes().AllInOrderTypes(), module)
@@ -190,8 +199,8 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 
 	var rootNodesConverted []decorated.Node
 	for _, rootNode := range rootNodes {
-		converted, couldConver := rootNode.(decorated.Node)
-		if !couldConver {
+		converted, couldConvert := rootNode.(decorated.Node)
+		if !couldConvert {
 			panic(fmt.Sprintf("can not convert %T", rootNode))
 		}
 		if converted == nil || reflect.ValueOf(converted).IsNil() {
@@ -201,6 +210,11 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	}
 	module.SetRootNodes(rootNodesConverted)
 
+	var returnErr decshared.DecoratedError
+
+	if len(errors) > 0 {
+		returnErr = decorated.NewMultiErrors(errors)
+	}
 	return module, returnErr
 }
 
