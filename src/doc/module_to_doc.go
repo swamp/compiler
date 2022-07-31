@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Peter Bjorklund. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 package doc
 
 import (
@@ -119,18 +124,7 @@ func shouldIncludeCommentBlock(commentBlock *ast.MultilineComment) bool {
 	return commentBlock != nil && commentBlock.Token().ForDocumentation
 }
 
-/*
-func sortTypeKeys(types []decorated.NamedType) []string {
-	keys := make([]string, 0, len(types))
-	for k := range types {
-		keys = append(keys, x)
-	}
-	sort.Strings(keys)
 
-	return keys
-}
-
-*/
 
 func sortFunctionKeys(functions map[*decorated.FullyQualifiedPackageVariableName]*decorated.FunctionValue) []*decorated.FullyQualifiedPackageVariableName {
 	keys := make([]*decorated.FullyQualifiedPackageVariableName, 0, len(functions))
