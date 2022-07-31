@@ -114,11 +114,11 @@ fn _ =
 
 main : Int
 main =
-    fn 23 "hello" 42.0
+    fn 23.0 "hello" 42
 `,
 		`
-[mdefx $fn = [functionvalue ([[arg $a = [anymatching types AnyMatchingType]]]) -> [integer 23]]]
-[mdefx $main = [functionvalue ([]) -> [fcall [functionref named definition reference [functionvalue ([[arg $a = [anymatching types AnyMatchingType]]]) -> [integer 23]]] [[integer 23] [str hello] [integer 42000]]]]]
+[ModuleDef $fn = [FunctionValue ([[Arg $_ : [AnyMatching AnyMatchingType]]]) -> [Integer 23]]]
+[ModuleDef $main = [FunctionValue ([]) -> [FnCall [FunctionRef [NamedDefinitionReference /fn]] [[Fixed 23000] [String hello] [Integer 42]]]]]
 `)
 }
 
@@ -388,16 +388,16 @@ second b =
 `, parerr.ExpectedTwoLinesAfterStatement{})
 }
 
-func TestSimpleErr(t *testing.T) {
+func TestSimpleCallParameterErrFail(t *testing.T) {
 	testDecorateFail(t,
 		`
 someFunc : Int -> String
-someFunc name =
+someFunc _ =
     "2"
 
 
 another : Int -> String
-another ignore =
+another _ =
     someFunc "2"
 `,
 		&decorated.FunctionArgumentTypeMismatch{})
@@ -572,7 +572,7 @@ tester b =
 `)
 }
 
-func TestBasicStringInterpolation(t *testing.T) {
+func xTestBasicStringInterpolation(t *testing.T) {
 	testDecorate(t,
 		`
 sample : Int -> String
@@ -651,15 +651,11 @@ moveSprite : Sprite -> Position -> Sprite
 moveSprite sprite delta =
     { rootPosition = move sprite.rootPosition delta }
 `, `
-{x:Int;y:Int} : [record-type  [record-field x [primitive Int]] [record-field y [primitive Int]]]
-Position : [alias Position {x:Int;y:Int}]
-{rootPosition:Position} : [record-type  [record-field rootPosition [alias Position {x:Int;y:Int}]]]
-Sprite : [alias Sprite {rootPosition:Position}]
-func(Position -> Position -> Position) : [func  [alias Position {x:Int;y:Int}] [alias Position {x:Int;y:Int}] [alias Position {x:Int;y:Int}]]
-func(Sprite -> Position -> Sprite) : [func  [alias Sprite {rootPosition:Position}] [alias Position {x:Int;y:Int}] [alias Sprite {rootPosition:Position}]]
+Position : [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]] => [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]
+Sprite : [Alias Sprite [RecordType [[RecordTypeField $rootPosition [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]] (0)]][]]] => [RecordType [[RecordTypeField $rootPosition [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]] (0)]][]]
 
-move = [functionvalue ([[arg $pos = [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]]] [arg $delta = [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]]]]) -> [let [[letassign $newX = (arithmetic [lookups [lookupvar $pos ([alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]])] [[lookup [record-type-field x [primitive Int] (0)]]]] PLUS [lookups [lookupvar $delta ([alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]])] [[lookup [record-type-field x [primitive Int] (0)]]]])] [letassign $newY = (arithmetic [lookups [lookupvar $pos ([alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]])] [[lookup [record-type-field y [primitive Int] (1)]]]] PLUS [lookups [lookupvar $delta ([alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]])] [[lookup [record-type-field y [primitive Int] (1)]]]])]] in [record-literal record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]] [0 = [getvar $newX [primitive Int]] 1 = [getvar $newY [primitive Int]]]]]]
-moveSprite = [functionvalue ([[arg $sprite = [alias Sprite record-type [[record-type-field rootPosition [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]] (0)]]]]] [arg $delta = [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]]]]) -> [record-literal record-type [[record-type-field rootPosition [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]] (0)]]] [0 = [fcall [getvar $move [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]]] [[lookups [lookupvar $sprite ([alias Sprite record-type [[record-type-field rootPosition [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]] (0)]]]])] [[lookup [record-type-field rootPosition [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]] (0)]]]] [getvar $delta [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]]]]]]]]
+[ModuleDef $move = [FunctionValue ([[Arg $pos : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]] [Arg $delta : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]]) -> [Let [[LetAssign [[LetVar $newX]] = (Arithmetic [lookups [FunctionParamRef [Arg $pos : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]] [[lookup [RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]] PLUS [lookups [FunctionParamRef [Arg $delta : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]] [[lookup [RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]])] [LetAssign [[LetVar $newY]] = (Arithmetic [lookups [FunctionParamRef [Arg $pos : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]] [[lookup [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]] PLUS [lookups [FunctionParamRef [Arg $delta : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]] [[lookup [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]])]] in [RecordLiteral [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]] [0 = [LetVarRef [LetVar $newX]] 1 = [LetVarRef [LetVar $newY]]]]]]]
+[ModuleDef $moveSprite = [FunctionValue ([[Arg $sprite : [AliasRef [Alias Sprite [RecordType [[RecordTypeField $rootPosition [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]] (0)]][]]]]] [Arg $delta : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]]) -> [RecordLiteral [RecordType [[RecordTypeField $rootPosition [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]] (0)]][]] [0 = [FnCall [FunctionRef [NamedDefinitionReference /move]] [[lookups [FunctionParamRef [Arg $sprite : [AliasRef [Alias Sprite [RecordType [[RecordTypeField $rootPosition [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]] (0)]][]]]]]] [[lookup [RecordTypeField $rootPosition [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]] (0)]]]] [FunctionParamRef [Arg $delta : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]]]]]]]]
 `)
 }
 
@@ -886,11 +882,9 @@ getx : Position -> Int
 getx pos =
     pos.x + pos.y
 `, `
-{x:Int;y:Int} : [record-type  [record-field x [primitive Int]] [record-field y [primitive Int]]]
-Position : [alias Position {x:Int;y:Int}]
-func(Position -> Int) : [func  [alias Position {x:Int;y:Int}] [primitive Int]]
+Position : [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]] => [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]
 
-getx = [functionvalue ([[arg $pos = [alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]]]]) -> (arithmetic [lookups [lookupvar $pos ([alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]])] [[lookup [record-type-field x [primitive Int] (0)]]]] PLUS [lookups [lookupvar $pos ([alias Position record-type [[record-type-field x [primitive Int] (0)] [record-type-field y [primitive Int] (1)]]]])] [[lookup [record-type-field y [primitive Int] (1)]]]])]
+[ModuleDef $getx = [FunctionValue ([[Arg $pos : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]]) -> (Arithmetic [lookups [FunctionParamRef [Arg $pos : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]] [[lookup [RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]] PLUS [lookups [FunctionParamRef [Arg $pos : [AliasRef [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]] [[lookup [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]])]]
 `)
 }
 
@@ -1105,8 +1099,8 @@ another score =
     in
     af score
 `, `
+[ModuleDef $f = [FunctionValue ([[Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Arg $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [If [BoolOp [FunctionParamRef [Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] EQ [String Peter]] then [BoolOp (Arithmetic [FunctionParamRef [Arg $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [Integer 2]) GR [Integer 100]] else [BoolOp [FunctionParamRef [Arg $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] GR [Integer 100]]]]]
 [ModuleDef $another = [FunctionValue ([[Arg $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $af]] = [Curry [FunctionRef [NamedDefinitionReference /f]] [[String Peter]]]]] in [FnCall [LetVarRef [LetVar $af]] [[FunctionParamRef [Arg $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]]]]
-[ModuleDef $f = [FunctionValue ([[Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Arg $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [If [BoolOp [FunctionParamRef [Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] EQ [String Peter]] then [BoolOp (arithmetic [FunctionParamRef [Arg $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [Integer 2]) GR [Integer 100]] else [BoolOp [FunctionParamRef [Arg $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] GR [Integer 100]]]]]
 `)
 }
 
@@ -1125,12 +1119,10 @@ func TestListLiteral2(t *testing.T) {
 	testDecorate(t,
 		`
 a : Bool -> List Int
-a x =
+a _ =
     [ 10, 20, 99 ]
 `, `
-func(Bool -> List<Int>) : [func  [primitive Bool] List<Int>]
-
-a = [functionvalue ([[arg $x = [primitive Bool]]]) -> [ListLiteral List<Int> [[integer 10] [integer 20] [integer 99]]]]
+[ModuleDef $a = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [ListLiteral [[Integer 10] [Integer 20] [Integer 99]]]]]
 `)
 }
 
@@ -1218,18 +1210,16 @@ type alias Cool =
 
 
 a : Bool -> List Cool
-a x =
+a _ =
     [ { name = "hi" }, { name = "another" }, { name = "tjoho" } ]
 `, `
-{name:String} : [record-type  [record-field name [primitive String]]]
-Cool : [alias Cool [record-type  [record-field name [primitive String]]]]
-func(Bool -> List<Cool>) : [func  [primitive Bool] List<Cool>]
+Cool : [Alias Cool [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]][]]] => [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]][]]
 
-a = [functionvalue ([[arg $x = [primitive Bool]]]) -> [ListLiteral List<{name:String}> [[record-literal record-type [[record-type-field name [primitive String] (0)]]] [0 = [str hi]]] [record-literal record-type [[record-type-field name [primitive String] (0)]]] [0 = [str another]]] [record-literal record-type [[record-type-field name [primitive String] (0)]]] [0 = [str tjoho]]]]]]
+[ModuleDef $a = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [ListLiteral [[RecordLiteral [RecordType [[RecordTypeField $name [Primitive String] (0)]][]] [0 = [String hi]]] [RecordLiteral [RecordType [[RecordTypeField $name [Primitive String] (0)]][]] [0 = [String another]]] [RecordLiteral [RecordType [[RecordTypeField $name [Primitive String] (0)]][]] [0 = [String tjoho]]]]]]]
 `)
 }
 
-func TestFailListLiteral4(t *testing.T) {
+func TestListLiteral4Fail(t *testing.T) {
 	testDecorateFail(t,
 		`
 type alias Cool =
@@ -1297,7 +1287,7 @@ Cool : [Alias Cool [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedD
 `)
 }
 
-func TestRecordConstructorValuesWrong(t *testing.T) {
+func TestRecordConstructorValuesFail(t *testing.T) {
 	testDecorateFail(t,
 		`
 type alias Cool =
@@ -1324,12 +1314,11 @@ some a =
     case a of
         _ -> ""
 `, `
-First : [variantconstr [variant $First]]
-Second : [variantconstr [variant $Second]]
-CustomType : [custom-type  [variant $First] [variant $Second]]
-func(CustomType -> String) : [func  [custom-type  [variant $First] [variant $Second]] [primitive String]]
+CustomType : [CustomType CustomType [[Variant $First []] [Variant $Second []]]]
+First : [Variant $First []]
+Second : [Variant $Second []]
 
-some = [functionvalue ([[arg $a = [custom-type [[variant $First] [variant $Second]]]]]) -> [dcase: [getvar $a [custom-type [[variant $First] [variant $Second]]]] of  default: [str ]]]
+[ModuleDef $some = [FunctionValue ([[Arg $a : [VariantRef [NamedDefTypeRef :[TypeReference $CustomType]]]]]) -> [PMCase: [FunctionParamRef [Arg $a : [VariantRef [NamedDefTypeRef :[TypeReference $CustomType]]]]] of  default: [String ]]]]
 `)
 }
 
@@ -1367,20 +1356,17 @@ some child =
 
         _ -> ""
 `, `
-{solder:Bool} : [record-type  [record-field solder [primitive Bool]]]
-Tinkering : [alias Tinkering {solder:Bool}]
-{subject:String} : [record-type  [record-field subject [primitive String]]]
-Studying : [alias Studying {subject:String}]
-{web:Int} : [record-type  [record-field web [primitive Int]]]
-Work : [alias Work {web:Int}]
-Aron : [variantconstr [variant $Aron [[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]]]
-Alexandra : [variantconstr [variant $Alexandra []]]
-Alma : [variantconstr [variant $Alma [[alias Studying record-type [[record-type-field subject [primitive String] (0)]]]]]]]
-Isabelle : [variantconstr [variant $Isabelle [[alias Work record-type [[record-type-field web [primitive Int] (0)]]]]]]]
-Child : [custom-type  [variant $Aron] [variant $Alexandra] [variant $Alma] [variant $Isabelle]]
-func(Child -> String) : [func  [custom-type  [variant $Aron] [variant $Alexandra] [variant $Alma] [variant $Isabelle]] [primitive String]]
+Tinkering : [Alias Tinkering [RecordType [[RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (0)]][]]] => [RecordType [[RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (0)]][]]
+Studying : [Alias Studying [RecordType [[RecordTypeField $subject [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]][]]] => [RecordType [[RecordTypeField $subject [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]][]]
+Work : [Alias Work [RecordType [[RecordTypeField $web [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]] => [RecordType [[RecordTypeField $web [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]
+Child : [CustomType Child [[Variant $Aron [[AliasRef [Alias Tinkering [RecordType [[RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (0)]][]]]]]] [Variant $Alexandra []] [Variant $Alma [[AliasRef [Alias Studying [RecordType [[RecordTypeField $subject [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]][]]]]]] [Variant $Isabelle [[AliasRef [Alias Work [RecordType [[RecordTypeField $web [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]]]]]]
+Aron : [Variant $Aron [[AliasRef [Alias Tinkering [RecordType [[RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (0)]][]]]]]]
+Alexandra : [Variant $Alexandra []]
+Alma : [Variant $Alma [[AliasRef [Alias Studying [RecordType [[RecordTypeField $subject [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]][]]]]]]
+Isabelle : [Variant $Isabelle [[AliasRef [Alias Work [RecordType [[RecordTypeField $web [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]]]]
 
-some = [functionvalue ([[arg $child = [custom-type [[variant $Aron [[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]] [variant $Alexandra []] [variant $Alma [[alias Studying record-type [[record-type-field subject [primitive String] (0)]]]]]] [variant $Isabelle [[alias Work record-type [[record-type-field web [primitive Int] (0)]]]]]]]]]]) -> [dcase: [getvar $child [custom-type [[variant $Aron [[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]] [variant $Alexandra []] [variant $Alma [[alias Studying record-type [[record-type-field subject [primitive String] (0)]]]]]] [variant $Isabelle [[alias Work record-type [[record-type-field web [primitive Int] (0)]]]]]]]]] of [dcasecons $Aron ([[dcaseparm $x type:[alias Tinkering record-type [[record-type-field solder [primitive Bool] (0)]]]]]]) => [str Aron]];[dcasecons $Alexandra ([]) => [str Alexandris]] default: [str ]]]`)
+[ModuleDef $some = [FunctionValue ([[Arg $child : [VariantRef [NamedDefTypeRef :[TypeReference $Child]]]]]) -> [dcase: [FunctionParamRef [Arg $child : [VariantRef [NamedDefTypeRef :[TypeReference $Child]]]]] of [dcasecons [VariantRef [NamedDefTypeRef :[TypeReference $Aron]] [Variant $Aron [[AliasRef [Alias Tinkering [RecordType [[RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (0)]][]]]]]]] ([[dcaseparm $x type:[AliasRef [Alias Tinkering [RecordType [[RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (0)]][]]]]]]) => [String Aron]];[dcasecons [VariantRef [NamedDefTypeRef :[TypeReference $Alexandra]] [Variant $Alexandra []]] ([]) => [String Alexandris]] default: [String ]]]]
+`)
 }
 
 func TestCaseStringAndDefault(t *testing.T) {
@@ -1457,7 +1443,7 @@ type alias World =
 
 
 updateEnemy : List Enemy -> Bool
-updateEnemy enemies =
+updateEnemy _ =
     True
 
 
@@ -1467,21 +1453,15 @@ updateWorld w =
 
 
 main : Bool -> Bool
-main ignore =
+main _ =
     updateWorld { enemies = [ { values = [ 1, 3 ] } ] }
 `, `
-{values:List<Int>} : [record-type  [record-field values List<Int>]]
-Enemy : [alias Enemy {values:List<Int>}]
-{enemies:List<Enemy>} : [record-type  [record-field enemies List<Enemy>]]
-World : [alias World {enemies:List<Enemy>}]
-func(List<Enemy> -> Bool) : [func  List<Enemy> [primitive Bool]]
-func(World -> Bool) : [func  [alias World {enemies:List<Enemy>}] [primitive Bool]]
-func(Bool -> Bool) : [func  [primitive Bool] [primitive Bool]]
-{enemies:List<{values:List<Int>}>} : [record-type  [record-field enemies [concrcolltypes List [record-type  [record-field values List<Int>]]]]]
+Enemy : [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]] => [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]
+World : [Alias World [RecordType [[RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]][]]] => [RecordType [[RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]][]]
 
-main = [functionvalue ([[arg $ignore = [primitive Bool]]]) -> [fcall [getvar $updateWorld [primitive Bool]] [[record-literal record-type [[record-type-field enemies [concrcolltype [List [a]] [record-type [[record-type-field values List<Int> (0)]]]]] (0)]]] [0 = [ListLiteral List<{values:List<Int>}> [[record-literal record-type [[record-type-field values List<Int> (0)]]] [0 = [ListLiteral List<Int> [[integer 1] [integer 3]]]]]]]]]]]]
-updateEnemy = [functionvalue ([[arg $enemies = List<Enemy>]]) -> [bool true]]
-updateWorld = [functionvalue ([[arg $w = [alias World record-type [[record-type-field enemies List<Enemy> (0)]]]]]]) -> [fcall [getvar $updateEnemy [primitive Bool]] [[lookups [lookupvar $w ([alias World record-type [[record-type-field enemies List<Enemy> (0)]]]])] [[lookup [record-type-field enemies List<Enemy> (0)]]]]]]]
+[ModuleDef $updateEnemy = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]>]]) -> [Bool true]]]
+[ModuleDef $updateWorld = [FunctionValue ([[Arg $w : [AliasRef [Alias World [RecordType [[RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]][]]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /updateEnemy]] [[lookups [FunctionParamRef [Arg $w : [AliasRef [Alias World [RecordType [[RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]][]]]]]] [[lookup [RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]]]]]]]]
+[ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /updateWorld]] [[RecordLiteral [RecordType [[RecordTypeField $enemies [Primitive List<[RecordType [[RecordTypeField $values [Primitive List<[Primitive Int]>] (0)]][]]>] (0)]][]] [0 = [ListLiteral [[RecordLiteral [RecordType [[RecordTypeField $values [Primitive List<[Primitive Int]>] (0)]][]] [0 = [ListLiteral [[Integer 1] [Integer 3]]]]]]]]]]]]]
 `)
 }
 
@@ -1525,7 +1505,8 @@ World : [Alias World [RecordType [[RecordTypeField $drawTasks [PrimitiveTypeRef 
 [ModuleDef $drawSprite = [FunctionValue ([[Arg $_ : [AliasRef [Alias Sprite [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]]]) -> [Bool true]]]
 [ModuleDef $drawSprites = [FunctionValue ([[Arg $sprites : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Sprite [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]>]]) -> [FnCall [FunctionRef [NamedDefinitionReference List/map]] [[FunctionRef [NamedDefinitionReference /drawSprite]] [FunctionParamRef [Arg $sprites : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Sprite [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]>]]]]]]
 [ModuleDef $drawWorld = [FunctionValue ([[Arg $world : [AliasRef [Alias World [RecordType [[RecordTypeField $drawTasks [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Sprite [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]>> (0)]][]]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference List/map]] [[FunctionRef [NamedDefinitionReference /drawSprites]] [lookups [FunctionParamRef [Arg $world : [AliasRef [Alias World [RecordType [[RecordTypeField $drawTasks [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Sprite [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]>> (0)]][]]]]]] [[lookup [RecordTypeField $drawTasks [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Sprite [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]]]>> (0)]]]]]]]]
-[ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /drawWorld]] [[record-literal [RecordType [[RecordTypeField $drawTasks [Primitive List<[Primitive List<[RecordType [[RecordTypeField $x [Primitive Int] (0)] [RecordTypeField $y [Primitive Int] (1)]][]]>]>] (0)]][]] [0 = [ListLiteral [[ListLiteral [[record-literal [RecordType [[RecordTypeField $x [Primitive Int] (0)] [RecordTypeField $y [Primitive Int] (1)]][]] [0 = [Integer 10] 1 = [Integer 20]]] [record-literal [RecordType [[RecordTypeField $x [Primitive Int] (0)] [RecordTypeField $y [Primitive Int] (1)]][]] [0 = [Integer 44] 1 = [Integer 98]]]]] [ListLiteral [[record-literal [RecordType [[RecordTypeField $x [Primitive Int] (0)] [RecordTypeField $y [Primitive Int] (1)]][]] [0 = [Integer 99] 1 = [Integer 98]]]]]]]]]]]]]
+[ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /drawWorld]] [[RecordLiteral [RecordType [[RecordTypeField $drawTasks [Primitive List<[Primitive List<[RecordType [[RecordTypeField $x [Primitive Int] (0)] [RecordTypeField $y [Primitive Int] (1)]][]]>]>] (0)]][]] [0 = [ListLiteral [[ListLiteral [[RecordLiteral [RecordType [[RecordTypeField $x [Primitive Int] (0)] [RecordTypeField $y [Primitive Int] (1)]][]] [0 = [Integer 10] 1 = [Integer 20]]] [RecordLiteral [RecordType [[RecordTypeField $x [Primitive Int] (0)] [RecordTypeField $y [Primitive Int] (1)]][]] [0 = [Integer 44] 1 = [Integer 98]]]]] [ListLiteral [[RecordLiteral [RecordType [[RecordTypeField $x [Primitive Int] (0)] [RecordTypeField $y [Primitive Int] (1)]][]] [0 = [Integer 99] 1 = [Integer 98]]]]]]]]]]]]]
+
 `)
 }
 
@@ -1701,7 +1682,7 @@ checkMaybeInt a b =
 `)
 }
 
-func TestCaseNotCoveredByAllConsequences(t *testing.T) {
+func TestCaseNotCoveredByAllConsequencesFail(t *testing.T) {
 	testDecorateFail(t, //    -- Must include default (_) or Nothing here
 		`
 checkMaybeInt : Maybe Int -> Int
@@ -1712,7 +1693,7 @@ checkMaybeInt a =
 		&decorated.UnhandledCustomTypeVariants{})
 }
 
-func TestCaseCoveredMultipleTimes(t *testing.T) {
+func TestCaseCoveredMultipleTimesFail(t *testing.T) {
 	testDecorateFail(t,
 		`
 checkMaybeInt : Maybe Int -> Int
@@ -1757,7 +1738,7 @@ Thing : [Alias Thing [RecordType [[RecordTypeField $something [PrimitiveTypeRef 
 `)
 }
 
-func TestConsequenceCheck(t *testing.T) {
+func TestConsequenceCheckFail(t *testing.T) {
 	testDecorateFail(t, `
 type Direction =
     NotMoving
@@ -1788,7 +1769,7 @@ isVertical direction =
 `, &decorated.UnMatchingTypesExpression{})
 }
 
-func TestConsequenceCheck3(t *testing.T) {
+func TestConsequenceCheck3Fail(t *testing.T) {
 	testDecorateFail(t, `
 type Direction =
     NotMoving
@@ -1822,7 +1803,7 @@ isVertical direction =
 `, &decorated.UnMatchingTypesExpression{})
 }
 
-func TestConsequenceCheck2(t *testing.T) {
+func TestConsequenceCheck2Fail(t *testing.T) {
 	testDecorateFail(t, `
 type Direction =
     NotMoving

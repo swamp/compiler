@@ -72,7 +72,7 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 
 		return decorated.NewConstantReference(nameWithModuleRef, t), nil
 	default:
-		log.Printf("NO IDEA '%v'\n", name)
+		log.Printf("ReferenceFromVariable: Not handled '%v'", name)
 		return nil, decorated.NewInternalError(fmt.Errorf("what to do with '%v' => %T", name, t))
 	}
 }
