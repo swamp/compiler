@@ -51,7 +51,18 @@ func (u *FunctionAtom) ReturnType() dtype.Type {
 }
 
 func (u *FunctionAtom) Resolve() (dtype.Atom, error) {
-	return u, nil
+	var converted []dtype.Type
+
+	for _, param := range u.parameterTypes {
+		convertedParam, err := param.Resolve()
+		if err != nil {
+			return nil, err
+		}
+		converted = append(converted, convertedParam.(dtype.Type))
+	}
+
+	newType := NewFunctionAtom(u.astFunctionType, converted)
+	return newType, nil
 }
 
 func (u *FunctionAtom) Next() dtype.Type {

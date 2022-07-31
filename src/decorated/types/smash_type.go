@@ -207,7 +207,6 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 		otherVariant := other.Variants()[index]
 		convertedVariant, convertedErr := fillContextFromCustomTypeVariant2(context, originalVariant, otherVariant)
 		if convertedErr != nil {
-			panic(convertedErr)
 			return nil, convertedErr
 		}
 		wasConverted = true

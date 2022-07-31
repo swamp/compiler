@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 
+	decorated "github.com/swamp/compiler/src/decorated/expression"
+
 	"github.com/swamp/compiler/src/decorated/decshared"
 )
 
@@ -90,6 +92,16 @@ func testDecorateFail(t *testing.T, code string, expectedError interface{}) {
 		t.Errorf("it was supposed to fail, but didn't")
 		return
 	}
+
+	multiErr, wasMultiErr := testErr.(*decorated.MultiErrors)
+	if wasMultiErr {
+		errorSlice := multiErr.Errors()
+		if len(errorSlice) > 1 {
+			t.Errorf("too many errors returned")
+		}
+		testErr = errorSlice[0]
+	}
+
 	isSameErr := reflect.TypeOf(expectedError) == reflect.TypeOf(testErr)
 	if !isSameErr {
 		t.Errorf("unexpected fail: %v %T but expected %T", testErr, testErr, expectedError)

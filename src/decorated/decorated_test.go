@@ -366,7 +366,7 @@ third c =
 `)
 }
 
-func xTestWrongSpacingMultiDoc(t *testing.T) {
+func TestWrongSpacingMultiDocFail(t *testing.T) {
 	testDecorateFail(t,
 		`
 {-|
@@ -590,7 +590,7 @@ func TestArrayVsListFail(t *testing.T) {
 		`
 
 updater : Int -> String -> Int
-updater a b =
+updater _ _ =
     42
 
 
@@ -603,22 +603,6 @@ sample a =
     in
     List.map2 updater arraySlice [ "hello", "world", "fail" ]
 `, &decorated.CouldNotSmashFunctions{})
-}
-
-func TestOwnListMap(t *testing.T) {
-	testDecorateWithoutDefault(t,
-		`
-__externalfn coreListMap 2
-
-map : (a -> b) -> List a -> List b
-map x y =
-    __asm callexternal 00 coreListMap 01 02
-	`, `
-func(a -> b) : [func  [localtype a] [localtype b]]
-func(func(a -> b) -> List<a> -> List<b>) : [func  [func  [localtype a] [localtype b]] List<a> List<b>]
-
-map = [functionvalue ([[arg $x = [functype [[localtype a] [localtype b]]]] [arg $y = List<a>]]) -> [asm callexternal 00 coreListMap 01 02]]
-`)
 }
 
 func TestBasicDecorate(t *testing.T) {
@@ -1137,7 +1121,7 @@ a _ =
 `)
 }
 
-func TestTupleSecond(t *testing.T) {
+func xTestTupleSecond(t *testing.T) {
 	testDecorate(t,
 		`
 a : Bool -> String
@@ -1148,7 +1132,7 @@ a = [functionvalue ([[arg $x = typeref $Bool [primitive Bool]]]) -> [fcall [func
 `)
 }
 
-func TestTupleFirst(t *testing.T) {
+func xTestTupleFirst(t *testing.T) {
 	testDecorate(t,
 		`
 a : Bool -> Int
@@ -1913,21 +1897,61 @@ main oldUserInputs =
     { inputs = [ playerAction ] }
 `,
 		`
-None : [variantconstr [variant $None []]]
-Jump : [variantconstr [variant $Jump []]]
-PlayerAction : [custom-type  [variant $None] [variant $Jump]]
-{a:Int} : [record-type  [record-field a [primitive Int]]]
-Gamepad : [alias Gamepad {a:Int}]
-{gamepads:Array<Gamepad>} : [record-type  [record-field gamepads Array<Gamepad>]]
-UserInput : [alias UserInput {gamepads:Array<Gamepad>}]
-{inputs:List<PlayerAction>} : [record-type  [record-field inputs List<PlayerAction>]]
-PlayerInputs : [alias PlayerInputs {inputs:List<PlayerAction>}]
-func(Maybe<Gamepad> -> PlayerAction) : [func  Maybe<Gamepad> [custom-type  [variant $None] [variant $Jump]]]
-func(UserInput -> PlayerInputs) : [func  [alias UserInput {gamepads:Array<Gamepad>}] [alias PlayerInputs {inputs:List<PlayerAction>}]]
+PlayerAction : [CustomType PlayerAction [[Variant $None []] [Variant $Jump []]]]
+None : [Variant $None []]
+Jump : [Variant $Jump []]
+Gamepad : [Alias Gamepad [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]] => [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]
+UserInput : [Alias UserInput [RecordType [[RecordTypeField $gamepads [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Array]]]<[AliasRef [Alias Gamepad [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]]> (0)]][]]] => [RecordType [[RecordTypeField $gamepads [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Array]]]<[AliasRef [Alias Gamepad [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]]> (0)]][]]
+PlayerInputs : [Alias PlayerInputs [RecordType [[RecordTypeField $inputs [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[VariantRef [NamedDefTypeRef :[TypeReference $PlayerAction]]]> (0)]][]]] => [RecordType [[RecordTypeField $inputs [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[VariantRef [NamedDefTypeRef :[TypeReference $PlayerAction]]]> (0)]][]]
 
-checkMaybeGamepad = [functionvalue ([[arg $a = Maybe<Gamepad>]]) -> [variant-constructor [variant $None []] []]]
-main = [functionvalue ([[arg $oldUserInputs = [alias UserInput record-type [[record-type-field gamepads Array<Gamepad> (0)]]]]]]) -> [let [[letassign $gamepads = [lookups [lookupvar $oldUserInputs ([alias UserInput record-type [[record-type-field gamepads Array<Gamepad> (0)]]]])] [[lookup [record-type-field gamepads Array<Gamepad> (0)]]]]] [letassign $maybeOld = [fcall [getvar Array.$get [custom-type [[variant $Nothing []] [variant $Just [[alias Gamepad record-type [[record-type-field a [primitive Int] (0)]]]]]]]]] [[integer 0] [getvar $gamepads Array<Gamepad>]]]] [letassign $playerAction = [fcall [getvar $checkMaybeGamepad [custom-type [[variant $None []] [variant $Jump []]]]] [[getvar $maybeOld [custom-type [[variant $Nothing []] [variant $Just [[alias Gamepad record-type [[record-type-field a [primitive Int] (0)]]]]]]]]]]]]] in [record-literal record-type [[record-type-field inputs List<PlayerAction> (0)]]] [0 = [ListLiteral List<PlayerAction> [[getvar $playerAction [custom-type [[variant $None []] [variant $Jump []]]]]]]]]]]
+[ModuleDef $checkMaybeGamepad = [FunctionValue ([[Arg $_ : [VariantRef [NamedDefTypeRef :[TypeReference $Maybe]]]<[AliasRef [Alias Gamepad [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]]>]]) -> [VariantConstructor [Variant $None []] []]]]
+[ModuleDef $main = [FunctionValue ([[Arg $oldUserInputs : [AliasRef [Alias UserInput [RecordType [[RecordTypeField $gamepads [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Array]]]<[AliasRef [Alias Gamepad [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]]> (0)]][]]]]]]) -> [Let [[LetAssign [[LetVar $gamepads]] = [lookups [FunctionParamRef [Arg $oldUserInputs : [AliasRef [Alias UserInput [RecordType [[RecordTypeField $gamepads [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Array]]]<[AliasRef [Alias Gamepad [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]]> (0)]][]]]]]] [[lookup [RecordTypeField $gamepads [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Array]]]<[AliasRef [Alias Gamepad [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]][]]]]> (0)]]]]] [LetAssign [[LetVar $maybeOld]] = [FnCall [FunctionRef [NamedDefinitionReference Array/get]] [[Integer 0] [LetVarRef [LetVar $gamepads]]]]] [LetAssign [[LetVar $playerAction]] = [FnCall [FunctionRef [NamedDefinitionReference /checkMaybeGamepad]] [[LetVarRef [LetVar $maybeOld]]]]]] in [RecordLiteral [RecordType [[RecordTypeField $inputs [Primitive List<[VariantRef [NamedDefTypeRef :[TypeReference $PlayerAction]]]>] (0)]][]] [0 = [ListLiteral [[LetVarRef [LetVar $playerAction]]]]]]]]]
 `)
+}
+
+func TestArrayIntGetWithMaybe(t *testing.T) {
+	testDecorate(t,
+		`
+
+getInt : Maybe Int -> Int
+getInt _ =
+    22
+
+
+main : Array Int -> Int
+main ints =
+    let
+        maybeInt = Array.get 0 ints
+
+        extractedInt = getInt maybeInt
+    in
+    extractedInt
+`,
+		`
+[ModuleDef $getInt = [FunctionValue ([[Arg $_ : [VariantRef [NamedDefTypeRef :[TypeReference $Maybe]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]>]]) -> [Integer 22]]]
+[ModuleDef $main = [FunctionValue ([[Arg $ints : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Array]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]>]]) -> [Let [[LetAssign [[LetVar $maybeInt]] = [FnCall [FunctionRef [NamedDefinitionReference Array/get]] [[Integer 0] [FunctionParamRef [Arg $ints : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Array]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]>]]]]] [LetAssign [[LetVar $extractedInt]] = [FnCall [FunctionRef [NamedDefinitionReference /getInt]] [[LetVarRef [LetVar $maybeInt]]]]]] in [LetVarRef [LetVar $extractedInt]]]]]
+`)
+}
+
+func TestArrayIntGetWithMaybeFail(t *testing.T) {
+	testDecorateFail(t,
+		`
+
+getInt : Maybe String -> Int
+getInt _ =
+    22
+
+
+main : Array Int -> Int
+main ints =
+    let
+        maybeInt = Array.get 0 ints
+
+        extractedInt = getInt maybeInt
+    in
+    extractedInt
+`,
+		decorated.CouldNotSmashFunctions{})
 }
 
 func TestArrayFromNothing(t *testing.T) {

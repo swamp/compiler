@@ -238,8 +238,9 @@ func compareCustomType(u *CustomTypeAtom, other *CustomTypeAtom) error {
 	}
 
 	for index, param := range u.parameters {
-		if param != otherParameters[index] {
-			return fmt.Errorf("different generics %v %v", param, otherParameters[index])
+		equalErr := CompatibleTypes(param, otherParameters[index])
+		if equalErr != nil {
+			return fmt.Errorf("different generics %v %v %v", param, otherParameters[index], equalErr)
 		}
 	}
 

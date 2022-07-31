@@ -611,7 +611,7 @@ func NewFunctionCallTypeMismatch(err error, call *ast.FunctionCall, expected *de
 }
 
 func (e *FunctionCallTypeMismatch) Error() string {
-	return fmt.Sprintf("mismatch function type %v\n %v vs %v\n%v\n", e.err, e.expected.HumanReadable(), e.encountered.HumanReadable(), e.call)
+	return fmt.Sprintf("mismatch function type expected %v\n %v vs encountered: %v\n%v\n", e.err, e.expected.HumanReadable(), e.encountered.HumanReadable(), e.call)
 }
 
 func (e *FunctionCallTypeMismatch) FetchPositionLength() token.SourceFileReference {
