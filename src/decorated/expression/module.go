@@ -95,7 +95,6 @@ type Module struct {
 	rootNodes                []Node
 	nodes                    []TypeOrToken
 	references               []*ModuleReference
-	errors                   []decshared.DecoratedError
 	moduleType               ModuleType
 }
 

@@ -240,27 +240,18 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 
 func CompileAndLink(gen generate.Generator, resourceNameLookup resourceid.ResourceNameLookup, configuration environment.Environment, name string,
 	filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
-	var errors []decshared.DecoratedError
+	var errors decshared.DecoratedError
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
 	if parser.IsCompileError(compileErr) {
 		return nil, compileErr
 	}
-	if compileErr != nil {
-		errors = append(errors, compileErr)
-	}
+	errors = decorated.AppendError(errors, compileErr)
 	if compiledPackage == nil {
 		panic("not possible")
 	}
 
 	linkErr := GenerateAndLink(gen, resourceNameLookup, compiledPackage, outputFilename, name, verboseFlag)
-	if linkErr != nil {
-		errors = append(errors, linkErr)
-	}
+	errors = decorated.AppendError(errors, linkErr)
 
-	var returnErr decshared.DecoratedError
-	if len(errors) > 0 {
-		returnErr = decorated.NewMultiErrors(errors)
-	}
-
-	return compiledPackage, returnErr
+	return compiledPackage, errors
 }
