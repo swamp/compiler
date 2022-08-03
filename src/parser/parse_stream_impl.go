@@ -29,7 +29,7 @@ type ParseStreamImpl struct {
 	parser              ParserInterface
 	disableEnforceStyle bool
 	nodes               []ast.Node
-	errors              []parerr.ParseError
+	errors              parerr.ParseError
 }
 
 func NewParseStreamImpl(parser ParserInterface, tokenizer *tokenize.Tokenizer, enforceStyle bool) *ParseStreamImpl {
@@ -114,10 +114,10 @@ func (p *ParseStreamImpl) readTypeIdentifier() (*ast.TypeIdentifier, parerr.Pars
 }
 
 func (p *ParseStreamImpl) AddError(parseError parerr.ParseError) {
-	p.errors = append(p.errors, parseError)
+	p.errors = parerr.AppendError(p.errors, parseError)
 }
 
-func (p *ParseStreamImpl) Errors() []parerr.ParseError {
+func (p *ParseStreamImpl) Errors() parerr.ParseError {
 	return p.errors
 }
 
@@ -810,7 +810,7 @@ func (p *ParseStreamImpl) eatNewLinesAfterStatement(min int, max int) (token.Ind
 		if report.NewLineCount > 0 && report.IndentationSpaces == 0 {
 			err := parerr.NewExpectedNewLineCount(report.PositionLength, min, report.NewLineCount)
 			p.AddError(err)
-			return report, nil
+			return report, err
 		}
 	}
 
@@ -1070,25 +1070,50 @@ func (p *ParseStreamImpl) eatIn() parerr.ParseError {
 // ---------------------------------------------------------------------------------
 // PARSER
 // ---------------------------------------------------------------------------------
+
+const maxDescent = 3
+
 func (p *ParseStreamImpl) parseExpression(precedence Precedence, startIndentation int) (ast.Expression, parerr.ParseError) {
-	p.descent++
 	r, rErr := p.parser.parseExpression(precedence, startIndentation)
 	if rErr != nil {
 		p.AddError(rErr)
 	}
-	p.descent--
 	return r, rErr
 }
 
 func (p *ParseStreamImpl) parseExpressionNormal(startIndentation int) (ast.Expression, parerr.ParseError) {
-	p.descent++
 	r, rErr := p.parser.parseExpressionNormal(startIndentation)
-	p.descent--
+
 	return r, rErr
 }
 
-func (p *ParseStreamImpl) parseExpressionNormalWithComment(startIndentation int, comment token.Comment) (ast.Expression, parerr.ParseError) {
+func (p *ParseStreamImpl) parseExpressionNormalNewDepth(startIndentation int) (ast.Expression, parerr.ParseError) {
 	p.descent++
+
+	var errors parerr.ParseError
+	if p.descent > maxDescent {
+		p.AddError(parerr.NewTooManyDepths(p.positionLength(), maxDescent, p.descent))
+	}
+
+	r, rErr := p.parser.parseExpressionNormal(startIndentation)
+	if rErr != nil {
+		errors = parerr.AppendError(errors, rErr)
+	}
+	p.descent--
+
+	return r, errors
+}
+
+func (p *ParseStreamImpl) parseExpressionNormalWithComment(startIndentation int, comment token.Comment) (ast.Expression, parerr.ParseError) {
+	r, rErr := p.parser.parseExpressionNormalWithComment(startIndentation, comment)
+	return r, rErr
+}
+
+func (p *ParseStreamImpl) parseExpressionNormalWithCommentNewDepth(startIndentation int, comment token.Comment) (ast.Expression, parerr.ParseError) {
+	p.descent++
+	if p.descent > maxDescent {
+		p.AddError(parerr.NewTooManyDepths(p.positionLength(), maxDescent, p.descent))
+	}
 	r, rErr := p.parser.parseExpressionNormalWithComment(startIndentation, comment)
 	p.descent--
 	return r, rErr

@@ -62,7 +62,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	}
 
 	if verboseFlag >= verbosity.High {
-		code.PrintOut()
+		//code.PrintOut()
 	}
 
 	parameterTypes, _ := f.ForcedFunctionType().ParameterAndReturn()

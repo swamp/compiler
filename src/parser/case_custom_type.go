@@ -63,7 +63,7 @@ func parseCaseForCustomType(p ParseStream, test ast.Expression, keywordCase toke
 			expressionIndentation = consequenceIndentation + 1
 		}
 
-		expr, exprErr := p.parseExpressionNormal(expressionIndentation)
+		expr, exprErr := p.parseExpressionNormalNewDepth(expressionIndentation)
 		if exprErr != nil {
 			return nil, exprErr
 		}

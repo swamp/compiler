@@ -128,7 +128,7 @@ func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expre
 			expressionIndentation = expressionIndentation + 1
 		}
 
-		letExpr, assignmentErr := p.parseExpressionNormal(expressionIndentation)
+		letExpr, assignmentErr := p.parseExpressionNormalNewDepth(expressionIndentation)
 		if assignmentErr != nil {
 			return nil, assignmentErr
 		}
@@ -168,7 +168,7 @@ func parseLet(p ParseStream, t token.Keyword, keywordIndentation int) (ast.Expre
 		return nil, parerr.NewLetInConsequenceOnSameColumn(spaceBeforeConsequenceErr)
 	}
 
-	consequence, consequenceErr := p.parseExpressionNormalWithComment(keywordIndentation, report.Comments.LastComment())
+	consequence, consequenceErr := p.parseExpressionNormalWithCommentNewDepth(keywordIndentation, report.Comments.LastComment())
 	if consequenceErr != nil {
 		return nil, consequenceErr
 	}

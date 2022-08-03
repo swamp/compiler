@@ -28,8 +28,8 @@ import (
 	"github.com/swamp/compiler/src/verbosity"
 )
 
-func CheckUnused(world *loader.Package) []decshared.DecoratedError {
-	var errors []decshared.DecoratedError
+func CheckUnused(world *loader.Package) decshared.DecoratedError {
+	var appendedError decshared.DecoratedError
 	for _, module := range world.AllModules() {
 		if module.IsInternal() {
 			continue
@@ -37,13 +37,13 @@ func CheckUnused(world *loader.Package) []decshared.DecoratedError {
 		for _, def := range module.LocalDefinitions().Definitions() {
 			if !def.WasReferenced() {
 				warning := decorated.NewUnusedWarning(def)
-				errors = append(errors, warning)
+				appendedError = decorated.AppendError(appendedError, warning)
 			}
 		}
 		for _, def := range module.LocalTypes().AllInOrderTypes() {
 			if !def.RealType().WasReferenced() {
 				warning := decorated.NewUnusedTypeWarning(def.RealType())
-				errors = append(errors, warning)
+				appendedError = decorated.AppendError(appendedError, warning)
 			}
 		}
 
@@ -54,7 +54,7 @@ func CheckUnused(world *loader.Package) []decshared.DecoratedError {
 			}
 		}
 	}
-	return errors
+	return appendedError
 }
 
 type Target uint8
@@ -79,7 +79,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 		resourceNameLookup := resourceid.NewResourceNameLookupImpl()
 		if solutionSettings, err := solution.LoadIfExists(mainSourceFile); err == nil {
 			var packages []*loader.Package
-			var errors []decshared.DecoratedError
+			var errors decshared.DecoratedError
 			var gen generate.Generator
 
 			if target == LlvmIr {
@@ -91,20 +91,14 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
 				compiledPackage, compileAndLinkErr := CompileAndLink(gen, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, enforceStyle, verboseFlag)
-				if compileAndLinkErr != nil {
-					errors = append(errors, compileAndLinkErr)
-				}
+				errors = decorated.AppendError(errors, compileAndLinkErr)
 				if parser.IsCompileError(compileAndLinkErr) {
-					return packages, decorated.NewMultiErrors(errors)
+					return packages, errors
 				}
 
 				packages = append(packages, compiledPackage)
 			}
-			var returnErr decshared.DecoratedError
-			if len(errors) > 0 {
-				returnErr = decorated.NewMultiErrors(errors)
-			}
-			return packages, returnErr
+			return packages, errors
 		} else {
 			return nil, fmt.Errorf("must have a solution file in this version")
 		}
@@ -166,35 +160,28 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	rootPackage := NewPackageLoader(mainPrefix, documentProvider, mainNamespace, world, worldDecorator)
 
 	libraryReader := loader.NewLibraryReaderAndDecorator()
+	var appendedError decshared.DecoratedError
 	libraryModule, libErr := libraryReader.ReadLibraryModule(decorated.ModuleTypeNormal, world, rootPackage.repository, mainSourceFile, mainNamespace, documentProvider, configuration)
-	if libErr != nil {
-		if parser.IsCompileErr(libErr) {
-			return nil, nil, libErr
-		}
+	if parser.IsCompileErr(libErr) {
+		return nil, nil, libErr
 	}
-	// color.Cyan(fmt.Sprintf("=> importing package %v as top package", mainPrefix))
+	appendedError = decorated.AppendError(appendedError, libErr)
 
 	unusedErrors := CheckUnused(world)
-	if libErr != nil {
-		unusedErrors = append(unusedErrors, libErr)
-	}
+	appendedError = decorated.AppendError(appendedError, unusedErrors)
 
 	rootModule, err := deccy.CreateDefaultRootModule(true)
-	if err != nil {
-		if parser.IsCompileError(err) {
-			return nil, nil, err
-		}
-		unusedErrors = append(unusedErrors, err)
+	if parser.IsCompileError(err) {
+		return nil, nil, err
 	}
+	unusedErrors = decorated.AppendError(unusedErrors, err)
+
 	for _, importedRootSubModule := range rootModule.ImportedModules().AllInOrderModules() {
 		world.AddModule(importedRootSubModule.ReferencedModule().FullyQualifiedModuleName(), importedRootSubModule.ReferencedModule())
 	}
 	// world.AddModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), rootModule)
-	var returnErr decshared.DecoratedError
-	if len(unusedErrors) > 0 {
-		returnErr = decorated.NewMultiErrors(unusedErrors)
-	}
-	return world, libraryModule, returnErr
+
+	return world, libraryModule, appendedError
 }
 
 func CompileMainFindLibraryRoot(mainSource string, documentProvider loader.DocumentProvider, configuration environment.Environment, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, *decorated.Module, error) {

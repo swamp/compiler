@@ -269,6 +269,8 @@ func TypeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
 		return ReportAsSeverityWarning
 	case parerr.UnexpectedImportAlias:
 		return ReportAsSeverityNote
+	case parerr.TooManyDepths:
+		return ReportAsSeverityWarning
 	case *decorated.UnusedWarning:
 		return ReportAsSeverityNote
 	case *decorated.UnusedTypeWarning:

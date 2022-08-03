@@ -57,7 +57,7 @@ func (p *Parser) Nodes() []ast.Node {
 	return p.stream.nodes
 }
 
-func (p *Parser) Errors() []parerr.ParseError {
+func (p *Parser) Errors() parerr.ParseError {
 	return p.stream.Errors()
 }
 
@@ -67,12 +67,12 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 	linesToPadMin := -2
 	linesToPadMax := -2
 
-	var errors []parerr.ParseError
+	var errors parerr.ParseError
 
 	for !p.stream.tokenizer.MaybeEOF() {
 		report, mustHaveLineAfterStatementErr := p.stream.eatNewLinesAfterStatement(linesToPadMin, linesToPadMax)
 		if mustHaveLineAfterStatementErr != nil {
-			errors = append(errors, mustHaveLineAfterStatementErr)
+			errors = parerr.AppendError(errors, parerr.NewExpectedTwoLinesAfterStatement(mustHaveLineAfterStatementErr))
 		}
 
 		if p.stream.tokenizer.MaybeEOF() {
@@ -80,7 +80,7 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 		}
 
 		if (report.SpacesUntilMaybeNewline > 0 || linesToPadMin == -1) && report.IndentationSpaces > 0 {
-			errors = append(errors, parerr.NewExtraSpacing(p.stream.sourceFileReference()))
+			errors = parerr.AppendError(errors, parerr.NewExtraSpacing(p.stream.sourceFileReference()))
 		}
 
 		astMultilineComments := ast.CommentBlockToAst(report.Comments)
@@ -100,11 +100,11 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 			if IsCompileErr(expressionErr) {
 				return nil, expressionErr
 			}
-			errors = append(errors, expressionErr)
+			errors = parerr.AppendError(errors, expressionErr)
 		}
 
 		if IsCompileError(expressionErr) {
-			return nil, parerr.NewMultiError(errors)
+			return nil, errors
 		}
 
 		statements = append(statements, expression)
@@ -112,15 +112,11 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 		linesToPadMin, linesToPadMax = ast.ExpectedLinePaddingAfter(expression)
 	}
 
-	var returnErr parerr.ParseError
-	if len(errors) > 0 {
-		returnErr = parerr.NewMultiError(errors)
-	}
 	program := ast.NewSourceFile(statements)
 
 	program.SetNodes(p.stream.nodes)
 
-	return program, returnErr
+	return program, errors
 }
 
 func (p *Parser) ParseExpression() (*ast.SourceFile, parerr.ParseError) {

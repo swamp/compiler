@@ -17,7 +17,7 @@ func parseIf(p ParseStream, keywordIf token.Keyword, keywordIndentation int) (as
 		return nil, spaceAfterIfErr
 	}
 
-	condition, conditionErr := p.parseExpressionNormal(keywordIndentation)
+	condition, conditionErr := p.parseExpressionNormalNewDepth(keywordIndentation)
 	if conditionErr != nil {
 		return nil, conditionErr
 	}
@@ -38,7 +38,7 @@ func parseIf(p ParseStream, keywordIf token.Keyword, keywordIndentation int) (as
 	}
 
 	isIndentedBlock := foundIndentationAfterIf != keywordIndentation
-	consequence, consequenceErr := p.parseExpressionNormal(foundIndentationAfterIf)
+	consequence, consequenceErr := p.parseExpressionNormalNewDepth(foundIndentationAfterIf)
 	if consequenceErr != nil {
 		return nil, consequenceErr
 	}
@@ -58,7 +58,7 @@ func parseIf(p ParseStream, keywordIf token.Keyword, keywordIndentation int) (as
 		return nil, spaceAfterElseErr
 	}
 
-	alternative, alternativeErr := p.parseExpressionNormal(foundIndentationAfterElse)
+	alternative, alternativeErr := p.parseExpressionNormalNewDepth(foundIndentationAfterElse)
 	if alternativeErr != nil {
 		return nil, parerr.NewMissingElseExpression(alternativeErr)
 	}

@@ -79,7 +79,7 @@ func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleTyp
 		return nil, decorated.NewCircularDependencyDetected(packageRelativeModuleName, l.resolutionModules, artifactFullyModuleName)
 	}
 
-	var errors []decshared.DecoratedError
+	var errors decshared.DecoratedError
 	l.resolutionModules = append(l.resolutionModules, packageRelativeModuleName)
 	readModule, readModuleErr := l.moduleReader.ReadModule(moduleType, l, packageRelativeModuleName, l.moduleNamespace)
 	if readModuleErr != nil {
@@ -90,18 +90,13 @@ func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleTyp
 		if parser.IsCompileErr(readModuleErr) {
 			return nil, decorated.NewModuleError(artifactFullyModuleName.String()+".swamp", readModuleErr)
 		}
-		errors = append(errors, readModuleErr)
+		errors = decorated.AppendError(errors, readModuleErr)
 	}
 	l.world.AddModule(artifactFullyModuleName, readModule)
 
 	l.resolutionModules = remove(l.resolutionModules, packageRelativeModuleName)
 
-	var returnErr decshared.DecoratedError
-	if len(errors) > 0 {
-		returnErr = decorated.NewMultiErrors(errors)
-	}
-
-	return readModule, returnErr
+	return readModule, errors
 }
 
 func (l *ModuleRepository) FetchModuleInPackage(parentModuleType decorated.ModuleType, packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
@@ -115,10 +110,8 @@ func (l *ModuleRepository) FetchMainModuleInPackage(moduleType decorated.ModuleT
 	artifactFullyModuleName := l.moduleNamespace.Join(emptyPackageRelativeModuleName)
 
 	x, err := l.FetchModuleInPackageEx(moduleType, artifactFullyModuleName, emptyPackageRelativeModuleName, verboseFlag)
-	if err != nil {
-		if parser.IsCompileError(err) {
-			return nil, err
-		}
+	if parser.IsCompileError(err) {
+		return nil, err
 	}
 
 	x.LocalDefinitions().FindDefinitionExpression(ast.NewVariableIdentifier(token.NewVariableSymbolToken("main", token.SourceFileReference{}, 0)))

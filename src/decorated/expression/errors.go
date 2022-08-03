@@ -15,6 +15,25 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+func AppendError(existing decshared.DecoratedError, add decshared.DecoratedError) decshared.DecoratedError {
+	if existing == nil {
+		return add
+	}
+
+	if add == nil {
+		return existing
+	}
+
+	multiError, wasMultiError := existing.(*MultiErrors)
+	if wasMultiError {
+		multiError.add(add)
+		return multiError
+	}
+
+	// 	panic(fmt.Errorf("unknown error to append %T", add))
+	return NewMultiErrors([]decshared.DecoratedError{add})
+}
+
 type UnMatchingBinaryOperatorTypes struct {
 	typeA    dtype.Type
 	typeB    dtype.Type
@@ -1155,6 +1174,16 @@ func NewMultiErrors(errors []decshared.DecoratedError) *MultiErrors {
 
 func (e *MultiErrors) Errors() []decshared.DecoratedError {
 	return e.errors
+}
+
+func (e *MultiErrors) add(decoratedError decshared.DecoratedError) {
+	if decoratedError == nil {
+		panic("must have valid error to add")
+	}
+	if decoratedError == e {
+		panic("can not add self")
+	}
+	e.errors = append(e.errors, decoratedError)
 }
 
 func (e *MultiErrors) Error() string {

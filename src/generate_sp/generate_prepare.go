@@ -17,8 +17,7 @@ import (
 	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
-func preparePackageConstants(compiledPackage *loader.Package, typeInformationChunk typeinfo.TypeLookup) (*assembler_sp.PackageConstants, decshared.DecoratedError) {
-	packageConstants := assembler_sp.NewPackageConstants()
+func preparePackageConstants(compiledPackage *loader.Package, packageConstants *assembler_sp.PackageConstants, typeInformationChunk typeinfo.TypeLookup) decshared.DecoratedError {
 	for _, module := range compiledPackage.AllModules() {
 		for _, named := range module.LocalDefinitions().Definitions() {
 			unknownExpression := named.Expression()
@@ -38,7 +37,7 @@ func preparePackageConstants(compiledPackage *loader.Package, typeInformationChu
 						}
 						paramPosRanges = make([]assembler_sp.SourceStackPosRange, len(maybeFunction.Parameters()))
 						if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
-							return nil, decorated.NewInternalError(err)
+							return decorated.NewInternalError(err)
 						}
 						continue
 					}
@@ -77,7 +76,7 @@ func preparePackageConstants(compiledPackage *loader.Package, typeInformationChu
 					}
 
 					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
-						return nil, decorated.NewInternalError(err)
+						return decorated.NewInternalError(err)
 					}
 				} else {
 					// parameterTypes, _ := maybeFunction.ForcedFunctionType().ParameterAndReturn()
@@ -86,7 +85,7 @@ func preparePackageConstants(compiledPackage *loader.Package, typeInformationChu
 
 					functionTypeIndex, lookupErr := typeInformationChunk.Lookup(maybeFunction.ForcedFunctionType())
 					if lookupErr != nil {
-						return nil, decorated.NewInternalError(lookupErr)
+						return decorated.NewInternalError(lookupErr)
 					}
 
 					pos := dectype.MemoryOffset(0)
@@ -97,7 +96,7 @@ func preparePackageConstants(compiledPackage *loader.Package, typeInformationChu
 					}
 					parameterOctetSize := dectype.MemorySize(pos)
 					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), opcode_sp_type.MemorySize(returnSize), opcode_sp_type.MemoryAlign(returnAlign), parameterCount, opcode_sp_type.MemorySize(parameterOctetSize), uint(functionTypeIndex)); err != nil {
-						return nil, decorated.NewInternalError(err)
+						return decorated.NewInternalError(err)
 					}
 
 				}
@@ -109,5 +108,5 @@ func preparePackageConstants(compiledPackage *loader.Package, typeInformationChu
 		}
 	}
 
-	return packageConstants, nil
+	return nil
 }

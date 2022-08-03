@@ -42,32 +42,22 @@ func (r *ModuleReaderAndDecorator) ReadModule(moduleType decorated.ModuleType, r
 
 	fullyQualifiedName := namespacePrefix.Join(moduleName)
 
+	var errors decshared.DecoratedError
 	absoluteFilename, runes, loadErr := r.runesLoader.Load(moduleName, verboseFlag)
-	var errors []decshared.DecoratedError
-	if loadErr != nil {
-		if parser.IsCompileErr(loadErr) {
-			return nil, loadErr
-		}
-		errors = append(errors, loadErr)
+	if parser.IsCompileErr(loadErr) {
+		return nil, loadErr
 	}
+	errors = decorated.AppendError(errors, loadErr)
 
 	// green := color.New(color.FgHiGreen)
 	// filepathToShow := pathutil.TryToMakeRelativePath(absoluteFilename)
 	// green.Fprintf(os.Stderr, "* compiling module '%v' %v\n", filepathToShow, fullyQualifiedName)
 
 	loadedModule, runesErr := r.runesToModule.RunesToModule(moduleType, repository, fullyQualifiedName, absoluteFilename, runes)
-	if runesErr != nil {
-		if parser.IsCompileErr(runesErr) {
-			return nil, runesErr
-		}
-		errors = append(errors, runesErr)
+	if parser.IsCompileErr(runesErr) {
+		return nil, runesErr
 	}
+	errors = decorated.AppendError(errors, runesErr)
 
-	var returnErr decshared.DecoratedError
-
-	if len(errors) > 0 {
-		returnErr = decorated.NewMultiErrors(errors)
-	}
-
-	return loadedModule, returnErr
+	return loadedModule, errors
 }

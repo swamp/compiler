@@ -28,7 +28,7 @@ type Decorator struct {
 	module              *decorated.Module
 	moduleRepository    ModuleRepository
 	typeLookUpAndCreate decorated.TypeAddAndReferenceMaker
-	errors              []decshared.DecoratedError
+	errors              decshared.DecoratedError
 }
 
 func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module, typeLookUpAndCreate decorated.TypeAddAndReferenceMaker) *Decorator {
@@ -70,10 +70,10 @@ func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decor
 }
 
 func (d *Decorator) AddDecoratedError(decoratedError decshared.DecoratedError) {
-	d.errors = append(d.errors, decoratedError)
+	d.errors = decorated.AppendError(d.errors, decoratedError)
 }
 
-func (d *Decorator) Errors() []decshared.DecoratedError {
+func (d *Decorator) Errors() decshared.DecoratedError {
 	return d.errors
 }
 
@@ -83,12 +83,13 @@ func (d *Decorator) NewVariableContext() *decorator.VariableContext {
 
 func (d *Decorator) ImportModule(moduleType decorated.ModuleType, importAst *ast.Import, relativeModuleName dectype.PackageRelativeModuleName, alias dectype.SingleModuleName, exposeAll bool, verboseFlag verbosity.Verbosity) (*decorated.ImportStatement, decshared.DecoratedError) {
 	moduleToImport, importErr := d.moduleRepository.FetchModuleInPackage(moduleType, relativeModuleName, verboseFlag)
-	var errors []decshared.DecoratedError
+	var appendedError decshared.DecoratedError
+
 	if importErr != nil {
 		if parser.IsCompileErr(importErr) {
 			return nil, importErr
 		}
-		errors = append(errors, importErr)
+		appendedError = decorated.AppendError(appendedError, importErr)
 	}
 
 	if moduleToImport == nil {
@@ -109,14 +110,8 @@ func (d *Decorator) ImportModule(moduleType decorated.ModuleType, importAst *ast
 			return nil, decorated.NewInternalError(importModuleErr)
 		}
 
-		errors = append(errors, importErr)
+		appendedError = decorated.AppendError(appendedError, importErr)
 	}
 
-	var returnErr decshared.DecoratedError
-
-	if len(errors) > 0 {
-		returnErr = decorated.NewMultiErrors(errors)
-	}
-
-	return importStatement, returnErr
+	return importStatement, appendedError
 }

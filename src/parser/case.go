@@ -16,7 +16,7 @@ func parseCase(p ParseStream, keyword token.Keyword, startIndentation int, previ
 	if firstSpaceErr != nil {
 		return nil, firstSpaceErr
 	}
-	test, testErr := p.parseExpressionNormal(startIndentation)
+	test, testErr := p.parseExpressionNormalNewDepth(startIndentation)
 	if testErr != nil {
 		return nil, testErr
 	}

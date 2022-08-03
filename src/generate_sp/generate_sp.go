@@ -6,12 +6,8 @@
 package generate_sp
 
 import (
+	"encoding/hex"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"path"
-	"strings"
-
 	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -23,6 +19,10 @@ import (
 	swampdisasmsp "github.com/swamp/disassembler/lib"
 	"github.com/swamp/opcodes/instruction_sp"
 	"github.com/swamp/opcodes/opcode_sp"
+	"io/ioutil"
+	"log"
+	"path"
+	"strings"
 )
 
 type AnyPosAndRange interface {
@@ -187,11 +187,10 @@ func (g *Generator) Before(compilePackage *loader.Package) error {
 func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) error {
 	g.Before(compilePackage)
 
-	packageConstants, allConstantsErr := preparePackageConstants(compilePackage, g.lookup)
+	allConstantsErr := preparePackageConstants(compilePackage, g.packageConstants, g.lookup)
 	if allConstantsErr != nil {
 		return allConstantsErr
 	}
-	g.packageConstants = packageConstants
 	for _, mod := range compilePackage.AllModules() {
 		standardError := g.GenerateModule(mod, resourceNameLookup, verboseFlag)
 		if standardError != nil {
@@ -206,22 +205,7 @@ func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resource
 func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, showAssembler bool, verboseFlag verbosity.Verbosity) error {
 	constants := g.packageConstants
 	if verboseFlag >= verbosity.Mid || showAssembler {
-		constants.DynamicMemory().DebugOutput()
-	}
-
-	if verboseFlag >= verbosity.Mid || showAssembler {
-		var assemblerOutput string
-
-		for _, f := range g.functionConstants {
-			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
-				opcodes := constants.FetchOpcodes(f)
-				lines := swampdisasmsp.Disassemble(opcodes)
-
-				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
-			}
-		}
-
-		fmt.Println(assemblerOutput)
+		//constants.DynamicMemory().DebugOutput()
 	}
 
 	constants.AllocateDebugInfoFiles(g.fileUrlCache.FileUrls())
@@ -240,6 +224,26 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 	}
 
 	constants.Finalize()
+
+	if verboseFlag >= verbosity.Mid || showAssembler {
+		var assemblerOutput string
+
+		for _, f := range g.functionConstants {
+			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
+				opcodes := constants.FetchOpcodes(f)
+				if opcodes == nil {
+					panic("no opcodes")
+				}
+				log.Printf("func:%v opcodes: %v", f, hex.Dump(opcodes))
+				lines := swampdisasmsp.Disassemble(opcodes)
+
+				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
+			}
+		}
+
+		fmt.Println(assemblerOutput)
+	}
+
 	dynamicMemoryOctets := constants.DynamicMemory().Octets()
 
 	packed, packedErr := Pack(constants.Constants(), dynamicMemoryOctets, typeInformationOctets)

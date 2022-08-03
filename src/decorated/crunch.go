@@ -10,8 +10,6 @@ import (
 	"reflect"
 	"strings"
 
-	parerr "github.com/swamp/compiler/src/parser/errors"
-
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -50,7 +48,7 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose verbosity.Verbosity) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
 	ioReader := strings.NewReader(code)
 
-	var errors []decshared.DecoratedError
+	var errors decshared.DecoratedError
 
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, absoluteFilename)
 	if runeReaderErr != nil {
@@ -61,21 +59,13 @@ func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle
 	if parser.IsCompileError(tokenizerErr) {
 		return tokenizer, nil, tokenizerErr
 	}
-	if tokenizerErr != nil {
-		errors = append(errors, tokenizerErr)
-	}
+	errors = decorated.AppendError(errors, tokenizerErr)
 
 	p := parser.NewParser(tokenizer, enforceStyle)
 	program, programErr := p.Parse()
-	if programErr != nil {
-		errors = append(errors, programErr)
-	}
+	errors = decorated.AppendError(errors, programErr)
 	if parser.IsCompileError(programErr) {
-		var returnErr parerr.ParseError
-		if len(errors) > 0 {
-			returnErr = decorated.NewMultiErrors(errors)
-		}
-		return tokenizer, program, returnErr
+		return tokenizer, program, errors
 	}
 
 	if program == nil {
@@ -83,21 +73,14 @@ func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle
 	}
 
 	parserErrors := p.Errors()
-	for _, parserErr := range parserErrors {
-		errors = append(errors, parserErr)
-		if parser.IsCompileError(parserErr) {
-			return tokenizer, nil, parserErr
-		}
+	errors = decorated.AppendError(errors, parserErrors)
+	if parser.IsCompileError(parserErrors) {
+		return tokenizer, nil, errors
 	}
 
 	program.SetNodes(p.Nodes())
 
-	var returnErr parerr.ParseError
-	if len(errors) > 0 {
-		returnErr = decorated.NewMultiErrors(errors)
-	}
-
-	return tokenizer, program, returnErr
+	return tokenizer, program, errors
 }
 
 func isInternalType(typeToCheck dtype.Type) bool {
@@ -106,19 +89,19 @@ func isInternalType(typeToCheck dtype.Type) bool {
 	return isPrimitive
 }
 
-func checkUnusedImports(module *decorated.Module) []decshared.DecoratedError {
-	var errors []decshared.DecoratedError
+func checkUnusedImports(module *decorated.Module) decshared.DecoratedError {
+	var errors decshared.DecoratedError
 	for _, definition := range module.ImportedModules().AllInOrderModules() {
 		if !definition.WasReferenced() && !definition.ReferencedModule().IsInternal() {
 			warning := decorated.NewUnusedImportWarning(definition, "importedModules.All()")
-			errors = append(errors, warning)
+			errors = decorated.AppendError(errors, warning)
 		}
 	}
 
 	for _, definition := range module.ImportedDefinitions().ReferencedDefinitions() {
 		if !definition.WasReferenced() && !definition.IsInternal() {
 			warning := decorated.NewUnusedImportWarning(definition.CreatedBy(), "referenced definitions")
-			errors = append(errors, warning)
+			errors = decorated.AppendError(errors, warning)
 		}
 	}
 	for _, importedType := range module.ImportedTypes().AllInOrderTypes() {
@@ -134,13 +117,12 @@ func checkUnusedImports(module *decorated.Module) []decshared.DecoratedError {
 func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository ModuleRepository, rootModule *decorated.Module,
 	moduleName dectype.ArtifactFullyQualifiedModuleName, absoluteFilename string, code string,
 	enforceStyle bool, verbose verbosity.Verbosity, errorAsWarning bool) (*decorated.Module, decshared.DecoratedError) {
+	var errors decshared.DecoratedError
+
 	tokenizer, program, programErr := InternalCompileToProgram(absoluteFilename, code, enforceStyle, verbose)
-	var errors []decshared.DecoratedError
-	if programErr != nil {
-		errors = append(errors, programErr)
-		if parser.IsCompileError(programErr) {
-			return nil, programErr
-		}
+	errors = decorated.AppendError(errors, programErr)
+	if parser.IsCompileError(programErr) {
+		return nil, programErr
 	}
 
 	module := decorated.NewModule(moduleType, moduleName, tokenizer.Document())
@@ -152,11 +134,11 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	i := ast.NewImport(keyword, nil, nil, fakeModuleReference.AstModuleReference(), nil, nil, nil, true, nil)
 	fakeImportStatement := decorated.NewImport(i, fakeModuleReference, fakeModuleReference, exposeAllImports)
 	importErr := ImportModuleToModule(module, fakeImportStatement)
+	if parser.IsCompileErr(importErr) {
+		return nil, decorated.NewInternalError(importErr)
+	}
 	if importErr != nil {
-		if parser.IsCompileErr(importErr) {
-			return nil, decorated.NewInternalError(importErr)
-		}
-		errors = append(errors, decorated.NewInternalError(importErr))
+		errors = decorated.AppendError(errors, decorated.NewInternalError(importErr))
 	}
 
 	for _, importedSubModule := range rootModule.ImportedModules().AllInOrderModules() {
@@ -173,20 +155,13 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	converter := NewDecorator(moduleRepository, module, createAndLookup)
 
 	rootStatementHandler := decorator.NewRootStatementHandler(converter, createAndLookup, moduleType, "compiletomodule")
-	if programErr != nil {
-		if parser.IsCompileErr(programErr) {
-			return nil, programErr
-		}
-		errors = append(errors, programErr)
-	}
+
 	rootNodes, generateErr := rootStatementHandler.HandleStatements(program)
-	if generateErr != nil {
-		if parser.IsCompileErr(generateErr) {
-			return nil, generateErr
-		}
-		errors = append(errors, generateErr)
+	errors = decorated.AppendError(errors, generateErr)
+	if parser.IsCompileErr(generateErr) {
+		return nil, generateErr
 	}
-	errors = append(errors, converter.Errors()...)
+	errors = decorated.AppendError(errors, converter.Errors())
 
 	//importErrors := checkUnusedImports(module)
 	//allErrors = append(allErrors, importErrors...)
@@ -210,12 +185,7 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	}
 	module.SetRootNodes(rootNodesConverted)
 
-	var returnErr decshared.DecoratedError
-
-	if len(errors) > 0 {
-		returnErr = decorated.NewMultiErrors(errors)
-	}
-	return module, returnErr
+	return module, errors
 }
 
 func ImportModuleToModule(target *decorated.Module, statement *decorated.ImportStatement) error {

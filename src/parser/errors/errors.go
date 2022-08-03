@@ -13,6 +13,25 @@ import (
 	"github.com/swamp/compiler/src/tokenize"
 )
 
+func AppendError(existing ParseError, add ParseError) ParseError {
+	if existing == nil {
+		return add
+	}
+
+	if add == nil {
+		return existing
+	}
+
+	multiError, wasMultiError := existing.(*MultiError)
+	if wasMultiError {
+		multiError.add(add)
+		return multiError
+	}
+
+	// 	panic(fmt.Errorf("unknown error to append %T", add))
+	return NewMultiError([]ParseError{add})
+}
+
 type ParseError interface {
 	FetchPositionLength() token.SourceFileReference
 	Error() string
@@ -32,6 +51,16 @@ func (m MultiError) Error() string {
 
 func (m MultiError) Errors() []ParseError {
 	return m.errors
+}
+
+func (m MultiError) add(parseError ParseError) {
+	//if parseError == m {
+	//	panic("can not add self")
+	//}
+	if parseError == nil {
+		panic("not allowed to add nil")
+	}
+	m.errors = append(m.errors, parseError)
 }
 
 func (m MultiError) FetchPositionLength() token.SourceFileReference {
@@ -91,6 +120,24 @@ func (e ExpectedNewLineCount) FetchPositionLength() token.SourceFileReference {
 	return e.reference
 }
 
+type TooManyDepths struct {
+	reference   token.SourceFileReference
+	expected    int
+	encountered int
+}
+
+func NewTooManyDepths(reference token.SourceFileReference, expected int, encountered int) TooManyDepths {
+	return TooManyDepths{reference: reference, expected: expected, encountered: encountered}
+}
+
+func (e TooManyDepths) Error() string {
+	return fmt.Sprintf("too much depth %v expected %v", e.encountered, e.expected)
+}
+
+func (e TooManyDepths) FetchPositionLength() token.SourceFileReference {
+	return e.reference
+}
+
 type UnexpectedImportAlias struct {
 	importStatement *ast.Import
 }
@@ -125,7 +172,7 @@ func NewInternalError(t token.SourceFileReference, internalError error) Internal
 }
 
 func (e InternalError) Error() string {
-	return fmt.Sprintf("parser internal error %v", e.internalError)
+	return fmt.Sprintf("parser internal error %v %v", e.internalError, e.SourceFileReference)
 }
 
 func (e InternalError) FetchPositionLength() token.SourceFileReference {

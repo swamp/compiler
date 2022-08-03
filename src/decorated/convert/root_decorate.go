@@ -307,14 +307,14 @@ func (g *RootStatementHandler) compileFunctionExpression(preparedFunctionNamedVa
 func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
 	var rootNodes []decorated.TypeOrToken
 
-	var errors []decshared.DecoratedError
+	var errors decshared.DecoratedError
 	for _, statement := range program.Statements() {
 		convertedStatement, err := g.convertStatement(statement)
 		if err != nil {
 			if parser.IsCompileErr(err) {
 				return nil, err
 			}
-			errors = append(errors, err)
+			errors = decorated.AppendError(errors, err)
 		}
 
 		if convertedStatement != nil && !reflect.ValueOf(convertedStatement).IsNil() {
@@ -330,18 +330,12 @@ func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]dec
 				if parser.IsCompileErr(err) {
 					return nil, err
 				}
-				errors = append(errors, err)
+				errors = decorated.AppendError(errors, err)
 			}
 		}
 	}
 
-	var returnErr decshared.DecoratedError
-
-	if len(errors) > 0 {
-		returnErr = decorated.NewMultiErrors(errors)
-	}
-
-	return rootNodes, returnErr
+	return rootNodes, errors
 }
 
 func (g *RootStatementHandler) HandleStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {

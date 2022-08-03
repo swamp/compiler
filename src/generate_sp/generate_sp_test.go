@@ -224,7 +224,7 @@ func TestAppend(t *testing.T) {
 	testGenerate(t,
 		`
 a : Int -> List Int
-a x =
+a _ =
     [ 1, 3, 4 ] ++ [ 5, 6, 7, 8 ] ++ [ 9 ]
 `, `
 func [function a func(Int -> List<Int>) 1 [[constant1 int:1 #5] [constant2 int:3 #6] [constant3 int:4 #7] [constant4 int:5 #8] [constant5 int:6 #9] [constant6 int:7 #10] [constant7 int:8 #11] [constant8 int:9 #12]]]

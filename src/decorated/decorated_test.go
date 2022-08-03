@@ -400,7 +400,7 @@ another : Int -> String
 another _ =
     someFunc "2"
 `,
-		&decorated.FunctionArgumentTypeMismatch{})
+		&decorated.CouldNotSmashFunctions{})
 }
 
 func TestSomething2(t *testing.T) {
@@ -1951,7 +1951,7 @@ main ints =
     in
     extractedInt
 `,
-		decorated.CouldNotSmashFunctions{})
+		&decorated.CouldNotSmashFunctions{})
 }
 
 func TestArrayFromNothing(t *testing.T) {
