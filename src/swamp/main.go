@@ -7,7 +7,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -54,7 +53,7 @@ func (c *FmtCmd) Run() error {
 		if file.IsDir(match) {
 			continue
 		}
-		octets, err := ioutil.ReadFile(match)
+		octets, err := os.ReadFile(match)
 		if err != nil {
 			return err
 		}
@@ -64,7 +63,7 @@ func (c *FmtCmd) Run() error {
 			return beautyErr
 		}
 
-		ioutil.WriteFile(match, []byte(beautifiedCode), 0o600)
+		os.WriteFile(match, []byte(beautifiedCode), 0o600)
 
 		fmt.Println(beautifiedCode)
 	}
@@ -211,8 +210,9 @@ type Options struct {
 }
 
 /*
-	highestError := parser.ReportAsSeverityNote
-	multiErr, wasMultiErr := decErr.(*decorated.MultiErrors)
+highestError := parser.ReportAsSeverityNote
+multiErr, wasMultiErr := decErr.(*decorated.MultiErrors)
+
 	if wasMultiErr {
 		for _, subErr := range multiErr.Errors() {
 
@@ -221,6 +221,7 @@ type Options struct {
 			}
 		}
 	} else {
+
 		multiErrPar, wasMultiErr := decErr.(parerr.MultiError)
 		if wasMultiErr {
 			for _, subErr := range multiErrPar.Errors() {
@@ -238,7 +239,6 @@ type Options struct {
 			fmt.Fprintf(os.Stderr, "Unknown ERROR!!: '%v'\n", err)
 		}
 	}
-
 */
 func main() {
 	ctx := kong.Parse(&Options{})

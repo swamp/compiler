@@ -8,7 +8,6 @@ package settings
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"path"
 	"path/filepath"
 	"strings"
@@ -37,7 +36,7 @@ type Settings struct {
 
 func Load(reader io.Reader, rootDirectory string, configuration environment.Environment) (Settings, error) {
 	rootDirectory = filepath.ToSlash(rootDirectory)
-	data, dataErr := ioutil.ReadAll(reader)
+	data, dataErr := io.ReadAll(reader)
 	if dataErr != nil {
 		return Settings{}, dataErr
 	}

@@ -8,7 +8,6 @@ package runestream
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 )
 
@@ -52,7 +51,7 @@ func NewRuneReader(r io.Reader, absoluteFilename string) (*RuneReader, error) {
 		panic("backslash is not supported path:" + absoluteFilename)
 	}
 
-	octets, octetsErr := ioutil.ReadAll(r)
+	octets, octetsErr := io.ReadAll(r)
 	if octetsErr != nil {
 		return nil, fmt.Errorf("runereader: ReadAll %w", octetsErr)
 	}

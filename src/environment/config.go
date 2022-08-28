@@ -9,7 +9,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -51,7 +50,7 @@ func (c *Environment) AddOrSet(name string, path string) {
 }
 
 func Load(reader io.Reader) (Environment, error) {
-	data, dataErr := ioutil.ReadAll(reader)
+	data, dataErr := io.ReadAll(reader)
 	if dataErr != nil {
 		return Environment{}, dataErr
 	}

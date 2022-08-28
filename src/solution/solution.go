@@ -9,7 +9,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -28,7 +27,7 @@ type Settings struct {
 }
 
 func Load(reader io.Reader, solutionFileDirectory string) (Settings, error) {
-	data, dataErr := ioutil.ReadAll(reader)
+	data, dataErr := io.ReadAll(reader)
 	if dataErr != nil {
 		return Settings{}, dataErr
 	}

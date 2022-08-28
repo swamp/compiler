@@ -7,7 +7,6 @@ package loader
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -20,7 +19,7 @@ func NewFileSystemDocumentProvider() *FileSystemDocumentProvider {
 }
 
 func (s *FileSystemDocumentProvider) ReadDocument(completeFilename LocalFileSystemPath) (string, error) {
-	octets, readFileErr := ioutil.ReadFile(string(completeFilename))
+	octets, readFileErr := os.ReadFile(string(completeFilename))
 	if readFileErr != nil {
 		switch readFileErr {
 		case os.ErrInvalid:

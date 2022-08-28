@@ -7,14 +7,14 @@ package execute
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/generate_sp"
-	"github.com/swamp/compiler/src/parser"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
+
+	"github.com/swamp/compiler/src/generate_sp"
+	"github.com/swamp/compiler/src/parser"
 
 	"github.com/fatih/color"
 	swampcompiler "github.com/swamp/compiler/src/compiler"
@@ -58,7 +58,7 @@ func FindProjectDirectory() (string, error) {
 func ExecuteSwamp(swampCode string) (string, error) {
 	const tempOutputFileTemplate = "temp.swamp-pack"
 
-	tempDir, err := ioutil.TempDir("", "swamptest")
+	tempDir, err := os.MkdirTemp("", "swamptest")
 	if err != nil {
 		return "", err
 	}

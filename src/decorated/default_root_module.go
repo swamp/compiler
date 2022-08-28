@@ -100,6 +100,7 @@ __externalvarfn get : Int -> Array a -> Maybe a
 
 const maybeCode = `
 __externalvarexfn withDefault : a -> Maybe a -> a
+__externalvarexfn maybe : b -> (a -> b) -> Maybe a -> b
 `
 
 const tupleCode = `
