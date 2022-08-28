@@ -15,6 +15,9 @@ type TypeSymbolToken struct {
 }
 
 func NewTypeSymbolToken(raw string, sourceFileReference SourceFileReference, indentation int) TypeSymbolToken {
+	if sourceFileReference.Document == nil {
+		panic("not allowed to be nil")
+	}
 	return TypeSymbolToken{raw: raw, SourceFileReference: sourceFileReference, Indentation: indentation}
 }
 

@@ -257,7 +257,8 @@ func (g *RootStatementHandler) declareAnnotation(d DecorateStream, declaration *
 		}
 
 		dummyExpression := ast.NewExternalFunctionExpression(functionAtom.FetchPositionLength())
-		functionValue := ast.NewFunctionValue(token.VariableSymbolToken{}, parameters, dummyExpression, nil)
+		variable := token.NewVariableSymbolToken("", functionAtom.FetchPositionLength(), 0)
+		functionValue := ast.NewFunctionValue(variable, parameters, dummyExpression, nil)
 		parameterDefinitions, parameterDefinitionsErr := createParameterDefinitions(functionAtom, functionValue)
 		if parameterDefinitionsErr != nil {
 			return nil, parameterDefinitionsErr

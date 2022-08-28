@@ -145,5 +145,5 @@ func (c *RecordLiteral) String() string {
 }
 
 func (c *RecordLiteral) FetchPositionLength() token.SourceFileReference {
-	return token.SourceFileReference{}
+	return c.parseOrderedAssignments[0].fieldName.FetchPositionLength()
 }

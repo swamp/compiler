@@ -147,9 +147,13 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	world := loader.NewPackage(loader.LocalFileSystemRoot(mainPrefix), name)
 
 	worldDecorator, worldDecoratorErr := loader.NewWorldDecorator(enforceStyle, verboseFlag)
-	if worldDecoratorErr != nil {
+	if parser.IsCompileErr(worldDecoratorErr) {
 		return nil, nil, worldDecoratorErr
 	}
+
+	var appendedError decshared.DecoratedError
+
+	appendedError = decorated.AppendError(appendedError, worldDecoratorErr)
 	/*
 		for _, rootModule := range worldDecorator.ImportModules() {
 			world.AddModule(rootModule.FullyQualifiedModuleName(), rootModule)
@@ -160,7 +164,6 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	rootPackage := NewPackageLoader(mainPrefix, documentProvider, mainNamespace, world, worldDecorator)
 
 	libraryReader := loader.NewLibraryReaderAndDecorator()
-	var appendedError decshared.DecoratedError
 	libraryModule, libErr := libraryReader.ReadLibraryModule(decorated.ModuleTypeNormal, world, rootPackage.repository, mainSourceFile, mainNamespace, documentProvider, configuration)
 	if parser.IsCompileErr(libErr) {
 		return nil, nil, libErr
@@ -174,7 +177,7 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	if parser.IsCompileError(err) {
 		return nil, nil, err
 	}
-	unusedErrors = decorated.AppendError(unusedErrors, err)
+	appendedError = decorated.AppendError(appendedError, err)
 
 	for _, importedRootSubModule := range rootModule.ImportedModules().AllInOrderModules() {
 		world.AddModule(importedRootSubModule.ReferencedModule().FullyQualifiedModuleName(), importedRootSubModule.ReferencedModule())
@@ -218,7 +221,7 @@ func GenerateAndLink(gen generate.Generator, resourceNameLookup resourceid.Resou
 		}
 	}
 
-	genErr := gen.GenerateFromPackage(compiledPackage, resourceNameLookup, outputDirectory, packageSubDirectory, verboseFlag)
+	genErr := gen.GenerateFromPackageAndWriteOutput(compiledPackage, resourceNameLookup, outputDirectory, packageSubDirectory, verboseFlag)
 	if genErr != nil {
 		return decorated.NewInternalError(genErr)
 	}

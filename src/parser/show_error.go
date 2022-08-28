@@ -275,6 +275,8 @@ func TypeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
 		return ReportAsSeverityNote
 	case *decorated.UnusedTypeWarning:
 		return ReportAsSeverityNote
+	case *decorated.UnusedImportWarning:
+		return ReportAsSeverityWarning
 	case tokenize.LineIsLongerThanRecommendedError:
 		return ReportAsSeverityNote
 	case tokenize.LineIsTooLongError:
@@ -284,6 +286,55 @@ func TypeOfWarning(parserError parerr.ParseError) ReportAsSeverity {
 	}
 
 	return ReportAsSeverityError
+}
+
+func TypeOfWarningRecursive(parserError error) ReportAsSeverity {
+	moduleErr, isModuleErr := parserError.(*decorated.ModuleError)
+	if isModuleErr {
+		parserError = moduleErr.WrappedError()
+	}
+	parseAliasErr, _ := parserError.(*parerr.ParseAliasError)
+	if parseAliasErr != nil {
+		parserError = parseAliasErr.Unwrap()
+	}
+
+	multi, wasMulti := parserError.(*tokenize.MultiErrors)
+	if wasMulti {
+		highestError := ReportAsSeverityNote
+		for _, tokenizeErr := range multi.Errors() {
+			detectedError := TypeOfWarningRecursive(tokenizeErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	}
+
+	parErrMulti, wasParErrMulti := parserError.(parerr.MultiError)
+	if wasParErrMulti {
+		highestError := ReportAsSeverityNote
+		for _, tokenizeErr := range parErrMulti.Errors() {
+			detectedError := TypeOfWarningRecursive(tokenizeErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	}
+
+	decoratedMultiErr, wasDecoratedMultiErr := parserError.(*decorated.MultiErrors)
+	if wasDecoratedMultiErr {
+		highestError := ReportAsSeverityNote
+		for _, tokenizeErr := range decoratedMultiErr.Errors() {
+			detectedError := TypeOfWarningRecursive(tokenizeErr)
+			if detectedError > highestError {
+				highestError = detectedError
+			}
+		}
+		return highestError
+	}
+
+	return TypeOfWarning(parserError.(parerr.ParseError))
 }
 
 func ShowWarningOrError(tokenizer *tokenize.Tokenizer, parserError parerr.ParseError) ReportAsSeverity {

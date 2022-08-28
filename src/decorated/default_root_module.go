@@ -9,13 +9,12 @@ import (
 	"log"
 	"strings"
 
-	"github.com/swamp/compiler/src/parser"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/parser"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/verbosity"
 )
@@ -151,7 +150,7 @@ func compileToModule(globalModule *decorated.Module, name string, code string) (
 	const enforceStyle = true
 	const errorAsWarning = false
 
-	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(name, token.SourceFileReference{}, 0))
+	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(name, globalModule.FetchPositionLength(), 0))
 
 	var fullyQualifiedName dectype.ArtifactFullyQualifiedModuleName
 	if name == "" {
@@ -186,63 +185,90 @@ func compileToModule(globalModule *decorated.Module, name string, code string) (
 }
 
 func compileAndAddToModule(targetModule *decorated.Module, name string, code string) decshared.DecoratedError {
+	var allErr decshared.DecoratedError
+
 	newModule, err := compileToModule(targetModule, name, code)
-	if err != nil {
+	if parser.IsCompileError(err) {
 		return err
 	}
+	allErr = decorated.AppendError(allErr, err)
 
 	reference := newModule.FullyQualifiedModuleName().ModuleName.Path()
 	exposeAllImports := true
 
-	keyword := token.NewKeyword("", 0, token.SourceFileReference{})
+	fakeSourceFileReference := token.SourceFileReference{
+		Range:    token.Range{},
+		Document: targetModule.Document(),
+	}
+	keyword := token.NewKeyword("", 0, fakeSourceFileReference)
 	i := ast.NewImport(keyword, nil, nil, reference, nil, nil, nil, true, nil)
 
 	fakeImportStatement := decorated.NewImport(i, nil, nil, exposeAllImports)
 
 	targetModule.ImportedModules().ImportModule(reference, newModule, fakeImportStatement)
 
-	return nil
+	return allErr
 }
 
 func addCores(globalPrimitiveModule *decorated.Module) decshared.DecoratedError {
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Maybe", maybeCode); maybeModuleErr != nil {
-		return maybeModuleErr
-	}
+	var err decshared.DecoratedError
 
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Math", mathCode); maybeModuleErr != nil {
+	maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Maybe", maybeCode)
+	if parser.IsCompileError(maybeModuleErr) {
 		return maybeModuleErr
 	}
+	err = decorated.AppendError(err, maybeModuleErr)
 
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "List", listCode); maybeModuleErr != nil {
-		return maybeModuleErr
+	mathModuleErr := compileAndAddToModule(globalPrimitiveModule, "Math", mathCode)
+	if parser.IsCompileError(mathModuleErr) {
+		return mathModuleErr
 	}
+	err = decorated.AppendError(err, mathModuleErr)
 
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Int", intCode); maybeModuleErr != nil {
-		return maybeModuleErr
+	listModuleErr := compileAndAddToModule(globalPrimitiveModule, "List", listCode)
+	if parser.IsCompileError(listModuleErr) {
+		return listModuleErr
 	}
+	err = decorated.AppendError(err, listModuleErr)
 
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Debug", debugCode); maybeModuleErr != nil {
-		return maybeModuleErr
+	intModuleErr := compileAndAddToModule(globalPrimitiveModule, "Int", intCode)
+	if parser.IsCompileError(intModuleErr) {
+		return intModuleErr
 	}
+	err = decorated.AppendError(err, intModuleErr)
 
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Array", arrayCode); maybeModuleErr != nil {
-		return maybeModuleErr
+	debugModuleErr := compileAndAddToModule(globalPrimitiveModule, "Debug", debugCode)
+	if parser.IsCompileError(debugModuleErr) {
+		return debugModuleErr
 	}
+	err = decorated.AppendError(err, debugModuleErr)
 
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Blob", blobCode); maybeModuleErr != nil {
-		return maybeModuleErr
+	arrayModuleErr := compileAndAddToModule(globalPrimitiveModule, "Array", arrayCode)
+	if parser.IsCompileError(arrayModuleErr) {
+		return arrayModuleErr
 	}
+	err = decorated.AppendError(err, arrayModuleErr)
 
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Char", charCode); maybeModuleErr != nil {
-		return maybeModuleErr
+	blobModuleErr := compileAndAddToModule(globalPrimitiveModule, "Blob", blobCode)
+	if parser.IsCompileError(blobModuleErr) {
+		return blobModuleErr
 	}
+	err = decorated.AppendError(err, blobModuleErr)
 
-	if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "String", stringCode); maybeModuleErr != nil {
-		return maybeModuleErr
+	charModuleErr := compileAndAddToModule(globalPrimitiveModule, "Char", charCode)
+	if parser.IsCompileError(charModuleErr) {
+		return charModuleErr
 	}
+	err = decorated.AppendError(err, charModuleErr)
+
+	stringModuleErr := compileAndAddToModule(globalPrimitiveModule, "String", stringCode)
+	if parser.IsCompileError(stringModuleErr) {
+		return stringModuleErr
+	}
+	err = decorated.AppendError(err, stringModuleErr)
 
 	/*
-		if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Tuple", tupleCode); maybeModuleErr != nil {
+		maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Tuple", tupleCode); maybeModuleErr != nil {
 			return maybeModuleErr
 		}
 
@@ -251,11 +277,11 @@ func addCores(globalPrimitiveModule *decorated.Module) decshared.DecoratedError 
 		}
 	*/
 
-	return nil
+	return err
 }
 
 func createTypeIdentifier(name string) *ast.TypeIdentifier {
-	symbol := token.NewTypeSymbolToken(name, token.SourceFileReference{}, 0)
+	symbol := token.NewTypeSymbolToken(name, token.NewInternalSourceFileReference(), 0)
 
 	return ast.NewTypeIdentifier(symbol)
 }
@@ -265,8 +291,14 @@ func addPrimitive(types *decorated.ModuleTypes, atom *dectype.PrimitiveAtom) {
 }
 
 func kickstartPrimitives() *decorated.Module {
-	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("", token.SourceFileReference{}, 0))
-	rootPrimitiveModule := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), nil)
+	newSourceFileUri := token.MakeDocumentURI("file://internal/")
+	doc := &token.SourceFileDocument{Uri: newSourceFileUri}
+	sourceFileReference := token.SourceFileReference{Document: doc, Range: token.Range{}}
+
+	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("", sourceFileReference, 0))
+	sourceFileDocument := &token.SourceFileDocument{
+		Uri: newSourceFileUri}
+	rootPrimitiveModule := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), sourceFileDocument)
 	rootPrimitiveModule.MarkAsInternal()
 	primitiveModuleLocalTypes := rootPrimitiveModule.LocalTypes()
 
@@ -290,21 +322,21 @@ func kickstartPrimitives() *decorated.Module {
 	addPrimitive(primitiveModuleLocalTypes, blobType)
 	addPrimitive(primitiveModuleLocalTypes, unmanagedType)
 
-	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.SourceFileReference{}, 0))
+	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReference(), 0))
 
-	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", token.SourceFileReference{}, 0))
+	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", token.NewInternalSourceFileReference(), 0))
 	typeParameter := ast.NewTypeParameter(localTypeVariable)
 	localType := dectype.NewLocalType(typeParameter)
 	listType := dectype.NewPrimitiveType(listIdentifier, []dtype.Type{localType})
 
 	addPrimitive(primitiveModuleLocalTypes, listType)
 
-	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.SourceFileReference{}, 0))
+	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.NewInternalSourceFileReference(), 0))
 	arrayType := dectype.NewPrimitiveType(arrayIdentifier, []dtype.Type{localType})
 
 	addPrimitive(primitiveModuleLocalTypes, arrayType)
 
-	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.SourceFileReference{}, 0))
+	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.NewInternalSourceFileReference(), 0))
 	typeRefType := dectype.NewPrimitiveType(typeRefIdentifier, []dtype.Type{localType})
 
 	addPrimitive(primitiveModuleLocalTypes, typeRefType)
@@ -317,27 +349,31 @@ func kickstartPrimitives() *decorated.Module {
 func CreateDefaultRootModule(includeCores bool) (*decorated.Module, decshared.DecoratedError) {
 	primitiveModule := kickstartPrimitives()
 
+	var err decshared.DecoratedError
 	stdModule, stdModuleErr := compileToModule(primitiveModule, "", stdCode)
-	if stdModuleErr != nil {
+	if parser.IsCompileError(stdModuleErr) {
 		return nil, stdModuleErr
 	}
+	err = decorated.AppendError(err, stdModuleErr)
+
 	if err := primitiveModule.LocalTypes().CopyTypes(stdModule.LocalTypes().AllInOrderTypes()); err != nil {
 		return nil, err
 	}
+
 	primitiveModule.LocalDefinitions().CopyFrom(stdModule.LocalDefinitions())
 
 	ExposeEverythingInModule(primitiveModule)
 
 	if includeCores {
-		var importModulesErr decshared.DecoratedError
-		importModulesErr = addCores(primitiveModule)
-		if importModulesErr != nil {
+		importModulesErr := addCores(primitiveModule)
+		if parser.IsCompileError(importModulesErr) {
 			log.Printf("ERROR:%v\n", importModulesErr)
 			return nil, importModulesErr
 		}
+		err = decorated.AppendError(err, importModulesErr)
 	}
 
 	// log.Printf("rootPrimitiveModule is finally %v\n", primitiveModule)
 
-	return primitiveModule, nil
+	return primitiveModule, err
 }

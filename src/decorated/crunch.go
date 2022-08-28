@@ -31,9 +31,16 @@ func (*NoImportModuleRepository) FetchModuleInPackage(moduleType decorated.Modul
 
 func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings bool) (*decorated.Module, decshared.DecoratedError) {
 	rootModule, rootModuleErr := CreateDefaultRootModule(useCores)
-	if rootModuleErr != nil {
+	if parser.IsCompileError(rootModuleErr) {
 		return nil, rootModuleErr
 	}
+
+	if rootModule == nil {
+		panic("not allowed to be nil since it wasnt a compileError")
+	}
+	var totalErr decshared.DecoratedError
+
+	totalErr = decorated.AppendError(totalErr, rootModuleErr)
 
 	importRepository := &NoImportModuleRepository{}
 
@@ -41,8 +48,14 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 
 	const enforceStyle = true
 
-	return InternalCompileToModule(decorated.ModuleTypeNormal, importRepository, rootModule, dectype.MakeArtifactFullyQualifiedModuleName(nil), "for test", code,
+	absoluteFilename := "fortest.swamp"
+	module, compileErr := InternalCompileToModule(decorated.ModuleTypeNormal, importRepository, rootModule, dectype.MakeArtifactFullyQualifiedModuleName(nil), absoluteFilename, code,
 		enforceStyle, verbose, errorsAsWarnings)
+
+	totalErr = decorated.AppendError(totalErr, compileErr)
+
+	return module, totalErr
+
 }
 
 func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose verbosity.Verbosity) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
@@ -106,8 +119,8 @@ func checkUnusedImports(module *decorated.Module) decshared.DecoratedError {
 	}
 	for _, importedType := range module.ImportedTypes().AllInOrderTypes() {
 		if !importedType.WasReferenced() && importedType.CreatedByModuleImport() != nil && !isInternalType(importedType.ReferencedType()) {
-			//warning := decorated.NewUnusedImportWarning(importedType.CreatedByModuleImport(), fmt.Sprintf("imported types '%v'", importedTypeName))
-			//module.AddWarning(warning)
+			warning := decorated.NewUnusedImportWarning(importedType.CreatedByModuleImport(), fmt.Sprintf("imported types '%v'", importedType.String()))
+			errors = decorated.AppendError(errors, warning)
 		}
 	}
 
@@ -130,9 +143,15 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	// relativeModuleName := dectype.MakePackageRelativeModuleName(importModule.FullyQualifiedModuleName().Path())
 	fakeModuleReference := decorated.NewModuleReference(rootModule.FullyQualifiedModuleName().Path(), rootModule)
 	const exposeAllImports = true
-	keyword := token.NewKeyword("", 0, token.SourceFileReference{})
+	sourceFileReference := token.SourceFileReference{
+		Range:    token.Range{},
+		Document: rootModule.Document(),
+	}
+
+	keyword := token.NewKeyword("", 0, sourceFileReference)
 	i := ast.NewImport(keyword, nil, nil, fakeModuleReference.AstModuleReference(), nil, nil, nil, true, nil)
 	fakeImportStatement := decorated.NewImport(i, fakeModuleReference, fakeModuleReference, exposeAllImports)
+
 	importErr := ImportModuleToModule(module, fakeImportStatement)
 	if parser.IsCompileErr(importErr) {
 		return nil, decorated.NewInternalError(importErr)
@@ -147,12 +166,12 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 		fakeImportStatement := decorated.NewImport(i, fakeModuleReference, fakeModuleReference, exposeAllImports)
 		module.ImportedModules().ImportModule(importedSubModule.ModuleName(), importedSubModule.ReferencedModule(), fakeImportStatement)
 	}
-	module.ImportedModules().ImportModule(rootModule.FullyQualifiedModuleName().Path(), rootModule, fakeImportStatement)
+	importedModule := module.ImportedModules().ImportModule(rootModule.FullyQualifiedModuleName().Path(), rootModule, fakeImportStatement)
 
 	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.LocalTypes(), module.ImportedTypes())
 	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.LocalTypes())
 
-	converter := NewDecorator(moduleRepository, module, createAndLookup)
+	converter := NewDecorator(moduleRepository, module, importedModule, createAndLookup)
 
 	rootStatementHandler := decorator.NewRootStatementHandler(converter, createAndLookup, moduleType, "compiletomodule")
 
@@ -164,7 +183,7 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	errors = decorated.AppendError(errors, converter.Errors())
 
 	//importErrors := checkUnusedImports(module)
-	//allErrors = append(allErrors, importErrors...)
+	//errors = decorated.AppendError(errors, importErrors)
 
 	// log.Printf("before EXPOSING LOCAL TYPES:%v\n", module.ExposedTypes().DebugString())
 	module.ExposedTypes().AddTypesFromModule(module.LocalTypes().AllInOrderTypes(), module)

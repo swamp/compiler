@@ -18,6 +18,10 @@ func MakeDocumentURI(s string) DocumentURI {
 	if !strings.HasPrefix(s, "file://") {
 		panic("illegal uri")
 	}
+
+	if strings.TrimSpace(s) == "" {
+		panic("not allowed to be zero string")
+	}
 	return DocumentURI(s)
 }
 
@@ -71,6 +75,10 @@ func (s DocumentURI) ToLocalFilePath() (string, error) {
 	return pathOnly, nil
 }
 
+func NewInternalSourceFileDocument() *SourceFileDocument {
+	return MakeSourceFileDocumentFromLocalPath("")
+}
+
 type SourceFileDocument struct {
 	Uri DocumentURI
 }
@@ -80,12 +88,19 @@ func (d *SourceFileDocument) EqualTo(uri DocumentURI) bool {
 }
 
 func (d *SourceFileDocument) String() string {
-	return fmt.Sprintf("document %v", d.Uri)
+	return fmt.Sprintf("[document '%v']", d.Uri)
 }
 
 type SourceFileReference struct {
 	Range    Range
 	Document *SourceFileDocument
+}
+
+func NewInternalSourceFileReference() SourceFileReference {
+	return SourceFileReference{
+		Range:    MakeRange(NewPositionTopLeft(), NewPositionTopLeft()),
+		Document: NewInternalSourceFileDocument(),
+	}
 }
 
 func MakeSourceFileDocument(uri string) *SourceFileDocument {
@@ -157,6 +172,18 @@ func MakeSourceFileReference(uri *SourceFileDocument, tokenRange Range) SourceFi
 
 func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileReference) SourceFileReference {
 	tokenRange := MakeInclusiveRange(start.Range, end.Range)
+	if start.Document == nil {
+		panic("start document can not be nil")
+	}
+
+	if end.Document == nil {
+		panic("end document can not be nil")
+	}
+
+	if !start.Document.EqualTo(end.Document.Uri) {
+		//panic(fmt.Sprintf("start and end must come from same document. '%v' vs '%v'", start.Document, end.Document))
+	}
+
 	return SourceFileReference{
 		Range:    tokenRange,
 		Document: start.Document,

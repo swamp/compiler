@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/swamp/compiler/src/token"
+
 	"github.com/swamp/compiler/src/parser"
 
 	deccy "github.com/swamp/compiler/src/decorated"
@@ -88,7 +90,8 @@ func (r *LibraryReaderAndDecorator) loadAndApplySettings(world *Package, reposit
 			dependencyFilePrefix = path.Join(swampDirectory, packagePath.Path)
 		}
 
-		rootNamespace := dectype.MakePackageRootModuleNameFromString(packagePath.Name)
+		rootDocumentFake := &token.SourceFileDocument{Uri: "file://root"}
+		rootNamespace := dectype.MakePackageRootModuleNameFromString(packagePath.Name, rootDocumentFake)
 		dependencyFilePrefix = filepath.ToSlash(dependencyFilePrefix)
 		if !file.IsDir(dependencyFilePrefix) {
 			full, err := filepath.Abs(dependencyFilePrefix)

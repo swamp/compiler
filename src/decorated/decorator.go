@@ -29,10 +29,11 @@ type Decorator struct {
 	moduleRepository    ModuleRepository
 	typeLookUpAndCreate decorated.TypeAddAndReferenceMaker
 	errors              decshared.DecoratedError
+	importedModule      *decorated.ImportedModule
 }
 
-func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module, typeLookUpAndCreate decorated.TypeAddAndReferenceMaker) *Decorator {
-	d := &Decorator{module: module, moduleRepository: moduleRepository, typeLookUpAndCreate: typeLookUpAndCreate}
+func NewDecorator(moduleRepository ModuleRepository, module *decorated.Module, importedModule *decorated.ImportedModule, typeLookUpAndCreate decorated.TypeAddAndReferenceMaker) *Decorator {
+	d := &Decorator{module: module, moduleRepository: moduleRepository, importedModule: importedModule, typeLookUpAndCreate: typeLookUpAndCreate}
 	return d
 }
 
@@ -66,7 +67,7 @@ func (d *Decorator) FindNamedFunctionValue(identifier *ast.VariableIdentifier) *
 }
 
 func (d *Decorator) AddDefinition(identifier *ast.VariableIdentifier, expr decorated.Expression) error {
-	return d.module.LocalDefinitions().AddDecoratedExpression(identifier, expr)
+	return d.module.LocalDefinitions().AddDecoratedExpression(identifier, d.importedModule, expr)
 }
 
 func (d *Decorator) AddDecoratedError(decoratedError decshared.DecoratedError) {

@@ -8,6 +8,11 @@ package generate_sp
 import (
 	"encoding/hex"
 	"fmt"
+	"log"
+	"os"
+	"path"
+	"strings"
+
 	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -19,10 +24,6 @@ import (
 	swampdisasmsp "github.com/swamp/disassembler/lib"
 	"github.com/swamp/opcodes/instruction_sp"
 	"github.com/swamp/opcodes/opcode_sp"
-	"io/ioutil"
-	"log"
-	"path"
-	"strings"
 )
 
 type AnyPosAndRange interface {
@@ -184,7 +185,7 @@ func (g *Generator) Before(compilePackage *loader.Package) error {
 	return nil
 }
 
-func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) error {
+func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, verboseFlag verbosity.Verbosity) error {
 	g.Before(compilePackage)
 
 	allConstantsErr := preparePackageConstants(compilePackage, g.packageConstants, g.lookup)
@@ -198,6 +199,13 @@ func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resource
 		}
 	}
 
+	return nil
+}
+
+func (g *Generator) GenerateFromPackageAndWriteOutput(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) error {
+	if generateErr := g.GenerateFromPackage(compilePackage, resourceNameLookup, verboseFlag); generateErr != nil {
+		return generateErr
+	}
 	const showAssembler = false
 	return g.After(resourceNameLookup, absoluteOutputDirectory, packageSubDirectory, showAssembler, verboseFlag)
 }
@@ -235,7 +243,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 					panic("no opcodes")
 				}
 				log.Printf("func:%v opcodes: %v", f, hex.Dump(opcodes))
-				lines := swampdisasmsp.Disassemble(opcodes)
+				lines := swampdisasmsp.Disassemble(opcodes, true)
 
 				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
 			}
@@ -253,7 +261,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 
 	outputFilename := path.Join(absoluteOutputDirectory, fmt.Sprintf("%s.swamp-pack", packageSubDirectory))
 
-	if err := ioutil.WriteFile(outputFilename, packed, 0o644); err != nil {
+	if err := os.WriteFile(outputFilename, packed, 0o644); err != nil {
 		return decorated.NewInternalError(err)
 	}
 

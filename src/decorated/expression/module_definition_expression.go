@@ -17,6 +17,7 @@ type ModuleDef interface {
 	Identifier() *ast.VariableIdentifier
 	FullyQualifiedVariableName() *FullyQualifiedPackageVariableName
 	OwnedByModule() *Module
+	CreatedBy() *ImportedModule
 	WasReferenced() bool
 	IsInternal() bool
 	IsExternal() bool
@@ -26,13 +27,14 @@ type ModuleDef interface {
 type ModuleDefinition struct {
 	localIdentifier *ast.VariableIdentifier
 	createdIn       *ModuleDefinitions
+	createdBy       *ImportedModule
 	expr            Expression
 	wasReferenced   bool
 }
 
-func NewModuleDefinition(createdIn *ModuleDefinitions, identifier *ast.VariableIdentifier, expr Expression) *ModuleDefinition {
+func NewModuleDefinition(createdIn *ModuleDefinitions, createdBy *ImportedModule, identifier *ast.VariableIdentifier, expr Expression) *ModuleDefinition {
 	return &ModuleDefinition{
-		createdIn: createdIn, localIdentifier: identifier, expr: expr,
+		createdIn: createdIn, createdBy: createdBy, localIdentifier: identifier, expr: expr,
 	}
 }
 
@@ -44,6 +46,10 @@ func NewModuleDefinitionExternal(createdIn *ModuleDefinitions, identifier *ast.V
 
 func (d *ModuleDefinition) Identifier() *ast.VariableIdentifier {
 	return d.localIdentifier
+}
+
+func (d *ModuleDefinition) CreatedBy() *ImportedModule {
+	return d.createdBy
 }
 
 func (d *ModuleDefinition) ParentDefinitions() *ModuleDefinitions {

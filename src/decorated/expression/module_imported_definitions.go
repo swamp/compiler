@@ -79,7 +79,7 @@ func (d *ModuleImportedDefinitions) AddDefinition(identifier *ast.VariableIdenti
 	if existingDeclare != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingDeclare)
 	}
-	d.importedDefinitions[identifier.Name()] = NewImportedDefinition(nil, identifier, definition)
+	d.importedDefinitions[identifier.Name()] = NewImportedDefinition(definition.CreatedBy(), identifier, definition)
 	return nil
 }
 

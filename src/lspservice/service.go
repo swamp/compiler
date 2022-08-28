@@ -3,10 +3,11 @@ package lspservice
 import (
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/swamp/compiler/src/parser"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/tokenize"
-	"log"
 
 	"github.com/piot/go-lsp"
 	"github.com/piot/lsp-server/lspserv"
@@ -890,6 +891,8 @@ func sendToLspError(allDiagnostics *DiagnosticsForDocuments, compileErr error) e
 		log.Printf("must handle error %T %v", unwrapped, unwrapped)
 		return nil
 	}
+
+	log.Printf("do not know what this error is %T", compileErr)
 
 	panic(fmt.Errorf("do not know what this error is %T", compileErr))
 }

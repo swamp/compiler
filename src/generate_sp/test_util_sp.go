@@ -12,6 +12,13 @@ import (
 	"strings"
 	"testing"
 
+	decorated "github.com/swamp/compiler/src/decorated/expression"
+
+	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/loader"
+
+	"github.com/swamp/compiler/src/parser"
+
 	"github.com/swamp/assembler/lib/assembler_sp"
 	deccy "github.com/swamp/compiler/src/decorated"
 	"github.com/swamp/compiler/src/typeinfo"
@@ -23,10 +30,14 @@ func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assem
 	const useCores = true
 	const errorsAsWarnings = false
 	module, compileErr := deccy.CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
-	if compileErr != nil {
+	if parser.IsCompileError(compileErr) {
 		return nil, nil, compileErr
 	}
 
+	fileSystemRoot := loader.LocalFileSystemRoot("")
+	pack := loader.NewPackage(fileSystemRoot, "someName")
+	fullyQualifiedName := dectype.MakeArtifactFullyQualifiedModuleName(nil)
+	pack.AddModule(fullyQualifiedName, module)
 	gen := NewGenerator()
 	gen.PrepareForNewPackage()
 	const verboseFlag = verbosity.None
@@ -34,18 +45,25 @@ func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assem
 	if typeInfoErr != nil {
 		return nil, nil, typeInfoErr
 	}
-	genErr := gen.GenerateModule(module, resourceLookup, verboseFlag)
-	if genErr != nil {
+
+	genErr := gen.GenerateFromPackage(pack, resourceLookup, verboseFlag)
+	if parser.IsCompileErr(genErr) {
 		return nil, nil, genErr
 	}
-	return gen.PackageConstants(), gen.LastFunctionConstants(), genErr
+	if genErr != nil {
+		compileErr = decorated.AppendError(compileErr, decorated.NewInternalError(genErr))
+	}
+	return gen.PackageConstants(), gen.LastFunctionConstants(), compileErr
 }
 
 func checkGeneratedAssembler(constants *assembler_sp.PackageConstants, functions []*assembler_sp.Constant, expectedAsm string) error {
-	var assemblerOutput string
+	assemblerOutput := constants.DebugString([]assembler_sp.ConstantType{assembler_sp.ConstantTypeString, assembler_sp.ConstantTypeResourceName})
+	if len(assemblerOutput) > 0 {
+		assemblerOutput += "\n"
+	}
 	for _, f := range functions {
 		opcodes := constants.FetchOpcodes(f)
-		lines := swampdisasmsp.Disassemble(opcodes)
+		lines := swampdisasmsp.Disassemble(opcodes, false)
 		assemblerOutput = assemblerOutput + fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
 	}
 
@@ -70,7 +88,9 @@ func checkGeneratedAssembler(constants *assembler_sp.PackageConstants, functions
 func testGenerateInternalWithAssemblerCheck(code string, expectedAsm string) error {
 	constants, functions, generateErr := testGenerateInternal(code)
 	if generateErr != nil {
-		return generateErr
+		if parser.TypeOfWarningRecursive(generateErr) >= parser.ReportAsSeverityError {
+			return generateErr
+		}
 	}
 	checkErr := checkGeneratedAssembler(constants, functions, expectedAsm)
 	return checkErr

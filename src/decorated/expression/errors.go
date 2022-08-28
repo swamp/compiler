@@ -1183,6 +1183,10 @@ func (e *MultiErrors) add(decoratedError decshared.DecoratedError) {
 	if decoratedError == e {
 		panic("can not add self")
 	}
+	if decoratedError.FetchPositionLength().Document == nil {
+		panic(fmt.Errorf("error %T must provide a valid document %v", decoratedError, decoratedError))
+	}
+
 	e.errors = append(e.errors, decoratedError)
 }
 
@@ -1190,7 +1194,7 @@ func (e *MultiErrors) Error() string {
 	s := ""
 	for _, err := range e.errors {
 		if err.FetchPositionLength().Document == nil {
-			s += fmt.Sprintf("error %T must provide a valid document %v", err, err)
+			panic(fmt.Errorf("error %T must provide a valid document %v", err, err))
 		} else {
 			s += fmt.Sprintf("%v %T %v\n", err.FetchPositionLength().ToReferenceString(), err, err)
 		}

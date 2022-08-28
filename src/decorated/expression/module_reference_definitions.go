@@ -96,7 +96,7 @@ func (d *ModuleReferenceDefinitions) AddDefinitions(definitions []ModuleDef) err
 		if def == nil {
 			panic("not allowed with empty localDefinitions")
 		}
-		addErr := d.AddDefinition(def.Identifier(), def)
+		addErr := d.AddDefinition(def.Identifier(), def.CreatedBy(), def)
 		if addErr != nil {
 			return addErr
 		}
@@ -104,10 +104,10 @@ func (d *ModuleReferenceDefinitions) AddDefinitions(definitions []ModuleDef) err
 	return nil
 }
 
-func (d *ModuleReferenceDefinitions) AddDefinitionsWithModulePrefix(definitions []*ModuleDefinition, relative dectype.PackageRelativeModuleName) error {
+func (d *ModuleReferenceDefinitions) AddDefinitionsWithModulePrefix(definitions []*ModuleDefinition, importedModule *ImportedModule, relative dectype.PackageRelativeModuleName) error {
 	for _, def := range definitions {
 		completeName := relative.JoinLocalName(def.Identifier())
-		addErr := d.AddDefinition(ast.NewVariableIdentifier(token.NewVariableSymbolToken(completeName, token.SourceFileReference{}, 0)), def)
+		addErr := d.AddDefinition(ast.NewVariableIdentifier(token.NewVariableSymbolToken(completeName, token.NewInternalSourceFileReference(), 0)), importedModule, def)
 		if addErr != nil {
 			return addErr
 		}
@@ -126,12 +126,12 @@ func (d *ModuleReferenceDefinitions) FindDefinition(identifier *ast.VariableIden
 	return def
 }
 
-func (d *ModuleReferenceDefinitions) AddDefinition(identifier *ast.VariableIdentifier, definition ModuleDef) error {
+func (d *ModuleReferenceDefinitions) AddDefinition(identifier *ast.VariableIdentifier, importModule *ImportedModule, definition ModuleDef) error {
 	existingDeclare := d.FindDefinition(identifier)
 	if existingDeclare != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingDeclare)
 	}
-	d.referencedExpressions[identifier.Name()] = NewImportedDefinition(nil, identifier, definition)
+	d.referencedExpressions[identifier.Name()] = NewImportedDefinition(importModule, identifier, definition)
 	return nil
 }
 

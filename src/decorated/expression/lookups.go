@@ -75,5 +75,5 @@ func (l *RecordLookups) String() string {
 }
 
 func (l *RecordLookups) FetchPositionLength() token.SourceFileReference {
-	return token.SourceFileReference{}
+	return l.expressionToRecord.FetchPositionLength()
 }

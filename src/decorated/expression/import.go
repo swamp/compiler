@@ -24,6 +24,9 @@ type ImportStatement struct {
 // source *decorated.Module, sourceMountedModuleName dectype.PackageRelativeModuleName, exposeAll bool
 
 func NewImport(astImport *ast.Import, moduleReference *ModuleReference, alias *ModuleReference, exposeAll bool) *ImportStatement {
+	if astImport.FetchPositionLength().Document == nil {
+		panic("astImport is wrong")
+	}
 	return &ImportStatement{astImport: astImport, moduleReference: moduleReference, alias: alias, exposeAll: exposeAll}
 }
 

@@ -16,9 +16,10 @@ isCold : Int -> Bool
 isCold temp =
     temp == -1
 `, `
-func [function isCold 2 1 [[constant1 int:-1 #2]]]
-00: cpeq 0,1,2
-04: ret
+func [constantfn DynPos 0008:104 func:isCold]
+0000: ldi 8,-1
+0009: cpeqi 0,4,8
+0016: ret
 `)
 }
 
@@ -33,14 +34,13 @@ main _ =
     in
     a && b
 `, `
-func [function load 1 1 [[constant1 funcExternal:someLoad #2]]]
-00: callexternal 0 2 ([1])
-05: ret
-
-func [function main 5 1 [[constant1 int:4 #3] [constant2 func:load #4]]]
-00: lr 2,3
-03: call 0 4 ([2])
-08: ret
+func [constantfn DynPos 0008:104 func:main]
+0000: ldb 8,true
+0006: ldb 9,false
+000c: cpy 0,(8:1)
+0017: brfa 0 [label @0029]
+001e: cpy 0,(9:1)
+0029: ret
 `)
 }
 
@@ -51,11 +51,11 @@ someTest : Bool -> Bool -> Bool
 someTest a b =
     !a && b
 `, `
-func [function someTest 1 2 []]
-00: not 0,1
-03: brfa 0 [label @09]
-06: lr 0,2
-09: ret
+func [constantfn DynPos 0010:104 func:someTest]
+0000: not 0,1
+0009: brfa 0 [label @001b]
+0010: cpy 0,(2:1)
+001b: ret
 `)
 }
 
@@ -71,12 +71,15 @@ a : Bool -> List Cool
 a _ =
     [ { name = "hi" }, { name = "another" }, { name = "tjoho" } ]
 `, `
-func [function a func(Bool -> List<Cool>) 1 [[constant1 hi #5] [constant2 another #6] [constant3 tjoho #7]]]
-00: crs 2 [5]
-04: crs 3 [6]
-08: crs 4 [7]
-0c: crl 0 [2 3 4]
-12: ret
+[constantstring DynPos 0073:16 hi]
+[constantstring DynPos 008B:16 another]
+[constantstring DynPos 00A1:16 tjoho]
+func [constantfn DynPos 0008:104 func:a]
+0000: ldz 16,$0073
+0009: ldz 24,$008B
+0012: ldz 32,$00A1
+001b: crl 0 [16 24 32] (8, 8)
+0030: ret
 `)
 }
 
@@ -92,12 +95,15 @@ a : Bool -> Array Cool
 a x =
     [| { name = "hello" }, { name = "world" }, { name = "ossian" } |]
 `, `
-func [function a 5 1 [[constant1 hi #5] [constant2 another #6] [constant3 tjoho #7]]]
-00: crs 2 [5]
-04: crs 3 [6]
-08: crs 4 [7]
-0c: crs 0 [2 3 4]
-12: ret
+[constantstring DynPos 0076:16 hello]
+[constantstring DynPos 008C:16 world]
+[constantstring DynPos 00A3:16 ossian]
+func [constantfn DynPos 0008:104 func:a]
+0000: ldz 16,$0076
+0009: ldz 24,$008C
+0012: ldz 32,$00A3
+001b: cra 0 [16 24 32] (8, 8)
+0030: ret
 `)
 }
 
@@ -114,9 +120,11 @@ a : Bool -> SomeEnum
 a _ =
     First "Hello"
 `, `
-func [function a func(Bool -> SomeEnum) 1 [[constant1 Hello #2]]]
-00: createenum 0 0 ([2])
-05: ret
+[constantstring DynPos 0076:16 Hello]
+func [constantfn DynPos 0008:104 func:a]
+0000: lde 0,0 (16)
+0008: ldz 8,$0076
+0011: ret
 `)
 }
 
@@ -133,9 +141,10 @@ a : Bool -> SomeEnum
 a dummy =
     Second 1
 `, `
-func [function a func(Bool -> SomeEnum) 1 [[constant1 int:1 #2]]]
-00: createenum 0 2 ([2])
-05: ret
+func [constantfn DynPos 0008:104 func:a]
+0000: lde 0,2 (16)
+0008: ldi 4,1
+0011: ret
 `)
 }
 
@@ -146,9 +155,10 @@ main : Bool -> Maybe Int
 main ignored =
     Just 3
 `, `
-func [function main func(Bool -> Maybe<Int>) 1 [[constant1 int:3 #2]]]
-00: createenum 0 1 ([2])
-05: ret
+func [constantfn DynPos 0008:104 func:main]
+0000: lde 0,1 (8)
+0008: ldi 4,3
+0011: ret
 `)
 }
 
@@ -159,29 +169,28 @@ main : String -> Bool
 main name =
     if name == "Rebecca" then
         let
-            x = "Rebecca"
+            _ = "Rebecca"
         in
         True
     else
         let
-            x = "3"
+            _ = "3"
         in
         False
 
 `, `
-func [function isBeautiful func(String -> Bool) 1 [[constant1 Rebecca #4] [constant2 True #5] [constant3 3 #6] [constant4 False #7]]]
-00: cpeq 2,1,4
-04: brne 2 [label @0f]
-07: lr 3,4
-0a: lr 0,5
-0d: jmp [label @15]
-0f: lr 3,6
-12: lr 0,7
-15: ret
-
-func [function main func(Bool -> Bool) 1 [[constant1 John #2] [constant2 func:isBeautiful #3]]]
-00: call 0 3 ([2])
-05: ret
+[constantstring DynPos 0078:16 Rebecca]
+[constantstring DynPos 008A:16 3]
+func [constantfn DynPos 0008:104 func:main]
+0000: ldz 24,$0078
+0009: cpeqs 16,8,24
+0016: brfa 16 [label @002f]
+001d: ldz 32,$0078
+0026: ldb 0,true
+002c: jmp [label @003e]
+002f: ldz 40,$008A
+0038: ldb 0,false
+003e: ret
 `)
 }
 
@@ -203,20 +212,28 @@ main score =
     in
     checkScoreFn score
 `, `
-func [function another func(Int -> Bool) 1 [[constant1 Peter #3] [constant2 func:f #4]]]
-00: curry 2 4 ([3])
-05: call 0 2 ([1])
-0a: ret
+[constantstring DynPos 00EF:16 Ossian]
+func [constantfn DynPos 0010:104 func:isWinner]
+0000: ldz 24,$00EF
+0009: cpeqs 20,8,24
+0016: brfa 20 [label @004c]
+001d: ldi 36,2
+0026: muli 32,16,36
+0033: ldi 40,100
+003c: cpgti 0,32,40
+0049: jmp [label @0062]
+004c: ldi 44,100
+0055: cpgti 0,16,44
+0062: ret
 
-func [function f func(String -> Int -> Bool) 2 [[constant1 Peter #5] [constant2 int:2 #6] [constant3 int:100 #7]]]
-00: cpeq 3,1,5
-04: brne 3 [label @11]
-07: mul 4,2,6
-0b: cpg 0,4,7
-0f: jmp [label @15]
-11: cpg 0,2,7
-15: ret
-
+func [constantfn DynPos 0080:104 func:main]
+0000: ldz 16,$0010
+0009: ldz 32,$00EF
+0012: curry 8,16,(32:8) (typeId:4, align:8)
+0024: cpy 20,(4:4)
+002f: call 16 8
+0038: cpy 0,(16:1)
+0043: ret
 `)
 }
 
@@ -227,13 +244,21 @@ a : Int -> List Int
 a _ =
     [ 1, 3, 4 ] ++ [ 5, 6, 7, 8 ] ++ [ 9 ]
 `, `
-func [function a func(Int -> List<Int>) 1 [[constant1 int:1 #5] [constant2 int:3 #6] [constant3 int:4 #7] [constant4 int:5 #8] [constant5 int:6 #9] [constant6 int:7 #10] [constant7 int:8 #11] [constant8 int:9 #12]]]
-00: crl 3 [5 6 7]
-06: crl 4 [8 9 10 11]
-0d: listappend 2,3,4
-11: crl 3 [12]
-15: listappend 0,2,3
-19: ret
+func [constantfn DynPos 0008:104 func:a]
+0000: ldi 32,1
+0009: ldi 36,3
+0012: ldi 40,4
+001b: crl 24 [32 36 40] (4, 4)
+0030: ldi 56,5
+0039: ldi 60,6
+0042: ldi 64,7
+004b: ldi 68,8
+0054: crl 48 [56 60 64 68] (4, 4)
+006d: listappend 16,24,48
+007a: ldi 80,9
+0083: crl 72 [80] (4, 4)
+0090: listappend 0,16,72
+009d: ret
 `)
 }
 
@@ -250,21 +275,41 @@ tester x =
     | isUpperLeft -> '/'
     | _ -> '2'
 `, `
+func [constantfn DynPos 0008:104 func:tester]
+0000: ldr 8,'a' (97)
+0006: ldb 12,false
+000c: ldr 16,'_' (95)
+0012: cpeqi 13,8,16
+001f: brfa 13 [label @002f]
+0026: ldr 0,'@' (64)
+002c: jmp [label @0045]
+002f: brfa 12 [label @003f]
+0036: ldr 0,'/' (47)
+003c: jmp [label @0045]
+003f: ldr 0,'2' (50)
+0045: ret
 `)
 }
 
 func TestCasePatternMatchingString(t *testing.T) {
 	testGenerate(t,
 		`
-some : String -> Int
+some : Int -> Int
 some a =
     case a of
-        "hello" -> 0
+        2 -> 0
 
-        "something else" -> 1
+        3 -> 1
 
         _ -> -1
 	`, `
-
+func [constantfn DynPos 0008:104 func:some]
+0000: jmppmi 4 [[2 [label @0014]] [3 [label offset @0020]]] [label offset @002c]
+0014: ldi 0,0
+001d: jmp [label @0035]
+0020: ldi 0,1
+0029: jmp [label @0035]
+002c: ldi 0,-1
+0035: ret
 `)
 }

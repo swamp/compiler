@@ -10,6 +10,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/parser"
 	"github.com/swamp/compiler/src/verbosity"
 )
 
@@ -21,10 +22,10 @@ type WorldDecorator struct {
 
 func NewWorldDecorator(forceStyle bool, verbose verbosity.Verbosity) (*WorldDecorator, decshared.DecoratedError) {
 	rootModule, rootModuleErr := deccy.CreateDefaultRootModule(true)
-	if rootModuleErr != nil {
+	if parser.IsCompileError(rootModuleErr) {
 		return nil, rootModuleErr
 	}
-	return &WorldDecorator{verbose: verbose, forceStyle: forceStyle, rootModule: rootModule}, nil
+	return &WorldDecorator{verbose: verbose, forceStyle: forceStyle, rootModule: rootModule}, rootModuleErr
 }
 
 func (w *WorldDecorator) RootModules() *decorated.Module {

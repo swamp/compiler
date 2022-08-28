@@ -58,7 +58,7 @@ func remove(s []dectype.PackageRelativeModuleName, r dectype.PackageRelativeModu
 
 func (l *ModuleRepository) FetchModuleInPackageEx(moduleType decorated.ModuleType, artifactFullyModuleName dectype.ArtifactFullyQualifiedModuleName, packageRelativeModuleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
 	if verboseFlag >= verbosity.Mid {
-		log.Printf("* fetching module %v artifactName:%v\n", packageRelativeModuleName, artifactFullyModuleName)
+		log.Printf("* fetching module '%v' artifactName:'%v'\n", packageRelativeModuleName, artifactFullyModuleName)
 	}
 
 	module := l.world.FindModule(artifactFullyModuleName)

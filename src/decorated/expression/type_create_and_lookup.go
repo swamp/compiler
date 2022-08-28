@@ -37,7 +37,7 @@ func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.Typ
 }
 
 func (l *TypeCreateAndLookup) FindBuiltInType(s string) dtype.Type {
-	identifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(s, token.SourceFileReference{}, 0))
+	identifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(s, token.NewInternalSourceFileReference(), 0))
 	foundType, _, err := l.lookup.FindType(identifier)
 	if err != nil {
 		panic(fmt.Errorf("could not find %v", identifier))

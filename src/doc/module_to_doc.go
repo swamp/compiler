@@ -124,8 +124,6 @@ func shouldIncludeCommentBlock(commentBlock *ast.MultilineComment) bool {
 	return commentBlock != nil && commentBlock.Token().ForDocumentation
 }
 
-
-
 func sortFunctionKeys(functions map[*decorated.FullyQualifiedPackageVariableName]*decorated.FunctionValue) []*decorated.FullyQualifiedPackageVariableName {
 	keys := make([]*decorated.FullyQualifiedPackageVariableName, 0, len(functions))
 	for k := range functions {
@@ -237,10 +235,10 @@ func findTypeNames(d dtype.Type) (string, dectype.ArtifactFullyQualifiedTypeName
 	case *dectype.Alias:
 		return t.TypeIdentifier().Name(), t.ArtifactTypeName()
 	case *dectype.PrimitiveTypeReference:
-		moduleName := dectype.MakeModuleNameFromString(t.PrimitiveAtom().PrimitiveName().Name())
+		moduleName := dectype.MakeModuleNameFromString(t.PrimitiveAtom().PrimitiveName().Name(), t.FetchPositionLength().Document)
 		return t.AstIdentifier().SomeTypeIdentifier().Name(), dectype.ArtifactFullyQualifiedTypeName{ModuleName: moduleName}
 	case *dectype.UnmanagedType:
-		moduleName := dectype.MakeModuleNameFromString("builtin")
+		moduleName := dectype.MakeModuleNameFromString("builtin", t.FetchPositionLength().Document)
 		return "Unmanaged", dectype.ArtifactFullyQualifiedTypeName{ModuleName: moduleName}
 	case *dectype.RecordAtom:
 		return "Record", dectype.ArtifactFullyQualifiedTypeName{}

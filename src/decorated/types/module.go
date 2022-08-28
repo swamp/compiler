@@ -41,14 +41,18 @@ func MakeModuleName(path *ast.ModuleReference) ModuleName {
 	return ModuleName{path: path, precalculated: CalculateString(path)}
 }
 
-func MakeModuleNameFromString(name string) ModuleName {
+func MakeModuleNameFromString(name string, document *token.SourceFileDocument) ModuleName {
 	parts := strings.Split(name, ".")
 	if len(parts) == 0 {
 		return MakeModuleName(nil)
 	}
 	var nameParts []*ast.ModuleNamePart
 	for _, part := range parts {
-		typeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(part, token.SourceFileReference{}, 0))
+		sourceFileReference := token.SourceFileReference{
+			Range:    token.Range{},
+			Document: document,
+		}
+		typeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(part, sourceFileReference, 0))
 		part := ast.NewModuleNamePart(typeIdentifier)
 		nameParts = append(nameParts, part)
 	}
@@ -135,8 +139,8 @@ func MakePackageRootModuleName(path *ast.ModuleReference) PackageRootModuleName 
 	return PackageRootModuleName{MakeModuleName(path)}
 }
 
-func MakePackageRootModuleNameFromString(name string) PackageRootModuleName {
-	return PackageRootModuleName{MakeModuleNameFromString(name)}
+func MakePackageRootModuleNameFromString(name string, document *token.SourceFileDocument) PackageRootModuleName {
+	return PackageRootModuleName{MakeModuleNameFromString(name, document)}
 }
 
 func (n PackageRootModuleName) Join(relative PackageRelativeModuleName) ArtifactFullyQualifiedModuleName {
@@ -202,8 +206,8 @@ func MakePackageRelativeModuleName(path *ast.ModuleReference) PackageRelativeMod
 	return PackageRelativeModuleName{MakeModuleName(path)}
 }
 
-func MakePackageRelativeModuleNameFromString(name string) PackageRelativeModuleName {
-	return PackageRelativeModuleName{MakeModuleNameFromString(name)}
+func MakePackageRelativeModuleNameFromString(name string, document *token.SourceFileDocument) PackageRelativeModuleName {
+	return PackageRelativeModuleName{MakeModuleNameFromString(name, document)}
 }
 
 func (n PackageRelativeModuleName) JoinLocalName(relative *ast.VariableIdentifier) string {
