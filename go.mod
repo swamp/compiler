@@ -1,6 +1,6 @@
 module github.com/swamp/compiler
 
-go 1.18
+go 1.19
 
 require (
 	github.com/alecthomas/kong v0.6.1
@@ -11,8 +11,8 @@ require (
 	github.com/piot/go-lsp v0.0.0-20210308100331-e96ace6e5b0d
 	github.com/piot/lsp-server v0.0.0-20210308100659-f6871334c685
 	github.com/stretchr/testify v1.8.0
-	github.com/swamp/assembler v0.0.0-20220828112950-5002c8de2eb3
-	github.com/swamp/disassembler v0.0.0-20220828112903-a4c7b1a272ad
+	github.com/swamp/assembler v0.0.0-20220828131015-e4bc9acfd44d
+	github.com/swamp/disassembler v0.0.0-20220828130657-a02b36df9c27
 	github.com/swamp/opcodes v0.0.0-20220302163745-47703b09858c
 	github.com/swamp/pack v0.0.0-20220101125357-e0d50aa34d0c
 )

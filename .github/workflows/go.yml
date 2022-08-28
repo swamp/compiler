@@ -6,12 +6,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
@@ -43,12 +43,12 @@ jobs:
             goos: windows
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Compile for ${{ matrix.goos }} and ${{ matrix.goarch }}
         run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -o swamp_${{ matrix.goos }}_${{ matrix.goarch }} ./src/swamp/

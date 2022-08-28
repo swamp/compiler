@@ -50,10 +50,10 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.2/go.mod h1:R6va5+xMeoiuVRoj+gSkQ7d3FALtqAAGI1FQKckRals=
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
-github.com/swamp/assembler v0.0.0-20220828112950-5002c8de2eb3 h1:6E/Cm3wuJCxpx5/usSAJ0Z4yx/83YVnpJPvCP9wskZY=
-github.com/swamp/assembler v0.0.0-20220828112950-5002c8de2eb3/go.mod h1:q1rCDqrF8olsUaX2A4hXbFt+ZHg679XQCeNdzEMCXyM=
-github.com/swamp/disassembler v0.0.0-20220828112903-a4c7b1a272ad h1:C/tnLDpnvKykPCsqzZc/iU3QbgOwrJHko/O1Uy3CYeU=
-github.com/swamp/disassembler v0.0.0-20220828112903-a4c7b1a272ad/go.mod h1:PSj40Cm4OHEuhbUUREARIPM2dMBUubFTzsv209Z+upg=
+github.com/swamp/assembler v0.0.0-20220828131015-e4bc9acfd44d h1:r9/HG3XeTiEzfJaKor/L4oYRTmaeni16M88SVHcTTu4=
+github.com/swamp/assembler v0.0.0-20220828131015-e4bc9acfd44d/go.mod h1:q1rCDqrF8olsUaX2A4hXbFt+ZHg679XQCeNdzEMCXyM=
+github.com/swamp/disassembler v0.0.0-20220828130657-a02b36df9c27 h1:XH58dwa2H3gTkO4aHee2aUtzlrDQ2KWd80YrUPN1kLc=
+github.com/swamp/disassembler v0.0.0-20220828130657-a02b36df9c27/go.mod h1:PSj40Cm4OHEuhbUUREARIPM2dMBUubFTzsv209Z+upg=
 github.com/swamp/opcodes v0.0.0-20220302163745-47703b09858c h1:4XuOyHqHp62osJtkV5BgNZsWdzH2voOhieTzU9TNSbk=
 github.com/swamp/opcodes v0.0.0-20220302163745-47703b09858c/go.mod h1:m9QgadE+ACQ9mYFIuoVWX/+3Ol4ivU+Dnb/LcDtWB5w=
 github.com/swamp/pack v0.0.0-20220101125357-e0d50aa34d0c h1:rpZK6bJzW5HuXzWzQZHoNAzF18F5FWNNjD442GxZtew=
