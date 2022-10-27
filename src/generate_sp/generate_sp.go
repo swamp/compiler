@@ -290,7 +290,7 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 		functionConstants = append(functionConstants, preparedFuncConstant)
 		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 		if maybeFunction != nil {
-			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
+			if maybeFunction.IsSomeKindOfExternal() {
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
@@ -299,7 +299,7 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 
 			rootContext := moduleContext.MakeFunctionContext(maybeFunction, fullyQualifiedName.String())
 
-			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
+			if maybeFunction.IsSomeKindOfExternal() {
 				continue
 			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,

@@ -20,15 +20,15 @@ func allocateForType(stackMemory *assembler_sp.StackMemoryMapper, debugName stri
 }
 
 func allocateVariable(code *assembler_sp.Code, scopeVariables *assembler_sp.ScopeVariables, stackMemory *assembler_sp.StackMemoryMapper, variableName *decorated.FunctionParameterDefinition, variableType dtype.Type, variableTypeID assembler_sp.TypeID) (assembler_sp.SourceStackPosRange, error) {
-	sourcePosRange, allocErr := allocateForType(stackMemory, "variable:"+variableName.Identifier().Name(), variableType)
+	sourcePosRange, allocErr := allocateForType(stackMemory, "variable:"+variableName.Parameter().Name(), variableType)
 	if allocErr != nil {
 		return assembler_sp.SourceStackPosRange{}, allocErr
 	}
 
-	if !variableName.Identifier().IsIgnore() {
+	if !variableName.Parameter().IsIgnore() {
 		startLabel := code.Label("dfsfdj", "fjskdjf")
 		variableTypeString := assembler_sp.TypeString(variableType.HumanReadable())
-		if _, err := scopeVariables.DefineVariable(assembler_sp.VariableName(variableName.Identifier().Name()), sourcePosRange, variableTypeID, variableTypeString, startLabel); err != nil {
+		if _, err := scopeVariables.DefineVariable(assembler_sp.VariableName(variableName.Parameter().Name()), sourcePosRange, variableTypeID, variableTypeString, startLabel); err != nil {
 			return assembler_sp.SourceStackPosRange{}, err
 		}
 	}

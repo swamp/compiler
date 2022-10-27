@@ -28,18 +28,17 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	newVariableContext := context.MakeVariableContext()
 
 	for _, parameter := range parameters {
-		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(parameter.Identifier().Name(), nil, parameter)
-		newVariableContext.Add(parameter.Identifier(), namedDecoratedExpression)
+		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(parameter.Parameter().Identifier().Name(), nil, parameter)
+		newVariableContext.Add(parameter.Parameter().Identifier(), namedDecoratedExpression)
 	}
 
 	return newVariableContext
 }
 
 func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionValue *decorated.FunctionValue, context *VariableContext) decshared.DecoratedError {
-	annotation := targetFunctionValue.Annotation()
 
 	var decoratedExpression decorated.Expression
-	if !annotation.Annotation().IsSomeKindOfExternal() {
+	if !targetFunctionValue.IsSomeKindOfExternal() {
 		subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
 		functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
 		convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
@@ -61,7 +60,7 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionVal
 		}
 
 		for _, param := range targetFunctionValue.Parameters() {
-			if !param.WasReferenced() && !param.Identifier().IsIgnore() {
+			if !param.WasReferenced() && !param.Parameter().Identifier().IsIgnore() {
 				unusedErr := decorated.NewUnusedParameter(param, targetFunctionValue)
 				d.AddDecoratedError(unusedErr)
 			}
@@ -76,7 +75,7 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionVal
 
 		*/
 	} else {
-		decoratedExpression = annotation
+		decoratedExpression = targetFunctionValue
 	}
 
 	targetFunctionValue.DefineExpression(decoratedExpression)

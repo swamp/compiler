@@ -80,12 +80,6 @@ func expandChildNodesCurryFunction(fn *CurryFunction) []TypeOrToken {
 	return tokens
 }
 
-func expandChildNodesAnnotation(fn *AnnotationStatement) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.Type())...)
-	return tokens
-}
-
 func expandChildNodesImportStatement(importStatement *ImportStatement) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(importStatement.ModuleReference())...)
@@ -402,8 +396,6 @@ func expandChildNodes(node Node) []TypeOrToken {
 
 	case *ModuleReference:
 		return tokens
-	case *AnnotationStatement:
-		return append(tokens, expandChildNodesAnnotation(t)...)
 	case *ImportStatement:
 		return append(tokens, expandChildNodesImportStatement(t)...)
 	case *FunctionValue:

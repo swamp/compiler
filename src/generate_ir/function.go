@@ -201,7 +201,7 @@ func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo, functionPa
 	if types.IsStruct(irType) {
 		irType = types.NewPointer(irType)
 	}
-	newParam := ir.NewParam(functionParam.Identifier().Name(), irType)
+	newParam := ir.NewParam(functionParam.Parameter().Name(), irType)
 
 	return newParam
 }

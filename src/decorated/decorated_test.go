@@ -16,9 +16,20 @@ func TestComment(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 --| ignore this
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
+`,
+		`
+[ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
+`)
+}
+
+func TestNewFunction(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+--| ignore this
+first : (startNumber: Int) -> Int =
+    startNumber * startNumber
 `,
 		`
 [ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
@@ -30,9 +41,7 @@ func TestConstant(t *testing.T) {
 fn =
     "Hello"
 
-
-another : String
-another =
+another : String =
     fn
 
 
@@ -44,8 +53,7 @@ another =
 
 func TestBooleanLookup(t *testing.T) {
 	testDecorateWithoutDefault(t, `
-another : Bool
-another =
+another : Bool =
     let
         a = True
         b = False
@@ -56,12 +64,11 @@ another =
 }
 
 func TestCast(t *testing.T) {
-	testDecorate(t, `
+	testDecorateWithoutDefault(t, `
 type alias Something = Int
 
 
-another : Bool
-another =
+another : Bool =
     let
         b = 32 : Something
     in
@@ -187,12 +194,11 @@ func TestFixed(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 --| ignore this
-first : Fixed -> Fixed
-first a =
+first : (a: Fixed) -> Fixed =
     a * a
 `,
 		`
-[ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]) -> (Arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] FMULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]])]]
+[ModuleDef $first = [FunctionValue ([[Arg [Arg $a: [TypeReference $Fixed]] : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]) -> (Arithmetic [FunctionParamRef [Arg [Arg $a: [TypeReference $Fixed]] : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] FMULTIPLY [FunctionParamRef [Arg [Arg $a: [TypeReference $Fixed]] : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]])]]
 `)
 }
 
@@ -200,13 +206,11 @@ func TestChar(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 --| ignore this
-first : Char -> Int
-first _ =
+first : Char -> Int =
     2
 
 
-main : Bool -> Int
-main _ =
+main : Bool -> Int =
     first 'c'
 `,
 		`
@@ -216,16 +220,14 @@ main _ =
 }
 
 func TestFixedConvert(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 --| ignore this
-first : Int -> Fixed
-first a =
+first : (a: Int) -> Fixed =
     Int.toFixed a
 
 
-another : Int -> Fixed
-another _ =
+another : (Int) -> Fixed =
     first 2
 `,
 		`
@@ -238,13 +240,11 @@ func TestFixedConvertRound(t *testing.T) {
 	testDecorate(t,
 		`
 --| ignore this
-first : Fixed -> Int
-first a =
+first : (a: Fixed) -> Int =
     Int.round a
 
 
-another : Int -> Int
-another _ =
+another : (Int) -> Int =
     first 2.3
 `,
 		`
@@ -254,16 +254,14 @@ another _ =
 }
 
 func TestFixedConvertLet(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 --| ignore this
-first : Int -> Fixed
-first _ =
+first : (Int) -> Fixed =
     0.3
 
 
-another : Int -> Fixed
-another _ =
+another : (Int) -> Fixed =
     let
         x = first 2
     in
@@ -305,8 +303,7 @@ func TestCommentMulti(t *testing.T) {
       for sure
 
    -}
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
 `,
 		`
@@ -322,8 +319,7 @@ func TestCommentMultiDoc(t *testing.T) {
       for sure
 
    -}
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
 `,
 		`
@@ -339,8 +335,7 @@ func TestSpacingMultiDoc(t *testing.T) {
       for sure
 
    -}
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
 
 
@@ -348,14 +343,12 @@ first a =
    multiline
 
 -}
-second : Int -> Int
-second b =
+second : (b: Int) -> Int =
     b + b
 
 
 -- single line
-third : Int -> Int
-third c =
+third : (c: Int) -> Int =
     c - c
 `,
 		`
@@ -374,16 +367,14 @@ func TestWrongSpacingMultiDocFail(t *testing.T) {
       for sure
 
    -}
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
 
 {-
    something else
 
    -}
-second : Int -> Int
-second b =
+second : (b: Int) -> Int =
     b + b
 `, parerr.ExpectedTwoLinesAfterStatement{})
 }
@@ -416,20 +407,18 @@ first a =
 }
 
 func TestCustomTypeVariantLiteral(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type Status =
     Unknown
     | Something Int
 
 
-receiveStatus : Status -> Status
-receiveStatus status =
+receiveStatus : (status: Status) -> Status =
     status
 
 
-someFunc : String -> Status
-someFunc _ =
+someFunc : (String) -> Status =
     receiveStatus Unknown
 `,
 		`
@@ -444,7 +433,7 @@ Something : [Variant $Something [[PrimitiveTypeRef [NamedDefTypeRef :[TypeRefere
 }
 
 func TestCustomTypeVariantAtomLiteral(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type Status =
     Unknown
@@ -456,13 +445,11 @@ type Unrelated =
     | SomethingElse Int
 
 
-receiveStatus : Unknown -> Status
-receiveStatus status =
+receiveStatus : (status: Unknown) -> Status =
     status
 
 
-someFunc : String -> Status
-someFunc _ =
+someFunc : (String) -> Status =
     receiveStatus Unknown
 `,
 		`
@@ -480,10 +467,9 @@ SomethingElse : [Variant $SomethingElse [[PrimitiveTypeRef [NamedDefTypeRef :[Ty
 }
 
 func TestCustomTypeVariantEqual(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-someFunc : String -> Bool
-someFunc name =
+someFunc : (name: String) -> Bool =
     name == "Something"
 `,
 		`
@@ -505,8 +491,7 @@ type Status =
     | Something Int
 
 
-someFunc : String -> Status
-someFunc _ =
+someFunc : (String) -> Status =
     Something 42
 `, `
 Status : [CustomType Status [[Variant $Unknown []] [Variant $Something [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]
@@ -532,8 +517,7 @@ type alias Sprite =
     }
 
 
-someFunc : Lister Sprite Int -> Int
-someFunc a =
+someFunc : (a: Lister Sprite Int) -> Int =
     a.another
 `, `
 Lister : [Alias Lister [RecordType [[RecordTypeField $another [GenericParam u] (0)] [RecordTypeField $fake [GenericParam t] (1)]][[GenericParam t] [GenericParam u]]]] => [RecordType [[RecordTypeField $another [GenericParam u] (0)] [RecordTypeField $fake [GenericParam t] (1)]][[GenericParam t] [GenericParam u]]]
@@ -546,23 +530,19 @@ Sprite : [Alias Sprite [RecordType [[RecordTypeField $x [PrimitiveTypeRef [Named
 func TestPipeRight(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
 
 
-second : String -> Int -> Bool
-second _ a =
+second : (String, a: Int) -> Bool =
     a > 25
 
 
-third : Bool -> Bool
-third a =
+third : (a: Bool) -> Bool =
     a
 
 
-tester : String -> Bool
-tester b =
+tester : (b: String) -> Bool =
     first (2 + 2) |> second b |> third
 `, `
 [ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
@@ -575,8 +555,7 @@ tester b =
 func xTestBasicStringInterpolation(t *testing.T) {
 	testDecorate(t,
 		`
-sample : Int -> String
-sample a =
+sample : (a: Int) -> String =
     $"hello {a}"
 `, `
 func(Int -> String) : [func  [primitive Int] [primitive String]]
@@ -619,8 +598,7 @@ type alias Sprite =
     }
 
 
-move : Position -> Position -> Position
-move pos delta =
+move : (pos: Position, delta: Position) -> Position =
     let
         newX = pos.x + delta.x
 
@@ -631,7 +609,7 @@ move pos delta =
     }
 
 
-moveSprite : Sprite -> Position -> Sprite
+moveSprite : (sprite: Sprite, delta: Position) -> Sprite
 moveSprite sprite delta =
     { rootPosition = move sprite.rootPosition delta }
 `, `
@@ -646,18 +624,15 @@ Sprite : [Alias Sprite [RecordType [[RecordTypeField $rootPosition [AliasRef [Al
 func TestOperatorPipeRight(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
 
 
-second : Int -> Bool
-second a =
+second : (a: Int) -> Bool =
     a > 25
 
 
-tester : String -> Bool
-tester _ =
+tester : (String) -> Bool =
     first (2 + 2) |> second
 `, `
 [ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
@@ -717,8 +692,7 @@ tester _ =
 func TestBasicCall(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-move : Int -> Int -> Int
-move pos delta =
+move : (pos: Int, delta: Int) Int =
     pos + delta
 `, `
 [ModuleDef $move = [FunctionValue ([[Arg $pos : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] [Arg $delta : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $pos : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] PLUS [FunctionParamRef [Arg $delta : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
@@ -734,8 +708,7 @@ type alias Constructor =
     }
 
 
-create : Int -> Constructor
-create _ =
+create : (Int) -> Constructor =
     { a = 2, b = True }
 `, `
 Constructor : [Alias Constructor [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $b [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]][]]] => [RecordType [[RecordTypeField $a [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $b [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]][]]
@@ -745,15 +718,13 @@ Constructor : [Alias Constructor [RecordType [[RecordTypeField $a [PrimitiveType
 }
 
 func TestConstant2(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-tileHeight : Int
-tileHeight =
+tileHeight : Int =
     2
 
 
-create : Int -> Int
-create _ =
+create : (Int) Int =
     tileHeight
 `, `
 [ModuleDef $tileHeight = [Constant [Integer 2]]]

@@ -18,6 +18,17 @@ func TestNumber(t *testing.T) {
 		`#2`)
 }
 
+func TestNewFunction(t *testing.T) {
+	testParse(t,
+		`
+first : (startNumber: Int, somethingElse: (String -> List a)) -> (List (List Fixed), Int) =
+    startNumber * startNumber
+`,
+		`
+[FnDef $first = [Fn ([[Arg $startNumber: [TypeReference $Int]] [Arg $somethingElse: [FnType [TypeReference $String] -> [TypeReference $List [[GenericType [TypeParam $a]]]]]]]) => [TupleType [[TypeReference $List [[TypeReference $List [[TypeReference $Fixed]]]]] [TypeReference $Int]]] = ($startNumber * $startNumber)]]
+`)
+}
+
 func TestFixedNumber(t *testing.T) {
 	testParseExpression(t,
 		`2.03`,
@@ -57,8 +68,7 @@ func TestChar(t *testing.T) {
 func TestConstant(t *testing.T) {
 	testParse(t,
 		`
-fn : String
-fn =
+fn : (String) =
     "Hello"
 `,
 		`
@@ -152,7 +162,7 @@ let
 in
 4
 `,
-		` [singlelinecomment '   another comment']`)
+		`[Let: [[LetAssign [$x] = #3]] in #4]`)
 }
 
 func TestType(t *testing.T) {
@@ -207,7 +217,7 @@ func TestEmptyList(t *testing.T) {
 func TestIf(t *testing.T) {
 	testParseExpression(t,
 		`if True then 1 else 0`,
-		`[if: €true then #1 else #0]`)
+		`[if €true then #1 else #0]`)
 }
 
 func TestIfWithNewLine(t *testing.T) {
@@ -219,7 +229,7 @@ else
     0
 `,
 		`
-[if: €true then #1 else #0]
+[If €true then #1 else #0]
 `)
 }
 
@@ -235,7 +245,7 @@ else
     0
 `,
 		`
-[if: €true then [if: €false then #22 else #44] else #0]
+[If €true then [If €false then #22 else #44] else #0]
 `)
 }
 
@@ -251,7 +261,7 @@ else
     0
 `,
 		`
-[if: €true then [Let: [[LetAssign [$x] = #44]] in $y] else #0]
+[If €true then [Let: [[LetAssign [$x] = #44]] in $y] else #0]
 `)
 }
 
@@ -269,7 +279,7 @@ else
     0
 `,
 		`
-[if: €true then [Let: [[LetAssign [$x] = #44] [LetAssign [$y] = #98]] in $y] else #0]
+[If €true then [Let: [[LetAssign [$x] = #44] [LetAssign [$y] = #98]] in $y] else #0]
 `)
 }
 
@@ -292,7 +302,7 @@ else
     0
 `,
 		`
-[if: €true then [let: [[letassign $x = [case: $something of [casecons $Kalle ([]) => #2];[casecons $Lisa ([$a]) => #44]]] [letassign $y = #98]] in $y] else #0]
+[If €true then [Let: [[LetAssign [$x] = [CaseCustomType $something of [CaseConsCustomType $Kalle ([]) => #2];[CaseConsCustomType $Lisa ([$a]) => #44]]] [LetAssign [$y] = #98]] in $y] else #0]
 `)
 }
 
@@ -325,7 +335,7 @@ func TestRecordLiteral(t *testing.T) {
 		`
 { a = 3 }
 `,
-		`[record-literal: [[$a = #3]]]`)
+		`[RecordLiteral [[$a = #3]]]`)
 }
 
 func TestRecordLiteralTwoItems(t *testing.T) {
@@ -333,7 +343,7 @@ func TestRecordLiteralTwoItems(t *testing.T) {
 		`
 { a = 3, b = 4 }
 `,
-		`[record-literal: [[$a = #3] [$b = #4]]]`)
+		`[RecordLiteral [[$a = #3] [$b = #4]]]`)
 }
 
 func TestRecordLiteralSeveralLines(t *testing.T) {
@@ -342,7 +352,7 @@ func TestRecordLiteralSeveralLines(t *testing.T) {
 { a = 3
 , b = 4 }
 `,
-		`[record-literal: [[$a = #3] [$b = #4]]]`)
+		`[RecordLiteral [[$a = #3] [$b = #4]]]`)
 }
 
 func TestListOneLineFromList(t *testing.T) {
@@ -359,7 +369,7 @@ func TestContinueOnNextLine(t *testing.T) {
 callSomething a
     |> nextLine
 `,
-		`[call $nextLine [[call $callSomething [$a]]]]`)
+		`([Call $callSomething [$a]] |> $nextLine)`)
 }
 
 func TestContinueOnNextLine2(t *testing.T) {
@@ -1375,13 +1385,11 @@ type alias Sprite =
     }
 
 
-f : Sprite -> Int
-f a =
+f : (a: Sprite) -> Int =
     2
 
 
-f : { solder : Bool, cool : Int } -> Int
-k a =
+f : (a : { solder : Bool, cool : Int }) -> Int =
     f { solder = True, cool = 33 }
 `, `
 [alias $Sprite [record-type [[field: $solder [type-reference $Bool]] [field: $cool [type-reference $Int]]]]]
@@ -1395,22 +1403,18 @@ k a =
 func TestRecordAnnotation3(t *testing.T) {
 	testParse(t,
 		`
-f : Int -> { solder : Bool, cool : Maybe Int }
-f a =
+f : (a: Int) -> { solder : Bool, cool : Maybe Int } =
     2
 `, `
-[annotation: $f [func-type [type-reference $Int] -> [record-type [[field: $solder [type-reference $Bool]] [field: $cool [type-reference $Maybe [[type-reference $Int]]]]]]]]
-[definition: $f = [func ([$a]) -> #2]]
+[FnDef $f = [Fn ([[Arg $a: [TypeReference $Int]]]) => [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Maybe [[TypeReference $Int]]]]] []] = #2]]
 `)
 }
 
 func TestPipeRight2(t *testing.T) {
 	testParse(t, `
-tester : String -> Bool
-tester b =
+tester : (b: String) -> Bool =
     first (2 + 2) |> second b |> third
 `, `
-[Annotation $tester [FnType [TypeReference $String] -> [TypeReference $Bool]]]
-[FnDef $tester = [Fn ([$b]) -> (([Call $first [(#2 + #2)]] |> [Call $second [$b]]) |> $third)]]
+[FnDef $tester = [Fn ([[Arg $b: [TypeReference $String]]]) => [TypeReference $Bool] = (([Call $first [(#2 + #2)]] |> [Call $second [$b]]) |> $third)]]
 `)
 }

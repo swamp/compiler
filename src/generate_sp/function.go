@@ -19,7 +19,8 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
 
-	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
+	//functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
+	functionType := f.Type().(*dectype.FunctionAtom)
 	unaliasedReturnType := dectype.UnaliasWithResolveInvoker(functionType.ReturnType())
 	returnValueSourcePointer, allocateVariableErr := allocateForType(funcContext.stackMemory, "__return", unaliasedReturnType)
 	if allocateVariableErr != nil {

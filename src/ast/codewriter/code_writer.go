@@ -33,7 +33,7 @@ func WriteRecordType(recordType *ast.Record, colorer coloring.Colorer, indentati
 }
 
 func writeCustomType(customType *ast.CustomType, colorer coloring.Colorer, indentation int) {
-	// writeTypeIdentifier(customType.Identifier(), colorer)
+	// writeTypeIdentifier(customType.Parameter(), colorer)
 	// colorer.NewLine(indentation+1)
 	// colorer.OneSpace()
 	for index, variant := range customType.Variants() {
@@ -204,7 +204,7 @@ func writeCase(caseExpression *ast.CaseForCustomType, colorer coloring.Colorer, 
 		colorer.TypeSymbol(consequence.Identifier().Symbol())
 		colorer.OneSpace()
 		if len(consequence.Arguments()) > 0 {
-			writeFunctionValueParameters(consequence.Arguments(), colorer)
+			writeFunctionIdentifiers(consequence.Arguments(), colorer)
 			colorer.OneSpace()
 		}
 		colorer.RightArrow()
@@ -365,7 +365,7 @@ func writeTypeParameters(typeParameters []*ast.TypeParameter, colorer coloring.C
 		if index > 0 {
 			colorer.OneSpace()
 		}
-		colorer.LocalType(param.Identifier().Symbol())
+		colorer.LocalType(param.Parameter().Symbol())
 	}
 }
 */
@@ -425,12 +425,25 @@ func WriteCustomTypeStatement(customTypeStatement *ast.CustomType, colorer color
 	writeCustomType(customTypeStatement, colorer, indentation+1)
 }
 
-func writeFunctionValueParameters(parameters []*ast.VariableIdentifier, colorer coloring.Colorer) {
+func writeFunctionIdentifiers(parameters []*ast.VariableIdentifier, colorer coloring.Colorer) {
 	for index, parameter := range parameters {
 		if index > 0 {
 			colorer.OneSpace()
 		}
 		colorer.Parameter(parameter.Symbol())
+	}
+}
+
+func writeFunctionValueParameters(parameters []*ast.FunctionParameter, colorer coloring.Colorer) {
+	for index, parameter := range parameters {
+		if index > 0 {
+			colorer.OneSpace()
+		}
+		colorer.Parameter(parameter.Identifier().Symbol())
+		colorer.OneSpace()
+		colorer.OperatorString(":")
+		colorer.OneSpace()
+		WriteType(parameter.Type(), colorer, false, 0)
 	}
 }
 
@@ -465,14 +478,6 @@ func writeImport(importStatement *ast.Import, colorer coloring.Colorer, indentat
 
 		colorer.ModuleReference(pathPart.TypeIdentifier().Symbol())
 	}
-}
-
-func writeAnnotation(annotation *ast.Annotation, colorer coloring.Colorer, indentation int) {
-	colorer.Definition(annotation.Identifier().Symbol())
-	colorer.OneSpace()
-	colorer.OperatorString(":")
-	colorer.OneSpace()
-	WriteType(annotation.AnnotatedType(), colorer, false, indentation)
 }
 
 func WriteType(astType ast.Type, colorer coloring.Colorer, addParen bool, indentation int) {
@@ -644,8 +649,6 @@ func WriteStatementUsingColorer(expression ast.Expression, colorer coloring.Colo
 
 	case *ast.Import:
 		writeImport(t, colorer, indentation)
-	case *ast.Annotation:
-		writeAnnotation(t, colorer, indentation)
 	case *ast.CustomType:
 		{
 			WriteCustomTypeStatement(t, colorer, indentation)

@@ -1005,6 +1005,10 @@ func (p *ParseStreamImpl) eatLeftParen() parerr.ParseError {
 	return p.eatRune('(')
 }
 
+func (p *ParseStreamImpl) eatRightParen() parerr.ParseError {
+	return p.eatRune(')')
+}
+
 func (p *ParseStreamImpl) readRightBracket() (token.ParenToken, parerr.ParseError) {
 	return p.readSpecificParenToken(token.RightSquareBracket)
 }

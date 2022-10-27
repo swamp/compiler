@@ -8,6 +8,7 @@ package parser
 import (
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
+	"github.com/swamp/compiler/src/token"
 )
 
 func isConstant(expression ast.Expression) bool {
@@ -35,31 +36,102 @@ func isConstant(expression ast.Expression) bool {
 	return false
 }
 
-func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
-	commentBlock *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
-	var parameters []*ast.VariableIdentifier
-	keywordIndentation := ident.Symbol().FetchIndentation()
-	for {
+func parseParameters(p ParseStream, keywordIndentation int) ([]*ast.FunctionParameter, parerr.ParseError) {
+	var parameters []*ast.FunctionParameter
 
-		if p.maybeAssign() {
+	for {
+		if p.maybeRightParen() {
 			break
 		}
 
-		variable, variableErr := p.readVariableIdentifier()
-		if variableErr != nil {
-			return nil, variableErr
+		identifier, wasVariable := p.wasVariableIdentifier()
+		if wasVariable {
+			if p.maybeColon() {
+				_, skipAfterIdentifierErr := p.eatOneSpace("space after skip identifier in definition")
+				if skipAfterIdentifierErr != nil {
+					return nil, skipAfterIdentifierErr
+				}
+			}
 		}
-		parameters = append(parameters, variable)
 
-		_, skipAfterIdentifierErr := p.eatOneSpace("space after skip identifier in definition")
-		if skipAfterIdentifierErr != nil {
-			return nil, skipAfterIdentifierErr
+		if !wasVariable {
+			fakeSymbol := token.NewVariableSymbolToken("_", token.SourceFileReference{
+				Range:    token.Range{},
+				Document: nil,
+			}, 0)
+			identifier = ast.NewVariableIdentifier(fakeSymbol)
 		}
+
+		var astType ast.Type
+		typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
+
+		var tErr parerr.ParseError
+		astType, tErr = parseTypeReference(p, keywordIndentation, typeParameterContext, nil)
+		if tErr != nil {
+			return nil, tErr
+		}
+
+		if _, wasComma := p.maybeComma(); wasComma {
+			p.eatOneSpace("after comma")
+		}
+
+		parameters = append(parameters, ast.NewFunctionParameter(identifier, astType))
 	}
+
+	return parameters, nil
+}
+
+func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
+	annotationFunctionType token.AnnotationFunctionType, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
+	keywordIndentation := ident.Symbol().FetchIndentation()
+
+	var returnType ast.Type
+	var parameters []*ast.FunctionParameter
+
+	if p.maybeColon() {
+		p.eatOneSpace("after colon")
+	}
+
+	if !p.maybeAssign() {
+		_, foundLeftParen := p.maybeLeftParen()
+
+		p.debugInfo("after left paren")
+
+		if foundLeftParen {
+			var paramErr parerr.ParseError
+			parameters, paramErr = parseParameters(p, keywordIndentation)
+			if paramErr != nil {
+				return nil, paramErr
+			}
+
+			p.eatOneSpace("after parameters")
+
+			if err := p.eatRightArrow(); err != nil {
+				return nil, err
+			}
+		}
+
+		p.eatOneSpace("Return type")
+		p.debugInfo("return type")
+
+		typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
+
+		var tErr parerr.ParseError
+		returnType, tErr = parseTypeReference(p, keywordIndentation, typeParameterContext, nil)
+		if tErr != nil {
+			return nil, tErr
+		}
+
+		p.eatOneSpace("after arrow")
+
+		p.eatAssign()
+	}
+
 	newIndentation, _, indentationErr := p.eatContinuationReturnIndentationAllowComment(keywordIndentation)
 	if indentationErr != nil {
 		return nil, indentationErr
 	}
+
 	expressionIndentation := newIndentation
 	expr, exprErr := p.parseExpressionNormal(expressionIndentation)
 	if exprErr != nil {
@@ -67,10 +139,10 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 	}
 
 	if len(parameters) == 0 && isConstant(expr) {
-		return ast.NewConstantDefinition(ident, expr, commentBlock), nil
+		return ast.NewConstantDefinition(ident, expr, precedingComments), nil
 	}
 
-	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, expr, commentBlock)
+	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, returnType, expr, annotationFunctionType, precedingComments)
 
 	return ast.NewFunctionValueNamedDefinition(ident, newFunction), nil
 }

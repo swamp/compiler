@@ -70,6 +70,7 @@ type ParseStream interface {
 	eatOperatorUpdate() parerr.ParseError
 	eatRightArrow() parerr.ParseError
 	eatLeftParen() parerr.ParseError
+	eatRightParen() parerr.ParseError
 	eatColon() parerr.ParseError
 	eatAccessor() parerr.ParseError
 	eatAssign() parerr.ParseError

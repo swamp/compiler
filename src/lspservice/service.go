@@ -394,7 +394,7 @@ func functionParametersToDocumentSymbols(parameters []*decorated.FunctionParamet
 
 	for _, param := range parameters {
 		symbol := lsp.DocumentSymbol{
-			Name:           param.Identifier().Name(),
+			Name:           param.Parameter().Name(),
 			Detail:         param.Type().HumanReadable(),
 			Kind:           lsp.SKVariable,
 			Tags:           nil,

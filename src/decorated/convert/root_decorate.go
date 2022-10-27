@@ -22,7 +22,6 @@ import (
 
 type RootStatementHandler struct {
 	typeRepo          decorated.TypeAddAndReferenceMaker
-	localAnnotation   *decorated.AnnotationStatement
 	localComments     []decorated.Comment
 	localCommentBlock *ast.MultilineComment
 	verboseFlag       verbosity.Verbosity
@@ -31,39 +30,8 @@ type RootStatementHandler struct {
 }
 
 func NewRootStatementHandler(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker, parentModuletype decorated.ModuleType, debugName string) *RootStatementHandler {
-	g := &RootStatementHandler{verboseFlag: verbosity.None, localAnnotation: nil, decorateStream: dectorateStream, typeRepo: typeRepo, parentModuletype: parentModuletype}
+	g := &RootStatementHandler{verboseFlag: verbosity.None, decorateStream: dectorateStream, typeRepo: typeRepo, parentModuletype: parentModuletype}
 	return g
-}
-
-func (g *RootStatementHandler) AnnotateConstant(annotation *ast.Annotation, realType dtype.Type) decshared.DecoratedError {
-	g.localAnnotation = decorated.NewAnnotation(annotation, realType)
-	return nil
-}
-
-func (g *RootStatementHandler) AnnotateFunc(annotation *ast.Annotation, funcType dtype.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
-	g.localAnnotation = decorated.NewAnnotation(annotation, funcType)
-
-	return g.localAnnotation, nil
-}
-
-func (g *RootStatementHandler) convertAnnotation(identifier *ast.VariableIdentifier, constantType ast.Type) (dtype.Type, decshared.DecoratedError) {
-	if constantType == nil {
-		return nil, decorated.NewUnknownAnnotationTypeReference(identifier, nil)
-	}
-	convertedType, convertedTypeErr := g.findTypeFromAstType(constantType)
-	if convertedTypeErr != nil {
-		return nil, decorated.NewUnknownAnnotationTypeReference(identifier, convertedTypeErr)
-	}
-
-	return convertedType, nil
-}
-
-func (g *RootStatementHandler) functionAnnotation(annotation *ast.Annotation, constantType ast.Type) (*decorated.AnnotationStatement, decshared.DecoratedError) {
-	convertedType, decErr := g.convertAnnotation(annotation.Identifier(), constantType)
-	if decErr != nil {
-		return nil, decErr
-	}
-	return g.AnnotateFunc(annotation, convertedType)
 }
 
 func (g *RootStatementHandler) handleAliasStatement(astAlias *ast.Alias) (*dectype.Alias, decshared.DecoratedError) {
@@ -140,7 +108,6 @@ func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream, consta
 		return nil, decoratedExpressionErr
 	}
 	g.localComments = nil
-	g.localAnnotation = nil
 
 	return namedConstant, nil
 }
@@ -163,12 +130,6 @@ func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functi
 }
 
 func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
-	if g.localAnnotation == nil {
-		return nil, decorated.NewMustHaveAnnotationJustBeforeThisDefinition(assignment)
-	}
-	if g.localAnnotation.Identifier().Name() != assignment.Identifier().Name() {
-		return nil, decorated.NewAnnotationMismatch(g.localAnnotation.Identifier(), assignment)
-	}
 
 	/*
 		forcedFunctionTypeLike := targetFunctionValue.ForcedFunctionType()
@@ -187,8 +148,12 @@ func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assig
 
 	*/
 
+	annotatedType, convertedTypeErr := g.findTypeFromAstType(assignment.FunctionValue().Type())
+	if convertedTypeErr != nil {
+		return nil, decorated.NewUnknownAnnotationTypeReference(assignment.Identifier(), convertedTypeErr)
+	}
+
 	name := assignment.Identifier()
-	annotatedType := g.localAnnotation.Type()
 	if annotatedType == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 	}
@@ -207,9 +172,7 @@ func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assig
 		return nil, parametersErr
 	}
 
-	preparedFunctionValue := decorated.NewPrepareFunctionValue(g.localAnnotation, assignment.FunctionValue(), foundFunctionType, parameters, g.localCommentBlock)
-	g.localComments = nil
-	g.localAnnotation = nil
+	preparedFunctionValue := decorated.NewPrepareFunctionValue(assignment.FunctionValue(), foundFunctionType, parameters, g.localCommentBlock)
 
 	d.AddDefinition(name, preparedFunctionValue)
 
@@ -229,62 +192,12 @@ func (g *RootStatementHandler) defineNamedFunctionValue(d DecorateStream, target
 	return nil
 }
 
-func (g *RootStatementHandler) declareAnnotation(d DecorateStream, declaration *ast.Annotation) (*decorated.AnnotationStatement, decshared.DecoratedError) {
-	if g.localAnnotation != nil {
-		if !g.localAnnotation.Annotation().IsSomeKindOfExternal() {
-			return nil, decorated.NewAlreadyHaveAnnotationForThisName(declaration, nil)
-		}
-	}
-	annotatedType := declaration.AnnotatedType()
-	g.localCommentBlock = declaration.CommentBlock()
-
-	annotationStatement, err := g.functionAnnotation(declaration, annotatedType)
-	if err != nil {
-		return nil, err
-	}
-
-	functionAtom := annotationStatement.Type().(*dectype.FunctionTypeReference).FunctionAtom()
-	if declaration.IsSomeKindOfExternal() {
-		annotatedType := g.localAnnotation.Type()
-		if annotatedType == nil {
-			return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
-		}
-		var parameters []*ast.VariableIdentifier
-		parameterTypes, _ := functionAtom.ParameterAndReturn()
-		for index := range parameterTypes {
-			s := fmt.Sprintf("var%d", index)
-			parameters = append(parameters, ast.NewVariableIdentifier(token.NewVariableSymbolToken(s, token.SourceFileReference{}, 0)))
-		}
-
-		dummyExpression := ast.NewExternalFunctionExpression(functionAtom.FetchPositionLength())
-		variable := token.NewVariableSymbolToken("", functionAtom.FetchPositionLength(), 0)
-		functionValue := ast.NewFunctionValue(variable, parameters, dummyExpression, nil)
-		parameterDefinitions, parameterDefinitionsErr := createParameterDefinitions(functionAtom, functionValue)
-		if parameterDefinitionsErr != nil {
-			return nil, parameterDefinitionsErr
-		}
-		preparedFunctionValue := decorated.NewPrepareFunctionValue(annotationStatement, functionValue, functionAtom, parameterDefinitions, nil)
-		// convertedErr := g.declareNamedFunctionValue(d, assi)
-		// if convertedErr != nil {
-		// return nil, convertedErr
-		// }
-
-		d.AddDefinition(declaration.Identifier(), preparedFunctionValue)
-		preparedFunctionValue.DefineExpression(annotationStatement) // HACK SO IT HAS AN EXPRESSION
-	}
-	g.localAnnotation = annotationStatement
-
-	return annotationStatement, nil
-}
-
 func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {
 	switch v := statement.(type) {
 	case *ast.Alias:
 		return g.handleAliasStatement(v)
 	case *ast.CustomType:
 		return g.handleCustomTypeStatement(v)
-	case *ast.Annotation:
-		return g.declareAnnotation(g.decorateStream, v)
 	case *ast.FunctionValueNamedDefinition:
 		return g.declareNamedFunctionValue(g.decorateStream, v)
 	case *ast.MultilineComment:

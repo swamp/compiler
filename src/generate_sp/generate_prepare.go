@@ -24,7 +24,7 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 			maybeFunction, _ := unknownExpression.(*decorated.FunctionValue)
 			if maybeFunction != nil {
 				fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
-				isExternal := maybeFunction.Annotation().Annotation().IsSomeKindOfExternal()
+				isExternal := maybeFunction.IsSomeKindOfExternal()
 				if isExternal {
 					var paramPosRanges []assembler_sp.SourceStackPosRange
 					hasLocalTypes := dectype.TypeIsTemplateHasLocalTypes(maybeFunction.ForcedFunctionType())
