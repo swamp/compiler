@@ -33,7 +33,7 @@ func (a *FunctionParameterDefinition) Type() dtype.Type {
 }
 
 func (a *FunctionParameterDefinition) String() string {
-	return fmt.Sprintf("[Arg %v : %v]", a.identifier, a.generatedType)
+	return fmt.Sprintf("[Arg %v : %v]", a.identifier.Identifier(), a.generatedType)
 }
 
 func (a *FunctionParameterDefinition) HumanReadable() string {

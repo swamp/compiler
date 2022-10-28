@@ -21,7 +21,7 @@ func TestNumber(t *testing.T) {
 func TestNewFunction(t *testing.T) {
 	testParse(t,
 		`
-first : (startNumber: Int, somethingElse: (String -> List a)) -> (List (List Fixed), Int) =
+first (startNumber: Int, somethingElse: (String -> List a)) -> (List (List Fixed), Int) =
     startNumber * startNumber
 `,
 		`
@@ -68,11 +68,10 @@ func TestChar(t *testing.T) {
 func TestConstant(t *testing.T) {
 	testParse(t,
 		`
-fn : (String) =
+fn : String =
     "Hello"
 `,
 		`
-[Annotation $fn [FnType [TypeReference $String]]]
 [Constant $fn = 'Hello']
 `)
 }
@@ -104,23 +103,21 @@ a
 `,
 
 		`
-[let: [[letassign $a = [guard: [{($y > #3) $y} {($y == #4) #45}] 'hello']]] in $a]
+[Let: [[LetAssign [$a] = [Guard [[($y > #3) => $y] [($y == #4) => #45]] [_ => 'hello']]]] in $a]
 `)
 }
 
 func TestGuardExpression(t *testing.T) {
 	testParse(t,
 		`
-fn : Int -> Int
-fn x =
+fn : (x: Int) -> Int =
     | x < 2 -> 42
     | x == 4 -> 45
     | _ -> -1
 `,
 
 		`
-[annotation: $fn [func-type [type-reference $Int] -> [type-reference $Int]]]
-[definition: $fn = [func ([$x]) -> [guard: [{($x < #2) #42} {($x == #4) #45}] #-1]]]
+[FnDef $fn = [Fn ([[Arg $x: [TypeReference $Int]]]) => [TypeReference $Int] = [Guard [[($x < #2) => #42] [($x == #4) => #45]] [_ => #-1]]]]
 `)
 }
 
@@ -168,7 +165,7 @@ in
 func TestType(t *testing.T) {
 	testParseExpression(t,
 		`Unknown`,
-		`[ccall $Unknown]`)
+		`[CCall [TypeReference $Unknown]]`)
 }
 
 func TestString(t *testing.T) {
@@ -217,7 +214,7 @@ func TestEmptyList(t *testing.T) {
 func TestIf(t *testing.T) {
 	testParseExpression(t,
 		`if True then 1 else 0`,
-		`[if €true then #1 else #0]`)
+		`[If €true then #1 else #0]`)
 }
 
 func TestIfWithNewLine(t *testing.T) {
@@ -360,7 +357,7 @@ func TestListOneLineFromList(t *testing.T) {
 		`
 Array.fromList [ Array.fromList [ 0, 1, 2, 3 ] Array.fromList [ 8, 9, 10, 11 ] ]
 `,
-		`[call Array.$fromList [[list-literal: [[call Array.$fromList [[list-literal: [#0 #1 #2 #3]] Array.$fromList [list-literal: [#8 #9 #10 #11]]]]]]]]`)
+		`[Call Array.$fromList [[list-literal: [[Call Array.$fromList [[list-literal: [#0 #1 #2 #3]] Array.$fromList [list-literal: [#8 #9 #10 #11]]]]]]]]`)
 }
 
 func TestContinueOnNextLine(t *testing.T) {
@@ -378,7 +375,7 @@ func TestContinueOnNextLine2(t *testing.T) {
 callSomething a
     nextLine
 `,
-		`[call $callSomething [$a $nextLine]]`)
+		`[Call $callSomething [$a $nextLine]]`)
 }
 
 func TestRecordLiteralSeveralLinesHex(t *testing.T) {
@@ -387,7 +384,7 @@ func TestRecordLiteralSeveralLinesHex(t *testing.T) {
 { a = 0x00FF00FF
 , b = 4 }
 `,
-		`[record-literal: [[$a = #16711935] [$b = #4]]]`)
+		`[RecordLiteral [[$a = #16711935] [$b = #4]]]`)
 }
 
 func TestRecordLiteralSeveralLines2(t *testing.T) {
@@ -401,7 +398,7 @@ let
 in
 x
 `,
-		`[let: [[letassign $x = [record-literal: [[$a = [record-literal: [[$scaleX = #100] [$scaleY = #200]]]] [$b = #4]]]]] in $x]`)
+		`[Let: [[LetAssign [$x] = [RecordLiteral [[$a = [RecordLiteral [[$scaleX = #100] [$scaleY = #200]]]] [$b = #4]]]]] in $x]`)
 }
 
 func TestListLiteralTwoItems(t *testing.T) {
@@ -420,62 +417,41 @@ func TestArrayLiteralTwoItems(t *testing.T) {
 		`[array-literal: [#3 (#4 + #5)]]`)
 }
 
-func TestSimpleAnnotation(t *testing.T) {
-	testParse(t,
-		`
-a : Int
-`,
-		`[annotation: $a [type-reference $Int]]`)
-}
-
 func TestSimpleDefinition(t *testing.T) {
 	testParse(t,
 		`
 a =
     3
 `,
-		`[definition: $a = [func ([]) -> #3]]`)
+		`[Constant $a = #3]`)
 }
 
 func TestCurrying(t *testing.T) {
 	testParse(t,
 		`
-f : String -> Int -> Bool
-f name score =
+f (name: String, score: Int) -> Bool =
     if name == "Peter" then
         score * 2
     else
         score
 
 
-another : Int -> Bool
-another score =
+another : (score: Int) -> Bool =
     let
         af = f "Peter"
     in
     af score
 `,
 		`
-[Annotation $f [FuncType [TypeReference $String] -> [TypeReference $Int] -> [TypeReference $Bool]]]
-[FnDef $f = [Func ([$name $score]) -> [if: ($name == 'Peter') then ($score * #2) else $score]]]
-[Annotation $another [FuncType [TypeReference $Int] -> [TypeReference $Bool]]]
-[FnDef $another = [Func ([$score]) -> [Let: [[LetAssign [$af] = [Call $f ['Peter']]]] in [Call $af [$score]]]]]
-`)
-}
-
-func TestAnnotation(t *testing.T) {
-	testParse(t,
-		`
-something : Bool -> Int
-`, `
-[Annotation $something [FuncType [TypeReference $Bool] -> [TypeReference $Int]]]
+[FnDef $f = [Fn ([[Arg $name: [TypeReference $String]] [Arg $score: [TypeReference $Int]]]) => [TypeReference $Bool] = [If ($name == 'Peter') then ($score * #2) else $score]]]
+[FnDef $another = [Fn ([[Arg $score: [TypeReference $Int]]]) => [TypeReference $Bool] = [Let: [[LetAssign [$af] = [Call $f ['Peter']]]] in [Call $af [$score]]]]]
 `)
 }
 
 func TestAnnotationParen(t *testing.T) {
 	testParse(t,
 		`
-something : (String -> Bool) -> Int
+something : (String, Bool) -> Int
 `, `
 [annotation: $something [func-type [func-type [type-reference $String] -> [type-reference $Bool]] -> [type-reference $Int]]]
 `)
