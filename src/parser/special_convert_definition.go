@@ -92,6 +92,8 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 		p.eatOneSpace("after colon")
 	}
 
+	expressionFollows := false
+	p.debugInfo("maybeAssign")
 	if !p.maybeAssign() {
 		_, foundLeftParen := p.maybeLeftParen()
 
@@ -124,25 +126,34 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 
 		p.eatOneSpace("after arrow")
 
-		p.eatAssign()
+		expressionFollows = p.maybeAssign()
+	} else {
+		expressionFollows = true
 	}
 
-	newIndentation, _, indentationErr := p.eatContinuationReturnIndentationAllowComment(keywordIndentation)
-	if indentationErr != nil {
-		return nil, indentationErr
+	var expression ast.Expression
+	if expressionFollows {
+		newIndentation, _, indentationErr := p.eatContinuationReturnIndentationAllowComment(keywordIndentation)
+		if indentationErr != nil {
+			return nil, indentationErr
+		}
+
+		expressionIndentation := newIndentation
+		var exprErr parerr.ParseError
+
+		expression, exprErr = p.parseExpressionNormal(expressionIndentation)
+		if exprErr != nil {
+			return nil, exprErr
+		}
+
+		if len(parameters) == 0 && isConstant(expression) {
+			return ast.NewConstantDefinition(ident, expression, precedingComments), nil
+		}
+	} else {
+		expression = ast.NewEmptyExpression(ident)
 	}
 
-	expressionIndentation := newIndentation
-	expr, exprErr := p.parseExpressionNormal(expressionIndentation)
-	if exprErr != nil {
-		return nil, exprErr
-	}
-
-	if len(parameters) == 0 && isConstant(expr) {
-		return ast.NewConstantDefinition(ident, expr, precedingComments), nil
-	}
-
-	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, returnType, expr, annotationFunctionType, precedingComments)
+	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, returnType, expression, precedingComments)
 
 	return ast.NewFunctionValueNamedDefinition(ident, newFunction), nil
 }

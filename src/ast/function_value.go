@@ -12,18 +12,17 @@ import (
 )
 
 type FunctionValue struct {
-	parameters             []*FunctionParameter
-	expression             Expression
-	debugAssignedValue     token.VariableSymbolToken
-	commentBlock           *MultilineComment
-	inclusive              token.SourceFileReference
-	returnType             Type
-	functionType           Type
-	annotationFunctionType token.AnnotationFunctionType
+	parameters         []*FunctionParameter
+	expression         Expression
+	debugAssignedValue token.VariableSymbolToken
+	commentBlock       *MultilineComment
+	inclusive          token.SourceFileReference
+	returnType         Type
+	functionType       Type
 }
 
 func NewFunctionValue(debugAssignedValue token.VariableSymbolToken, parameters []*FunctionParameter,
-	returnType Type, expression Expression, annotationFunctionType token.AnnotationFunctionType, commentBlock *MultilineComment) *FunctionValue {
+	returnType Type, expression Expression, commentBlock *MultilineComment) *FunctionValue {
 	inclusive := token.MakeInclusiveSourceFileReference(debugAssignedValue.FetchPositionLength(), expression.FetchPositionLength())
 	if inclusive.Range.End().Line() == 0 && inclusive.Range.End().Column() == 0 {
 		panic("problem")
@@ -36,28 +35,11 @@ func NewFunctionValue(debugAssignedValue token.VariableSymbolToken, parameters [
 	types = append(types, returnType)
 
 	return &FunctionValue{
-		returnType:             returnType,
-		annotationFunctionType: annotationFunctionType,
-		functionType:           NewFunctionType(types),
-		debugAssignedValue:     debugAssignedValue, parameters: parameters,
+		returnType:         returnType,
+		functionType:       NewFunctionType(types),
+		debugAssignedValue: debugAssignedValue, parameters: parameters,
 		expression: expression, commentBlock: commentBlock, inclusive: inclusive,
 	}
-}
-
-func (i *FunctionValue) AnnotationFunctionType() token.AnnotationFunctionType {
-	return i.annotationFunctionType
-}
-
-func (i *FunctionValue) IsSomeKindOfExternal() bool {
-	return i.annotationFunctionType == token.AnnotationFunctionTypeExternal || i.annotationFunctionType == token.AnnotationFunctionTypeExternalVarEx || i.annotationFunctionType == token.AnnotationFunctionTypeExternalVar
-}
-
-func (f *FunctionValue) IsExternalVarFunction() bool {
-	return f.annotationFunctionType == token.AnnotationFunctionTypeExternalVar
-}
-
-func (f *FunctionValue) IsExternalVarExFunction() bool {
-	return f.annotationFunctionType == token.AnnotationFunctionTypeExternalVarEx
 }
 
 func (i *FunctionValue) Type() Type {

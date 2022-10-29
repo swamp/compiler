@@ -32,7 +32,7 @@ first : (startNumber: Int) -> Int =
     startNumber * startNumber
 `,
 		`
-[ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
+[ModuleDef $first = [FunctionValue ([[Arg $startNumber : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $startNumber : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [FunctionParamRef [Arg $startNumber : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
 `)
 }
 
@@ -84,13 +84,11 @@ func TestResourceName(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 --| ignore this
-first : ResourceName -> Int
-first _ =
+first : (ResourceName) -> Int =
     2
 
 
-main : Bool -> Int
-main _ =
+main : (Bool) -> Int =
     first @this/is/something.txt
 `,
 		`
@@ -102,25 +100,22 @@ main _ =
 func TestAnyMatchingType(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-fn : * -> Int
-fn _ _ =
+fn : (*) -> Int =
     23
 `,
 		`
-[ModuleDef $fn = [FunctionValue ([[arg $_ = [AnyMatching AnyMatchingType]]]) -> [Integer 23]]]
+[ModuleDef $fn = [FunctionValue ([[Arg $_ : [AnyMatching AnyMatchingType]]]) -> [Integer 23]]]
 `)
 }
 
 func TestAnyMatchingTypeCall(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-fn : * -> Int
-fn _ =
+fn : (*) -> Int =
     23
 
 
-main : Int
-main =
+main : Int =
     fn 23.0 "hello" 42
 `,
 		`
@@ -132,13 +127,11 @@ main =
 func TestAnyMatchingTypeCallMiddle(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-fn : String -> * -> Int
-fn _ _ =
+fn : (String, *) -> Int =
     23
 
 
-main : Int
-main =
+main : Int =
     fn "hello" 42.0
 `,
 		`
@@ -150,13 +143,11 @@ main =
 func TestAnyMatchingTypeCallMiddleLocalType(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-fn : String -> * -> a -> List a
-fn _ _ _ =
+fn : (String, *, a) -> List a =
     [ 23.0 ]
 
 
-main : List Fixed
-main =
+main : List Fixed =
     fn "hello" -23939 42.0
 `,
 		`
@@ -168,13 +159,11 @@ main =
 func TestAnyMatchingTypeCallMiddleLocalTypeFn(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-fn : String -> (* -> a) -> List a
-fn _ _ =
+fn : (String, (* -> a)) -> List a =
     [ 23.0 ]
 
 
-someOther : Int -> Fixed
-someOther _ =
+someOther : Int -> Fixed =
     3.5
 
 
@@ -198,7 +187,7 @@ first : (a: Fixed) -> Fixed =
     a * a
 `,
 		`
-[ModuleDef $first = [FunctionValue ([[Arg [Arg $a: [TypeReference $Fixed]] : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]) -> (Arithmetic [FunctionParamRef [Arg [Arg $a: [TypeReference $Fixed]] : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] FMULTIPLY [FunctionParamRef [Arg [Arg $a: [TypeReference $Fixed]] : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]])]]
+[ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]) -> (Arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] FMULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]])]]
 `)
 }
 
@@ -206,11 +195,11 @@ func TestChar(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 --| ignore this
-first : Char -> Int =
+first : (Char) -> Int =
     2
 
 
-main : Bool -> Int =
+main : (Bool) -> Int =
     first 'c'
 `,
 		`
@@ -274,7 +263,7 @@ another : (Int) -> Fixed =
 }
 
 func TestFixedConvertRecordSet(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type alias State =
     { playerX : Int
@@ -396,8 +385,7 @@ another _ =
 func TestSomething2(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
 `,
 		`
@@ -642,13 +630,11 @@ tester : (String) -> Bool =
 func TestOperatorPipeLeft(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-first : Int -> Int
-first a =
+first : (a: Int) -> Int
     a * a
 
 
-second : Int -> Bool
-second a =
+second : (a: Int) -> Bool =
     a > 25
 
 
@@ -665,18 +651,15 @@ tester _ =
 func TestOperatorPipeNextLine(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-first : Int -> Int
-first a =
+first : (a: Int) -> Int =
     a * a
 
 
-second : Int -> Bool
-second a =
+second : (a: Int) -> Bool =
     a > 25
 
 
-tester : String -> Bool
-tester _ =
+tester : (String) -> Bool =
     first (2 + 2)
         |> second
 `, `
@@ -690,7 +673,7 @@ tester _ =
 func TestBasicCall(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-move : (pos: Int, delta: Int) Int =
+move : (pos: Int, delta: Int) -> Int =
     pos + delta
 `, `
 [ModuleDef $move = [FunctionValue ([[Arg $pos : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] [Arg $delta : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $pos : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] PLUS [FunctionParamRef [Arg $delta : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
@@ -698,7 +681,7 @@ move : (pos: Int, delta: Int) Int =
 }
 
 func TestBasicConstructor(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type alias Constructor =
     { a : Int
@@ -722,7 +705,7 @@ tileHeight : Int =
     2
 
 
-create : (Int) Int =
+create : (Int) -> Int =
     tileHeight
 `, `
 [ModuleDef $tileHeight = [Constant [Integer 2]]]
@@ -731,7 +714,7 @@ create : (Int) Int =
 }
 
 func TestCustomTypeConstructor(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type SomeCustomType =
     First String
@@ -739,8 +722,7 @@ type SomeCustomType =
     | Second Int
 
 
-a : Bool -> SomeCustomType
-a _ =
+a : (Bool) -> SomeCustomType =
     First "Hello"
 `, `
 SomeCustomType : [CustomType SomeCustomType [[Variant $First [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] [Variant $Anon []] [Variant $Second [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]
@@ -755,17 +737,15 @@ Second : [Variant $Second [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $I
 func TestBasicCallFail(t *testing.T) {
 	testDecorateFail(t,
 		`
-move : Int -> String -> Int
-move pos delta =
+move : (pos: Int, delta: String) -> Int =
     pos + delta
 `, &decorated.UnMatchingBinaryOperatorTypes{})
 }
 
 func TestBasicCallLet(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-move : Int -> Int -> Int
-move pos delta =
+move : (pos: Int, delta: Int) -> Int =
     let
         tenMore = pos + 10
 
@@ -780,13 +760,11 @@ move pos delta =
 func TestBasicCallFromVariable(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-move : Int -> Int -> Int
-move pos delta =
+move : (pos: Int, delta: Int) -> Int =
     pos + delta
 
 
-main : Bool -> Int
-main _ =
+main : (Bool) -> Int =
     let
         fn = move
     in
@@ -800,8 +778,7 @@ main _ =
 func TestBasicAppend(t *testing.T) {
 	testDecorate(t,
 		`
-a : Int -> List Int
-a _ =
+a : (Int) -> List Int =
     [ 1, 3, 4 ] ++ [ 5, 6, 7, 8 ]
 `, `
 [ModuleDef $a = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [ListLiteral [[Integer 1] [Integer 3] [Integer 4]]] APPEND [ListLiteral [[Integer 5] [Integer 6] [Integer 7] [Integer 8]]])]]
@@ -811,8 +788,7 @@ a _ =
 func TestBasicCallLetFail(t *testing.T) {
 	testDecorateFail(t,
 		`
-move : Int -> Int -> String
-move pos delta =
+move : (pos: Int, delta: Int) -> String =
     let
         tenMore = pos + 10
 
@@ -823,7 +799,7 @@ move pos delta =
 }
 
 func TestBasicLookup(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type alias Position =
     { x : Int
@@ -831,8 +807,7 @@ type alias Position =
     }
 
 
-getx : Position -> Int
-getx pos =
+getx : (pos: Position) -> Int =
     pos.x + pos.y
 `, `
 Position : [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]] => [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]
@@ -842,7 +817,7 @@ Position : [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [N
 }
 
 func TestSubLookup(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type alias Position =
     { x : Int
@@ -855,8 +830,7 @@ type alias Sprite =
     }
 
 
-getx : Sprite -> Int
-getx sprite =
+getx : (sprite: Sprite) -> Int =
     sprite.pos.x
 `, `
 Position : [Alias Position [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]] => [RecordType [[RecordTypeField $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [RecordTypeField $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]][]]
@@ -867,10 +841,9 @@ Sprite : [Alias Sprite [RecordType [[RecordTypeField $pos [AliasRef [Alias Posit
 }
 
 func TestIf(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-isBestAge : Int -> Int
-isBestAge age =
+isBestAge : (age: Int) -> Int =
     if age == 50 || age >= 65 then
         100
     else
@@ -883,8 +856,7 @@ isBestAge age =
 func TestIfFail(t *testing.T) {
 	testDecorateFail(t,
 		`
-isBestAge : Int -> Bool
-isBestAge age =
+isBestAge : (age: Int) -> Bool =
     if age == 50 then
         100
     else
@@ -893,10 +865,9 @@ isBestAge age =
 }
 
 func TestIfPerson(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-isBeautiful : String -> Bool
-isBeautiful name =
+isBeautiful : (name: String) -> Bool =
     if name == "Rebecca" then
         True
     else
@@ -907,10 +878,9 @@ isBeautiful name =
 }
 
 func TestGuard(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-isBeautiful : String -> Bool
-isBeautiful name =
+isBeautiful : (name: String) -> Bool =
     | name == "Rebecca" -> True
     | _ -> False
 `, `
@@ -919,10 +889,9 @@ isBeautiful name =
 }
 
 func TestBoolPerson(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-isBeautiful : String -> Bool
-isBeautiful name =
+isBeautiful : (name: String) -> Bool =
     name == "Rebecca"
 `, `
 [ModuleDef $isBeautiful = [FunctionValue ([[Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [BoolOp [FunctionParamRef [Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] EQ [String Rebecca]]]]
@@ -930,15 +899,13 @@ isBeautiful name =
 }
 
 func TestBoolPersonCall(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-isLoveOfMyLife : String -> Bool
-isLoveOfMyLife name =
+isLoveOfMyLife : (name: String) -> Bool =
     name == "Rebecca"
 
 
-main : String -> Bool
-main _ =
+main : (String) -> Bool =
     isLoveOfMyLife "Lisa"
 `, `
 [ModuleDef $isLoveOfMyLife = [FunctionValue ([[Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [BoolOp [FunctionParamRef [Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] EQ [String Rebecca]]]]
@@ -947,15 +914,13 @@ main _ =
 }
 
 func TestBoolPersonCallAgain(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-isLoveOfMyLife : String -> Int -> Bool
-isLoveOfMyLife name _ =
+isLoveOfMyLife : (name: String, Int) -> Bool =
     name == "Rebecca"
 
 
-main : String -> Bool
-main _ =
+main : (String) -> Bool =
     isLoveOfMyLife "Lisa" 2
 `, `
 [ModuleDef $isLoveOfMyLife = [FunctionValue ([[Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [BoolOp [FunctionParamRef [Arg $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] EQ [String Rebecca]]]]
@@ -964,7 +929,7 @@ main _ =
 }
 
 func TestCustomType(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type Chore =
     Meeting String
@@ -979,7 +944,7 @@ Unknown : [Variant $Unknown []]
 }
 
 func TestCustomTypeGenerics(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type Perhaps a =
     None
@@ -1000,7 +965,7 @@ func TestCustomTypeWithStructs(t *testing.T) {
 		comment
 		13890 - -)
 	-} */
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type alias Tinkering =
     { solder : Bool
@@ -1035,18 +1000,16 @@ Isabelle : [Variant $Isabelle [[AliasRef [Alias Work [RecordType [[RecordTypeFie
 }
 
 func TestCurrying(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-f : String -> Int -> Bool
-f name score =
+f : (name: String, score: Int) -> Bool =
     if name == "Peter" then
         score * 2 > 100
     else
         score > 100
 
 
-another : Int -> Bool
-another score =
+another : (score: Int) -> Bool =
     let
         af = f "Peter"
     in
@@ -1058,7 +1021,7 @@ another score =
 }
 
 func TestBlob(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 a : (Blob) -> List Int =
     [ 10, 20, 99 ]
@@ -1068,7 +1031,7 @@ a : (Blob) -> List Int =
 }
 
 func TestListLiteral2(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 a : (Bool) -> List Int =
     [ 10, 20, 99 ]
@@ -1078,7 +1041,7 @@ a : (Bool) -> List Int =
 }
 
 func TestTuple(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 a : (Bool) -> (Int, String) =
     (2, "Hello")

@@ -76,18 +76,6 @@ func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType 
 	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock, sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference}
 }
 
-func (f *FunctionValue) IsSomeKindOfExternal() bool {
-	return f.astFunction.IsSomeKindOfExternal()
-}
-
-func (f *FunctionValue) IsExternalVarFunction() bool {
-	return f.astFunction.IsExternalVarFunction()
-}
-
-func (f *FunctionValue) IsExternalVarExFunction() bool {
-	return f.astFunction.IsExternalVarExFunction()
-}
-
 func (f *FunctionValue) DefineExpression(decoratedExpression Expression) {
 	f.sourceFileReference = token.MakeInclusiveSourceFileReference(
 		f.astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())

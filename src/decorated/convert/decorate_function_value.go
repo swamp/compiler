@@ -38,45 +38,41 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionValue *decorated.FunctionValue, context *VariableContext) decshared.DecoratedError {
 
 	var decoratedExpression decorated.Expression
-	if !targetFunctionValue.IsSomeKindOfExternal() {
-		subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
-		functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
-		convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
-		if decoratedExpressionErr != nil {
-			return decoratedExpressionErr
-		}
-
-		decoratedExpression = convertedDecoratedExpression
-
-		decoratedExpressionType := decoratedExpression.Type()
-		if decoratedExpressionType == nil {
-			log.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
-		}
-
-		compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
-		if compatibleErr != nil {
-			return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(targetFunctionValue.AstFunctionValue(),
-				functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr)
-		}
-
-		for _, param := range targetFunctionValue.Parameters() {
-			if !param.WasReferenced() && !param.Parameter().Identifier().IsIgnore() {
-				unusedErr := decorated.NewUnusedParameter(param, targetFunctionValue)
-				d.AddDecoratedError(unusedErr)
-			}
-		}
-
-		/*
-			checkForNoLint := "a" // CheckForNoLint(comments)
-			if checkForNoLint != "unused" {
-			} else {
-				// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
-			}
-
-		*/
-	} else {
-		decoratedExpression = targetFunctionValue
+	subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
+	functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
+	convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
+	if decoratedExpressionErr != nil {
+		return decoratedExpressionErr
 	}
+
+	decoratedExpression = convertedDecoratedExpression
+
+	decoratedExpressionType := decoratedExpression.Type()
+	if decoratedExpressionType == nil {
+		log.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
+	}
+
+	compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
+	if compatibleErr != nil {
+		return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(targetFunctionValue.AstFunctionValue(),
+			functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr)
+	}
+
+	for _, param := range targetFunctionValue.Parameters() {
+		if !param.WasReferenced() && !param.Parameter().Identifier().IsIgnore() {
+			unusedErr := decorated.NewUnusedParameter(param, targetFunctionValue)
+			d.AddDecoratedError(unusedErr)
+		}
+	}
+
+	/*
+		checkForNoLint := "a" // CheckForNoLint(comments)
+		if checkForNoLint != "unused" {
+		} else {
+			// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
+		}
+
+	*/
 
 	targetFunctionValue.DefineExpression(decoratedExpression)
 

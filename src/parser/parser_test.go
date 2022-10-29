@@ -29,6 +29,16 @@ first (startNumber: Int, somethingElse: (String -> List a)) -> (List (List Fixed
 `)
 }
 
+func TestExternalVar(t *testing.T) {
+	testParse(t,
+		`
+__externalvarfn head : List a -> Maybe a
+`,
+		`
+[FnDef $head = [Fn ([]) => [FnType [TypeReference $List [[GenericType [TypeParam $a]]]] -> [TypeReference $Maybe [[GenericType [TypeParam $a]]]]] = [EmptyExpression]]]
+`)
+}
+
 func TestFixedNumber(t *testing.T) {
 	testParseExpression(t,
 		`2.03`,
