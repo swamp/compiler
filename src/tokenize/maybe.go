@@ -46,3 +46,7 @@ func (t *Tokenizer) MaybeAssign() bool {
 func (t *Tokenizer) MaybeAccessor() bool {
 	return t.MaybeRune('.')
 }
+
+func (t *Tokenizer) MaybeColon() bool {
+	return t.MaybeRune(':')
+}

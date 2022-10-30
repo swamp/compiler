@@ -167,8 +167,7 @@ someOther : Int -> Fixed =
     3.5
 
 
-main : List Fixed
-main =
+main : List Fixed =
     fn "hello" someOther
 `,
 		`
@@ -209,7 +208,7 @@ main : (Bool) -> Int =
 }
 
 func TestFixedConvert(t *testing.T) {
-	testDecorateWithoutDefault(t,
+	testDecorate(t,
 		`
 --| ignore this
 first : (a: Int) -> Fixed =
@@ -368,15 +367,13 @@ second : (b: Int) -> Int =
 }
 
 func TestSimpleCallParameterErrFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
-someFunc : Int -> String
-someFunc _ =
+someFunc : (Int) -> String =
     "2"
 
 
-another : Int -> String
-another _ =
+another : (Int) -> String =
     someFunc "2"
 `,
 		&decorated.CouldNotSmashFunctions{})
@@ -465,7 +462,7 @@ someFunc : (name: String) -> Bool =
 }
 
 func TestUnknownAnnotationType(t *testing.T) {
-	testDecorateFail(t, `
+	testDecorateWithoutDefaultFail(t, `
     someFunc : Position2
     `, &decorated.UnknownAnnotationTypeReference{})
 }
@@ -630,7 +627,7 @@ tester : (String) -> Bool =
 func TestOperatorPipeLeft(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-first : (a: Int) -> Int
+first : (a: Int) -> Int =
     a * a
 
 
@@ -638,8 +635,7 @@ second : (a: Int) -> Bool =
     a > 25
 
 
-tester : String -> Bool
-tester _ =
+tester : (String) -> Bool =
     second <| first (2 + 2)
 `, `
 [ModuleDef $first = [FunctionValue ([[Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [FunctionParamRef [Arg $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
@@ -735,7 +731,7 @@ Second : [Variant $Second [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $I
 }
 
 func TestBasicCallFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
 move : (pos: Int, delta: String) -> Int =
     pos + delta
@@ -776,7 +772,7 @@ main : (Bool) -> Int =
 }
 
 func TestBasicAppend(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 a : (Int) -> List Int =
     [ 1, 3, 4 ] ++ [ 5, 6, 7, 8 ]
@@ -786,7 +782,7 @@ a : (Int) -> List Int =
 }
 
 func TestBasicCallLetFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
 move : (pos: Int, delta: Int) -> String =
     let
@@ -854,7 +850,7 @@ isBestAge : (age: Int) -> Int =
 }
 
 func TestIfFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
 isBestAge : (age: Int) -> Bool =
     if age == 50 then
@@ -1088,15 +1084,13 @@ a : (Bool) -> (Int, String) =
 }
 
 func TestTupleGenericsFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
-createTuple : a -> b -> (a, b)
-createTuple first second =
+createTuple : (first: a, second: b) -> (a, b) =
     (first, second)
 
 
-a : Bool -> (Int, String)
-a _ =
+a : Bool -> (Int, String) =
     createTuple "2" "Hello"
 `, &decorated.UnMatchingFunctionReturnTypesInFunctionValue{})
 }
@@ -1129,15 +1123,14 @@ Cool : [Alias Cool [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedD
 }
 
 func TestListLiteral4Fail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
 type alias Cool =
     { name : Int
     }
 
 
-a : Bool -> List Cool
-a x =
+a : (Bool) -> List Cool =
     [ { name = "hi" }, { name = "another" }, { name = "tjoho" } ]
 `, &decorated.UnMatchingFunctionReturnTypesInFunctionValue{})
 }
@@ -1194,15 +1187,14 @@ Cool : [Alias Cool [RecordType [[RecordTypeField $name [PrimitiveTypeRef [NamedD
 }
 
 func TestRecordConstructorValuesFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
 type alias Cool =
     { name : Int
     }
 
 
-a : Bool -> List Cool
-a x =
+a : (Bool) -> List Cool =
     [ Cool "2" ]
 `, &decorated.WrongTypeForRecordConstructorField{})
 }
@@ -1305,7 +1297,7 @@ Tinkering : [Alias Tinkering [RecordType [[RecordTypeField $secret [GenericParam
 }
 
 func TestGenericsFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
 type alias Tinkering t =
     { solder : Bool
@@ -1313,8 +1305,7 @@ type alias Tinkering t =
     }
 
 
-f : Tinkering String -> Int
-f tinkering =
+f : (tinkering: Tinkering String) -> Int =
     tinkering.secret
 `, &decorated.UnMatchingFunctionReturnTypesInFunctionValue{})
 }
@@ -1500,21 +1491,18 @@ main : (Bool) -> Int =
 }
 
 func TestFunctionTypeGenericsFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 
 		`
-intConvert : Int -> Int
-intConvert _ =
+intConvert : (Int) -> Int =
     42
 
 
-simple : a -> (a -> a)
-simple _ =
+simple : (a) -> (a -> a) =
     intConvert
 
 
-main : Bool -> Int
-main _ =
+main : (Bool) -> Int =
     let
         fn = simple "hello"
     in
@@ -1550,9 +1538,9 @@ Sprite : [Alias Sprite [RecordType [[RecordTypeField $dummy [PrimitiveTypeRef [N
 }
 
 func TestCaseAlignmentSurprisedByIndentation(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
-checkMaybeInt : (a: Maybe Int) -> (b: Maybe Int) -> Int =
+checkMaybeInt : (a: Maybe Int, b: Maybe Int) -> Int =
     case a of
         Just firstInt -> case b of
             Nothing -> 0
@@ -1567,7 +1555,7 @@ checkMaybeInt : (a: Maybe Int) -> (b: Maybe Int) -> Int =
 }
 
 func TestCaseNotCoveredByAllConsequencesFail(t *testing.T) {
-	testDecorateFail(t, //    -- Must include default (_) or Nothing here
+	testDecorateWithoutDefaultFail(t, //    -- Must include default (_) or Nothing here
 		`
 checkMaybeInt : (a: Maybe Int) -> Int =
     case a of
@@ -1577,7 +1565,7 @@ checkMaybeInt : (a: Maybe Int) -> Int =
 }
 
 func TestCaseCoveredMultipleTimesFail(t *testing.T) {
-	testDecorateFail(t,
+	testDecorateWithoutDefaultFail(t,
 		`
 checkMaybeInt : (a: Maybe Int) -> Int =
     case a of
@@ -1619,7 +1607,7 @@ Thing : [Alias Thing [RecordType [[RecordTypeField $something [PrimitiveTypeRef 
 }
 
 func TestConsequenceCheckFail(t *testing.T) {
-	testDecorateFail(t, `
+	testDecorateWithoutDefaultFail(t, `
 type Direction =
     NotMoving
     | Right
@@ -1629,8 +1617,7 @@ type Direction =
 
 
 -- returns true if direction is vertical
-isVertical : Direction -> Bool
-isVertical direction =
+isVertical : (direction: Direction) -> Bool =
     case direction of
         NotMoving ->
             False
@@ -1650,7 +1637,7 @@ isVertical direction =
 }
 
 func TestConsequenceCheck3Fail(t *testing.T) {
-	testDecorateFail(t, `
+	testDecorateWithoutDefaultFail(t, `
 type Direction =
     NotMoving
     | Right
@@ -1660,8 +1647,7 @@ type Direction =
 
 
 -- returns true if direction is vertical
-isVertical : Direction -> Bool
-isVertical direction =
+isVertical : (direction: Direction) -> Bool =
     case direction of
         NotMoving ->
             False
@@ -1684,7 +1670,7 @@ isVertical direction =
 }
 
 func TestConsequenceCheck2Fail(t *testing.T) {
-	testDecorateFail(t, `
+	testDecorateWithoutDefaultFail(t, `
 type Direction =
     NotMoving
     | Right
@@ -1693,8 +1679,7 @@ type Direction =
     | Up
 
 
-isVertical : Direction -> Int
-isVertical direction =
+isVertical : (direction: Direction) -> Int =
     case direction of
         NotMoving ->
             False
@@ -1805,13 +1790,11 @@ func TestArrayIntGetWithMaybe(t *testing.T) {
 	testDecorate(t,
 		`
 
-getInt : Maybe Int -> Int
-getInt _ =
+getInt : (Maybe Int) -> Int =
     22
 
 
-main : Array Int -> Int
-main ints =
+main : (ints: Array Int) -> Int =
     let
         maybeInt = Array.get 0 ints
 
@@ -1829,13 +1812,11 @@ func TestArrayIntGetWithMaybeFail(t *testing.T) {
 	testDecorateFail(t,
 		`
 
-getInt : Maybe String -> Int
-getInt _ =
+getInt : (Maybe String) -> Int =
     22
 
 
-main : Array Int -> Int
-main ints =
+main : (ints: Array Int) -> Int =
     let
         maybeInt = Array.get 0 ints
 
@@ -1849,13 +1830,11 @@ main ints =
 func TestArrayFromNothing(t *testing.T) {
 	testDecorate(t,
 		`
-needInputs : Array Int -> Int
-needInputs _ =
+needInputs : (Array Int) -> Int =
     2
 
 
-a : Bool -> Int
-a _ =
+a : (Bool) -> Int =
     needInputs (Array.fromList [])
 `,
 		`
@@ -1867,18 +1846,15 @@ a _ =
 func TestReturnFunction(t *testing.T) {
 	testDecorate(t,
 		`
-needInputs : Array Int -> Int
-needInputs _ =
+needInputs : (Array Int) -> Int
     2
 
 
-returnSomeFunc : Bool -> (Array Int -> Int)
-returnSomeFunc _ =
+returnSomeFunc : (Bool) -> (Array Int -> Int) =
     needInputs
 
 
-a : Bool -> Int
-a ignore =
+a : (Bool) -> Int =
     let
         fn = returnSomeFunc ignore
     in
@@ -1892,7 +1868,7 @@ a ignore =
 }
 
 func TestUpdateRecordDescendingOrder(t *testing.T) {
-	testDecorate(t,
+	testDecorateWithoutDefault(t,
 		`
 type alias Something =
     { time : Int
@@ -1900,8 +1876,7 @@ type alias Something =
     }
 
 
-fn : Something -> Something
-fn something =
+fn : (something: Something) -> Something =
     { something | playerX = 3 }
 `,
 		`
@@ -1912,24 +1887,20 @@ Something : [Alias Something [RecordType [[RecordTypeField $playerX [PrimitiveTy
 }
 
 func TestPipeRight2(t *testing.T) {
-	testDecorate(t, `
-first : Int -> Int
-first _ =
+	testDecorateWithoutDefault(t, `
+first : (Int) -> Int =
     2
 
 
-second : String -> Int -> Int
-second _ _ =
+second : (String, Int) -> Int =
     2
 
 
-third : Int -> Bool
-third a =
+third : (a: Int) -> Bool =
     a > 45
 
 
-tester : String -> Bool
-tester b =
+tester : (b: String) -> Bool =
     first 2 + 2
         |> second b
         |> third

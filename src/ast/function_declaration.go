@@ -11,83 +11,42 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type FunctionDeclaration struct {
-	parameters             []*FunctionParameter
-	expression             Expression
-	debugAssignedValue     token.VariableSymbolToken
-	commentBlock           *MultilineComment
-	inclusive              token.SourceFileReference
-	returnType             Type
-	functionType           Type
+type FunctionDeclarationExpression struct {
 	annotationFunctionType token.AnnotationFunctionType
+	debugAssignedValue     token.VariableSymbolToken
 }
 
-func NewFunctionDeclaration(debugAssignedValue token.VariableSymbolToken, parameters []*FunctionParameter,
-	returnType Type, expression Expression, annotationFunctionType token.AnnotationFunctionType, commentBlock *MultilineComment) *FunctionDeclaration {
-	inclusive := token.MakeInclusiveSourceFileReference(debugAssignedValue.FetchPositionLength(), expression.FetchPositionLength())
-	if inclusive.Range.End().Line() == 0 && inclusive.Range.End().Column() == 0 {
-		panic("problem")
-	}
-
-	var types []Type
-	for _, param := range parameters {
-		types = append(types, param.parameterType)
-	}
-	types = append(types, returnType)
-
-	return &FunctionDeclaration{
-		returnType:             returnType,
+func NewFunctionDeclarationExpression(debugAssignedValue token.VariableSymbolToken, annotationFunctionType token.AnnotationFunctionType) *FunctionDeclarationExpression {
+	return &FunctionDeclarationExpression{
 		annotationFunctionType: annotationFunctionType,
-		functionType:           NewFunctionType(types),
-		debugAssignedValue:     debugAssignedValue, parameters: parameters,
-		expression: expression, commentBlock: commentBlock, inclusive: inclusive,
+		debugAssignedValue:     debugAssignedValue,
 	}
 }
 
-func (i *FunctionDeclaration) AnnotationFunctionType() token.AnnotationFunctionType {
+func (i *FunctionDeclarationExpression) AnnotationFunctionType() token.AnnotationFunctionType {
 	return i.annotationFunctionType
 }
 
-func (i *FunctionDeclaration) IsSomeKindOfExternal() bool {
+func (i *FunctionDeclarationExpression) IsSomeKindOfExternal() bool {
 	return i.annotationFunctionType == token.AnnotationFunctionTypeExternal || i.annotationFunctionType == token.AnnotationFunctionTypeExternalVarEx || i.annotationFunctionType == token.AnnotationFunctionTypeExternalVar
 }
 
-func (f *FunctionDeclaration) IsExternalVarFunction() bool {
+func (f *FunctionDeclarationExpression) IsExternalVarFunction() bool {
 	return f.annotationFunctionType == token.AnnotationFunctionTypeExternalVar
 }
 
-func (f *FunctionDeclaration) IsExternalVarExFunction() bool {
+func (f *FunctionDeclarationExpression) IsExternalVarExFunction() bool {
 	return f.annotationFunctionType == token.AnnotationFunctionTypeExternalVarEx
 }
 
-func (i *FunctionDeclaration) Type() Type {
-	return i.functionType
+func (i *FunctionDeclarationExpression) FetchPositionLength() token.SourceFileReference {
+	return i.debugAssignedValue.FetchPositionLength()
 }
 
-func (i *FunctionDeclaration) Parameters() []*FunctionParameter {
-	return i.parameters
+func (i *FunctionDeclarationExpression) String() string {
+	return fmt.Sprintf("[FnDeclExpr %v]", i.annotationFunctionType)
 }
 
-func (i *FunctionDeclaration) CommentBlock() *MultilineComment {
-	return i.commentBlock
-}
-
-func (i *FunctionDeclaration) Expression() Expression {
-	return i.expression
-}
-
-func (i *FunctionDeclaration) FetchPositionLength() token.SourceFileReference {
-	return i.inclusive
-}
-
-func (i *FunctionDeclaration) DebugFunctionIdentifier() token.VariableSymbolToken {
-	return i.debugAssignedValue
-}
-
-func (i *FunctionDeclaration) String() string {
-	return fmt.Sprintf("[FnDecl (%v) => %v = %v]", i.parameters, i.returnType, i.expression)
-}
-
-func (i *FunctionDeclaration) DebugString() string {
+func (i *FunctionDeclarationExpression) DebugString() string {
 	return "[function-declaration]"
 }

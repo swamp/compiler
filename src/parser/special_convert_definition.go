@@ -44,13 +44,12 @@ func parseParameters(p ParseStream, keywordIndentation int) ([]*ast.FunctionPara
 			break
 		}
 
-		identifier, wasVariable := p.wasVariableIdentifier()
+		p.debugInfo("check identifier with colon")
+		identifier, wasVariable := p.maybeVariableIdentifierWithColon()
 		if wasVariable {
-			if p.maybeColon() {
-				_, skipAfterIdentifierErr := p.eatOneSpace("space after skip identifier in definition")
-				if skipAfterIdentifierErr != nil {
-					return nil, skipAfterIdentifierErr
-				}
+			_, skipAfterIdentifierErr := p.eatOneSpace("space after skip identifier in definition")
+			if skipAfterIdentifierErr != nil {
+				return nil, skipAfterIdentifierErr
 			}
 		}
 
@@ -150,7 +149,7 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 			return ast.NewConstantDefinition(ident, expression, precedingComments), nil
 		}
 	} else {
-		expression = ast.NewEmptyExpression(ident)
+		expression = ast.NewFunctionDeclarationExpression(ident.Symbol(), annotationFunctionType)
 	}
 
 	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, returnType, expression, precedingComments)

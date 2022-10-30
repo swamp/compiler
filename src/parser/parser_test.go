@@ -35,7 +35,7 @@ func TestExternalVar(t *testing.T) {
 __externalvarfn head : List a -> Maybe a
 `,
 		`
-[FnDef $head = [Fn ([]) => [FnType [TypeReference $List [[GenericType [TypeParam $a]]]] -> [TypeReference $Maybe [[GenericType [TypeParam $a]]]]] = [EmptyExpression]]]
+[FnDef $head = [Fn ([]) => [FnType [TypeReference $List [[GenericType [TypeParam $a]]]] -> [TypeReference $Maybe [[GenericType [TypeParam $a]]]]] = [FnDeclExpr 2]]]
 `)
 }
 

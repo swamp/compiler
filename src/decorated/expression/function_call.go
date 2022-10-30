@@ -14,18 +14,16 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func CallIsExternal(fn Expression) (*FunctionValue, bool) {
-	_, isFunctionReference := fn.(*FunctionReference)
+func CallIsExternal(fn Expression) (*ast.FunctionDeclarationExpression, bool) {
+	fnRef, isFunctionReference := fn.(*FunctionReference)
 	if isFunctionReference {
-		/*
-			fn := functionReference.FunctionValue()
-			if fn.IsSomeKindOfExternal() {
-				return fn, true
-			} else {
-				return nil, false
-			}
-
-		*/
+		expression := fnRef.FunctionValue().AstFunctionValue().Expression()
+		declarationExpression, isDeclarationExpression := expression.(*ast.FunctionDeclarationExpression)
+		if isDeclarationExpression && declarationExpression.IsSomeKindOfExternal() {
+			return declarationExpression, true
+		} else {
+			return nil, false
+		}
 	}
 
 	return nil, false

@@ -82,6 +82,7 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	wasDefaultSymbol() (token.RuneToken, bool)
 	wasVariableIdentifier() (*ast.VariableIdentifier, bool)
+	maybeVariableIdentifierWithColon() (*ast.VariableIdentifier, bool)
 	wasTypeIdentifier() (*ast.TypeIdentifier, bool)
 
 	// -----------------------------------------------------------------------------------------------------------------

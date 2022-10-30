@@ -85,9 +85,9 @@ func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
 	}
 }
 
-func testDecorateFail(t *testing.T, code string, expectedError interface{}) {
+func testDecorateFailHelper(t *testing.T, code string, expectedError interface{}, useCores bool) {
 	const errorsAsWarnings = true
-	_, testErr := testDecorateInternal(code, true, errorsAsWarnings)
+	_, testErr := testDecorateInternal(code, useCores, errorsAsWarnings)
 	if testErr == nil {
 		t.Errorf("it was supposed to fail, but didn't")
 		return
@@ -106,4 +106,12 @@ func testDecorateFail(t *testing.T, code string, expectedError interface{}) {
 	if !isSameErr {
 		t.Errorf("unexpected fail: %v %T but expected %T", testErr, testErr, expectedError)
 	}
+}
+
+func testDecorateFail(t *testing.T, code string, expectedError interface{}) {
+	testDecorateFailHelper(t, code, expectedError, true)
+}
+
+func testDecorateWithoutDefaultFail(t *testing.T, code string, expectedError interface{}) {
+	testDecorateFailHelper(t, code, expectedError, false)
 }

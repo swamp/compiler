@@ -86,6 +86,15 @@ func (f *FunctionValue) AstFunctionValue() *ast.FunctionValue {
 	return f.astFunction
 }
 
+func (f *FunctionValue) IsSomeKindOfExternal() bool {
+	decl, wasDecl := f.AstFunctionValue().Expression().(*ast.FunctionDeclarationExpression)
+	if !wasDecl {
+		return false
+	}
+
+	return decl.IsSomeKindOfExternal()
+}
+
 func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
 	return f.parameters
 }
