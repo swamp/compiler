@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/parser"
@@ -112,7 +113,7 @@ func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream, consta
 	return namedConstant, nil
 }
 
-func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) ([]*decorated.FunctionParameterDefinition, decshared.DecoratedError) {
+func createParameterDefinitions(referenceMaker decorated.TypeAddAndReferenceMaker, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) ([]*decorated.FunctionParameterDefinition, decshared.DecoratedError) {
 	var parameters []*decorated.FunctionParameterDefinition
 	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
 	identifiers := functionValue.Parameters()
@@ -123,6 +124,7 @@ func createParameterDefinitions(forcedFunctionType *dectype.FunctionAtom, functi
 	}
 	for index, parameterType := range functionParameterTypes {
 		identifier := identifiers[index]
+		log.Printf("parameterType: %T %v", parameterType, parameterType)
 		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)
 		parameters = append(parameters, argDef)
 	}
@@ -167,7 +169,7 @@ func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assig
 		return nil, decorated.NewInternalError(fmt.Errorf("no forced function type %v", assignment))
 	}
 
-	parameters, parametersErr := createParameterDefinitions(forcedFunctionType, assignment.FunctionValue())
+	parameters, parametersErr := createParameterDefinitions(d.TypeReferenceMaker(), forcedFunctionType, assignment.FunctionValue())
 	if parametersErr != nil {
 		return nil, parametersErr
 	}

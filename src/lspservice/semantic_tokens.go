@@ -13,9 +13,16 @@ import (
 
 func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *SemanticBuilder) error {
 	for _, parameter := range f.Parameters() {
-		if err := builder.EncodeSymbol(parameter.FetchPositionLength().Range, "parameter", []string{}); err != nil {
+		if err := builder.EncodeSymbol(parameter.Parameter().FetchPositionLength().Range, "parameter", []string{}); err != nil {
 			return err
 		}
+
+		if err := addSemanticToken(parameter.Type(), builder); err != nil {
+			return err
+		}
+	}
+	if err := addSemanticToken(f.ForcedFunctionType().ReturnType(), builder); err != nil {
+		return err
 	}
 
 	return addSemanticToken(f.Expression(), builder)

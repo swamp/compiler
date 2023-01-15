@@ -44,6 +44,9 @@ func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
 	for _, parameter := range fn.Parameters() {
 		tokens = append(tokens, expandChildNodes(parameter)...)
 	}
+
+	tokens = append(tokens, expandChildNodes(fn.ForcedFunctionType().ReturnType())...)
+	
 	return tokens
 }
 
@@ -242,6 +245,13 @@ func expandChildNodesNamedFunctionValue(namedFunctionValue *NamedFunctionValue) 
 	return tokens
 }
 
+func expandFunctionParameterDefinition(parameter *FunctionParameterDefinition) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(parameter.Type())...)
+
+	return tokens
+}
+
 func expandChildNodesCustomTypeVariantConstructor(constructor *CustomTypeVariantConstructor) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(constructor.Reference())...)
@@ -421,7 +431,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *RecordLiteral:
 		return append(tokens, expandChildNodesRecordLiteral(t)...)
 	case *FunctionParameterDefinition:
-		return tokens
+		return append(tokens, expandFunctionParameterDefinition(t)...)
 	case *NamedFunctionValue:
 		return append(tokens, expandChildNodesNamedFunctionValue(t)...)
 	case *CustomTypeVariantConstructor:
