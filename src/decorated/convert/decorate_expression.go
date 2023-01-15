@@ -71,6 +71,8 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorateProbableConstructorCall(d, v)
 	case *ast.TypeIdentifierScoped:
 		return decorateProbableConstructorCall(d, v)
+	case *ast.FunctionDeclarationExpression:
+		return decorated.NewExternalFunctionDeclarationExpression(v), nil
 	default:
 		return nil, decorated.NewInternalError(
 			fmt.Errorf("don't know how to decorate %v %T %v", e, e, e.FetchPositionLength()))

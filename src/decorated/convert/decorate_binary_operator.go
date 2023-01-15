@@ -200,7 +200,7 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 		return nil, functionCallErr
 	}
 
-	calculatedFunctionCallType := functionExpression.Type().(*dectype.FunctionTypeReference).FunctionAtom()
+	calculatedFunctionCallType := functionExpression.Type().(*dectype.FunctionAtom)
 
 	halfLeftSideFunctionCall := decorated.NewFunctionCall(leftAstCall, functionExpression, calculatedFunctionCallType, arguments)
 

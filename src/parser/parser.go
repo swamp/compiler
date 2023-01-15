@@ -6,6 +6,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -72,6 +73,7 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 	for !p.stream.tokenizer.MaybeEOF() {
 		report, mustHaveLineAfterStatementErr := p.stream.eatNewLinesAfterStatement(linesToPadMin, linesToPadMax)
 		if mustHaveLineAfterStatementErr != nil {
+			p.stream.debugInfo(fmt.Sprintf("problem was here %d %d (%d)", linesToPadMin, linesToPadMax, report.NewLineCount))
 			errors = parerr.AppendError(errors, parerr.NewExpectedTwoLinesAfterStatement(mustHaveLineAfterStatementErr))
 		}
 

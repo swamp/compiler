@@ -6,6 +6,7 @@
 package tokenize
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -46,9 +47,11 @@ func (t *Tokenizer) ParseUnaryOperator() (token.Token, TokenError) {
 			return nil, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), 'y', ' ')
 		}
 		t.unreadRune()
+		debugString = "NEGATE"
 		operatorType = token.OperatorUnaryMinus
 	case '!':
 		operatorType = token.OperatorUnaryNot
+		debugString = "NOT"
 		next := t.nextRune()
 		if next == '=' {
 			return nil, NewUnexpectedEatTokenError(t.MakeSourceFileReference(startPosition), 'x', ' ')
@@ -155,6 +158,8 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			operatorType = token.OperatorNotEqual
 		} else {
 			t.unreadRune()
+			panic(fmt.Sprintf("is this used?"))
+			debugString = "NOT"
 			operatorType = token.OperatorUnaryNot
 		}
 	default:

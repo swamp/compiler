@@ -52,6 +52,11 @@ func ExpectedLinePaddingAfter(expression Node) (int, int) {
 		return 1, 3
 	}
 
+	_, wasFunctionDefinition := expression.(*FunctionValueNamedDefinition)
+	if wasFunctionDefinition {
+		return -2, -2
+	}
+
 	if dontCare {
 		lines = -1
 	} else if mustBeSingleLine {

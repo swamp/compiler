@@ -19,7 +19,5 @@ func checkAndParseAnnotationOrDefinition(stream ParseStream, keywordIndentation 
 		return nil, parerr.NewExpectedSpacingAfterAnnotationOrDefinition(spaceBeforeAnnotationOrDefinitionErr)
 	}
 
-	stream.debugInfo("check maybeColon")
-
 	return parseDefinition(stream, variableIdentifier, annotationFunctionType, precedingComments)
 }

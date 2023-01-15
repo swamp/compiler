@@ -44,7 +44,6 @@ func parseParameters(p ParseStream, keywordIndentation int) ([]*ast.FunctionPara
 			break
 		}
 
-		p.debugInfo("check identifier with colon")
 		identifier, wasVariable := p.maybeVariableIdentifierWithColon()
 		if wasVariable {
 			_, skipAfterIdentifierErr := p.eatOneSpace("space after skip identifier in definition")
@@ -92,11 +91,8 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 	}
 
 	expressionFollows := false
-	p.debugInfo("maybeAssign")
 	if !p.maybeAssign() {
 		_, foundLeftParen := p.maybeLeftParen()
-
-		p.debugInfo("after left paren")
 
 		if foundLeftParen {
 			var paramErr parerr.ParseError
@@ -113,7 +109,6 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 		}
 
 		p.eatOneSpace("Return type")
-		p.debugInfo("return type")
 
 		typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
 

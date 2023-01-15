@@ -504,6 +504,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:
 		return append(tokens, expandChildNodesRecordLookups(t)...)
+	case *ExternalFunctionDeclarationExpression:
+		return tokens
 	case *dectype.LocalType:
 		return tokens
 	case *dectype.AnyMatchingTypes:

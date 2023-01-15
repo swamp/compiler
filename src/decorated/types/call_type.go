@@ -70,6 +70,7 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 func replaceRecordFromContext(record *RecordAtom, lookup Lookup) (*RecordAtom, error) {
 	var replacedFields []*RecordField
 
+	hasLocalTypes := false
 	for _, field := range record.SortedFields() {
 		converted, convertedErr := ReplaceTypeFromContext(field.Type(), lookup)
 		if convertedErr != nil {
@@ -79,12 +80,21 @@ func replaceRecordFromContext(record *RecordAtom, lookup Lookup) (*RecordAtom, e
 			panic("converted is nil")
 		}
 
+		if IsLocalType(converted) {
+			hasLocalTypes = true
+		}
+
 		newField := NewRecordField(field.name, field.AstRecordTypeField(), converted)
 
 		replacedFields = append(replacedFields, newField)
 	}
 
-	return NewRecordType(record.AstRecord(), replacedFields, nil), nil
+	var genericTypes []dtype.Type
+	if hasLocalTypes {
+		genericTypes = record.genericTypes
+	}
+
+	return NewRecordType(record.AstRecord(), replacedFields, genericTypes), nil
 }
 
 func replaceInvokerTypeFromContext(invoker *InvokerType, lookup Lookup) (*InvokerType, error) {

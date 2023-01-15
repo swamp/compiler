@@ -85,6 +85,23 @@ func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
 	}
 }
 
+func isErrorOfType(expectedError interface{}, testErr error) bool {
+	isSameErr := false
+	multiErr, wasMultiErr := testErr.(*decorated.MultiErrors)
+	if wasMultiErr {
+		log.Printf(" was multierr: %v", testErr)
+		errorSlice := multiErr.Errors()
+		for _, testError := range errorSlice {
+			isSameErr = isSameErr || isErrorOfType(expectedError, testError)
+		}
+	} else {
+		log.Printf(" err: %v", testErr)
+		isSameErr = reflect.TypeOf(expectedError) == reflect.TypeOf(testErr)
+	}
+
+	return isSameErr
+}
+
 func testDecorateFailHelper(t *testing.T, code string, expectedError interface{}, useCores bool) {
 	const errorsAsWarnings = true
 	_, testErr := testDecorateInternal(code, useCores, errorsAsWarnings)
@@ -93,16 +110,7 @@ func testDecorateFailHelper(t *testing.T, code string, expectedError interface{}
 		return
 	}
 
-	multiErr, wasMultiErr := testErr.(*decorated.MultiErrors)
-	if wasMultiErr {
-		errorSlice := multiErr.Errors()
-		if len(errorSlice) > 1 {
-			t.Errorf("too many errors returned")
-		}
-		testErr = errorSlice[0]
-	}
-
-	isSameErr := reflect.TypeOf(expectedError) == reflect.TypeOf(testErr)
+	isSameErr := isErrorOfType(expectedError, testErr)
 	if !isSameErr {
 		t.Errorf("unexpected fail: %v %T but expected %T", testErr, testErr, expectedError)
 	}

@@ -15,11 +15,12 @@ import (
 )
 
 type RecordConstructorFromParameters struct {
-	arguments            []*RecordLiteralAssignment
-	parseOrderArguments  []Expression
-	recordAliasReference *dectype.AliasReference
-	recordType           *dectype.RecordAtom
-	astConstructorCall   *ast.ConstructorCall
+	arguments                      []*RecordLiteralAssignment
+	parseOrderArguments            []Expression
+	recordAliasReference           *dectype.AliasReference
+	recordType                     *dectype.RecordAtom
+	astConstructorCall             *ast.ConstructorCall
+	resultingTypeAfterConstruction dtype.Type
 }
 
 // typeIdentifier ast.TypeReferenceScopedOrNormal
@@ -27,7 +28,9 @@ func NewRecordConstructorFromParameters(astConstructorCall *ast.ConstructorCall,
 	if recordAliasReference == nil {
 		panic("can not be nil")
 	}
-	return &RecordConstructorFromParameters{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments, recordType: recordType}
+
+	return &RecordConstructorFromParameters{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments,
+		resultingTypeAfterConstruction: recordAliasReference, recordType: recordType}
 }
 
 func (c *RecordConstructorFromParameters) SortedAssignments() []*RecordLiteralAssignment {
@@ -43,7 +46,7 @@ func (c *RecordConstructorFromParameters) ParseOrderArguments() []Expression {
 }
 
 func (c *RecordConstructorFromParameters) Type() dtype.Type {
-	return c.recordAliasReference
+	return c.resultingTypeAfterConstruction
 }
 
 func (c *RecordConstructorFromParameters) RecordType() *dectype.RecordAtom {

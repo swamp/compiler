@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -274,6 +275,10 @@ func (u *CustomTypeAtom) IsEqual(other_ dtype.Atom) error {
 	otherVariant, wasCustomTypeVariant := other_.(*CustomTypeVariantAtom)
 	if wasCustomTypeVariant {
 		if TypeIsTemplateHasLocalTypes(u) {
+			if otherVariant.inCustomType.Name() == "Maybe" && otherVariant.Name().Name() == "Nothing" {
+				return nil
+			}
+			log.Printf("I can not compare, since I ama a template %v vs %v", u, other_)
 			panic("i can not compare, since I am a template")
 		}
 

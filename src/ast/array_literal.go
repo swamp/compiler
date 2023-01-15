@@ -24,7 +24,7 @@ func NewArrayLiteral(startListParen token.ParenToken, endListParen token.ParenTo
 }
 
 func (i *ArrayLiteral) String() string {
-	return fmt.Sprintf("[array-literal: %v]", i.expressions)
+	return fmt.Sprintf("[ArrayLiteral %v]", i.expressions)
 }
 
 func (i *ArrayLiteral) Expressions() []Expression {
@@ -44,5 +44,5 @@ func (i *ArrayLiteral) EndParenToken() token.ParenToken {
 }
 
 func (i *ArrayLiteral) DebugString() string {
-	return fmt.Sprintf("[array-literal %v ]", i.expressions)
+	return fmt.Sprintf("[ArrayLiteral %v]", i.expressions)
 }

@@ -42,11 +42,7 @@ type alias Cell =
     }
 
 
-test : Array Cell -> Cell
-test cells =
-    let
-        _ = Array.length cells
-    in
+test : Array Cell -> Cell =
     { x = 10, name = "hello", z = Nothing }
 `)
 }

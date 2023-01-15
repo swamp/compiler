@@ -232,7 +232,7 @@ first : (a: Fixed) -> Int =
     Int.round a
 
 
-another : (Int) -> Int =
+another : (_: Int) -> Int =
     first 2.3
 `,
 		`
@@ -356,7 +356,6 @@ func TestWrongSpacingMultiDocFail(t *testing.T) {
    -}
 first : (a: Int) -> Int =
     a * a
-
 {-
    something else
 
@@ -551,14 +550,11 @@ sample = [functionvalue ([[arg $a = [primitive Int]]]) -> (arithmetic [str hello
 func TestArrayVsListFail(t *testing.T) {
 	testDecorateFail(t,
 		`
-
-updater : Int -> String -> Int
-updater _ _ =
+updater : Int -> String -> Int =
     42
 
 
-sample : Int -> List Int
-sample a =
+sample : Int -> List Int =
     let
         intArray = Array.fromList [ 0, 1, 2 ]
 
@@ -1733,6 +1729,34 @@ main : (Bool) -> Maybe Thing =
 Thing : [Alias Thing [RecordType [[RecordTypeField $something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]][]]] => [RecordType [[RecordTypeField $something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]][]]
 
 [ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [If [Bool true] then [VariantConstructor [Variant $Nothing []] []] else [VariantConstructor [Variant $Just [[GenericParam a]]] [[RecordLiteral [RecordType [[RecordTypeField $something [Primitive String] (0)]][]] [0 = [String hello]]]]]]]]
+`)
+}
+
+func TestOwnGenericGet(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+
+type alias Thing a =
+    { something : a
+    }
+
+
+get : (Thing a) -> Maybe a =
+    Nothing
+
+
+main : (Bool) -> Maybe (Thing String) =
+    let
+        v = { something = "Something" }
+        _ = get v
+    in
+    Just v
+        
+`, `
+Thing : [Alias Thing [RecordType [[RecordTypeField $something [GenericParam a] (0)]][[GenericParam a]]]] => [RecordType [[RecordTypeField $something [GenericParam a] (0)]][[GenericParam a]]]
+
+[ModuleDef $get = [FunctionValue ([[Arg $_ : [AliasRef [Alias Thing [RecordType [[RecordTypeField $something [GenericParam a] (0)]][[GenericParam a]]]]]<[GenericParam a]>]]) -> [VariantConstructor [Variant $Nothing []] []]]]
+[ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [Let [[LetAssign [[LetVar $v]] = [RecordLiteral [RecordType [[RecordTypeField $something [Primitive String] (0)]][]] [0 = [String Something]]]] [LetAssign [[LetVar $_]] = [FnCall [FunctionRef [NamedDefinitionReference /get]] [[LetVarRef [LetVar $v]]]]]] in [VariantConstructor [Variant $Nothing []] []]]]]
 `)
 }
 

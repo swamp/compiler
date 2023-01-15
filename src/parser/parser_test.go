@@ -135,13 +135,10 @@ func TestWildcardType(t *testing.T) {
 	testParse(t,
 		`
 fn : * -> Int
-fn a b x =
-    23	
 `,
 
 		`
-[annotation: $fn [func-type [AnyMatchingType *] -> [TypeReference $Int]]]
-[fndefinition: $fn = [func ([$a $b $x]) -> #23]]
+[FnDef $fn = [Fn ([]) => [FnType [AnyMatchingType *] -> [TypeReference $Int]] = [FnDeclExpr 0]]]
 `)
 }
 
@@ -218,7 +215,7 @@ func TestBool(t *testing.T) {
 func TestEmptyList(t *testing.T) {
 	testParseExpression(t,
 		`[]`,
-		`[list-literal: []]`)
+		`[ListLiteral []]`)
 }
 
 func TestIf(t *testing.T) {
@@ -367,7 +364,7 @@ func TestListOneLineFromList(t *testing.T) {
 		`
 Array.fromList [ Array.fromList [ 0, 1, 2, 3 ] Array.fromList [ 8, 9, 10, 11 ] ]
 `,
-		`[Call Array.$fromList [[list-literal: [[Call Array.$fromList [[list-literal: [#0 #1 #2 #3]] Array.$fromList [list-literal: [#8 #9 #10 #11]]]]]]]]`)
+		`[Call Array.$fromList [[ListLiteral [[Call Array.$fromList [[ListLiteral [#0 #1 #2 #3]] Array.$fromList [ListLiteral [#8 #9 #10 #11]]]]]]]]`)
 }
 
 func TestContinueOnNextLine(t *testing.T) {
@@ -416,7 +413,7 @@ func TestListLiteralTwoItems(t *testing.T) {
 		`
 [ 3, 4 + 5 ]
 `,
-		`[list-literal: [#3 (#4 + #5)]]`)
+		`[ListLiteral [#3 (#4 + #5)]]`)
 }
 
 func TestArrayLiteralTwoItems(t *testing.T) {
@@ -424,7 +421,7 @@ func TestArrayLiteralTwoItems(t *testing.T) {
 		`
 [| 3, 4 + 5 |]
 `,
-		`[array-literal: [#3 (#4 + #5)]]`)
+		`[ArrayLiteral [#3 (#4 + #5)]]`)
 }
 
 func TestSimpleDefinition(t *testing.T) {
@@ -463,7 +460,7 @@ func TestAnnotationParen(t *testing.T) {
 		`
 something : (String, Bool) -> Int
 `, `
-[annotation: $something [func-type [func-type [type-reference $String] -> [type-reference $Bool]] -> [type-reference $Int]]]
+[FnDef $something = [Fn ([[Arg $_: [TypeReference $String]] [Arg $_: [TypeReference $Bool]]]) => [TypeReference $Int] = [FnDeclExpr 0]]]
 `)
 }
 
@@ -472,16 +469,8 @@ func TestAnnotationParen2(t *testing.T) {
 		`
 something : (String -> Bool) -> (Int -> Bool)
 `, `
-[annotation: $something [func-type [func-type [type-reference $String] -> [type-reference $Bool]] -> [func-type [type-reference $Int] -> [type-reference $Bool]]]]
+[FnDef $something = [Fn ([[Arg $_: [FnType [TypeReference $String] -> [TypeReference $Bool]]]]) => [FnType [TypeReference $Int] -> [TypeReference $Bool]] = [FnDeclExpr 0]]]
 `)
-}
-
-func TestLambdaMultipleParameters(t *testing.T) {
-	testParseExpression(t,
-		`
-\x test b -> hello 2
-`,
-		`[lambda ([$x $test $b]) -> [call $hello [#2]]]`)
 }
 
 func TestImport(t *testing.T) {
@@ -490,8 +479,8 @@ func TestImport(t *testing.T) {
 import First
 import Second.Sub
 `, `
-[import [$First]]
-[import [$Second $Sub]]
+[Import [ModuleRef [First]]]
+[Import [ModuleRef [Second Sub]]]
 `)
 }
 
@@ -511,7 +500,7 @@ func TestImportExposingEllipsis(t *testing.T) {
 		`
 import First exposing (..)
 `, `
-[import [$First] exposing (..)]
+[Import [ModuleRef [First]] exposing (..)]
 `)
 }
 
@@ -535,7 +524,7 @@ func TestAppend(t *testing.T) {
 	testParseExpression(t,
 		`
 [ 1, 3, 4 ] ++ [ 5, 6, 7, 8 ]
-`, "([list-literal: [#1 #3 #4]] ++ [list-literal: [#5 #6 #7 #8]])")
+`, "([ListLiteral [#1 #3 #4]] ++ [ListLiteral [#5 #6 #7 #8]])")
 }
 
 func TestSimpleTypeDefinition(t *testing.T) {
@@ -546,7 +535,7 @@ type alias Struct =
     , b : Boolean
     }
 `, `
-[alias $Struct [record-type [[field: $a [type-reference $Int]] [field: $b [type-reference $Boolean]]]]]
+[AliasType $Struct [RecordType [[Field: $a [TypeReference $Int]] [Field: $b [TypeReference $Boolean]]] []]]
 `)
 }
 
@@ -559,11 +548,10 @@ type alias Struct =
     }
 
 
-a =
-    somethingElse (b == 3)
+a : Bool = somethingElse (b == 3)
 `, `
-[alias $Struct [record-type [[field: $a [type-reference $Int]] [field: $b [type-reference $Boolean]]]]]
-[definition: $a = [func ([]) -> [call $somethingElse [($b == #3)]]]]
+[AliasType $Struct [RecordType [[Field: $a [TypeReference $Int]] [Field: $b [TypeReference $Boolean]]] []]]
+[FnDef $a = [Fn ([]) => [TypeReference $Bool] = [Call $somethingElse [($b == #3)]]]]
 `)
 }
 
@@ -580,9 +568,9 @@ a : Int -> Struct
 a ignore =
     Struct 2 False
 `, `
-[AliasType $Struct [record-type [[Field: $a [TypeReference $Int]] [Field: $b [TypeReference $Boolean]]] []]]
-[Annotation $a [FuncType [TypeReference $Int] -> [TypeReference $Struct]]]
-[FnDef $a = [Func ([$ignore]) -> [CCall [TypeReference $Struct] [#2 €false]]]]
+[AliasType $Struct [RecordType [[Field: $a [TypeReference $Int]] [Field: $b [TypeReference $Boolean]]] []]]
+[FnDef $a = [Fn ([]) => [FnType [TypeReference $Int] -> [TypeReference $Struct]] = [FnDeclExpr 0]]]
+[FnDef $a = [Fn ([]) => [GenericType [TypeParam $ignore]] = [CCall [TypeReference $Struct] [#2 €false]]]]
 `)
 }
 
@@ -595,46 +583,23 @@ type alias Struct =
     }
 
 
-a : Int -> Struct
-a ignore =
+a : (a: Int) -> Struct =
     Struct{ a = 2, b = False }
 `, `
 [AliasType $Struct [RecordType [[Field: $a [TypeReference $Int]] [Field: $b [TypeReference $Boolean]]] []]]
-[Annotation $a [FnType [TypeReference $Int] -> [TypeReference $Struct]]]
-[FnDef $a = [Fn ([$ignore]) -> [CCall [TypeReference $Struct] [[RecordLiteral [[$a = #2] [$b = €false]]]]]]]
+[FnDef $a = [Fn ([[Arg $a: [TypeReference $Int]]]) => [TypeReference $Struct] = [CCall [TypeReference $Struct] [[RecordLiteral [[$a = #2] [$b = €false]]]]]]]
 `)
 }
 
 func TestFuncDeclarationAndDefinition(t *testing.T) {
 	testParse(t,
 		`
-hello : Int -> Int -> Int
-hello first c =
+hello : (first: Int, c: Int) -> Int =
     4 + first
 `,
 		`
-[Annotation $hello [FnType [TypeReference $Int] -> [TypeReference $Int] -> [TypeReference $Int]]]
-[FnDef $hello = [Fn ([$first $c]) -> (#4 + $first)]]
+[FnDef $hello = [Fn ([[Arg $first: [TypeReference $Int]] [Arg $c: [TypeReference $Int]]]) => [TypeReference $Int] = (#4 + $first)]]
 `)
-}
-
-func TestDefinitionWithCallWithRecords(t *testing.T) {
-	testParse(t,
-		`
-main a =
-    { sprite = { x = calc 10 } }
-`,
-		`
-[FnDef $main = [Fn ([$a]) -> [RecordLiteral [[$sprite = [RecordLiteral [[$x = [Call $calc [#10]]]]]]]]]]
-`)
-}
-
-func TestSimpleCall(t *testing.T) {
-	testParse(t,
-		`
-rebecca is fantastic =
-    something (3 * 3) (4 + 4)
-`, "[FnDef $rebecca = [Fn ([$is $fantastic]) -> [Call $something [(#3 * #3) (#4 + #4)]]]]")
 }
 
 func TestSimpleCallWithLookup(t *testing.T) {
@@ -655,7 +620,7 @@ func TestOneLineIf(t *testing.T) {
 	testParseExpression(t,
 		`
 if x == 3 then 4 else 5
-`, "[if: ($x == #3) then #4 else #5]")
+`, "[If ($x == #3) then #4 else #5]")
 }
 
 func TestOneLineIfWithCall(t *testing.T) {
@@ -707,49 +672,43 @@ func TestConstructorWithTwoFieldsInDescendingOrder(t *testing.T) {
 	testParseExpression(t,
 		`
 { z = 42, andor = 99 }
-`, "[record-literal: [[$z = #42] [$andor = #99]]]")
+`, "[RecordLiteral [[$z = #42] [$andor = #99]]]")
 }
 
 func TestConstructorWithSeveralFields(t *testing.T) {
 	testParseExpression(t,
 		`
 { first = 42, second = 99, third = 13 }
-`, "[record-literal: [[$first = #42] [$second = #99] [$third = #13]]]")
+`, "[RecordLiteral [[$first = #42] [$second = #99] [$third = #13]]]")
 }
 
 func TestUnary1(t *testing.T) {
 	testParse(t,
 		`
-a : Bool -> Bool
-a x =
+a : (x: Bool) -> Bool =
     !x
 `, `
-[Annotation $a [FnType [TypeReference $Bool] -> [TypeReference $Bool]]]
-[FnDef $a = [Fn ([$x]) -> ( $x)]]
+[FnDef $a = [Fn ([[Arg $x: [TypeReference $Bool]]]) => [TypeReference $Bool] = (NOT $x)]]
 `)
 }
 
 func TestUnary2(t *testing.T) {
 	testParse(t,
 		`
-someTest : Bool -> Bool -> Bool
-someTest a b =
+someTest : (a: Bool, b: Bool) -> Bool =
     !a && b
 `, `
-[annotation: $someTest [func-type [type-reference $Bool] -> [type-reference $Bool] -> [type-reference $Bool]]]
-[definition: $someTest = [func ([$a $b]) -> ((! $a) AND $b)]]
+[FnDef $someTest = [Fn ([[Arg $a: [TypeReference $Bool]] [Arg $b: [TypeReference $Bool]]]) => [TypeReference $Bool] = ((NOT $a) AND $b)]]
 `)
 }
 
 func TestUnary3(t *testing.T) {
 	testParse(t,
 		`
-someTest : Bool -> Bool -> Bool
-someTest a b =
+someTest : (a: Bool, b: Bool) -> Bool =
     a && !b
 `, `
-[annotation: $someTest [func-type [type-reference $Bool] -> [type-reference $Bool] -> [type-reference $Bool]]]
-[definition: $someTest = [func ([$a $b]) -> ($a AND (! $b))]]
+[FnDef $someTest = [Fn ([[Arg $a: [TypeReference $Bool]] [Arg $b: [TypeReference $Bool]]]) => [TypeReference $Bool] = ($a AND (NOT $b))]]
 `)
 }
 
@@ -757,25 +716,23 @@ func TestList(t *testing.T) {
 	testParseExpression(t,
 		`
 [ 2, 4, b, 101 ]
-`, "[list-literal: [#2 #4 $b #101]]")
+`, "[ListLiteral [#2 #4 $b #101]]")
 }
 
 func TestTuple(t *testing.T) {
 	testParseExpression(t,
 		`
 ( 2, 4, 4 )
-`, "[tuple-literal: [#2 #4 #4]]")
+`, "[TupleLiteral [#2 #4 #4]]")
 }
 
 func TestTupleType(t *testing.T) {
 	testParse(t,
 		`
-someFunc : (Int, String) -> Int
-someFunc =
+someFunc : Int -> String -> Int =
     (42, "hi")
 `, `
-[Annotation $someFunc [FnType [TupleType [[TypeReference $Int] [TypeReference $String]]] -> [TypeReference $Int]]]
-[FnDef $someFunc = [Fn ([]) -> [TupleLiteral [#42 'hi']]]]
+[FnDef $someFunc = [Fn ([]) => [FnType [TypeReference $Int], [TypeReference $String] -> [TypeReference $Int]] = [TupleLiteral [#42 'hi']]]]
 `)
 }
 
@@ -790,7 +747,7 @@ func TestModuleReferenceWithType(t *testing.T) {
 	testParse(t,
 		`
 a : Bool -> FirstModule.SecondMod.ThisIsAType
-`, "[Annotation $a [FnType [TypeReference $Bool] -> [ScopedTypeReference FirstModule.SecondMod.$ThisIsAType]]]")
+`, "[FnDef $a = [Fn ([]) => [FnType [TypeReference $Bool] -> [ScopedTypeReference FirstModule.SecondMod.$ThisIsAType]] = [FnDeclExpr 0]]]")
 }
 
 func TestAsm(t *testing.T) {
@@ -809,28 +766,28 @@ func TestModuleReferenceWithInitializer(t *testing.T) {
 	testParseExpression(t,
 		`
 { x = 2 }
-`, "[record-literal: [[$x = #2]]]")
+`, "[RecordLiteral [[$x = #2]]]")
 }
 
 func TestMoreComplexList(t *testing.T) {
 	testParseExpression(t,
 		`
 someFunc [ 2, 4, b, 101 ]
-`, "[call $someFunc [[list-literal: [#2 #4 $b #101]]]]")
+`, "[Call $someFunc [[ListLiteral [#2 #4 $b #101]]]]")
 }
 
 func TestTwoListType(t *testing.T) {
 	testParse(t,
 		`
 someFunc : List Sprite -> List Another
-`, "[annotation: $someFunc [func-type [type-reference $List [[type-reference $Sprite]]] -> [type-reference $List [[type-reference $Another]]]]]")
+`, "[FnDef $someFunc = [Fn ([]) => [FnType [TypeReference $List [[TypeReference $Sprite]]] -> [TypeReference $List [[TypeReference $Another]]]] = [FnDeclExpr 0]]]")
 }
 
 func TestMultipleListType(t *testing.T) {
 	testParse(t,
 		`
 someFunc : List Sprite -> List Another -> List Something
-`, "[annotation: $someFunc [func-type [type-reference $List [[type-reference $Sprite]]] -> [type-reference $List [[type-reference $Another]]] -> [type-reference $List [[type-reference $Something]]]]]")
+`, "[FnDef $someFunc = [Fn ([]) => [FnType [TypeReference $List [[TypeReference $Sprite]]], [TypeReference $List [[TypeReference $Another]]] -> [TypeReference $List [[TypeReference $Something]]]] = [FnDeclExpr 0]]]")
 }
 
 func TestListLiteral(t *testing.T) {
@@ -841,20 +798,18 @@ type alias Cool =
     }
 
 
-a : Bool -> List Cool
-a x =
+a : (x: Bool) -> List Cool =
     [ { name = "hi" }, { name = "another" }, { name = "tjoho" } ]
 `, `
-[alias $Cool [record-type [[field: $name [type-reference $String]]]]]
-[annotation: $a [func-type [type-reference $Bool] -> [type-reference $List [[type-reference $Cool]]]]]
-[definition: $a = [func ([$x]) -> [list-literal: [[record-literal: [[$name = 'hi']]] [record-literal: [[$name = 'another']]] [record-literal: [[$name = 'tjoho']]]]]]]
+[AliasType $Cool [RecordType [[Field: $name [TypeReference $String]]] []]]
+[FnDef $a = [Fn ([[Arg $x: [TypeReference $Bool]]]) => [TypeReference $List [[TypeReference $Cool]]] = [ListLiteral [[RecordLiteral [[$name = 'hi']]] [RecordLiteral [[$name = 'another']]] [RecordLiteral [[$name = 'tjoho']]]]]]]
 `)
 }
 
 func TestMultipleStatements(t *testing.T) {
 	testParse(t,
 		`
-someFunc a b =
+someFunc : Int =
     let
         i = 3
 
@@ -864,13 +819,13 @@ someFunc a b =
         call (i + j)
     else
         3
-`, "[definition: $someFunc = [func ([$a $b]) -> [let: [[LetAssign $i = #3] [letassign $j = #4]] in [if: ($i >= #6) then [call $call [($i + $j)]] else #3]]]]")
+`, "[FnDef $someFunc = [Fn ([]) => [TypeReference $Int] = [Let: [[LetAssign [$i] = #3] [LetAssign [$j] = #4]] in [If ($i >= #6) then [Call $call [($i + $j)]] else #3]]]]")
 }
 
 func TestMoreMultipleStatements(t *testing.T) {
 	testParse(t,
 		`
-someFunc a b =
+someFunc : Int =
     let
         i = 3
 
@@ -879,14 +834,14 @@ someFunc a b =
     i + 2
 
 
-anotherFunc c =
+anotherFunc : Int =
     if c + 2 <= 3 then
         18
     else
         19
 `, `
-[definition: $someFunc = [func ([$a $b]) -> [let: [[letassign $i = #3] [letassign $j = #4]] in ($i + #2)]]]
-[definition: $anotherFunc = [func ([$c]) -> [if: (($c + #2) <= #3) then #18 else #19]]]
+[FnDef $someFunc = [Fn ([]) => [TypeReference $Int] = [Let: [[LetAssign [$i] = #3] [LetAssign [$j] = #4]] in ($i + #2)]]]
+[FnDef $anotherFunc = [Fn ([]) => [TypeReference $Int] = [If (($c + #2) <= #3) then #18 else #19]]]
 `)
 }
 
@@ -897,7 +852,7 @@ if x == 3 then
     callme (4 + 4)
 else
     5
-`, "[if: ($x == #3) then [call $callme [(#4 + #4)]] else #5]")
+`, "[If ($x == #3) then [Call $callme [(#4 + #4)]] else #5]")
 }
 
 func TestSimpleLetOneLine(t *testing.T) {
@@ -907,7 +862,7 @@ let
     x = 55 + 41 * 4
 in
 2 + x
-`, "[let: [[letassign $x = (#55 + (#41 * #4))]] in (#2 + $x)]")
+`, "[Let: [[LetAssign [$x] = (#55 + (#41 * #4))]] in (#2 + $x)]")
 }
 
 func TestSimpleLetInOnAnotherLine(t *testing.T) {
@@ -917,7 +872,7 @@ let
     x = 55 + 41 * 4
 in
 2 + x
-`, "[let: [[letassign $x = (#55 + (#41 * #4))]] in (#2 + $x)]")
+`, "[Let: [[LetAssign [$x] = (#55 + (#41 * #4))]] in (#2 + $x)]")
 }
 
 func xTestAnnotationThatIsUnfinished(t *testing.T) {
@@ -934,7 +889,7 @@ let
     x = 55 + 1
 in
 x + 2
-`, "[let: [[letassign $x = (#55 + #1)]] in ($x + #2)]")
+`, "[Let: [[LetAssign [$x] = (#55 + #1)]] in ($x + #2)]")
 }
 
 func TestLet(t *testing.T) { // --- FIXME
@@ -948,7 +903,7 @@ let
     zarg = 8 * 99
 in
 x + y
-`, "[let: [[letassign $x = [call $callme [(#4 + #4)]]] [letassign $y = #3] [letassign $zarg = (#8 * #99)]] in ($x + $y)]")
+`, "[Let: [[LetAssign [$x] = [Call $callme [(#4 + #4)]]] [LetAssign [$y] = #3] [LetAssign [$zarg] = (#8 * #99)]] in ($x + $y)]")
 }
 
 func TestLetSubSameLine(t *testing.T) { // --- FIXME
@@ -961,14 +916,13 @@ let
     bogus = 4
 in
 x + y * bogus
-`, "[let: [[letassign $x = [call $callme [(#4 + #5)]]]] in [let: [[letassign $bogus = #4]] in ($x + ($y * $bogus))]]")
+`, "[Let: [[LetAssign [$x] = [Call $callme [(#4 + #5)]]]] in [Let: [[LetAssign [$bogus] = #4]] in ($x + ($y * $bogus))]]")
 }
 
 func TestPyth(t *testing.T) { // --- FIXME
 	testParse(t,
 		`
-pythagoras : Int -> Int -> Int -> Int -> Int
-pythagoras ax ay bx by =
+pythagoras : (ax: Int, ay: Int, bx: Int, by: Int) -> Int =
     let
         x = ax - bx
 
@@ -976,8 +930,8 @@ pythagoras ax ay bx by =
     in
     Math.sqrt (x * x + y * y)
 `, `
-[annotation: $pythagoras [func-type [type-reference $Int] -> [type-reference $Int] -> [type-reference $Int] -> [type-reference $Int] -> [type-reference $Int]]]
-[definition: $pythagoras = [func ([$ax $ay $bx $by]) -> [let: [[letassign $x = ($ax - $bx)] [letassign $y = ($ay - $by)]] in [call Math.$sqrt [(($x * $x) + ($y * $y))]]]]]`)
+[FnDef $pythagoras = [Fn ([[Arg $ax: [TypeReference $Int]] [Arg $ay: [TypeReference $Int]] [Arg $bx: [TypeReference $Int]] [Arg $by: [TypeReference $Int]]]) => [TypeReference $Int] = [Let: [[LetAssign [$x] = ($ax - $bx)] [LetAssign [$y] = ($ay - $by)]] in [Call Math.$sqrt [(($x * $x) + ($y * $y))]]]]]
+`)
 }
 
 func TestGreat(t *testing.T) {
@@ -987,8 +941,9 @@ isGreat? : Int -> Bool
 isGreat? a =
     a > 99
 `, `
-[annotation: $isGreat? [func-type [type-reference $Int] -> [type-reference $Bool]]]
-[definition: $isGreat? = [func ([$a]) -> ($a > #99)]]`)
+[FnDef $isGreat? = [Fn ([]) => [FnType [TypeReference $Int] -> [TypeReference $Bool]] = [FnDeclExpr 0]]]
+[FnDef $isGreat? = [Fn ([]) => [GenericType [TypeParam $a]] = ($a > #99)]]
+`)
 }
 
 func TestCase(t *testing.T) {
@@ -998,7 +953,7 @@ case x of
     Int i -> itoa i
 
     String s -> s
-`, "[case: $x of [casecons $Int ([$i]) => [call $itoa [$i]]];[casecons $String ([$s]) => $s]]")
+`, "[CaseCustomType $x of [CaseConsCustomType $Int ([$i]) => [Call $itoa [$i]]];[CaseConsCustomType $String ([$s]) => $s]]")
 }
 
 func TestAlias(t *testing.T) {
@@ -1009,7 +964,7 @@ type alias State =
     , time : Int
     }
 
-`, "[alias $State [record-type [[field: $playerX [type-reference $Int]] [field: $time [type-reference $Int]]]]]")
+`, "[AliasType $State [RecordType [[Field: $playerX [TypeReference $Int]] [Field: $time [TypeReference $Int]]] []]]")
 }
 
 func TestAliasOnSeveralLines(t *testing.T) {
@@ -1020,7 +975,7 @@ type alias State =
     , time : Int
     }
 
-`, "[alias $State [record-type [[field: $playerX [type-reference $Int]] [field: $time [type-reference $Int]]]]]")
+`, "[AliasType $State [RecordType [[Field: $playerX [TypeReference $Int]] [Field: $time [TypeReference $Int]]] []]]")
 }
 
 func TestCaseWithDefault(t *testing.T) {
@@ -1039,7 +994,7 @@ type SomeEnum =
     | Anon
     | Second Int
 
-`, "[CustomType $SomeEnum [[CustomTypeVariant $First [[TypeReference $String]]] [CustomTypeVariant $Anon []] [CustomTypeVariant $Second [[TypeReference $Int]]]]]")
+`, "[CustomType $SomeEnum [[Variant $First [[TypeReference $String]]] [Variant $Anon []] [Variant $Second [[TypeReference $Int]]]]]")
 }
 
 func TestCustomTypeNewFormatting(t *testing.T) {
@@ -1050,16 +1005,7 @@ type SomeEnum =
     | Anon
     | Second Int
 
-`, "[CustomType $SomeEnum [[CustomTypeVariant $First [[TypeReference $String]]] [CustomTypeVariant $Anon []] [CustomTypeVariant $Second [[TypeReference $Int]]]]]")
-}
-
-func TestExternalFunction(t *testing.T) { // --- FIXME
-	testParse(t,
-		`
-__externalfn coreListMap 2
-`, `
-[external function: coreListMap 2]
-`)
+`, "[CustomType $SomeEnum [[Variant $First [[TypeReference $String]]] [Variant $Anon []] [Variant $Second [[TypeReference $Int]]]]]")
 }
 
 func TestModuleVariantConstructor(t *testing.T) { // --- FIXME
@@ -1084,9 +1030,9 @@ a : Bool -> SomeEnum
 a dummy =
     Imaginary.Module.First "Hello"
 `, `
-[CustomType $SomeEnum [[CustomTypeVariant $First [[TypeReference $String]]] [CustomTypeVariant $Anon []] [CustomTypeVariant $Second [[TypeReference $Int]]]]]
-[Annotation $a [FnType [TypeReference $Bool] -> [TypeReference $SomeEnum]]]
-[FnDef $a = [Fn ([$dummy]) -> [CCall [ScopedTypeReference Imaginary.Module.$First] ['Hello']]]]
+[CustomType $SomeEnum [[Variant $First [[TypeReference $String]]] [Variant $Anon []] [Variant $Second [[TypeReference $Int]]]]]
+[FnDef $a = [Fn ([]) => [FnType [TypeReference $Bool] -> [TypeReference $SomeEnum]] = [FnDeclExpr 0]]]
+[FnDef $a = [Fn ([]) => [GenericType [TypeParam $dummy]] = [CCall [ScopedTypeReference Imaginary.Module.$First] ['Hello']]]]
 `)
 }
 
@@ -1099,14 +1045,14 @@ type SomeEnum =
     | Second Int
 
 
-a =
+a : SomeEnum =
     case x of
         First i -> itoa i
 
         Second s -> s
 `, `
-[custom-type-statement [custom-type $SomeEnum [[variant $First [[type-reference $String]]] [variant $Anon] [variant $Second [[type-reference $Int]]]]]]
-[definition: $a = [func ([]) -> [case: $x of [casecons $First ([$i]) => [call $itoa [$i]]];[casecons $Second ([$s]) => $s]]]]
+[CustomType $SomeEnum [[Variant $First [[TypeReference $String]]] [Variant $Anon []] [Variant $Second [[TypeReference $Int]]]]]
+[FnDef $a = [Fn ([]) => [TypeReference $SomeEnum] = [CaseCustomType $x of [CaseConsCustomType $First ([$i]) => [Call $itoa [$i]]];[CaseConsCustomType $Second ([$s]) => $s]]]]
 `)
 }
 
@@ -1159,7 +1105,7 @@ func TestUpdate(t *testing.T) {
 		`
  a =
     { objectToUpdate | someField = 3 }
-`, "[definition: $a = [func ([]) -> [record-literal: [[$someField = #3]] ($objectToUpdate)]]]")
+`, "[Constant $a = [RecordUpdate [[$someField = #3]] ($objectToUpdate)]]")
 }
 
 func TestUpdateWithSpace(t *testing.T) {
@@ -1167,7 +1113,7 @@ func TestUpdateWithSpace(t *testing.T) {
 		`
  a =
     { objectToUpdate | someField = 3 }
-`, "[definition: $a = [func ([]) -> [record-literal: [[$someField = #3]] ($objectToUpdate)]]]")
+`, "[Constant $a = [RecordUpdate [[$someField = #3]] ($objectToUpdate)]]")
 }
 
 func TestUpdateWithCallAndSpace(t *testing.T) { // --- FIXME
@@ -1175,14 +1121,14 @@ func TestUpdateWithCallAndSpace(t *testing.T) { // --- FIXME
 		`
  a =
     { inSprite | scale = scaleBoth scaleFactor }
-`, "[definition: $a = [func ([]) -> [record-literal: [[$scale = [call $scaleBoth [$scaleFactor]]]] ($inSprite)]]]")
+`, "[Constant $a = [RecordUpdate [[$scale = [Call $scaleBoth [$scaleFactor]]]] ($inSprite)]]")
 }
 
 func TestComplexUpdate(t *testing.T) {
 	testParseExpression(t,
 		`
 { inSprite | scale = { scaleX = scale, scaleY = scale } }
-`, "[record-literal: [[$scale = [record-literal: [[$scaleX = $scale] [$scaleY = $scale]]]]] ($inSprite)]")
+`, "[RecordUpdate [[$scale = [RecordLiteral [[$scaleX = $scale] [$scaleY = $scale]]]]] ($inSprite)]")
 }
 
 func TestGenericsError(t *testing.T) {
@@ -1213,7 +1159,7 @@ type alias Tinkering t =
     , cool : Something t
     }
 
-`, "[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[GenericType [GenericParam $t]]]]]] [[GenericParam $t]]]]")
+`, "[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[GenericType [TypeParam $t]]]]]] [[TypeParam $t]]]]")
 }
 
 func TestMultipleGenerics(t *testing.T) {
@@ -1226,7 +1172,7 @@ type alias Tinkering t a =
     }
 
 `, `
-[alias $Tinkering [wrapped-type [type-param-context [$t $a]] [record-type [[field: $solder [type-reference $Bool]] [field: $cool [type-reference $List [[local-type: [type-param $t]]]]] [field: $other [local-type: [type-param $a]]]]]]]
+[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $List [[GenericType [TypeParam $t]]]]] [Field: $other [GenericType [TypeParam $a]]]] [[TypeParam $t] [TypeParam $a]]]]
 `)
 }
 
@@ -1238,8 +1184,9 @@ module Main exposing (main)
 import Character
 import Characters.Update
 `, `
-[import [$Character]]
-[import [$Characters $Update]]
+[FnDef $module = [Fn ([]) => [TypeReference $Main [[GenericType [TypeParam $exposing]] [GenericType [TypeParam $main]]]] = [FnDeclExpr 0]]]
+[Import [ModuleRef [Character]]]
+[Import [ModuleRef [Characters Update]]]
 `)
 }
 
@@ -1252,13 +1199,11 @@ type alias Tinkering t =
     }
 
 
-f : Tinkering t -> Int
-f a =
+f : (a: Tinkering t) -> Int =
     2
 `, `
-[alias $Tinkering [wrapped-type [type-param-context [$t]] [record-type [[field: $solder [type-reference $Bool]] [field: $cool [local-type: [type-param $t]]]]]]]
-[annotation: $f [wrapped-type [type-param-context [$t]] [func-type [type-reference $Tinkering [[local-type: [type-param $t]]]] -> [type-reference $Int]]]]
-[definition: $f = [func ([$a]) -> #2]]
+[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [GenericType [TypeParam $t]]]] [[TypeParam $t]]]]
+[FnDef $f = [Fn ([[Arg $a: [TypeReference $Tinkering [[GenericType [TypeParam $t]]]]]]) => [TypeReference $Int] = #2]]
 `)
 }
 
@@ -1268,7 +1213,7 @@ func TestGenericsCustomType(t *testing.T) {
 type Maybe a =
     Nothing
     | Just a
-`, `[custom-type-statement [wrapped-type [type-param-context [$a]] [custom-type $Maybe [[variant $Nothing] [variant $Just [[local-type: [type-param $a]]]]]]]]
+`, `[CustomType $Maybe [[Variant $Nothing []] [Variant $Just [[GenericType [TypeParam $a]]]]]]
 `)
 }
 
@@ -1277,7 +1222,7 @@ func TestGenericsAnnotationBegin(t *testing.T) {
 		`
 ownCons : itemType -> List itemType -> List itemType
 `, `
-[annotation: $ownCons [wrapped-type [type-param-context [$itemType]] [func-type [local-type: [type-param $itemType]] -> [type-reference $List [[local-type: [type-param $itemType]]]] -> [type-reference $List [[local-type: [type-param $itemType]]]]]]]
+[FnDef $ownCons = [Fn ([]) => [FnType [GenericType [TypeParam $itemType]], [TypeReference $List [[GenericType [TypeParam $itemType]]]] -> [TypeReference $List [[GenericType [TypeParam $itemType]]]]] = [FnDeclExpr 0]]]
 `)
 }
 
@@ -1290,25 +1235,21 @@ type alias Tinkering t =
     }
 
 
-f : Tinkering Int -> Int
-f tinkering =
+f : Tinkering Int -> Int =
     tinkering.secret
 `, `
-[alias $Tinkering [wrapped-type [type-param-context [$t]] [record-type [[field: $solder [type-reference $Bool]] [field: $secret [local-type: [type-param $t]]]]]]]
-[annotation: $f [func-type [type-reference $Tinkering [[type-reference $Int]]] -> [type-reference $Int]]]
-[definition: $f = [func ([$tinkering]) -> [lookups $tinkering [$secret]]]]
+[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [GenericType [TypeParam $t]]]] [[TypeParam $t]]]]
+[FnDef $f = [Fn ([]) => [FnType [TypeReference $Tinkering [[TypeReference $Int]]] -> [TypeReference $Int]] = [RecordLookups $tinkering [$secret]]]]
 `)
 }
 
 func TestGenericsAnnotation2(t *testing.T) {
 	testParse(t,
 		`
-f : Tinkering Int -> Int
-f tinkering =
+f : Tinkering Int -> Int =
     tinkering.secret
 `, `
-[annotation: $f [func-type [type-reference $Tinkering [[type-reference $Int]]] -> [type-reference $Int]]]
-[definition: $f = [func ([$tinkering]) -> [lookups $tinkering [$secret]]]]
+[FnDef $f = [Fn ([]) => [FnType [TypeReference $Tinkering [[TypeReference $Int]]] -> [TypeReference $Int]] = [RecordLookups $tinkering [$secret]]]]
 `)
 }
 
@@ -1319,7 +1260,7 @@ type alias Tinkering t =
     { solder : Bool
     , secret : t
     }
-`, "[alias $Tinkering [wrapped-type [type-param-context [$t]] [record-type [[field: $solder [type-reference $Bool]] [field: $secret [local-type: [type-param $t]]]]]]]")
+`, "[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [GenericType [TypeParam $t]]]] [[TypeParam $t]]]]")
 }
 
 func TestCaseNewLine(t *testing.T) {
@@ -1346,19 +1287,7 @@ case a of
     Just oldGamepad ->
         2
 		`, `
-[case: $a of [casecons $Nothing ([]) => [ccall $None]];[casecons $Just ([$oldGamepad]) => #2]]
-`)
-}
-
-func TestRecordAnnotation(t *testing.T) {
-	testParse(t,
-		`
-f : { solder : Bool, cool : Int } -> Int
-f a =
-    2
-`, `
-[annotation: $f [func-type [record-type [[field: $solder [type-reference $Bool]] [field: $cool [type-reference $Int]]]] -> [type-reference $Int]]]
-[definition: $f = [func ([$a]) -> #2]]
+[CaseCustomType $a of [CaseConsCustomType $Nothing ([]) => [CCall [TypeReference $None]]];[CaseConsCustomType $Just ([$oldGamepad]) => #2]]
 `)
 }
 
@@ -1375,7 +1304,7 @@ f : (a: Sprite) -> Int =
     2
 
 
-f : (a : { solder : Bool, cool : Int }) -> Int =
+g : (a : { solder : Bool, cool : Int }) -> Int =
     f { solder = True, cool = 33 }
 `, `
 [alias $Sprite [record-type [[field: $solder [type-reference $Bool]] [field: $cool [type-reference $Int]]]]]

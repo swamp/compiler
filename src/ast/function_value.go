@@ -24,9 +24,6 @@ type FunctionValue struct {
 func NewFunctionValue(debugAssignedValue token.VariableSymbolToken, parameters []*FunctionParameter,
 	returnType Type, expression Expression, commentBlock *MultilineComment) *FunctionValue {
 	inclusive := token.MakeInclusiveSourceFileReference(debugAssignedValue.FetchPositionLength(), expression.FetchPositionLength())
-	if inclusive.Range.End().Line() == 0 && inclusive.Range.End().Column() == 0 {
-		panic("problem")
-	}
 
 	var types []Type
 	for _, param := range parameters {
