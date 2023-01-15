@@ -234,7 +234,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		irFunctions:        irFunctions,
 	}
 
-	newIrFunc := irModule.NewFunc(f.Annotation().Annotation().Identifier().Name(), irReturnType, irParams...)
+	newIrFunc := irModule.NewFunc(fullyQualifiedVariableName.Identifier().Name(), irReturnType, irParams...)
 	irFunctions.AddFunc(fullyQualifiedVariableName, newIrFunc)
 
 	result, genErr := generateExpression(f.Expression(), true, genContext)

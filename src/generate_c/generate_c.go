@@ -42,14 +42,14 @@ typedef uint8_t Bool;
 		fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 		if maybeFunction != nil {
-			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
+			if maybeFunction.IsSomeKindOfExternal() {
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
 				log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
-			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
+			if maybeFunction.IsSomeKindOfExternal() {
 				continue
 			}
 			genFuncErr := generateFunction(fullyQualifiedName, maybeFunction, writer, "return ", 0, verboseFlag)

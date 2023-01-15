@@ -652,7 +652,7 @@ func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connect
 		switch t := rootToken.(type) {
 		case *decorated.NamedFunctionValue:
 			value := t.Value()
-			foundRange = value.Annotation().FetchPositionLength().Range
+			foundRange = value.FetchPositionLength().Range
 			count = len(value.References())
 		case *dectype.Alias:
 			count = len(t.References())
