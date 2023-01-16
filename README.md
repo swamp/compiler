@@ -14,8 +14,7 @@ You must specify an annotation for all functions. All types separated by '->' (r
 
 ```haskell
 
-doubleInt : Int -> Int
-doubleInt a =
+doubleInt : (a: Int) -> Int =
     a * 2
 
 ```
@@ -76,8 +75,7 @@ Most things in Swamp is an expression.
 
 ```haskell
 
-sample : Int -> String
-sample a =
+sample : (a: Int) -> String =
     if a > 10 then "high" else "low"
 
 ```
@@ -86,8 +84,7 @@ sample a =
 
 ```haskell
 
-sample : Int -> Int -> Int
-sample a b =
+sample : (a: Int, b: Int) -> Int =
     let
        x = a + 10
 
@@ -107,16 +104,14 @@ Extract fields from a Record or Tuple during let expression.
 
 type alias Position = { x : Int, y : Int }
 
-addXY : Position -> Int
-addXY pos =
+addXY : (pos: Position) -> Int =
     let
         { x, y } = pos
     in
     x + y
 
 
-addXYTuple : (Int, Int) -> (Int, Int)
-addXYTuple pos =
+addXYTuple : (pos: (Int, Int)) -> (Int, Int) =
     let
         x, y = pos
     in
@@ -136,8 +131,7 @@ type CharacterState =
     | Idle
 
 
-speed : CharacterState -> Int
-speed state =
+speed : (state: CharacterState) -> Int =
     case state of
 
         Moving speed -> speed
@@ -153,12 +147,10 @@ Add terms after a function value to call it and return the result. If fewer argu
 
 ```haskell
 
-double : Int -> Int
-double a =
+double : (a: Int) -> Int =
     a * 2
 
-main : Int -> Int
-main _ =
+main : Int =
     double 42
 ```
 
@@ -168,8 +160,7 @@ Fetches the field from a record value. Use a `.` on a record value and then spec
 
 ```haskell
 
-lookupX : { x : Int, y : Int } -> Int
-lookupX position =
+lookupX : (position: { x : Int, y : Int }) -> Int =
     position.x
 
 ```
@@ -180,8 +171,7 @@ lookupX position =
 A list of if statements to be evaluated. Evaluated from top to bottom, uses `_` if no match is found.
 
 ```haskell
-temperature : Int -> String
-temperature x =
+temperature : (x: Int) -> String =
     | x > 15 -> "Warm"
     | x < -10 > -> "Cold"
     | _ -> "Neither warm nor cold"
@@ -197,23 +187,19 @@ Easier way to fill in the values for a record.
 type alias Position = { x : Int, y : Int }
 
 
-moveLeft : Position -> Position
-moveLeft pos =
+moveLeft : (pos: Position) -> Position =
     Position (pos.x - 10) pos.y
 
 ```
 
 You can also explicitly set each field in the record:
 
-
-
 ```haskell
 
 type alias Position = { x : Int, y : Int }
 
 
-moveLeft : Position -> Position
-moveLeft pos =
+moveLeft : (pos: Position) -> Position =
     Position { x = pos.x - 10, y = pos.y }
 
 ```
@@ -238,16 +224,13 @@ velocity
 
 Send a result to the left or to the right.
 
-
 ```haskell
 
-double : Int -> Int
-double a =
+double : (a: Int) -> Int =
     a * 2
 
 
-sample : Int -> Int
-sample a =
+sample : (a: Int) -> Int =
     double <| AnotherFile.Abs -10
 
 ```
@@ -291,14 +274,12 @@ Use a type under another name.
 type alias Position = { x : Int, y : Int }
 
 
-moveRight : Position -> Position
-moveRight pos =
+moveRight : (pos: Position) -> Position =
     { x = pos.x + 10, y = pos.y }
 
 ```
 
 you can also have alias with generics (Type Parameters):
-
 
 ```haskell
 type alias Position first second = { x : first, y : second }
@@ -338,8 +319,7 @@ Import from another `.swamp` file:
 
 import AnotherFile
 
-sample : Int -> Int
-sample a =
+sample : (a: Int) -> Int =
     AnotherFile.Abs -10
 
 ```
