@@ -6,6 +6,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -142,6 +143,10 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 
 		if len(parameters) == 0 && isConstant(expression) {
 			return ast.NewConstantDefinition(ident, expression, precedingComments), nil
+		}
+
+		if returnType == nil {
+			return nil, parerr.NewInternalError(p.positionLength(), fmt.Errorf("unsupported assignment / constant"))
 		}
 	} else {
 		expression = ast.NewFunctionDeclarationExpression(ident.Symbol(), annotationFunctionType)
