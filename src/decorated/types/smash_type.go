@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -133,11 +132,6 @@ func fillContextFromRecordType(context *TypeParameterContextOther, original *Rec
 
 	wasConverted := false
 
-	hasGenerics := len(original.GenericTypes()) > 0
-	if !hasGenerics {
-		log.Printf("original has no generics!? %T %v", original, original)
-	}
-
 	if len(original.SortedFields()) != len(other.SortedFields()) {
 		return nil, fmt.Errorf("not same number of fields in two structs")
 	}
@@ -145,7 +139,6 @@ func fillContextFromRecordType(context *TypeParameterContextOther, original *Rec
 	for index, originalField := range original.sortedFields {
 		otherType := other.SortedFields()[index].fieldType
 		originalType := originalField.fieldType
-		log.Printf("smashing record type generics %d %T %T\n%v\n%v", index, originalType, otherType, originalType, otherType)
 		convertedType, convertErr := smashTypes(context, originalType, otherType)
 		if convertErr != nil {
 			return nil, convertErr
@@ -346,8 +339,6 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 	if reflect.ValueOf(other).IsNil() {
 		panic("other was nil")
 	}
-
-	log.Printf("smashing parameter %T %T\n%v\n%v\n", original, other, original, other)
 
 	localType, wasLocalType := original.(*LocalType)
 	if wasLocalType {

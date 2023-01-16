@@ -11,7 +11,6 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
 func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
@@ -64,15 +63,7 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 	}
 
 	var encounteredArgumentTypes []dtype.Type
-	for debugIndex, encounteredArgumentExpression := range decoratedEncounteredArgumentExpressions {
-		log.Printf(
-			"%d argument encountered %T %v\n%T %v\n",
-			debugIndex,
-			encounteredArgumentExpression,
-			encounteredArgumentExpression,
-			encounteredArgumentExpression.Type(),
-			encounteredArgumentExpression.Type(),
-		)
+	for _, encounteredArgumentExpression := range decoratedEncounteredArgumentExpressions {
 		encounteredArgumentTypes = append(encounteredArgumentTypes, encounteredArgumentExpression.Type())
 	}
 	encounteredFunctionCallType := dectype.NewFunctionAtom(nil, encounteredArgumentTypes)

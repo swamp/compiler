@@ -7,7 +7,6 @@ package decorator
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/parser"
@@ -124,7 +123,6 @@ func createParameterDefinitions(referenceMaker decorated.TypeAddAndReferenceMake
 	}
 	for index, parameterType := range functionParameterTypes {
 		identifier := identifiers[index]
-		log.Printf("parameterType: %T %v", parameterType, parameterType)
 		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)
 		parameters = append(parameters, argDef)
 	}

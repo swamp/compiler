@@ -56,20 +56,20 @@ const blobCode = `
 __externalfn mapToBlob : ((Int -> Int), Blob) -> Blob
 __externalfn indexedMapToBlob : ((Int -> Int -> Int), Blob) -> Blob
 __externalfn indexedMapToBlob! : ((Int -> Int -> Int), Blob) -> Blob
-__externalvarfn filterIndexedMap2d : ({ x : Int, y : Int } -> Int -> Maybe a) -> { width : Int, height : Int } -> Blob -> List a
-__externalvarfn filterIndexedMap : (Int, Int -> Maybe a) -> Blob -> List a
-__externalfn toString2d : { width : Int, height : Int } -> Blob -> String
-__externalfn get2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Maybe Int
-__externalfn slice2d : { x : Int, y : Int } -> { width : Int, height : Int } -> { width : Int, height : Int } -> Blob -> Blob
-__externalfn fill2d! : { x : Int, y : Int } -> { width : Int, height : Int } -> Int -> { width : Int, height : Int } -> Blob -> Blob
-__externalfn copy2d! : { x : Int, y : Int } -> { width : Int, height : Int } -> { width : Int, height : Int } -> Blob -> Blob -> Blob
+__externalvarfn filterIndexedMap2d : (({ x : Int, y : Int } -> Int -> Maybe a), { width : Int, height : Int }, Blob) -> List a
+__externalvarfn filterIndexedMap : ((Int -> Int -> Maybe a), Blob) -> List a
+__externalfn toString2d : ({ width : Int, height : Int }, Blob) -> String
+__externalfn get2d : ({ x : Int, y : Int }, { width : Int, height : Int }, Blob) -> Maybe Int
+__externalfn slice2d : ({ x : Int, y : Int }, { width : Int, height : Int }, { width : Int, height : Int }, Blob) -> Blob
+__externalfn fill2d! : ({ x : Int, y : Int }, { width : Int, height : Int }, Int, { width : Int, height : Int }, Blob) -> Blob
+__externalfn copy2d! : ({ x : Int, y : Int }, { width : Int, height : Int }, { width : Int, height : Int }, Blob, Blob) -> Blob
 __externalfn drawWindow2d! : { x : Int, y : Int } -> { width : Int, height : Int } -> { width : Int, height : Int } -> Blob -> Blob
 __externalfn member : Int -> Blob -> Bool
-__externalfn any : (Int -> Bool) -> Blob -> Bool
+__externalfn any : ((Int -> Bool), Blob) -> Bool
 __externalfn fromArray : Array Int -> Blob
-__externalfn make : Int -> Blob
-__externalvarfn map2d : ({ x : Int, y : Int } -> Int -> a) -> { width : Int, height : Int } -> Blob -> List a
-__externalfn fromList : List Int -> Blob
+__externalfn make : (Int) -> Blob
+__externalvarfn map2d : (({ x : Int, y : Int } -> Int -> a), { width : Int, height : Int }, Blob) -> List a
+__externalfn fromList : (List Int) -> Blob
 -- __externalfn isEmpty : Blob -> Bool
 -- __externalvarfn map : (Int -> a) -> Blob -> List a
 -- __externalvarfn indexedMap : (Int -> Int -> a) -> Blob -> List a
@@ -83,19 +83,19 @@ __externalfn fromList : List Int -> Blob
 `
 
 const arrayCode = `
-__externalvarfn fromList : List a -> Array a
-__externalvarfn toList : Array a -> List a
-__externalvarfn grab : Int -> Array a -> a
-__externalvarfn length : Array a -> Int
-__externalvarfn get : Int -> Array a -> Maybe a
+__externalvarfn fromList : (List a) -> Array a
+__externalvarfn toList : (Array a) -> List a
+__externalvarfn grab : (Int, Array a) -> a
+__externalvarfn length : (Array a) -> Int
+__externalvarfn get : (Int, Array a) -> Maybe a
 -- __externalvarfn slice : Int -> Int -> Array a -> Array a
 -- __externalvarfn repeat : Int -> a -> Array a
 -- __externalvarfn set : Int -> a -> Array a -> Array a
 `
 
 const maybeCode = `
-__externalvarexfn withDefault : a -> Maybe a -> a
-__externalvarexfn maybe : b -> (a -> b) -> Maybe a -> b
+__externalvarexfn withDefault : (a, Maybe a) -> a
+__externalvarexfn maybe : (b, (a -> b), Maybe a) -> b
 `
 
 const tupleCode = `

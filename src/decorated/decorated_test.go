@@ -80,6 +80,16 @@ Something : [Alias Something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference 
 `)
 }
 
+func TestFunctionTypeWithoutParameters(t *testing.T) {
+	testDecorateWithoutDefault(t, `__externalvarfn another : Int -> String -> Int
+
+`, `
+Something : [Alias Something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [Primitive Int]
+
+[ModuleDef $another = [FunctionValue ([]) -> [Let [[LetAssign [[LetVar $b]] = [Cast [Integer 32] [AliasRefExpr [AliasRef [Alias Something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]]] in [BoolOp [LetVarRef [LetVar $b]] GRE [Integer 32]]]]]
+`)
+}
+
 func TestResourceName(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
