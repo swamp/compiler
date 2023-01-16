@@ -222,7 +222,7 @@ func (p *ParseStreamImpl) eatContinuationOrNoSpaceInternal() (bool, token.Indent
 }
 
 func (p *ParseStreamImpl) maybeColon() bool {
-	return p.tokenizer.MaybeRune(':')
+	return p.tokenizer.MaybeColon()
 }
 
 func (p *ParseStreamImpl) maybePipeLeft() bool {
@@ -638,6 +638,22 @@ func (p *ParseStreamImpl) wasVariableIdentifier() (*ast.VariableIdentifier, bool
 	return varIdent, true
 }
 
+func (p *ParseStreamImpl) maybeVariableIdentifierWithColon() (*ast.VariableIdentifier, bool) {
+	posBefore := p.tokenizer.Tell()
+	identifier, wasIdentifier := p.wasVariableIdentifier()
+	if !wasIdentifier {
+		p.tokenizer.Seek(posBefore)
+		return nil, false
+	}
+
+	if !p.tokenizer.MaybeColon() {
+		p.tokenizer.Seek(posBefore)
+		return nil, false
+	}
+
+	return identifier, true
+}
+
 func (p *ParseStreamImpl) wasTypeIdentifier() (*ast.TypeIdentifier, bool) {
 	typeSymbol, parseErr := p.tokenizer.ParseTypeSymbol()
 	if parseErr != nil {
@@ -1003,6 +1019,10 @@ func (p *ParseStreamImpl) readRightParen() (token.ParenToken, parerr.ParseError)
 
 func (p *ParseStreamImpl) eatLeftParen() parerr.ParseError {
 	return p.eatRune('(')
+}
+
+func (p *ParseStreamImpl) eatRightParen() parerr.ParseError {
+	return p.eatRune(')')
 }
 
 func (p *ParseStreamImpl) readRightBracket() (token.ParenToken, parerr.ParseError) {

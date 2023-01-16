@@ -28,56 +28,53 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	newVariableContext := context.MakeVariableContext()
 
 	for _, parameter := range parameters {
-		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(parameter.Identifier().Name(), nil, parameter)
-		newVariableContext.Add(parameter.Identifier(), namedDecoratedExpression)
+		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(parameter.Parameter().Identifier().Name(), nil, parameter)
+		newVariableContext.Add(parameter.Parameter().Identifier(), namedDecoratedExpression)
 	}
 
 	return newVariableContext
 }
 
 func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionValue *decorated.FunctionValue, context *VariableContext) decshared.DecoratedError {
-	annotation := targetFunctionValue.Annotation()
 
 	var decoratedExpression decorated.Expression
-	if !annotation.Annotation().IsSomeKindOfExternal() {
-		subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
-		functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
-		convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
-		if decoratedExpressionErr != nil {
-			return decoratedExpressionErr
-		}
+	subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
+	functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
+	convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
+	if decoratedExpressionErr != nil {
+		return decoratedExpressionErr
+	}
 
-		decoratedExpression = convertedDecoratedExpression
+	decoratedExpression = convertedDecoratedExpression
 
-		decoratedExpressionType := decoratedExpression.Type()
-		if decoratedExpressionType == nil {
-			log.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
-		}
+	decoratedExpressionType := decoratedExpression.Type()
+	if decoratedExpressionType == nil {
+		log.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
+	}
 
-		compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
-		if compatibleErr != nil {
-			return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(targetFunctionValue.AstFunctionValue(),
-				functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr)
-		}
+	compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
+	if compatibleErr != nil {
+		return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(targetFunctionValue.AstFunctionValue(),
+			functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr)
+	}
 
+	if !targetFunctionValue.IsSomeKindOfExternal() {
 		for _, param := range targetFunctionValue.Parameters() {
-			if !param.WasReferenced() && !param.Identifier().IsIgnore() {
+			if !param.WasReferenced() && !param.Parameter().Identifier().IsIgnore() {
 				unusedErr := decorated.NewUnusedParameter(param, targetFunctionValue)
 				d.AddDecoratedError(unusedErr)
 			}
 		}
-
-		/*
-			checkForNoLint := "a" // CheckForNoLint(comments)
-			if checkForNoLint != "unused" {
-			} else {
-				// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
-			}
-
-		*/
-	} else {
-		decoratedExpression = annotation
 	}
+
+	/*
+		checkForNoLint := "a" // CheckForNoLint(comments)
+		if checkForNoLint != "unused" {
+		} else {
+			// log.Printf("info: skipping %v\n", potentialFunc.DebugFunctionIdentifier().Name())
+		}
+
+	*/
 
 	targetFunctionValue.DefineExpression(decoratedExpression)
 

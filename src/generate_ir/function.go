@@ -201,7 +201,7 @@ func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo, functionPa
 	if types.IsStruct(irType) {
 		irType = types.NewPointer(irType)
 	}
-	newParam := ir.NewParam(functionParam.Identifier().Name(), irType)
+	newParam := ir.NewParam(functionParam.Parameter().Name(), irType)
 
 	return newParam
 }
@@ -234,7 +234,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		irFunctions:        irFunctions,
 	}
 
-	newIrFunc := irModule.NewFunc(f.Annotation().Annotation().Identifier().Name(), irReturnType, irParams...)
+	newIrFunc := irModule.NewFunc(fullyQualifiedVariableName.Identifier().Name(), irReturnType, irParams...)
 	irFunctions.AddFunc(fullyQualifiedVariableName, newIrFunc)
 
 	result, genErr := generateExpression(f.Expression(), true, genContext)

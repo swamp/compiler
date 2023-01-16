@@ -13,9 +13,16 @@ import (
 
 func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *SemanticBuilder) error {
 	for _, parameter := range f.Parameters() {
-		if err := builder.EncodeSymbol(parameter.FetchPositionLength().Range, "parameter", []string{}); err != nil {
+		if err := builder.EncodeSymbol(parameter.Parameter().FetchPositionLength().Range, "parameter", []string{}); err != nil {
 			return err
 		}
+
+		if err := addSemanticToken(parameter.Type(), builder); err != nil {
+			return err
+		}
+	}
+	if err := addSemanticToken(f.ForcedFunctionType().ReturnType(), builder); err != nil {
+		return err
 	}
 
 	return addSemanticToken(f.Expression(), builder)
@@ -35,21 +42,6 @@ func addSemanticTokenNamedFunctionValue(f *decorated.NamedFunctionValue, builder
 	}
 
 	return addSemanticToken(f.Value(), builder)
-}
-
-func addSemanticTokenAnnotation(f *decorated.AnnotationStatement, builder *SemanticBuilder) error {
-	if f.Annotation().CommentBlock() != nil {
-		if err := encodeComment(builder, f.Annotation().CommentBlock().Token()); err != nil {
-			return err
-		}
-	}
-	if err := builder.EncodeSymbol(f.Identifier().FetchPositionLength().Range, "function", []string{"declaration"}); err != nil {
-		return err
-	}
-	if err := addSemanticToken(f.Type(), builder); err != nil {
-		return err
-	}
-	return nil
 }
 
 func addSemanticTokenFunctionType(f *dectype.FunctionAtom, builder *SemanticBuilder) error {
@@ -975,8 +967,6 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenNamedFunctionValue(t, builder)
 	case *decorated.FunctionValue:
 		return addSemanticTokenFunctionValue(t, builder)
-	case *decorated.AnnotationStatement:
-		return addSemanticTokenAnnotation(t, builder)
 	case *dectype.InvokerType:
 		return addTypeReferenceInvoker(t.FetchPositionLength().Range, t, builder)
 	case *decorated.ImportStatement:

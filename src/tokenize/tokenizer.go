@@ -889,7 +889,8 @@ func (t *Tokenizer) ParseStartingKeyword() (token.Token, TokenError) {
 		if nextRune == '_' {
 			return t.ParseSpecialKeyword(t.position)
 		}
-		return nil, NewInternalError(fmt.Errorf("unknown starting keyword"))
+		t.DebugInfoWithComment("starting keyword here")
+		return nil, NewInternalError(fmt.Errorf("unknown starting keyword %v:%v", t.document, t.position))
 	}
 
 	t.unreadRune()

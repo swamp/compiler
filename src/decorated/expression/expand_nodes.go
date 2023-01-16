@@ -44,6 +44,9 @@ func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
 	for _, parameter := range fn.Parameters() {
 		tokens = append(tokens, expandChildNodes(parameter)...)
 	}
+
+	tokens = append(tokens, expandChildNodes(fn.ForcedFunctionType().ReturnType())...)
+	
 	return tokens
 }
 
@@ -77,12 +80,6 @@ func expandChildNodesCurryFunction(fn *CurryFunction) []TypeOrToken {
 	for _, argument := range fn.ArgumentsToSave() {
 		tokens = append(tokens, expandChildNodes(argument)...)
 	}
-	return tokens
-}
-
-func expandChildNodesAnnotation(fn *AnnotationStatement) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.Type())...)
 	return tokens
 }
 
@@ -248,6 +245,13 @@ func expandChildNodesNamedFunctionValue(namedFunctionValue *NamedFunctionValue) 
 	return tokens
 }
 
+func expandFunctionParameterDefinition(parameter *FunctionParameterDefinition) []TypeOrToken {
+	var tokens []TypeOrToken
+	tokens = append(tokens, expandChildNodes(parameter.Type())...)
+
+	return tokens
+}
+
 func expandChildNodesCustomTypeVariantConstructor(constructor *CustomTypeVariantConstructor) []TypeOrToken {
 	var tokens []TypeOrToken
 	tokens = append(tokens, expandChildNodes(constructor.Reference())...)
@@ -402,8 +406,6 @@ func expandChildNodes(node Node) []TypeOrToken {
 
 	case *ModuleReference:
 		return tokens
-	case *AnnotationStatement:
-		return append(tokens, expandChildNodesAnnotation(t)...)
 	case *ImportStatement:
 		return append(tokens, expandChildNodesImportStatement(t)...)
 	case *FunctionValue:
@@ -429,7 +431,7 @@ func expandChildNodes(node Node) []TypeOrToken {
 	case *RecordLiteral:
 		return append(tokens, expandChildNodesRecordLiteral(t)...)
 	case *FunctionParameterDefinition:
-		return tokens
+		return append(tokens, expandFunctionParameterDefinition(t)...)
 	case *NamedFunctionValue:
 		return append(tokens, expandChildNodesNamedFunctionValue(t)...)
 	case *CustomTypeVariantConstructor:
@@ -512,6 +514,8 @@ func expandChildNodes(node Node) []TypeOrToken {
 		return expandChildNodesBinaryOperator(t)
 	case *RecordLookups:
 		return append(tokens, expandChildNodesRecordLookups(t)...)
+	case *ExternalFunctionDeclarationExpression:
+		return tokens
 	case *dectype.LocalType:
 		return tokens
 	case *dectype.AnyMatchingTypes:

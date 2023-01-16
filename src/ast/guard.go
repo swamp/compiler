@@ -25,13 +25,25 @@ func NewGuardItemBasic(comment token.Comment, guardToken token.GuardToken, conse
 	}
 }
 
+func (i GuardItemBasic) String() string {
+	return fmt.Sprintf("%v", i.Consequence)
+}
+
 type GuardItem struct {
 	GuardItemBasic
 	Condition Expression
 }
 
+func (i GuardItem) String() string {
+	return fmt.Sprintf("[%v => %v]", i.Condition, i.GuardItemBasic)
+}
+
 type GuardDefault struct {
 	GuardItemBasic
+}
+
+func (i *GuardDefault) String() string {
+	return fmt.Sprintf("[_ => %v]", i.GuardItemBasic)
 }
 
 type GuardExpression struct {
@@ -56,7 +68,7 @@ func (i *GuardExpression) FetchPositionLength() token.SourceFileReference {
 }
 
 func (i *GuardExpression) String() string {
-	return fmt.Sprintf("[guard: %v %v]", i.items, i.defaultItem)
+	return fmt.Sprintf("[Guard %v %v]", i.items, i.defaultItem)
 }
 
 func (i *GuardExpression) DebugString() string {

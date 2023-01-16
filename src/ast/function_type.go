@@ -34,7 +34,11 @@ func (i *FunctionType) String() string {
 	s := "[FnType "
 	for index, arg := range i.functionParameters {
 		if index > 0 {
-			s += " -> "
+			if index == len(i.functionParameters)-1 {
+				s += " -> "
+			} else {
+				s += ", "
+			}
 		}
 		s += arg.String()
 	}

@@ -26,8 +26,8 @@ import (
 	swampdisasmsp "github.com/swamp/disassembler/lib"
 )
 
-func testGenerateInternal(code string) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
-	const useCores = true
+func testGenerateInternal(code string, useCores bool) (*assembler_sp.PackageConstants, []*assembler_sp.Constant, error) {
+	//const useCores = true
 	const errorsAsWarnings = false
 	module, compileErr := deccy.CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
 	if parser.IsCompileError(compileErr) {
@@ -85,8 +85,8 @@ func checkGeneratedAssembler(constants *assembler_sp.PackageConstants, functions
 	return nil
 }
 
-func testGenerateInternalWithAssemblerCheck(code string, expectedAsm string) error {
-	constants, functions, generateErr := testGenerateInternal(code)
+func testGenerateInternalWithAssemblerCheck(code string, expectedAsm string, useCores bool) error {
+	constants, functions, generateErr := testGenerateInternal(code, useCores)
 	if generateErr != nil {
 		if parser.TypeOfWarningRecursive(generateErr) >= parser.ReportAsSeverityError {
 			return generateErr
@@ -96,18 +96,26 @@ func testGenerateInternalWithAssemblerCheck(code string, expectedAsm string) err
 	return checkErr
 }
 
-func testGenerate(t *testing.T, code string, expectedAsm string) {
+func testGenerateHelper(t *testing.T, code string, expectedAsm string, useCores bool) {
 	code = strings.TrimSpace(code)
-	decorateErr := testGenerateInternalWithAssemblerCheck(code, expectedAsm)
+	decorateErr := testGenerateInternalWithAssemblerCheck(code, expectedAsm, useCores)
 	if decorateErr != nil {
 		log.Printf("problem %v\n", decorateErr)
 		t.Error(decorateErr)
 	}
 }
 
+func testGenerate(t *testing.T, code string, expectedAsm string) {
+	testGenerateHelper(t, code, expectedAsm, true)
+}
+
+func testGenerateWithoutCores(t *testing.T, code string, expectedAsm string) {
+	testGenerateHelper(t, code, expectedAsm, false)
+}
+
 func testGenerateFail(t *testing.T, code string, expectedError interface{}) {
 	code = strings.TrimSpace(code)
-	_, _, testErr := testGenerateInternal(code)
+	_, _, testErr := testGenerateInternal(code, true)
 	if testErr == nil {
 		log.Printf("problem, should fail")
 		t.Errorf("was supposed to fail")

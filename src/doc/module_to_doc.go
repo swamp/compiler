@@ -332,7 +332,7 @@ func ModuleToHtml(writer io.Writer, module *decorated.Module) error {
 			if index > 0 {
 				params += " "
 			}
-			params += span("argument", arg.Identifier().Name())
+			params += span("argument", arg.Parameter().Name())
 		}
 
 		codeWrite(writer, "params", params)

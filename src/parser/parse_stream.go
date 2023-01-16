@@ -70,6 +70,7 @@ type ParseStream interface {
 	eatOperatorUpdate() parerr.ParseError
 	eatRightArrow() parerr.ParseError
 	eatLeftParen() parerr.ParseError
+	eatRightParen() parerr.ParseError
 	eatColon() parerr.ParseError
 	eatAccessor() parerr.ParseError
 	eatAssign() parerr.ParseError
@@ -81,6 +82,7 @@ type ParseStream interface {
 	// -----------------------------------------------------------------------------------------------------------------
 	wasDefaultSymbol() (token.RuneToken, bool)
 	wasVariableIdentifier() (*ast.VariableIdentifier, bool)
+	maybeVariableIdentifierWithColon() (*ast.VariableIdentifier, bool)
 	wasTypeIdentifier() (*ast.TypeIdentifier, bool)
 
 	// -----------------------------------------------------------------------------------------------------------------

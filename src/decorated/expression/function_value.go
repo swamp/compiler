@@ -15,16 +15,16 @@ import (
 )
 
 type FunctionParameterDefinition struct {
-	identifier    *ast.VariableIdentifier
+	identifier    *ast.FunctionParameter
 	generatedType dtype.Type
 	references    []*FunctionParameterReference
 }
 
-func NewFunctionParameterDefinition(identifier *ast.VariableIdentifier, convertedType dtype.Type) *FunctionParameterDefinition {
+func NewFunctionParameterDefinition(identifier *ast.FunctionParameter, convertedType dtype.Type) *FunctionParameterDefinition {
 	return &FunctionParameterDefinition{identifier: identifier, generatedType: convertedType}
 }
 
-func (a *FunctionParameterDefinition) Identifier() *ast.VariableIdentifier {
+func (a *FunctionParameterDefinition) Parameter() *ast.FunctionParameter {
 	return a.identifier
 }
 
@@ -33,7 +33,7 @@ func (a *FunctionParameterDefinition) Type() dtype.Type {
 }
 
 func (a *FunctionParameterDefinition) String() string {
-	return fmt.Sprintf("[Arg %v : %v]", a.identifier, a.generatedType)
+	return fmt.Sprintf("[Arg %v : %v]", a.identifier.Identifier(), a.generatedType)
 }
 
 func (a *FunctionParameterDefinition) HumanReadable() string {
@@ -41,7 +41,7 @@ func (a *FunctionParameterDefinition) HumanReadable() string {
 }
 
 func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileReference {
-	return a.identifier.Symbol().SourceFileReference
+	return a.identifier.Identifier().Symbol().SourceFileReference
 }
 
 func (a *FunctionParameterDefinition) AddReferee(ref *FunctionParameterReference) {
@@ -64,17 +64,16 @@ type FunctionValue struct {
 	astFunction         *ast.FunctionValue
 	sourceFileReference token.SourceFileReference
 	references          []*FunctionReference
-	annotation          *AnnotationStatement
 }
 
-func NewPrepareFunctionValue(annotation *AnnotationStatement, astFunction *ast.FunctionValue, forcedFunctionType dectype.FunctionTypeLike, parameters []*FunctionParameterDefinition, commentBlock *ast.MultilineComment) *FunctionValue {
+func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType dectype.FunctionTypeLike, parameters []*FunctionParameterDefinition, commentBlock *ast.MultilineComment) *FunctionValue {
 	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
 		panic("not great. different parameters")
 	}
 	if forcedFunctionType == nil {
 		panic("must provide forced function type")
 	}
-	return &FunctionValue{annotation: annotation, astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock, sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference}
+	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock, sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference}
 }
 
 func (f *FunctionValue) DefineExpression(decoratedExpression Expression) {
@@ -87,8 +86,13 @@ func (f *FunctionValue) AstFunctionValue() *ast.FunctionValue {
 	return f.astFunction
 }
 
-func (f *FunctionValue) Annotation() *AnnotationStatement {
-	return f.annotation
+func (f *FunctionValue) IsSomeKindOfExternal() bool {
+	decl, wasDecl := f.AstFunctionValue().Expression().(*ast.FunctionDeclarationExpression)
+	if !wasDecl {
+		return false
+	}
+
+	return decl.IsSomeKindOfExternal()
 }
 
 func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
@@ -108,7 +112,7 @@ func (f *FunctionValue) HumanReadable() string {
 }
 
 func (f *FunctionValue) Type() dtype.Type {
-	return f.annotation.Type()
+	return f.forcedFunctionType
 }
 
 func (f *FunctionValue) Next() dtype.Type {

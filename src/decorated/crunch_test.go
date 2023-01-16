@@ -6,6 +6,7 @@
 package deccy
 
 import (
+	"github.com/swamp/compiler/src/parser"
 	"log"
 	"testing"
 
@@ -14,7 +15,7 @@ import (
 
 func TestCrunch(t *testing.T) {
 	rootModule, mErr := CreateDefaultRootModule(true)
-	if mErr != nil {
+	if parser.IsCompileErr(mErr) {
 		t.Fatal(mErr)
 	}
 	const verboseFlag = verbosity.None

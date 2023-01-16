@@ -24,7 +24,7 @@ func NewListLiteral(startListParen token.ParenToken, endListParen token.ParenTok
 }
 
 func (i *ListLiteral) String() string {
-	return fmt.Sprintf("[list-literal: %v]", i.expressions)
+	return fmt.Sprintf("[ListLiteral %v]", i.expressions)
 }
 
 func (i *ListLiteral) Expressions() []Expression {

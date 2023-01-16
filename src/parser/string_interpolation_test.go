@@ -10,13 +10,13 @@ import (
 )
 
 func TestInterpolationRanges(t *testing.T) {
-	ranges := parseInterpolationString("sdfj ${xid}")
+	ranges := parseInterpolationString("sdfj {xid}")
 	if len(ranges) != 1 {
 		t.Errorf("wrong range count")
 	}
 
-	if ranges[0][0] != 5 || ranges[0][1] != 11 {
-		t.Errorf("wrong range")
+	if ranges[0][0] != 5 || ranges[0][1] != 10 {
+		t.Errorf("wrong range. got %v, but wanted 5 and 10", ranges)
 	}
 }
 

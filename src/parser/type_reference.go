@@ -50,7 +50,6 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 	currentIndentation := keywordIndentation
 	if someTerminationFound {
 		if p.maybeOneSpaceAndRightArrow() {
-
 			newIndentation, _, eatErr := p.eatContinuationReturnIndentation(currentIndentation)
 			if eatErr != nil {
 				return nil, eatErr

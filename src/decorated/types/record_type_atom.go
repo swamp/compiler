@@ -165,13 +165,21 @@ func NewRecordType(info *ast.Record, fields []*RecordField, genericTypes []dtype
 	sort.Sort(ByFieldName(sortedFields))
 
 	nameToField := make(map[string]*RecordField)
+	foundLocalType := false
 	for index, field := range sortedFields {
 		name := field.Name()
 		if nameToField[name] != nil {
 			panic("we already have that struct name")
 		}
+		if IsLocalType(field.Type()) {
+			foundLocalType = true
+		}
 		field.SetIndexBySorter(index)
 		nameToField[name] = field
+	}
+
+	if foundLocalType && len(genericTypes) == 0 {
+		panic(fmt.Errorf("not allowed to contain local types without parameters %v %v", info, fields))
 	}
 
 	memorySize, memoryAlign := calculateFieldOffsetsAndRecordMemorySizeAndAlign(sortedFields)

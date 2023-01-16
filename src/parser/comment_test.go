@@ -7,32 +7,7 @@ package parser
 
 import (
 	"testing"
-
-	parerr "github.com/swamp/compiler/src/parser/errors"
 )
-
-func TestCommentBeforeAnnotation(t *testing.T) {
-	testParse(t,
-		`
-{- This should be ignored -}
-hello : Int -> Int -> Int
-hello first c =
-    4 + first
-`,
-		`
-[annotation: $hello [func-type [type-reference $Int] -> [type-reference $Int] -> [type-reference $Int]]]
-[definition: $hello = [func ([$first $c]) -> (#4 + $first)]]
-`)
-}
-
-func TestDisallowCommentAfterAnnotation(t *testing.T) {
-	testParseError(t,
-		`
-hello : Int -> Int -> Int {- This should not be allowed -}
-hello first c =
-    4 + first
-`, parerr.InternalError{})
-}
 
 func TestAllowCommentsAfterRecordTypeMembers(t *testing.T) {
 	testParse(t,

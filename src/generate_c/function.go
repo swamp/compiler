@@ -37,7 +37,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 			parameters += ", "
 		}
 		parameterTypeName := parameter.Type().HumanReadable()
-		parameterName := parameter.Identifier().Name()
+		parameterName := parameter.Parameter().Name()
 		parameters += fmt.Sprintf("%v %v", parameterTypeName, parameterName)
 	}
 

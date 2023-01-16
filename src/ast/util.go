@@ -10,8 +10,7 @@ func LinePaddingBefore(expression Node) int {
 		return 0
 	}
 
-	_, isAnnotation := expression.(*Annotation)
-	isDoubleLineStatement := isAnnotation
+	isDoubleLineStatement := false
 
 	lines := 0
 	if isDoubleLineStatement {
@@ -27,8 +26,7 @@ func LinePaddingAfter(expression Node) int {
 	}
 
 	_, isImport := expression.(*Import)
-	_, isAnnotation := expression.(*Annotation)
-	isSingleLineStatement := isImport || isAnnotation
+	isSingleLineStatement := isImport
 
 	lines := 1
 	if isSingleLineStatement {
@@ -46,20 +44,17 @@ func ExpectedLinePaddingAfter(expression Node) (int, int) {
 	_, isImport := expression.(*Import)
 	dontCare := isImport
 
-	annotation, isAnnotation := expression.(*Annotation)
-	mustBeSingleLine := isAnnotation
-
-	if isAnnotation {
-		if annotation.IsSomeKindOfExternal() {
-			dontCare = true
-			mustBeSingleLine = false
-		}
-	}
+	mustBeSingleLine := false
 
 	lines := 3
 	_, wasConstant := expression.(*ConstantDefinition)
 	if wasConstant {
 		return 1, 3
+	}
+
+	_, wasFunctionDefinition := expression.(*FunctionValueNamedDefinition)
+	if wasFunctionDefinition {
+		return -2, -2
 	}
 
 	if dontCare {

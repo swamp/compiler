@@ -10,10 +10,9 @@ import (
 )
 
 func TestIntEqual(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-isCold : Int -> Bool
-isCold temp =
+isCold : (temp: Int) -> Bool =
     temp == -1
 `, `
 func [constantfn DynPos 0008:104 func:isCold]
@@ -24,10 +23,9 @@ func [constantfn DynPos 0008:104 func:isCold]
 }
 
 func TestBooleanOperator(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-main : Int -> Bool
-main _ =
+main : (Int) -> Bool =
     let
         a = True
         b = False
@@ -45,10 +43,9 @@ func [constantfn DynPos 0008:104 func:main]
 }
 
 func TestUnary2(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-someTest : Bool -> Bool -> Bool
-someTest a b =
+someTest : (a: Bool, b: Bool) -> Bool =
     !a && b
 `, `
 func [constantfn DynPos 0010:104 func:someTest]
@@ -60,15 +57,14 @@ func [constantfn DynPos 0010:104 func:someTest]
 }
 
 func TestListLiteral(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
 type alias Cool =
     { name : String
     }
 
 
-a : Bool -> List Cool
-a _ =
+a : (Bool) -> List Cool =
     [ { name = "hi" }, { name = "another" }, { name = "tjoho" } ]
 `, `
 [constantstring DynPos 0073:16 hi]
@@ -84,15 +80,14 @@ func [constantfn DynPos 0008:104 func:a]
 }
 
 func TestArrayLiteral(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
 type alias Cool =
     { name : String
     }
 
 
-a : Bool -> Array Cool
-a x =
+a : (Bool) -> Array Cool =
     [| { name = "hello" }, { name = "world" }, { name = "ossian" } |]
 `, `
 [constantstring DynPos 0076:16 hello]
@@ -108,7 +103,7 @@ func [constantfn DynPos 0008:104 func:a]
 }
 
 func TestCustomTypeConstructor(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
 type SomeEnum =
     First String
@@ -116,8 +111,7 @@ type SomeEnum =
     | Second Int
 
 
-a : Bool -> SomeEnum
-a _ =
+a : (Bool) -> SomeEnum =
     First "Hello"
 `, `
 [constantstring DynPos 0076:16 Hello]
@@ -129,7 +123,7 @@ func [constantfn DynPos 0008:104 func:a]
 }
 
 func TestCustomTypeVariantConstructorSecond(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
 type SomeEnum =
     First String
@@ -137,8 +131,7 @@ type SomeEnum =
     | Second Int
 
 
-a : Bool -> SomeEnum
-a dummy =
+a : (Bool) -> SomeEnum =
     Second 1
 `, `
 func [constantfn DynPos 0008:104 func:a]
@@ -149,10 +142,9 @@ func [constantfn DynPos 0008:104 func:a]
 }
 
 func TestMaybeInt(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-main : Bool -> Maybe Int
-main ignored =
+main : (Bool) -> Maybe Int =
     Just 3
 `, `
 func [constantfn DynPos 0008:104 func:main]
@@ -163,10 +155,9 @@ func [constantfn DynPos 0008:104 func:main]
 }
 
 func TestIfStatement(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-main : String -> Bool
-main name =
+main : (name: String) -> Bool =
     if name == "Rebecca" then
         let
             _ = "Rebecca"
@@ -195,18 +186,16 @@ func [constantfn DynPos 0008:104 func:main]
 }
 
 func TestCurry(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-isWinner : String -> Int -> Bool
-isWinner name score =
+isWinner : (name: String, score: Int) -> Bool =
     if name == "Ossian" then
         score * 2 > 100
     else
         score > 100
 
 
-main : Int -> Bool
-main score =
+main : (score: Int) -> Bool =
     let
         checkScoreFn = isWinner "Ossian"
     in
@@ -238,10 +227,9 @@ func [constantfn DynPos 0080:104 func:main]
 }
 
 func TestAppend(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-a : Int -> List Int
-a _ =
+a : (Int) -> List Int =
     [ 1, 3, 4 ] ++ [ 5, 6, 7, 8 ] ++ [ 9 ]
 `, `
 func [constantfn DynPos 0008:104 func:a]
@@ -263,10 +251,9 @@ func [constantfn DynPos 0008:104 func:a]
 }
 
 func TestGuardLetInChar(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-tester : Int -> Char
-tester x =
+tester : (Int) -> Char =
     let
         existingTile = 'a'
         isUpperLeft = False
@@ -292,10 +279,9 @@ func [constantfn DynPos 0008:104 func:tester]
 }
 
 func TestCasePatternMatchingString(t *testing.T) {
-	testGenerate(t,
+	testGenerateWithoutCores(t,
 		`
-some : Int -> Int
-some a =
+some : (a: Int) -> Int =
     case a of
         2 -> 0
 

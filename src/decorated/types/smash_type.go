@@ -131,13 +131,19 @@ func fillContextFromRecordType(context *TypeParameterContextOther, original *Rec
 	var converted []dtype.Type
 
 	wasConverted := false
-	for index, funcParam := range original.GenericTypes() {
-		otherType := other.GenericTypes()[index]
-		convertedType, convertErr := smashTypes(context, funcParam, otherType)
+
+	if len(original.SortedFields()) != len(other.SortedFields()) {
+		return nil, fmt.Errorf("not same number of fields in two structs")
+	}
+
+	for index, originalField := range original.sortedFields {
+		otherType := other.SortedFields()[index].fieldType
+		originalType := originalField.fieldType
+		convertedType, convertErr := smashTypes(context, originalType, otherType)
 		if convertErr != nil {
 			return nil, convertErr
 		}
-		if convertedType != funcParam {
+		if convertedType != originalType {
 			wasConverted = true
 		}
 

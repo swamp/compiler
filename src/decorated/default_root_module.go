@@ -20,61 +20,56 @@ import (
 )
 
 const listCode = `
-__externalvarfn head : List a -> Maybe a
-__externalvarfn map : (a -> b) -> List a -> List b
-__externalvarfn map2 : (a -> b -> c) -> List a -> List b -> List c
-__externalvarfn concatMap : (a -> List b) -> List a -> List b
-__externalvarfn isEmpty : List a -> Bool
-__externalvarfn length : List a -> Int
-__externalvarexfn foldl : (a -> b -> b) -> b -> List a -> b
-__externalvarexfn foldlstop : (a -> b -> Maybe b) -> b -> List a -> b
-__externalvarexfn reduce : (a -> a -> a) -> List a -> a
-__externalvarexfn filterMap : (a -> Maybe b) -> List a -> List b
-__externalvarfn indexedMap : (Int -> a -> b) -> List a -> List b
-__externalvarfn find : (a -> Bool) -> List a -> Maybe a
-__externalfn range : Int -> Int -> List Int
-__externalfn range0 : Int -> List Int
+__externalvarfn head : (List a) -> Maybe a
+__externalvarfn map : ((a -> b), List a) -> List b
+__externalvarfn map2 : ((a -> b -> c), List a, List b) -> List c
+__externalvarfn concatMap : ((a -> List b), List a) -> List b
+__externalvarfn isEmpty : (List a) -> Bool
+__externalvarfn length : (List a) -> Int
+__externalvarexfn foldl : ((a -> b -> b), b, List a) -> b
+__externalvarexfn foldlstop : ((a -> b -> Maybe b), b, List a) -> b
+__externalvarexfn reduce : ((a -> a -> a), List a) -> a
+__externalvarexfn filterMap : ((a -> Maybe b), List a) -> List b
+__externalvarfn indexedMap : ((Int -> a -> b), List a) -> List b
+__externalvarfn find : ((a -> Bool), List a) -> Maybe a
+__externalfn range : (Int, Int) -> List Int
+__externalfn range0 : (Int) -> List Int
 `
 
 const mathCode = `
-__externalfn remainderBy : Int -> Int -> Int
-__externalfn sin : Fixed -> Fixed
-__externalfn cos : Fixed -> Fixed
-__externalfn rnd : Int -> Int -> Int
-__externalfn atan2 : Int -> Int -> Fixed
-__externalfn mid : Int -> Int -> Int
-__externalfn abs : Int -> Int
-__externalfn sign : Int -> Int
-__externalfn clamp : Int -> Int -> Int -> Int
-__externalfn lerp : Fixed -> Int -> Int -> Int
-__externalfn metronome : Int -> Int -> Int -> Int -> Bool
-__externalfn drunk : Int -> Int -> Int -> Int
-__externalfn mod : Int -> Int -> Int
+__externalfn remainderBy : (Int, Int) -> Int
+__externalfn sin : (Fixed) -> Fixed
+__externalfn cos : (Fixed) -> Fixed
+__externalfn rnd : (Int, Int) -> Int
+__externalfn atan2 : (Int, Int) -> Fixed
+__externalfn mid : (Int, Int) -> Int
+__externalfn abs : (Int) -> Int
+__externalfn sign : (Int) -> Int
+__externalfn clamp : (Int, Int, Int) -> Int
+__externalfn lerp : (Fixed, Int, Int) -> Int
+__externalfn metronome : (Int, Int, Int, Int) -> Bool
+__externalfn drunk : (Int, Int, Int) -> Int
+__externalfn mod : (Int, Int) -> Int
 `
 
 const blobCode = `
-__externalfn mapToBlob : (Int -> Int) -> Blob -> Blob
-__externalfn indexedMapToBlob : (Int -> Int -> Int) -> Blob -> Blob
-__externalfn indexedMapToBlob! : (Int -> Int -> Int) -> Blob -> Blob
-__externalvarfn filterIndexedMap2d : ({ x : Int, y : Int } -> Int -> Maybe a) ->
-    { width : Int, height : Int } -> Blob -> List a
-__externalvarfn filterIndexedMap : (Int -> Int -> Maybe a) -> Blob -> List a
-__externalfn toString2d : { width : Int, height : Int } -> Blob -> String
-__externalfn get2d : { x : Int, y : Int } -> { width : Int, height : Int } -> Blob -> Maybe Int
-__externalfn slice2d : { x : Int, y : Int } -> { width : Int, height : Int } ->
-    { width : Int, height : Int } -> Blob -> Blob
-__externalfn fill2d! : { x : Int, y : Int } -> { width : Int, height : Int } -> Int ->
-    { width : Int, height : Int } -> Blob -> Blob
-__externalfn copy2d! : { x : Int, y : Int } -> { width : Int, height : Int } ->
-    { width : Int, height : Int } -> Blob -> Blob -> Blob
-__externalfn drawWindow2d! : { x : Int, y : Int } -> { width : Int, height : Int } ->
-    { width : Int, height : Int } -> Blob -> Blob
+__externalfn mapToBlob : ((Int -> Int), Blob) -> Blob
+__externalfn indexedMapToBlob : ((Int -> Int -> Int), Blob) -> Blob
+__externalfn indexedMapToBlob! : ((Int -> Int -> Int), Blob) -> Blob
+__externalvarfn filterIndexedMap2d : (({ x : Int, y : Int } -> Int -> Maybe a), { width : Int, height : Int }, Blob) -> List a
+__externalvarfn filterIndexedMap : ((Int -> Int -> Maybe a), Blob) -> List a
+__externalfn toString2d : ({ width : Int, height : Int }, Blob) -> String
+__externalfn get2d : ({ x : Int, y : Int }, { width : Int, height : Int }, Blob) -> Maybe Int
+__externalfn slice2d : ({ x : Int, y : Int }, { width : Int, height : Int }, { width : Int, height : Int }, Blob) -> Blob
+__externalfn fill2d! : ({ x : Int, y : Int }, { width : Int, height : Int }, Int, { width : Int, height : Int }, Blob) -> Blob
+__externalfn copy2d! : ({ x : Int, y : Int }, { width : Int, height : Int }, { width : Int, height : Int }, Blob, Blob) -> Blob
+__externalfn drawWindow2d! : { x : Int, y : Int } -> { width : Int, height : Int } -> { width : Int, height : Int } -> Blob -> Blob
 __externalfn member : Int -> Blob -> Bool
-__externalfn any : (Int -> Bool) -> Blob -> Bool
+__externalfn any : ((Int -> Bool), Blob) -> Bool
 __externalfn fromArray : Array Int -> Blob
-__externalfn make : Int -> Blob
-__externalvarfn map2d : ({ x : Int, y : Int } -> Int -> a) -> { width : Int, height : Int } -> Blob -> List a
-__externalfn fromList : List Int -> Blob
+__externalfn make : (Int) -> Blob
+__externalvarfn map2d : (({ x : Int, y : Int } -> Int -> a), { width : Int, height : Int }, Blob) -> List a
+__externalfn fromList : (List Int) -> Blob
 -- __externalfn isEmpty : Blob -> Bool
 -- __externalvarfn map : (Int -> a) -> Blob -> List a
 -- __externalvarfn indexedMap : (Int -> Int -> a) -> Blob -> List a
@@ -88,19 +83,19 @@ __externalfn fromList : List Int -> Blob
 `
 
 const arrayCode = `
-__externalvarfn fromList : List a -> Array a
-__externalvarfn toList : Array a -> List a
-__externalvarfn grab : Int -> Array a -> a
-__externalvarfn length : Array a -> Int
-__externalvarfn get : Int -> Array a -> Maybe a
+__externalvarfn fromList : (List a) -> Array a
+__externalvarfn toList : (Array a) -> List a
+__externalvarfn grab : (Int, Array a) -> a
+__externalvarfn length : (Array a) -> Int
+__externalvarfn get : (Int, Array a) -> Maybe a
 -- __externalvarfn slice : Int -> Int -> Array a -> Array a
 -- __externalvarfn repeat : Int -> a -> Array a
 -- __externalvarfn set : Int -> a -> Array a -> Array a
 `
 
 const maybeCode = `
-__externalvarexfn withDefault : a -> Maybe a -> a
-__externalvarexfn maybe : b -> (a -> b) -> Maybe a -> b
+__externalvarexfn withDefault : (a, Maybe a) -> a
+__externalvarexfn maybe : (b, (a -> b), Maybe a) -> b
 `
 
 const tupleCode = `
@@ -111,25 +106,25 @@ __externalfn forth : (a, b, c, d) -> d
 `
 
 const debugCode = `
-__externalfn log : Any -> String
-__externalvarfn toString : Any -> String
-__externalfn panic : Any -> Any
+__externalfn log : (Any) -> String
+__externalvarfn toString : (Any) -> String
+__externalfn panic : (Any) -> Any
 
 `
 
 const intCode = `
-__externalfn toFixed : Int -> Fixed
-__externalfn round : Fixed -> Int
+__externalfn toFixed : (Int) -> Fixed
+__externalfn round : (Fixed) -> Int
 `
 
 const charCode = `
-__externalfn ord : Char -> Int
-__externalfn toCode : Char -> Int
-__externalfn fromCode : Int -> Char
+__externalfn ord : (Char) -> Int
+__externalfn toCode : (Char) -> Int
+__externalfn fromCode : (Int) -> Char
 `
 
 const stringCode = `
-__externalfn fromInt : Int -> String
+__externalfn fromInt : (Int) -> String
 `
 
 const typeIdCode = `

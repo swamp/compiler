@@ -238,7 +238,7 @@ func NewUnusedParameter(parameter *FunctionParameterDefinition, function *Functi
 }
 
 func (e *UnusedParameter) Error() string {
-	return fmt.Sprintf("unused parameter  %v in %v", e.parameter.Identifier().Name(), e.parameter.FetchPositionLength().ToCompleteReferenceString())
+	return fmt.Sprintf("unused parameter  %v in %v", e.parameter.Parameter().Identifier().Name(), e.parameter.FetchPositionLength().ToCompleteReferenceString())
 }
 
 func (e *UnusedParameter) FetchPositionLength() token.SourceFileReference {
@@ -905,39 +905,6 @@ func (e *CouldNotFindFieldInLookup) FetchPositionLength() token.SourceFileRefere
 	return e.variable.Symbol().SourceFileReference
 }
 
-type MustHaveAnnotationJustBeforeThisDefinition struct {
-	assignment *ast.FunctionValueNamedDefinition
-}
-
-func NewMustHaveAnnotationJustBeforeThisDefinition(assignment *ast.FunctionValueNamedDefinition) *MustHaveAnnotationJustBeforeThisDefinition {
-	return &MustHaveAnnotationJustBeforeThisDefinition{assignment: assignment}
-}
-
-func (e *MustHaveAnnotationJustBeforeThisDefinition) Error() string {
-	return fmt.Sprintf("must have annotation before this definition %v", e.assignment)
-}
-
-func (e *MustHaveAnnotationJustBeforeThisDefinition) FetchPositionLength() token.SourceFileReference {
-	return e.assignment.Identifier().Symbol().SourceFileReference
-}
-
-type AlreadyHaveAnnotationForThisName struct {
-	annotation         *ast.Annotation
-	previousAnnotation *ast.Annotation
-}
-
-func NewAlreadyHaveAnnotationForThisName(annotation *ast.Annotation, previousAnnotation *ast.Annotation) *AlreadyHaveAnnotationForThisName {
-	return &AlreadyHaveAnnotationForThisName{annotation: annotation, previousAnnotation: previousAnnotation}
-}
-
-func (e *AlreadyHaveAnnotationForThisName) Error() string {
-	return fmt.Sprintf("already have annotation for this name %v", e.annotation)
-}
-
-func (e *AlreadyHaveAnnotationForThisName) FetchPositionLength() token.SourceFileReference {
-	return e.annotation.Identifier().Symbol().SourceFileReference
-}
-
 type UnknownStatement struct {
 	statement ast.Expression
 	posLength token.SourceFileReference
@@ -1062,30 +1029,13 @@ func (e *UnknownVariable) FetchPositionLength() token.SourceFileReference {
 	return e.ident.FetchPositionLength()
 }
 
-type AnnotationMismatch struct {
-	assignment           *ast.FunctionValueNamedDefinition
-	annotationIdentifier *ast.VariableIdentifier
-}
-
-func NewAnnotationMismatch(annotationIdentifier *ast.VariableIdentifier, assignment *ast.FunctionValueNamedDefinition) *AnnotationMismatch {
-	return &AnnotationMismatch{assignment: assignment, annotationIdentifier: annotationIdentifier}
-}
-
-func (e *AnnotationMismatch) Error() string {
-	return fmt.Sprintf("annotation mismatch %v", e.assignment)
-}
-
-func (e *AnnotationMismatch) FetchPositionLength() token.SourceFileReference {
-	return e.assignment.Identifier().Symbol().SourceFileReference
-}
-
 type TooFewIdentifiersForFunctionType struct {
 	forcedFunctionType    *dectype.FunctionAtom
 	functionValue         *ast.FunctionValue
-	annotationIdentifiers []*ast.VariableIdentifier
+	annotationIdentifiers []*ast.FunctionParameter
 }
 
-func NewTooFewIdentifiersForFunctionType(annotationIdentifiers []*ast.VariableIdentifier, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooFewIdentifiersForFunctionType {
+func NewTooFewIdentifiersForFunctionType(annotationIdentifiers []*ast.FunctionParameter, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooFewIdentifiersForFunctionType {
 	return &TooFewIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers, forcedFunctionType: forcedFunctionType, functionValue: functionValue}
 }
 
@@ -1100,10 +1050,10 @@ func (e *TooFewIdentifiersForFunctionType) FetchPositionLength() token.SourceFil
 type TooManyIdentifiersForFunctionType struct {
 	forcedFunctionType    *dectype.FunctionAtom
 	functionValue         *ast.FunctionValue
-	annotationIdentifiers []*ast.VariableIdentifier
+	annotationIdentifiers []*ast.FunctionParameter
 }
 
-func NewTooManyIdentifiersForFunctionType(annotationIdentifiers []*ast.VariableIdentifier, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooManyIdentifiersForFunctionType {
+func NewTooManyIdentifiersForFunctionType(annotationIdentifiers []*ast.FunctionParameter, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooManyIdentifiersForFunctionType {
 	return &TooManyIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers, forcedFunctionType: forcedFunctionType, functionValue: functionValue}
 }
 

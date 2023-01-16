@@ -41,14 +41,14 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, i
 		fullyQualifiedName := module.FullyQualifiedName(named.Identifier())
 		maybeFunction, _ := unknownType.(*decorated.FunctionValue)
 		if maybeFunction != nil {
-			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
+			if maybeFunction.IsSomeKindOfExternal() {
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
 				log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
 			}
 
-			if maybeFunction.Annotation().Annotation().IsSomeKindOfExternal() {
+			if maybeFunction.IsSomeKindOfExternal() {
 				continue
 			}
 			functionValue, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
