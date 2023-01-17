@@ -7,19 +7,20 @@ package main
 
 import (
 	"fmt"
+	"github.com/alecthomas/kong"
+	"github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/parser"
+	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/alecthomas/kong"
 	"github.com/fatih/color"
 	"github.com/piot/lsp-server/lspserv"
 	"github.com/swamp/compiler/src/doc"
 	"github.com/swamp/compiler/src/environment"
-	"github.com/swamp/compiler/src/parser"
 	"github.com/swamp/compiler/src/verbosity"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
-	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/file"
 	"github.com/swamp/compiler/src/loader"
 	"github.com/swamp/compiler/src/lspservice"
@@ -245,6 +246,7 @@ func main() {
 
 	err := ctx.Run()
 	if err != nil {
+		log.Print(err)
 		decErr, wasDecorated := err.(decshared.DecoratedError)
 		highestError := parser.ReportAsSeverityError
 		if wasDecorated {

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-package lspservice
+package semantic
 
 import (
 	"fmt"
@@ -40,12 +40,21 @@ import (
    "tokenModifiers": [
 
 */
+
+type SemanticNode struct {
+	encodedIntegers [5]uint
+	tokenType       string
+	tokenRange      token.Range
+	debug           interface{}
+}
+
 type SemanticBuilder struct {
 	tokenTypes      []string
 	tokenModifiers  []string
 	lastRange       token.Range
 	lastDebug       string
 	encodedIntegers []uint
+	nodes           []SemanticNode
 }
 
 func NewSemanticBuilder() *SemanticBuilder {
@@ -105,8 +114,12 @@ func (s *SemanticBuilder) EncodedValues() []uint {
 	return s.encodedIntegers
 }
 
-func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string, modifiers []string) error {
+func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string, modifiers []string, node fmt.Stringer) error {
 	if !tokenRange.IsAfter(s.lastRange) {
+		for _, existingNode := range s.nodes {
+			log.Printf("  node: %v : %v (%T\n%v)", existingNode.tokenRange, existingNode.tokenType, existingNode.debug, existingNode.debug)
+		}
+		log.Printf("--> added node: %v : %v (%T\n%v)", tokenRange, tokenType, node, node)
 		return fmt.Errorf("they must be in order! %v to %v and \n%v", s.lastRange, tokenRange, s.lastDebug)
 	}
 	// log.Printf("adding symbol %v '%v'\n", tokenRange, debugString)
@@ -142,6 +155,12 @@ func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string,
 
 	encodedIntegers := [5]uint{deltaLine, deltaColumnFromLastStartColumn, uint(tokenLength), uint(tokenTypeId), modifierBitMask}
 
+	s.nodes = append(s.nodes, SemanticNode{
+		encodedIntegers: encodedIntegers,
+		tokenType:       tokenType,
+		tokenRange:      tokenRange,
+		debug:           node,
+	})
 	s.encodedIntegers = append(s.encodedIntegers, encodedIntegers[:]...)
 	s.lastRange = tokenRange
 

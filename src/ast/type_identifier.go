@@ -13,6 +13,7 @@ type TypeIdentifierNormalOrScoped interface {
 	IsDefaultSymbol() bool
 	FetchPositionLength() token.SourceFileReference
 	Name() string
+	String() string
 }
 
 type TypeIdentifier struct {

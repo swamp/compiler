@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-package lspservice
+package semantic
 
 import (
 	"fmt"
@@ -18,8 +18,10 @@ import (
 
 func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *SemanticBuilder) error {
 	for _, parameter := range f.Parameters() {
-		if err := builder.EncodeSymbol(parameter.Parameter().FetchPositionLength().Range, "parameter", []string{}); err != nil {
-			return err
+		if parameter.Parameter().Identifier() != nil {
+			if err := builder.EncodeSymbol(parameter.Parameter().Identifier().FetchPositionLength().Range, "parameter", []string{}, parameter); err != nil {
+				return err
+			}
 		}
 
 		if err := addSemanticToken(parameter.Type(), builder); err != nil {
@@ -34,7 +36,7 @@ func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *Semantic
 }
 
 func addSemanticTokenFunctionName(f *decorated.FunctionName, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "function", []string{"definition"}); err != nil {
+	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "function", []string{"definition"}, f); err != nil {
 		return err
 	}
 
@@ -90,7 +92,7 @@ func addSemanticTokenRecordType(f *dectype.RecordAtom, builder *SemanticBuilder)
 				return err
 			}
 		}
-		if err := builder.EncodeSymbol(paramType.VariableIdentifier().FetchPositionLength().Range, "property", []string{"declaration"}); err != nil {
+		if err := builder.EncodeSymbol(paramType.VariableIdentifier().FetchPositionLength().Range, "property", []string{"declaration"}, f); err != nil {
 			return err
 		}
 
@@ -146,7 +148,7 @@ func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuil
 }
 
 func addSemanticTokenGenericType(f *dectype.LocalType, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "typeParameter", []string{"declaration"}); err != nil {
+	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "typeParameter", []string{"declaration"}, f); err != nil {
 		return err
 	}
 
@@ -154,7 +156,7 @@ func addSemanticTokenGenericType(f *dectype.LocalType, builder *SemanticBuilder)
 }
 
 func addSemanticTokenAnyMatchingTypes(f *dectype.AnyMatchingTypes, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "typeParameter", []string{"declaration"}); err != nil {
+	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "typeParameter", []string{"declaration"}, f); err != nil {
 		return err
 	}
 
@@ -182,7 +184,7 @@ func addSemanticTokenConstant(f *decorated.Constant, builder *SemanticBuilder) e
 }
 
 func addTypeReferencePrimitive(referenceRange token.Range, primitive *dectype.PrimitiveAtom, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(referenceRange, "type", []string{"declaration", "defaultLibrary"}); err != nil {
+	if err := builder.EncodeSymbol(referenceRange, "type", []string{"declaration", "defaultLibrary"}, primitive); err != nil {
 		return err
 	}
 
@@ -237,7 +239,7 @@ func addSemanticTokenRecordConstructorRecord(constructor *decorated.RecordConstr
 }
 
 func encodeProperty(builder *SemanticBuilder, identifier *ast.VariableIdentifier) error {
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "property", nil)
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "property", nil, identifier)
 }
 
 func addSemanticTokenRecordsLookup(lookups *decorated.RecordLookups, builder *SemanticBuilder) error {
@@ -255,16 +257,16 @@ func addSemanticTokenRecordsLookup(lookups *decorated.RecordLookups, builder *Se
 }
 
 func encodeKeyword(builder *SemanticBuilder, keyword token.Keyword) error {
-	return builder.EncodeSymbol(keyword.FetchPositionLength().Range, "keyword", nil)
+	return builder.EncodeSymbol(keyword.FetchPositionLength().Range, "keyword", nil, keyword)
 }
 
 func encodeTypeDeclaration(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "type", []string{"declaration"})
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "type", []string{"declaration"}, identifier)
 }
 
 func encodeMultilineComment(builder *SemanticBuilder, comment token.MultiLineCommentToken) error {
 	for _, part := range comment.Parts() {
-		if err := builder.EncodeSymbol(part.SourceFileReference.Range, "comment", nil); err != nil {
+		if err := builder.EncodeSymbol(part.SourceFileReference.Range, "comment", nil, comment); err != nil {
 			return err
 		}
 	}
@@ -281,32 +283,32 @@ func encodeComment(builder *SemanticBuilder, comment token.Comment) error {
 }
 
 func encodeOperator(builder *SemanticBuilder, operator token.OperatorToken) error {
-	return builder.EncodeSymbol(operator.FetchPositionLength().Range, "operator", nil)
+	return builder.EncodeSymbol(operator.FetchPositionLength().Range, "operator", nil, operator)
 }
 
 func encodeEnumMember(builder *SemanticBuilder, identifier ast.TypeIdentifierNormalOrScoped) error {
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enumMember", nil)
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enumMember", nil, identifier)
 }
 
 func encodeEnumMemberTypeIdentifier(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enumMember", nil)
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enumMember", nil, identifier)
 }
 
 func encodeEnum(builder *SemanticBuilder, identifier *ast.TypeIdentifier) error {
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enum", nil)
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "enum", nil, identifier)
 }
 
 func encodeConstant(rangeFound token.Range, builder *SemanticBuilder) error {
-	return builder.EncodeSymbol(rangeFound, "macro", nil)
+	return builder.EncodeSymbol(rangeFound, "macro", nil, rangeFound)
 }
 
 func encodeVariable(builder *SemanticBuilder, identifier *ast.VariableIdentifier) error {
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "variable", []string{"readonly"})
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "variable", []string{"readonly"}, identifier)
 }
 
 func encodeModuleReference(builder *SemanticBuilder, astModuleReference *ast.ModuleReference) error {
 	for _, namespacePart := range astModuleReference.Parts() {
-		if err := builder.EncodeSymbol(namespacePart.TypeIdentifier().FetchPositionLength().Range, "namespace", nil); err != nil {
+		if err := builder.EncodeSymbol(namespacePart.TypeIdentifier().FetchPositionLength().Range, "namespace", nil, astModuleReference); err != nil {
 			return err
 		}
 	}
@@ -314,7 +316,7 @@ func encodeModuleReference(builder *SemanticBuilder, astModuleReference *ast.Mod
 }
 
 func encodeModuleAlias(builder *SemanticBuilder, astModuleAlias *ast.TypeIdentifier) error {
-	if err := builder.EncodeSymbol(astModuleAlias.FetchPositionLength().Range, "namespace", nil); err != nil {
+	if err := builder.EncodeSymbol(astModuleAlias.FetchPositionLength().Range, "namespace", nil, astModuleAlias); err != nil {
 		return err
 	}
 	return nil
@@ -325,7 +327,7 @@ func encodeStructReferenceWithModuleReference(builder *SemanticBuilder, identifi
 	if isScoped {
 		encodeModuleReference(builder, scoped.ModuleReference())
 	}
-	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "class", nil)
+	return builder.EncodeSymbol(identifier.FetchPositionLength().Range, "class", nil, identifier)
 }
 
 func addSemanticTokenCaseForCustomType(caseNode *decorated.CaseCustomType, builder *SemanticBuilder) error {
@@ -477,7 +479,7 @@ func addTypeReferenceInvoker(referenceRange token.Range, invoker *dectype.Invoke
 		tokenModifiers = append(tokenModifiers, "defaultLibrary")
 	}
 
-	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers); err != nil {
+	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers, invoker); err != nil {
 		return err
 	}
 
@@ -500,7 +502,7 @@ func addTypeReferenceCustomType(referenceRange token.Range, invoker *dectype.Cus
 		tokenModifiers = append(tokenModifiers, "defaultLibrary")
 	}
 
-	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers); err != nil {
+	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers, invoker); err != nil {
 		return err
 	}
 
@@ -510,7 +512,7 @@ func addTypeReferenceCustomType(referenceRange token.Range, invoker *dectype.Cus
 func addTypeReferenceRecordType(referenceRange token.Range, invoker *dectype.RecordAtom, builder *SemanticBuilder) error {
 	tokenModifiers := []string{"declaration"}
 
-	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers); err != nil {
+	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers, invoker); err != nil {
 		return err
 	}
 
@@ -520,7 +522,7 @@ func addTypeReferenceRecordType(referenceRange token.Range, invoker *dectype.Rec
 func addTypeReferenceAlias(referenceRange token.Range, alias *dectype.Alias, builder *SemanticBuilder) error {
 	tokenModifiers := []string{"declaration"}
 
-	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers); err != nil {
+	if err := builder.EncodeSymbol(referenceRange, "type", tokenModifiers, alias); err != nil {
 		return err
 	}
 
@@ -538,7 +540,7 @@ func addSemanticTokenImport(decoratedImport *decorated.ImportStatement, builder 
 	}
 
 	for _, segment := range decoratedImport.AstImport().ModuleName().Parts() {
-		if err := builder.EncodeSymbol(segment.FetchPositionLength().Range, "namespace", nil); err != nil {
+		if err := builder.EncodeSymbol(segment.FetchPositionLength().Range, "namespace", nil, decoratedImport); err != nil {
 			return err
 		}
 	}
@@ -564,7 +566,7 @@ func addSemanticTokenImport(decoratedImport *decorated.ImportStatement, builder 
 
 func addSemanticTokenLet(decoratedLet *decorated.Let, builder *SemanticBuilder) error {
 	keyword := decoratedLet.AstLet().Keyword()
-	if err := builder.EncodeSymbol(keyword.FetchPositionLength().Range, "keyword", nil); err != nil {
+	if err := builder.EncodeSymbol(keyword.FetchPositionLength().Range, "keyword", nil, decoratedLet); err != nil {
 		return err
 	}
 
@@ -573,7 +575,7 @@ func addSemanticTokenLet(decoratedLet *decorated.Let, builder *SemanticBuilder) 
 			if letVariable.Comment() != nil {
 				encodeComment(builder, letVariable.Comment().Token())
 			}
-			if err := builder.EncodeSymbol(letVariable.FetchPositionLength().Range, "variable", []string{"readonly"}); err != nil {
+			if err := builder.EncodeSymbol(letVariable.FetchPositionLength().Range, "variable", []string{"readonly"}, letVariable); err != nil {
 				return err
 			}
 
@@ -582,7 +584,7 @@ func addSemanticTokenLet(decoratedLet *decorated.Let, builder *SemanticBuilder) 
 		addSemanticToken(assignment.Expression(), builder)
 	}
 
-	if err := builder.EncodeSymbol(decoratedLet.AstLet().InKeyword().FetchPositionLength().Range, "keyword", nil); err != nil {
+	if err := builder.EncodeSymbol(decoratedLet.AstLet().InKeyword().FetchPositionLength().Range, "keyword", nil, decoratedLet); err != nil {
 		return err
 	}
 
@@ -649,7 +651,7 @@ func addSemanticTokenRecordLiteral(recordLiteral *decorated.RecordLiteral, build
 	}
 
 	for _, assignment := range recordLiteral.ParseOrderedAssignments() {
-		if err := builder.EncodeSymbol(assignment.FieldName().FetchPositionLength().Range, "property", nil); err != nil {
+		if err := builder.EncodeSymbol(assignment.FieldName().FetchPositionLength().Range, "property", nil, recordLiteral); err != nil {
 			return err
 		}
 
@@ -670,19 +672,17 @@ func addSemanticTokenTupleLiteral(recordLiteral *decorated.TupleLiteral, builder
 }
 
 func addSemanticTokenLetVariableReference(letVarReference *decorated.LetVariableReference, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(letVarReference.FetchPositionLength().Range, "variable", []string{"readonly"}); err != nil {
+	if err := builder.EncodeSymbol(letVarReference.FetchPositionLength().Range, "variable", []string{"readonly"}, letVarReference); err != nil {
 		return err
 	}
 	return nil
 }
 
 func addSemanticTokenString(stringLiteral *decorated.StringLiteral, builder *SemanticBuilder) error {
-	log.Printf("encoding string '%v'", stringLiteral)
-
 	// Strings can continue over several lines
 	for _, sameLineRange := range stringLiteral.AstString().Token.StringLines() {
 		tempRange := token.RangeFromSingleSameLineRange(sameLineRange)
-		if err := builder.EncodeSymbol(tempRange, "string", nil); err != nil {
+		if err := builder.EncodeSymbol(tempRange, "string", nil, stringLiteral); err != nil {
 			return err
 		}
 	}
@@ -691,14 +691,14 @@ func addSemanticTokenString(stringLiteral *decorated.StringLiteral, builder *Sem
 }
 
 func addSemanticTokenResourceNameLiteral(resourceNameLiteral *decorated.ResourceNameLiteral, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(resourceNameLiteral.FetchPositionLength().Range, "operator", nil); err != nil {
+	if err := builder.EncodeSymbol(resourceNameLiteral.FetchPositionLength().Range, "operator", nil, resourceNameLiteral); err != nil {
 		return err
 	}
 	return nil
 }
 
 func addSemanticTokenBooleanLiteral(stringLiteral *decorated.BooleanLiteral, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(stringLiteral.FetchPositionLength().Range, "number", nil); err != nil {
+	if err := builder.EncodeSymbol(stringLiteral.FetchPositionLength().Range, "number", nil, stringLiteral); err != nil {
 		return err
 	}
 	return nil
@@ -718,35 +718,35 @@ func addSemanticTokenStringInterpolation(stringInterpolation *decorated.StringIn
 }
 
 func addSemanticTokenTypeId(typeId *decorated.TypeIdLiteral, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(typeId.FetchPositionLength().Range, "macro", nil); err != nil {
+	if err := builder.EncodeSymbol(typeId.FetchPositionLength().Range, "macro", nil, typeId); err != nil {
 		return err
 	}
 	return nil
 }
 
 func addSemanticTokenChar(stringLiteral *decorated.CharacterLiteral, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(stringLiteral.FetchPositionLength().Range, "string", nil); err != nil {
+	if err := builder.EncodeSymbol(stringLiteral.FetchPositionLength().Range, "string", nil, stringLiteral); err != nil {
 		return err
 	}
 	return nil
 }
 
 func addSemanticTokenFixed(fixedLiteral *decorated.FixedLiteral, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(fixedLiteral.FetchPositionLength().Range, "number", nil); err != nil {
+	if err := builder.EncodeSymbol(fixedLiteral.FetchPositionLength().Range, "number", nil, fixedLiteral); err != nil {
 		return err
 	}
 	return nil
 }
 
 func addSemanticTokenInteger(integerLiteral *decorated.IntegerLiteral, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(integerLiteral.FetchPositionLength().Range, "number", nil); err != nil {
+	if err := builder.EncodeSymbol(integerLiteral.FetchPositionLength().Range, "number", nil, integerLiteral); err != nil {
 		return err
 	}
 	return nil
 }
 
 func addSemanticTokenListLiteral(listLiteral *decorated.ListLiteral, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(listLiteral.AstListLiteral().StartParenToken().Range, "operator", nil); err != nil {
+	if err := builder.EncodeSymbol(listLiteral.AstListLiteral().StartParenToken().Range, "operator", nil, listLiteral); err != nil {
 		return err
 	}
 
@@ -756,7 +756,7 @@ func addSemanticTokenListLiteral(listLiteral *decorated.ListLiteral, builder *Se
 		}
 	}
 
-	if err := builder.EncodeSymbol(listLiteral.AstListLiteral().EndParenToken().Range, "operator", nil); err != nil {
+	if err := builder.EncodeSymbol(listLiteral.AstListLiteral().EndParenToken().Range, "operator", nil, listLiteral); err != nil {
 		return err
 	}
 
@@ -764,7 +764,7 @@ func addSemanticTokenListLiteral(listLiteral *decorated.ListLiteral, builder *Se
 }
 
 func addSemanticTokenArrayLiteral(arrayLiteral *decorated.ArrayLiteral, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(arrayLiteral.AstArrayLiteral().StartParenToken().Range, "operator", nil); err != nil {
+	if err := builder.EncodeSymbol(arrayLiteral.AstArrayLiteral().StartParenToken().Range, "operator", nil, arrayLiteral); err != nil {
 		return err
 	}
 
@@ -774,7 +774,7 @@ func addSemanticTokenArrayLiteral(arrayLiteral *decorated.ArrayLiteral, builder 
 		}
 	}
 
-	if err := builder.EncodeSymbol(arrayLiteral.AstArrayLiteral().EndParenToken().Range, "operator", nil); err != nil {
+	if err := builder.EncodeSymbol(arrayLiteral.AstArrayLiteral().EndParenToken().Range, "operator", nil, arrayLiteral); err != nil {
 		return err
 	}
 
@@ -834,7 +834,7 @@ func addSemanticTokenFunctionReference(functionReference *decorated.FunctionRefe
 		}
 	*/
 
-	if err := builder.EncodeSymbol(functionReference.Identifier().FetchPositionLength().Range, "function", nil); err != nil {
+	if err := builder.EncodeSymbol(functionReference.Identifier().FetchPositionLength().Range, "function", nil, functionReference); err != nil {
 		return err
 	}
 
@@ -846,7 +846,7 @@ func addSemanticTokenConstantReference(constantReference *decorated.ConstantRefe
 		return err
 	}
 
-	if err := builder.EncodeSymbol(constantReference.Identifier().Symbol().FetchPositionLength().Range, "macro", nil); err != nil {
+	if err := builder.EncodeSymbol(constantReference.Identifier().Symbol().FetchPositionLength().Range, "macro", nil, constantReference); err != nil {
 		return err
 	}
 	return nil
@@ -865,7 +865,7 @@ func addSemanticAliasReference(constantReference *decorated.AliasReference, buil
 }
 
 func addSemanticTokenCustomTypeVariantParameterExpandReference(parameter *decorated.CaseConsequenceParameterReference, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(parameter.Identifier().FetchPositionLength().Range, "parameter", nil); err != nil {
+	if err := builder.EncodeSymbol(parameter.Identifier().FetchPositionLength().Range, "parameter", nil, parameter); err != nil {
 		return err
 	}
 
@@ -873,7 +873,7 @@ func addSemanticTokenCustomTypeVariantParameterExpandReference(parameter *decora
 }
 
 func addSemanticTokenFunctionParameterReference(parameter *decorated.FunctionParameterReference, builder *SemanticBuilder) error {
-	if err := builder.EncodeSymbol(parameter.Identifier().FetchPositionLength().Range, "parameter", nil); err != nil {
+	if err := builder.EncodeSymbol(parameter.Identifier().FetchPositionLength().Range, "parameter", nil, parameter); err != nil {
 		return err
 	}
 

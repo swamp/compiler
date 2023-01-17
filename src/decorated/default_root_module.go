@@ -369,7 +369,5 @@ func CreateDefaultRootModule(includeCores bool) (*decorated.Module, decshared.De
 		err = decorated.AppendError(err, importModulesErr)
 	}
 
-	// log.Printf("rootPrimitiveModule is finally %v\n", primitiveModule)
-
 	return primitiveModule, err
 }

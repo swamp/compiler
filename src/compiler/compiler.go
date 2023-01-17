@@ -7,6 +7,7 @@ package swampcompiler
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/semantic"
 	"log"
 	"os"
 	"path"
@@ -182,7 +183,12 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 	for _, importedRootSubModule := range rootModule.ImportedModules().AllInOrderModules() {
 		world.AddModule(importedRootSubModule.ReferencedModule().FullyQualifiedModuleName(), importedRootSubModule.ReferencedModule())
 	}
-	// world.AddModule(dectype.MakeArtifactFullyQualifiedModuleName(nil), rootModule)
+
+	_, semanticErr := semantic.GenerateTokensEncodedValues(rootModule.Nodes())
+	if semanticErr != nil {
+		panic(semanticErr)
+		return nil, nil, decorated.NewInternalError(semanticErr)
+	}
 
 	return world, libraryModule, appendedError
 }
@@ -214,7 +220,6 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 }
 
 func GenerateAndLink(gen generate.Generator, resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
-
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.High {
 			log.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())

@@ -54,11 +54,15 @@ func parseParameters(p ParseStream, keywordIndentation int) ([]*ast.FunctionPara
 		}
 
 		if !wasVariable {
-			fakeSymbol := token.NewVariableSymbolToken("_", token.SourceFileReference{
-				Range:    token.Range{},
-				Document: nil,
-			}, 0)
-			identifier = ast.NewVariableIdentifier(fakeSymbol)
+			identifier = nil
+			/*
+				fakeSymbol := token.NewVariableSymbolToken("_", token.SourceFileReference{
+					Range:    p.positionLength(),
+					Document: nil,
+				}, 0)
+				identifier = ast.NewVariableIdentifier(fakeSymbol)
+
+			*/
 		}
 
 		var astType ast.Type

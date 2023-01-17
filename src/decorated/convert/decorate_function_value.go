@@ -28,6 +28,9 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	newVariableContext := context.MakeVariableContext()
 
 	for _, parameter := range parameters {
+		if parameter.Parameter().Identifier() == nil {
+			continue
+		}
 		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(parameter.Parameter().Identifier().Name(), nil, parameter)
 		newVariableContext.Add(parameter.Parameter().Identifier(), namedDecoratedExpression)
 	}
@@ -36,7 +39,6 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 }
 
 func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionValue *decorated.FunctionValue, context *VariableContext) decshared.DecoratedError {
-
 	var decoratedExpression decorated.Expression
 	subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
 	functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
@@ -60,7 +62,7 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionVal
 
 	if !targetFunctionValue.IsSomeKindOfExternal() {
 		for _, param := range targetFunctionValue.Parameters() {
-			if !param.WasReferenced() && !param.Parameter().Identifier().IsIgnore() {
+			if !param.WasReferenced() && !param.Parameter().IsIgnore() {
 				unusedErr := decorated.NewUnusedParameter(param, targetFunctionValue)
 				d.AddDecoratedError(unusedErr)
 			}

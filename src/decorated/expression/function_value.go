@@ -41,7 +41,7 @@ func (a *FunctionParameterDefinition) HumanReadable() string {
 }
 
 func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileReference {
-	return a.identifier.Identifier().Symbol().SourceFileReference
+	return a.identifier.FetchPositionLength()
 }
 
 func (a *FunctionParameterDefinition) AddReferee(ref *FunctionParameterReference) {

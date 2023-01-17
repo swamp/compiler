@@ -8,6 +8,7 @@ package lspservice
 import (
 	"errors"
 	"fmt"
+	"github.com/swamp/compiler/src/semantic"
 	"log"
 
 	"github.com/swamp/compiler/src/parser"
@@ -634,16 +635,13 @@ func (s *Service) HandleRename(params lsp.RenameParams) (*lsp.WorkspaceEdit, err
 func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (*lsp.SemanticTokens, error) {
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
 	allTokens := s.scanner.RootTokens(sourceFileURI)
-	builder := NewSemanticBuilder()
-	for _, foundToken := range allTokens {
-		if err := addSemanticToken(foundToken, builder); err != nil {
-			log.Printf("was problem with token %v %v", foundToken, err)
-			return nil, err
-		}
+	encodedValues, err := semantic.GenerateTokensEncodedValues(allTokens)
+	if err != nil {
+		return nil, err
 	}
 	return &lsp.SemanticTokens{
 		ResultId: "",
-		Data:     builder.EncodedValues(),
+		Data:     encodedValues,
 	}, nil
 }
 

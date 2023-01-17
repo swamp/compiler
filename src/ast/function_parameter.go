@@ -11,15 +11,24 @@ import (
 )
 
 type FunctionParameter struct {
-	identifier    *VariableIdentifier
+	identifier    *VariableIdentifier // allowed to be nil
 	parameterType Type
+	inclusive     token.SourceFileReference
 }
 
 func NewFunctionParameter(identifier *VariableIdentifier, parameterType Type) *FunctionParameter {
-	return &FunctionParameter{identifier: identifier, parameterType: parameterType}
+	inclusive := parameterType.FetchPositionLength()
+	if identifier != nil {
+		inclusive = token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), parameterType.FetchPositionLength())
+	}
+
+	return &FunctionParameter{inclusive: inclusive, identifier: identifier, parameterType: parameterType}
 }
 
 func (i *FunctionParameter) IsIgnore() bool {
+	if i.identifier == nil {
+		return true
+	}
 	return i.identifier.IsIgnore()
 }
 
@@ -28,6 +37,9 @@ func (i *FunctionParameter) Identifier() *VariableIdentifier {
 }
 
 func (i *FunctionParameter) Name() string {
+	if i.identifier == nil {
+		return "_"
+	}
 	return i.identifier.Name()
 }
 
@@ -36,11 +48,14 @@ func (i *FunctionParameter) Type() Type {
 }
 
 func (i *FunctionParameter) FetchPositionLength() token.SourceFileReference {
-	return i.identifier.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *FunctionParameter) String() string {
-	return fmt.Sprintf("[Arg %s: %s]", i.identifier.Symbol(), i.parameterType)
+	if i.identifier != nil {
+		return fmt.Sprintf("[Arg %s: %s]", i.identifier.Symbol(), i.parameterType)
+	}
+	return fmt.Sprintf("[Arg %s]", i.parameterType)
 }
 
 func (i *FunctionParameter) DebugString() string {
