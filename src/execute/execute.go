@@ -89,7 +89,7 @@ func ExecuteSwamp(swampCode string) (string, error) {
 
 	gen := generate_sp.NewGenerator()
 	gen.PrepareForNewPackage()
-	_, compileErr := swampcompiler.CompileAndLink(gen, resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, enforceStyle, verbose)
+	_, compileErr := swampcompiler.CompileAndLink(gen, resourceNameLookup, environment.Environment{}, "temp", tempSwampFilename, tempOutputFile, enforceStyle, verbose, showAssembly)
 	if parser.IsCompileError(compileErr) {
 		return "", compileErr
 	}

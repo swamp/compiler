@@ -91,7 +91,7 @@ func BuildMain(mainSourceFile string, absoluteOutputDirectory string, enforceSty
 
 			for _, packageSubDirectoryName := range solutionSettings.Packages {
 				absoluteSubDirectory := path.Join(mainSourceFile, packageSubDirectoryName)
-				compiledPackage, compileAndLinkErr := CompileAndLink(gen, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, enforceStyle, verboseFlag)
+				compiledPackage, compileAndLinkErr := CompileAndLink(gen, resourceNameLookup, config, packageSubDirectoryName, absoluteSubDirectory, absoluteOutputDirectory, enforceStyle, verboseFlag, showAssembler)
 				errors = decorated.AppendError(errors, compileAndLinkErr)
 				if parser.IsCompileError(compileAndLinkErr) {
 					return packages, errors
@@ -219,14 +219,14 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 	return offset
 }
 
-func GenerateAndLink(gen generate.Generator, resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) decshared.DecoratedError {
+func GenerateAndLink(gen generate.Generator, resourceNameLookup resourceid.ResourceNameLookup, compiledPackage *loader.Package, outputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity, showAssembler bool) decshared.DecoratedError {
 	for _, module := range compiledPackage.AllModules() {
 		if verboseFlag >= verbosity.High {
 			log.Printf(">>> has module %v\n", module.FullyQualifiedModuleName())
 		}
 	}
 
-	genErr := gen.GenerateFromPackageAndWriteOutput(compiledPackage, resourceNameLookup, outputDirectory, packageSubDirectory, verboseFlag)
+	genErr := gen.GenerateFromPackageAndWriteOutput(compiledPackage, resourceNameLookup, outputDirectory, packageSubDirectory, verboseFlag, showAssembler)
 	if genErr != nil {
 		return decorated.NewInternalError(genErr)
 	}
@@ -247,7 +247,7 @@ func CompileMainDefaultDocumentProvider(name string, filename string, configurat
 }
 
 func CompileAndLink(gen generate.Generator, resourceNameLookup resourceid.ResourceNameLookup, configuration environment.Environment, name string,
-	filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity) (*loader.Package, decshared.DecoratedError) {
+	filename string, outputFilename string, enforceStyle bool, verboseFlag verbosity.Verbosity, showAssembler bool) (*loader.Package, decshared.DecoratedError) {
 	var errors decshared.DecoratedError
 	compiledPackage, compileErr := CompileMainDefaultDocumentProvider(name, filename, configuration, enforceStyle, verboseFlag)
 	if parser.IsCompileError(compileErr) {
@@ -258,7 +258,7 @@ func CompileAndLink(gen generate.Generator, resourceNameLookup resourceid.Resour
 		panic("not possible")
 	}
 
-	linkErr := GenerateAndLink(gen, resourceNameLookup, compiledPackage, outputFilename, name, verboseFlag)
+	linkErr := GenerateAndLink(gen, resourceNameLookup, compiledPackage, outputFilename, name, verboseFlag, showAssembler)
 	errors = decorated.AppendError(errors, linkErr)
 
 	return compiledPackage, errors

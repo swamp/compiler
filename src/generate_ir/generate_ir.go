@@ -186,6 +186,6 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 	return g.GenerateAllLocalDefinedFunctions(module, irModule, g.repo, g.irFunctions, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
 }
 
-func (g *Generator) GenerateFromPackageAndWriteOutput(compiledPackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, outputDirectory string, packageSubDir string, verboseFlag verbosity.Verbosity) error {
+func (g *Generator) GenerateFromPackageAndWriteOutput(compiledPackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, outputDirectory string, packageSubDir string, verboseFlag verbosity.Verbosity, showAssembler bool) error {
 	return nil
 }

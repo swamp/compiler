@@ -6,7 +6,6 @@
 package generate_sp
 
 import (
-	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -88,6 +87,7 @@ func NewGenerator() *Generator {
 func (g *Generator) PrepareForNewPackage() {
 	g.code = assembler_sp.NewCode()
 	g.packageConstants = assembler_sp.NewPackageConstants()
+	g.functionConstants = nil
 	g.fileUrlCache = assembler_sp.NewFileUrlCache()
 }
 
@@ -202,18 +202,17 @@ func (g *Generator) GenerateFromPackage(compilePackage *loader.Package, resource
 	return nil
 }
 
-func (g *Generator) GenerateFromPackageAndWriteOutput(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) error {
+func (g *Generator) GenerateFromPackageAndWriteOutput(compilePackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity, showAssembler bool) error {
 	if generateErr := g.GenerateFromPackage(compilePackage, resourceNameLookup, verboseFlag); generateErr != nil {
 		return generateErr
 	}
-	const showAssembler = false
 	return g.After(resourceNameLookup, absoluteOutputDirectory, packageSubDirectory, showAssembler, verboseFlag)
 }
 
 func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, showAssembler bool, verboseFlag verbosity.Verbosity) error {
 	constants := g.packageConstants
-	if verboseFlag >= verbosity.Mid || showAssembler {
-		//constants.DynamicMemory().DebugOutput()
+	if verboseFlag >= verbosity.High || showAssembler {
+		constants.DynamicMemory().DebugOutput()
 	}
 
 	constants.AllocateDebugInfoFiles(g.fileUrlCache.FileUrls())
@@ -239,10 +238,9 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 		for _, f := range g.functionConstants {
 			if f.ConstantType() == assembler_sp.ConstantTypeFunction {
 				opcodes := constants.FetchOpcodes(f)
-				if opcodes == nil {
+				if opcodes == nil || len(opcodes) == 0 {
 					panic("no opcodes")
 				}
-				log.Printf("func:%v opcodes: %v", f, hex.Dump(opcodes))
 				lines := swampdisasmsp.Disassemble(opcodes, true)
 
 				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
@@ -299,9 +297,6 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 
 			rootContext := moduleContext.MakeFunctionContext(maybeFunction, fullyQualifiedName.String())
 
-			if maybeFunction.IsSomeKindOfExternal() {
-				continue
-			}
 			generatedFunctionInfo, genFuncErr := generateFunction(fullyQualifiedName, maybeFunction,
 				rootContext, g.lookup, resourceNameLookup, g.fileUrlCache, verboseFlag)
 			if genFuncErr != nil {
@@ -315,6 +310,8 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 			if verboseFlag >= verbosity.High {
 				log.Printf("---------- generated code for '%v'", fullyQualifiedName.String())
 				rootContext.scopeVariables.DebugOutput(0)
+				lines := swampdisasmsp.Disassemble(generatedFunctionInfo.opcodes, true)
+				log.Printf("lines:\n%v\n", lines)
 			}
 
 			moduleContext.Constants().DefineFunctionOpcodes(preparedFuncConstant, generatedFunctionInfo.opcodes)

@@ -191,11 +191,11 @@ type TypeRefIdType struct {
 }
 
 func (t *TypeRefIdType) String() string {
-	return "TypeRefId"
+	return fmt.Sprintf("TypeRefId <%v>", t.originalType)
 }
 
 func (t *TypeRefIdType) HumanReadable() string {
-	return "TypeRefId"
+	return fmt.Sprintf("TypeRefId <%v>", t.originalType.HumanReadable())
 }
 
 type ListType struct {
@@ -368,7 +368,7 @@ type FunctionType struct {
 }
 
 func (t *FunctionType) String() string {
-	return fmt.Sprintf("function params:%v", Refs(t.parameterTypes))
+	return fmt.Sprintf("function (params:%v)", Refs(t.parameterTypes))
 }
 
 func typesToHumanReadable(types []InfoType, separator string) string {

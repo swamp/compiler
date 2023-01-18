@@ -12,5 +12,5 @@ import (
 )
 
 type Generator interface {
-	GenerateFromPackageAndWriteOutput(module *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, outputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity) error
+	GenerateFromPackageAndWriteOutput(module *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, outputDirectory string, packageSubDirectory string, verboseFlag verbosity.Verbosity, showAssembler bool) error
 }
