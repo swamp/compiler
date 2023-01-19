@@ -116,10 +116,12 @@ func (s *SemanticBuilder) EncodedValues() []uint {
 
 func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string, modifiers []string, node fmt.Stringer) error {
 	if !tokenRange.IsAfter(s.lastRange) {
-		for _, existingNode := range s.nodes {
-			log.Printf("  node: %v : %v (%T\n%v)", existingNode.tokenRange, existingNode.tokenType, existingNode.debug, existingNode.debug)
-		}
-		log.Printf("--> added node: %v : %v (%T\n%v)", tokenRange, tokenType, node, node)
+		/*
+			for _, existingNode := range s.nodes {
+				log.Printf("  node: %v : %v (%T\n%v)", existingNode.tokenRange, existingNode.tokenType, existingNode.debug, existingNode.debug)
+			}
+			log.Printf("--> added node: %v : %v (%T\n%v)", tokenRange, tokenType, node, node)
+		*/
 		return fmt.Errorf("they must be in order! %v to %v and \n%v", s.lastRange, tokenRange, s.lastDebug)
 	}
 	// log.Printf("adding symbol %v '%v'\n", tokenRange, debugString)
