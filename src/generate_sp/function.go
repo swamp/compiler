@@ -57,7 +57,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 	code.Return(filePosition)
 	funcContext.scopeVariables.StopScope(endLabel)
 
-	opcodes, debugLineInfos, resolveErr := code.Resolve(verboseFlag >= verbosity.Mid)
+	opcodes, debugLineInfos, resolveErr := code.Resolve(false)
 	if resolveErr != nil {
 		return nil, resolveErr
 	}

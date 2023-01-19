@@ -211,7 +211,7 @@ func (g *Generator) GenerateFromPackageAndWriteOutput(compilePackage *loader.Pac
 
 func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, absoluteOutputDirectory string, packageSubDirectory string, showAssembler bool, verboseFlag verbosity.Verbosity) error {
 	constants := g.packageConstants
-	if verboseFlag >= verbosity.High || showAssembler {
+	if verboseFlag >= verbosity.High {
 		constants.DynamicMemory().DebugOutput()
 	}
 
@@ -241,7 +241,7 @@ func (g *Generator) After(resourceNameLookup resourceid.ResourceNameLookup, abso
 				if opcodes == nil || len(opcodes) == 0 {
 					panic("no opcodes")
 				}
-				lines := swampdisasmsp.Disassemble(opcodes, true)
+				lines := swampdisasmsp.Disassemble(opcodes, false)
 
 				assemblerOutput += fmt.Sprintf("func %v\n%s\n\n", f, strings.Join(lines[:], "\n"))
 			}
@@ -310,7 +310,7 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 			if verboseFlag >= verbosity.High {
 				log.Printf("---------- generated code for '%v'", fullyQualifiedName.String())
 				rootContext.scopeVariables.DebugOutput(0)
-				lines := swampdisasmsp.Disassemble(generatedFunctionInfo.opcodes, true)
+				lines := swampdisasmsp.Disassemble(generatedFunctionInfo.opcodes, false)
 				log.Printf("lines:\n%v\n", lines)
 			}
 
