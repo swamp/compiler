@@ -21,6 +21,7 @@ type RecordConstructorFromParameters struct {
 	recordType                     *dectype.RecordAtom
 	astConstructorCall             *ast.ConstructorCall
 	resultingTypeAfterConstruction dtype.Type
+	inclusive                      token.SourceFileReference
 }
 
 // typeIdentifier ast.TypeReferenceScopedOrNormal
@@ -29,8 +30,9 @@ func NewRecordConstructorFromParameters(astConstructorCall *ast.ConstructorCall,
 		panic("can not be nil")
 	}
 
+	inclusive := token.MakeInclusiveSourceFileReference(astConstructorCall.FetchPositionLength(), parseOrderArguments[len(parseOrderArguments)-1].FetchPositionLength())
 	return &RecordConstructorFromParameters{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments,
-		resultingTypeAfterConstruction: recordAliasReference, recordType: recordType}
+		resultingTypeAfterConstruction: recordAliasReference, recordType: recordType, inclusive: inclusive}
 }
 
 func (c *RecordConstructorFromParameters) SortedAssignments() []*RecordLiteralAssignment {
@@ -66,5 +68,5 @@ func (c *RecordConstructorFromParameters) AstConstructorCall() *ast.ConstructorC
 }
 
 func (c *RecordConstructorFromParameters) FetchPositionLength() token.SourceFileReference {
-	return c.astConstructorCall.FetchPositionLength()
+	return c.inclusive
 }

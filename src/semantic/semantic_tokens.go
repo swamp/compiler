@@ -1098,6 +1098,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 	case *dectype.UnmanagedType:
 		return addSemanticTokenUnmanagedTypes(t, builder)
 
+	case *dectype.RecordFieldName:
+
 	default:
 		log.Printf("semantic unhandled %T\n", t)
 	}

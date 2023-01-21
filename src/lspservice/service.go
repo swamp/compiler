@@ -27,7 +27,7 @@ import (
 
 type DecoratedTokenScanner interface {
 	FindToken(documentURI token.DocumentURI, position token.Position) decorated.TypeOrToken
-	RootTokens(documentURI token.DocumentURI) []decorated.TypeOrToken
+	RootTokens(documentURI token.DocumentURI) []*decorated.ExpandedNode
 }
 
 type Compiler interface {
@@ -437,7 +437,7 @@ func (s *Service) HandleSymbol(params lsp.DocumentSymbolParams, conn lspserv.Con
 	var symbols []*lsp.DocumentSymbol
 
 	for _, rootToken := range rootTokens {
-		documentSymbol := convertRootTokenToOutlineSymbol(rootToken)
+		documentSymbol := convertRootTokenToOutlineSymbol(rootToken.TypeOrToken())
 		if documentSymbol == nil {
 			continue
 		}
@@ -635,7 +635,8 @@ func (s *Service) HandleRename(params lsp.RenameParams) (*lsp.WorkspaceEdit, err
 func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (*lsp.SemanticTokens, error) {
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
 	allTokens := s.scanner.RootTokens(sourceFileURI)
-	encodedValues, err := semantic.GenerateTokensEncodedValues(allTokens)
+	sourceFile := &token.SourceFileDocument{Uri: sourceFileURI}
+	encodedValues, err := semantic.GenerateTokensEncodedValues(allTokens, sourceFile)
 	if err != nil {
 		return nil, err
 	}
@@ -652,7 +653,7 @@ func (s *Service) HandleCodeLens(params lsp.CodeLensParams, conn lspserv.Connect
 		count := -1
 		var foundRange token.Range
 
-		switch t := rootToken.(type) {
+		switch t := rootToken.TypeOrToken().(type) {
 		case *decorated.NamedFunctionValue:
 			value := t.Value()
 			foundRange = value.FetchPositionLength().Range

@@ -18,6 +18,7 @@ type Alias struct {
 	referencedType   dtype.Type
 	artifactTypeName ArtifactFullyQualifiedTypeName
 	references       []*AliasReference
+	inclusive        token.SourceFileReference
 	wasReferenced    bool
 }
 
@@ -42,7 +43,7 @@ func (u *Alias) TypeIdentifier() *ast.TypeIdentifier {
 }
 
 func (u *Alias) FetchPositionLength() token.SourceFileReference {
-	return u.name.FetchPositionLength()
+	return u.inclusive
 }
 
 func (u *Alias) ArtifactTypeName() ArtifactFullyQualifiedTypeName {
@@ -87,5 +88,7 @@ func NewAliasType(name *ast.Alias, artifactTypeName ArtifactFullyQualifiedTypeNa
 		panic("must have complete alias name")
 	}
 
-	return &Alias{name: name, artifactTypeName: artifactTypeName, referencedType: referencedType}
+	inclusive := token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), referencedType.FetchPositionLength())
+
+	return &Alias{name: name, artifactTypeName: artifactTypeName, referencedType: referencedType, inclusive: inclusive}
 }

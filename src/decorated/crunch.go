@@ -7,6 +7,8 @@ package deccy
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/semantic"
+	"log"
 	"reflect"
 	"strings"
 
@@ -203,6 +205,14 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 		rootNodesConverted = append(rootNodesConverted, converted)
 	}
 	module.SetRootNodes(rootNodesConverted)
+
+	log.Printf("expandedNodes : %d", len(module.ExpandedNodes()))
+
+	_, semanticErr := semantic.GenerateTokensEncodedValues(module.ExpandedNodes(), module.Document())
+	if semanticErr != nil {
+		panic(semanticErr)
+		return nil, decorated.NewInternalError(semanticErr)
+	}
 
 	return module, errors
 }

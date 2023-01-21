@@ -7,7 +7,6 @@ package swampcompiler
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/semantic"
 	"log"
 	"os"
 	"path"
@@ -182,12 +181,6 @@ func CompileMain(name string, mainSourceFile string, documentProvider loader.Doc
 
 	for _, importedRootSubModule := range rootModule.ImportedModules().AllInOrderModules() {
 		world.AddModule(importedRootSubModule.ReferencedModule().FullyQualifiedModuleName(), importedRootSubModule.ReferencedModule())
-	}
-
-	_, semanticErr := semantic.GenerateTokensEncodedValues(rootModule.Nodes())
-	if semanticErr != nil {
-		panic(semanticErr)
-		return nil, nil, decorated.NewInternalError(semanticErr)
 	}
 
 	return world, libraryModule, appendedError

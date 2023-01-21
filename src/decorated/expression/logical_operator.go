@@ -70,5 +70,5 @@ func (l *LogicalOperator) String() string {
 }
 
 func (l *LogicalOperator) FetchPositionLength() token.SourceFileReference {
-	return l.BinaryOperator.left.FetchPositionLength()
+	return l.BinaryOperator.FetchPositionLength()
 }

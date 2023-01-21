@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -35,532 +36,553 @@ type Token interface {
 	Type() dtype.Type
 }
 
-func expandChildNodesFunctionValue(fn *FunctionValue) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandFunctionValue(fn *FunctionValue, list *ExpandedNode) {
 	if fn.Expression() == nil {
-		panic(fmt.Errorf("a function must have an expression %v", fn.FetchPositionLength().ToCompleteReferenceString()))
-	}
-	tokens = append(tokens, expandChildNodes(fn.Expression())...)
-	for _, parameter := range fn.Parameters() {
-		tokens = append(tokens, expandChildNodes(parameter)...)
+		panic(fmt.Errorf("a function must have an expression '%v'", fn.FetchPositionLength().ToReferenceString()))
 	}
 
-	tokens = append(tokens, expandChildNodes(fn.ForcedFunctionType().ReturnType())...)
-	
-	return tokens
+	//for _, parameter := range fn.Parameters() {
+	//	expand(parameter, list)
+	//}
+
+	//expand(fn.ForcedFunctionType().ReturnType(), list)
+	expand(fn.Expression(), list)
+
 }
 
-func expandChildNodesConstant(constant *Constant) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(constant.Expression())...)
-	return tokens
+func expandConstant(constant *Constant, list *ExpandedNode) {
+	expand(constant.Expression(), list)
 }
 
-func expandChildNodesFunctionReference(fn *FunctionReference) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandFunctionReference(fn *FunctionReference, list *ExpandedNode) {
 	optionalModuleRef := fn.NameReference().ModuleReference()
 	if optionalModuleRef != nil {
-		tokens = append(tokens, optionalModuleRef)
+		//list.AddNode(optionalModuleRef)
 	}
-	return tokens
 }
 
-func expandChildNodesFunctionCall(fn *FunctionCall) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.FunctionExpression())...)
+func expandFunctionCall(fn *FunctionCall, list *ExpandedNode) {
+	expand(fn.FunctionExpression(), list)
 	for _, argument := range fn.Arguments() {
-		tokens = append(tokens, expandChildNodes(argument)...)
+		expand(argument, list)
 	}
-	return tokens
 }
 
-func expandChildNodesCurryFunction(fn *CurryFunction) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.FunctionValue())...)
+func expandCurryFunction(fn *CurryFunction, list *ExpandedNode) {
+	expand(fn.FunctionValue(), list)
 	for _, argument := range fn.ArgumentsToSave() {
-		tokens = append(tokens, expandChildNodes(argument)...)
+		expand(argument, list)
 	}
-	return tokens
 }
 
-func expandChildNodesImportStatement(importStatement *ImportStatement) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(importStatement.ModuleReference())...)
+func expandImportStatement(importStatement *ImportStatement, list *ExpandedNode) {
+	expand(importStatement.ModuleReference(), list)
 	if importStatement.Alias() != nil {
-		tokens = append(tokens, expandChildNodes(importStatement.Alias())...)
+		expand(importStatement.Alias(), list)
 	}
-	return tokens
 }
 
-func expandChildNodesFunctionType(fn *dectype.FunctionAtom) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandFunctionType(fn *dectype.FunctionAtom, list *ExpandedNode) {
 	for _, parameter := range fn.FunctionParameterTypes() {
-		tokens = append(tokens, expandChildNodes(parameter)...)
+		expand(parameter, list)
 	}
-	return tokens
 }
 
-func expandChildNodesTupleType(fn *dectype.TupleTypeAtom) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandTupleType(fn *dectype.TupleTypeAtom, list *ExpandedNode) {
 	for _, parameter := range fn.ParameterTypes() {
-		tokens = append(tokens, expandChildNodes(parameter)...)
+		expand(parameter, list)
 	}
-	return tokens
 }
 
-func expandNamedTypeReferenceModule(name *dectype.NamedDefinitionTypeReference) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandNamedTypeReferenceModule(name *dectype.NamedDefinitionTypeReference, list *ExpandedNode) {
 	optionalModuleRef := name.ModuleReference()
 	if optionalModuleRef != nil {
-		tokens = append(tokens, optionalModuleRef)
+		//list.AddNode(optionalModuleRef)
 	}
-
-	return tokens
 }
 
-func expandChildNodesTypeReference(reference dectype.TypeReferenceScopedOrNormal) []TypeOrToken {
+func expandTypeReference(reference dectype.TypeReferenceScopedOrNormal, list *ExpandedNode) {
 	named := reference.NameReference()
-	typeOrTokens := expandNamedTypeReferenceModule(named)
+	expandNamedTypeReferenceModule(named, list)
 
-	typeOrTokens = append(typeOrTokens, expandChildNodes(reference.Next())...)
-
-	return typeOrTokens
+	//expand(reference.Next(), list)
 }
 
-func expandChildNodesCustomType(fn *dectype.CustomTypeAtom) []TypeOrToken {
-	var tokens []TypeOrToken
-	// tokens = append(tokens, expandChildNodes(fn.TypeReference())...) Can not expand type identifiers, need meaning
+func expandCustomTypeVariant(variant *dectype.CustomTypeVariantAtom, list *ExpandedNode) {
+	//	expand(variant.Name(), list)
+	//	for _, param := range variant.ParameterTypes() {
+	//		expand(param, list)
+	//	}
+}
+
+func expandCustomType(fn *dectype.CustomTypeAtom, list *ExpandedNode) {
+	//expand(fn.TypeIdentifier(), list)
 	for _, variant := range fn.Variants() {
-		tokens = append(tokens, expandChildNodes(variant)...)
-		for _, param := range variant.ParameterTypes() {
-			tokens = append(tokens, expandChildNodes(param)...)
-		}
+		expandCustomTypeVariant(variant, list)
 	}
-	return tokens
 }
 
-func expandChildNodesRecordType(fn *dectype.RecordAtom) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandRecordType(fn *dectype.RecordAtom, list *ExpandedNode) {
 	for _, field := range fn.ParseOrderedFields() {
-		tokens = append(tokens, expandChildNodes(field.FieldName())...)
-		tokens = append(tokens, expandChildNodes(field.Type())...)
+		expand(field.FieldName(), list)
+		expand(field.Type(), list)
 	}
-	return tokens
 }
 
-func expandChildNodesUnmanagedType(fn *dectype.UnmanagedType) []TypeOrToken {
-	var tokens []TypeOrToken
-	return tokens
+func expandUnmanagedType(fn *dectype.UnmanagedType, list *ExpandedNode) {
 }
 
-func expandChildNodesFunctionTypeReference(fn *dectype.FunctionTypeReference) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.FunctionAtom())...)
-	return tokens
+func expandFunctionTypeReference(fn *dectype.FunctionTypeReference, list *ExpandedNode) {
+	expand(fn.FunctionAtom(), list)
 }
 
-func expandChildNodesPrimitive(fn *dectype.PrimitiveAtom) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandPrimitive(fn *dectype.PrimitiveAtom, list *ExpandedNode) {
 	for _, parameter := range fn.GenericTypes() {
-		tokens = append(tokens, expandChildNodes(parameter)...)
+		expand(parameter, list)
 	}
-	return tokens
 }
 
-func expandChildNodesInvokerType(fn *dectype.InvokerType) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(fn.TypeGenerator())...)
+func expandInvokerType(fn *dectype.InvokerType, list *ExpandedNode) {
+	expand(fn.TypeGenerator(), list)
 	for _, param := range fn.Params() {
-		tokens = append(tokens, expandChildNodes(param)...)
+		expand(param, list)
 	}
-	return tokens
 }
 
-func expandChildNodesLetAssignment(assignment *LetAssignment) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandLetAssignment(assignment *LetAssignment, list *ExpandedNode) {
 	for _, param := range assignment.LetVariables() {
-		tokens = append(tokens, expandChildNodes(param)...)
+		expand(param, list)
 	}
-	tokens = append(tokens, expandChildNodes(assignment.Expression())...)
-
-	return tokens
+	expand(assignment.Expression(), list)
 }
 
-func expandChildNodesListLiteral(listLiteral *ListLiteral) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandListLiteral(listLiteral *ListLiteral, list *ExpandedNode) {
 	for _, expression := range listLiteral.Expressions() {
-		tokens = append(tokens, expandChildNodes(expression)...)
+		expand(expression, list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesStringInterpolation(stringInterpolation *StringInterpolation) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandStringInterpolation(stringInterpolation *StringInterpolation, list *ExpandedNode) {
 	for _, expression := range stringInterpolation.IncludedExpressions() {
-		tokens = append(tokens, expandChildNodes(expression)...)
+		expand(expression, list)
 	}
 
-	return tokens
 }
 
-func expandChildNodesTupleLiteral(tupleLiteral *TupleLiteral) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandTupleLiteral(tupleLiteral *TupleLiteral, list *ExpandedNode) {
 	for _, expression := range tupleLiteral.Expressions() {
-		tokens = append(tokens, expandChildNodes(expression)...)
+		expand(expression, list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesArrayLiteral(arrayLiteral *ArrayLiteral) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandArrayLiteral(arrayLiteral *ArrayLiteral, list *ExpandedNode) {
 	for _, expression := range arrayLiteral.Expressions() {
-		tokens = append(tokens, expandChildNodes(expression)...)
+		expand(expression, list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesRecordLiteral(recordLiteral *RecordLiteral) []TypeOrToken {
-	var tokens []TypeOrToken
-
+func expandRecordLiteral(recordLiteral *RecordLiteral, list *ExpandedNode) {
 	if recordLiteral.RecordTemplate() != nil {
-		tokens = append(tokens, expandChildNodes(recordLiteral.RecordTemplate())...)
+		expand(recordLiteral.RecordTemplate(), list)
 	}
 
 	for _, assignment := range recordLiteral.ParseOrderedAssignments() {
-		tokens = append(tokens, expandChildNodes(assignment.FieldName())...)
-		tokens = append(tokens, expandChildNodes(assignment.Expression())...)
+		expand(assignment.FieldName(), list)
+		expand(assignment.Expression(), list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesNamedFunctionValue(namedFunctionValue *NamedFunctionValue) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(namedFunctionValue.FunctionName())...)
-	tokens = append(tokens, expandChildNodes(namedFunctionValue.Value())...)
-
-	return tokens
+func expandNamedFunctionValue(namedFunctionValue *NamedFunctionValue, list *ExpandedNode) {
+	//expand(namedFunctionValue.FunctionName(), list)
+	expand(namedFunctionValue.Value(), list)
 }
 
-func expandFunctionParameterDefinition(parameter *FunctionParameterDefinition) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(parameter.Type())...)
-
-	return tokens
+func expandFunctionParameterDefinition(parameter *FunctionParameterDefinition, list *ExpandedNode) {
+	expand(parameter.Type(), list)
 }
 
-func expandChildNodesCustomTypeVariantConstructor(constructor *CustomTypeVariantConstructor) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(constructor.Reference())...)
+func expandCustomTypeVariantConstructor(constructor *CustomTypeVariantConstructor, list *ExpandedNode) {
+	expand(constructor.Reference(), list)
 
 	for _, arg := range constructor.arguments {
-		tokens = append(tokens, expandChildNodes(arg)...)
+		expand(arg, list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesRecordConstructor(constructor *RecordConstructorFromParameters) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandRecordConstructor(constructor *RecordConstructorFromParameters, list *ExpandedNode) {
 	optionalModuleRef := constructor.NamedTypeReference().ModuleReference()
 	if optionalModuleRef != nil {
-		tokens = append(tokens, optionalModuleRef)
+		//		list.AddNode(optionalModuleRef)
 	}
 
 	for _, arg := range constructor.arguments {
-		tokens = append(tokens, expandChildNodes(arg.Expression())...)
+		expand(arg.Expression(), list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesRecordConstructorRecord(constructor *RecordConstructorFromRecord) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandRecordConstructorRecord(constructor *RecordConstructorFromRecord, list *ExpandedNode) {
 	optionalModuleRef := constructor.NamedTypeReference().ModuleReference()
 	if optionalModuleRef != nil {
-		tokens = append(tokens, optionalModuleRef)
+		//list.AddNode(optionalModuleRef)
 	}
 
-	tokens = append(tokens, expandChildNodes(constructor.Expression())...)
-
-	return tokens
+	expand(constructor.Expression(), list)
 }
 
-func expandChildNodesGuard(guard *Guard) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandGuard(guard *Guard, list *ExpandedNode) {
 	for _, item := range guard.Items() {
-		tokens = append(tokens, expandChildNodes(item.Condition())...)
-		tokens = append(tokens, expandChildNodes(item.Expression())...)
+		expand(item.Condition(), list)
+		expand(item.Expression(), list)
 	}
 
 	if guard.DefaultGuard() != nil {
-		tokens = append(tokens, expandChildNodes(guard.DefaultGuard().Expression())...)
+		expand(guard.DefaultGuard().Expression(), list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesCustomTypeVariantReference(constructor *dectype.CustomTypeVariantReference) []TypeOrToken {
-	var tokens []TypeOrToken
-	// tokens = append(tokens, expandChildNodes(constructor.typeIdentifier)...) // TODO: Need meaning
-	return tokens
+func expandCustomTypeVariantReference(constructor *dectype.CustomTypeVariantReference) {
+	// expand(constructor.typeIdentifier, list) // TODO: Need meaning
 }
 
-func expandChildNodesCaseForTypeAlias(typeAlias *dectype.Alias) []TypeOrToken {
-	var tokens []TypeOrToken
-	//tokens = append(tokens, expandChildNodes(typeAlias.TypeIdentifier())...)
-	tokens = append(tokens, expandChildNodes(typeAlias.Next())...)
+func expandCaseForTypeAlias(typeAlias *dectype.Alias, list *ExpandedNode) {
+	//tokens = append(tokens, expand(typeAlias.TypeIdentifier())...)
+	expand(typeAlias.Next(), list)
 
-	return tokens
 }
 
-func expandChildNodesCaseForCustomType(caseForCustomType *CaseCustomType) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandCaseForCustomType(caseForCustomType *CaseCustomType, list *ExpandedNode) {
 
-	tokens = append(tokens, expandChildNodes(caseForCustomType.Test())...)
+	expand(caseForCustomType.Test(), list)
 
 	for _, consequence := range caseForCustomType.Consequences() {
-		tokens = append(tokens, expandChildNodes(consequence.VariantReference())...)
+		expand(consequence.VariantReference(), list)
 		for _, param := range consequence.Parameters() {
-			tokens = append(tokens, expandChildNodes(param)...)
+			expand(param, list)
 		}
-		tokens = append(tokens, expandChildNodes(consequence.Expression())...)
+		expand(consequence.Expression(), list)
 	}
 
 	if caseForCustomType.DefaultCase() != nil {
-		tokens = append(tokens, expandChildNodes(caseForCustomType.DefaultCase())...)
+		expand(caseForCustomType.DefaultCase(), list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesCaseForPatternMatching(caseForCustomType *CaseForPatternMatching) []TypeOrToken {
-	var tokens []TypeOrToken
-
-	tokens = append(tokens, expandChildNodes(caseForCustomType.Test())...)
+func expandCaseForPatternMatching(caseForCustomType *CaseForPatternMatching, list *ExpandedNode) {
+	expand(caseForCustomType.Test(), list)
 
 	for _, consequence := range caseForCustomType.Consequences() {
-		tokens = append(tokens, expandChildNodes(consequence.Literal())...)
-		tokens = append(tokens, expandChildNodes(consequence.Expression())...)
+		expand(consequence.Literal(), list)
+		expand(consequence.Expression(), list)
 	}
 
-	tokens = append(tokens, expandChildNodes(caseForCustomType.DefaultCase())...)
-
-	return tokens
+	expand(caseForCustomType.DefaultCase(), list)
 }
 
-func expandChildNodesBinaryOperator(namedFunctionValue *BinaryOperator) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(namedFunctionValue.Left())...)
-	tokens = append(tokens, expandChildNodes(namedFunctionValue.Right())...)
-	return tokens
+func expandBinaryOperator(namedFunctionValue *BinaryOperator, list *ExpandedNode) {
+	expand(namedFunctionValue.Left(), list)
+	expand(namedFunctionValue.Right(), list)
 }
 
-func expandChildNodesForCastOperator(castOperator *CastOperator) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(castOperator.Expression())...)
-	tokens = append(tokens, expandChildNodes(castOperator.AliasReference())...)
-	return tokens
+func expandForCastOperator(castOperator *CastOperator, list *ExpandedNode) {
+	expand(castOperator.Expression(), list)
+	expand(castOperator.AliasReference(), list)
 }
 
-func expandChildNodesRecordLookups(lookup *RecordLookups) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(lookup.Expression())...)
+func expandRecordLookups(lookup *RecordLookups, list *ExpandedNode) {
+	expand(lookup.Expression(), list)
 	for _, lookupField := range lookup.LookupFields() {
-		tokens = append(tokens, expandChildNodes(lookupField.reference)...)
+		expand(lookupField.reference, list)
 	}
-
-	return tokens
 }
 
-func expandChildNodesLet(let *Let) []TypeOrToken {
-	var tokens []TypeOrToken
+func expandLet(let *Let, list *ExpandedNode) {
 	for _, assignment := range let.Assignments() {
-		tokens = append(tokens, expandChildNodes(assignment)...)
+		expand(assignment, list)
 	}
 
 	inConsequnce := let.Consequence()
-	tokens = append(tokens, expandChildNodes(inConsequnce)...)
-
-	return tokens
+	expand(inConsequnce, list)
 }
 
-func expandChildNodesIf(ifExpression *If) []TypeOrToken {
-	var tokens []TypeOrToken
-	tokens = append(tokens, expandChildNodes(ifExpression.Condition())...)
-	tokens = append(tokens, expandChildNodes(ifExpression.Consequence())...)
-	tokens = append(tokens, expandChildNodes(ifExpression.Alternative())...)
-
-	return tokens
+func expandIf(ifExpression *If, list *ExpandedNode) {
+	expand(ifExpression.Condition(), list)
+	expand(ifExpression.Consequence(), list)
+	expand(ifExpression.Alternative(), list)
 }
 
-func expandChildNodes(node Node) []TypeOrToken {
+type ExpandedNode struct {
+	node          TypeOrToken
+	children      []*ExpandedNode
+	debugDocument *token.SourceFileDocument
+}
+
+func (n *ExpandedNode) AddChildNode(node TypeOrToken) {
+	newNode := NewExpandedNode(node, n.debugDocument)
+	n.addChild(newNode)
+}
+
+func (n *ExpandedNode) debugLog(indent int) {
+	log.Printf("%s %v %T ('%v')", strings.Repeat("..", indent), n.node.FetchPositionLength().Range, n.node, n.node.FetchPositionLength().ToStartAndEndReferenceString())
+	for _, childNode := range n.children {
+		childNode.debugLog(indent + 1)
+	}
+}
+
+func (n *ExpandedNode) DebugLog() {
+	log.Printf("showing nodes for document %v", n.debugDocument)
+	n.debugLog(0)
+}
+
+func (n *ExpandedNode) Children() []*ExpandedNode {
+	return n.children
+}
+
+func (n *ExpandedNode) HasChildren() bool {
+	return len(n.children) > 0
+}
+
+func (n *ExpandedNode) TypeOrToken() TypeOrToken {
+	return n.node
+}
+
+func (n *ExpandedNode) addChild(expandedNode *ExpandedNode) {
+	nodeRange := expandedNode.node.FetchPositionLength().Range
+
+	if !n.node.FetchPositionLength().Range.ContainsRange(nodeRange) {
+		panic(fmt.Errorf("can not add a child that is not within the range of the parent %v %v (%T and %T)", n.node.FetchPositionLength().Range, nodeRange, n.node, expandedNode.node))
+	}
+
+	if len(n.children) > 0 && !nodeRange.IsAfter(n.children[len(n.children)-1].node.FetchPositionLength().Range) {
+		log.Printf("serious error. tokens are not expanded in range")
+
+		//log.Printf("error in sematic code generation for document %v", n.debugDocument)
+		for _, existingNode := range n.children {
+			existingRange := existingNode.node.FetchPositionLength().Range
+			log.Printf("  expandedNode: %v (%T)", existingRange, existingNode.node)
+		}
+		log.Printf("--> added incorrect expandedNode: %v (%T) %v", expandedNode.node.FetchPositionLength().Range, expandedNode.node, expandedNode.node.FetchPositionLength().ToCompleteReferenceString())
+		panic(fmt.Errorf("not in order"))
+	}
+
+	n.children = append(n.children, expandedNode)
+}
+
+func (n *ExpandedNode) NewGroupNode(node TypeOrToken) *ExpandedNode {
+	newRoot := NewExpandedNode(node, n.debugDocument)
+	n.addChild(newRoot)
+
+	return newRoot
+}
+
+func (n *ExpandedNode) AddChildNodes(addNodes []TypeOrToken) {
+	for _, node := range addNodes {
+		n.AddChildNode(node)
+	}
+}
+
+func NewExpandedNode(node TypeOrToken, debugDocument *token.SourceFileDocument) *ExpandedNode {
+	return &ExpandedNode{
+		node:          node,
+		children:      nil,
+		debugDocument: debugDocument,
+	}
+}
+
+type NodeList struct {
+	//	expandedRootNodes []TypeOrToken
+	rootNode *ExpandedNode
+
+	debugDocument *token.SourceFileDocument
+}
+
+type FakeTypeOrToken struct {
+	document *token.SourceFileDocument
+}
+
+func (n FakeTypeOrToken) String() string {
+	return ""
+}
+
+func (n FakeTypeOrToken) FetchPositionLength() token.SourceFileReference {
+	return token.SourceFileReference{
+		Range:    token.MakeRange(token.NewPositionTopLeft(), token.MakePosition(9999, 9999, -1)),
+		Document: n.document,
+	}
+}
+
+func NewNodeList(debugDocument *token.SourceFileDocument) *NodeList {
+	return &NodeList{
+		rootNode:      NewExpandedNode(FakeTypeOrToken{document: debugDocument}, debugDocument),
+		debugDocument: debugDocument,
+	}
+}
+
+func debugThisDocument(debugDocument *token.SourceFileDocument) bool {
+	filepath, _ := debugDocument.Uri.ToLocalFilePath()
+	return strings.HasSuffix(filepath, "FindGraphicTiles.swamp")
+}
+
+func expand(node Node, parentNode *ExpandedNode) {
 	if node == nil || reflect.ValueOf(node).IsNil() {
 		panic("can not be nil")
 	}
-	tokens := []TypeOrToken{node}
-	switch t := node.(type) {
 
+	newParentNode := parentNode.NewGroupNode(node)
+	switch t := node.(type) {
 	case *ModuleReference:
-		return tokens
 	case *ImportStatement:
-		return append(tokens, expandChildNodesImportStatement(t)...)
+		expandImportStatement(t, newParentNode)
 	case *FunctionValue:
-		return append(tokens, expandChildNodesFunctionValue(t)...)
+		expandFunctionValue(t, newParentNode)
 	case *FunctionReference:
-		return append(tokens, expandChildNodesFunctionReference(t)...)
+		expandFunctionReference(t, newParentNode)
 	case *FunctionCall:
-		return append(tokens, expandChildNodesFunctionCall(t)...)
+		expandFunctionCall(t, newParentNode)
 	case *CurryFunction:
-		return append(tokens, expandChildNodesCurryFunction(t)...)
+		expandCurryFunction(t, newParentNode)
 	case *Let:
-		return append(tokens, expandChildNodesLet(t)...)
+		expandLet(t, newParentNode)
 	case *If:
-		return append(tokens, expandChildNodesIf(t)...)
+		expandIf(t, newParentNode)
 	case *LetAssignment:
-		return append(tokens, expandChildNodesLetAssignment(t)...)
+		expandLetAssignment(t, newParentNode)
 	case *ListLiteral:
-		return append(tokens, expandChildNodesListLiteral(t)...)
+		expandListLiteral(t, newParentNode)
 	case *TupleLiteral:
-		return append(tokens, expandChildNodesTupleLiteral(t)...)
+		expandTupleLiteral(t, newParentNode)
 	case *ArrayLiteral:
-		return append(tokens, expandChildNodesArrayLiteral(t)...)
+		expandArrayLiteral(t, newParentNode)
 	case *RecordLiteral:
-		return append(tokens, expandChildNodesRecordLiteral(t)...)
+		expandRecordLiteral(t, newParentNode)
 	case *FunctionParameterDefinition:
-		return append(tokens, expandFunctionParameterDefinition(t)...)
+		expandFunctionParameterDefinition(t, newParentNode)
 	case *NamedFunctionValue:
-		return append(tokens, expandChildNodesNamedFunctionValue(t)...)
+		expandNamedFunctionValue(t, newParentNode)
 	case *CustomTypeVariantConstructor:
-		return append(tokens, expandChildNodesCustomTypeVariantConstructor(t)...)
+		expandCustomTypeVariantConstructor(t, newParentNode)
 	case *RecordConstructorFromParameters:
-		return append(tokens, expandChildNodesRecordConstructor(t)...)
+		expandRecordConstructor(t, newParentNode)
 	case *RecordConstructorFromRecord:
-		return append(tokens, expandChildNodesRecordConstructorRecord(t)...)
+		expandRecordConstructorRecord(t, newParentNode)
 	case *Guard:
-		return append(tokens, expandChildNodesGuard(t)...)
+		expandGuard(t, newParentNode)
 	case *CaseCustomType:
-		return append(tokens, expandChildNodesCaseForCustomType(t)...)
+		expandCaseForCustomType(t, newParentNode)
 	case *CaseForPatternMatching:
-		return append(tokens, expandChildNodesCaseForPatternMatching(t)...)
+		expandCaseForPatternMatching(t, newParentNode)
 	case *PipeRightOperator:
-		return expandChildNodes(&t.BinaryOperator)
+		expand(&t.BinaryOperator, newParentNode)
 	case *PipeLeftOperator:
-		return expandChildNodes(&t.BinaryOperator)
+		expand(&t.BinaryOperator, newParentNode)
 	case *ArithmeticOperator:
-		return expandChildNodes(&t.BinaryOperator)
+		expand(&t.BinaryOperator, newParentNode)
 	case *LogicalOperator:
-		return expandChildNodes(&t.BinaryOperator)
+		expand(&t.BinaryOperator, newParentNode)
 	case *ConsOperator:
-		return expandChildNodes(&t.BinaryOperator)
+		expand(&t.BinaryOperator, newParentNode)
 	case *BooleanOperator:
-		return expandChildNodes(&t.BinaryOperator)
+		expand(&t.BinaryOperator, newParentNode)
 	case *BitwiseOperator:
-		return expandChildNodes(&t.BinaryOperator)
+		expand(&t.BinaryOperator, newParentNode)
 	case *CastOperator:
-		return append(tokens, expandChildNodesForCastOperator(t)...)
+		expandForCastOperator(t, newParentNode)
 	case *CaseConsequenceParameterForCustomType:
-		return tokens
 	case *ArithmeticUnaryOperator:
-		return expandChildNodes(&t.UnaryOperator)
+		expand(&t.UnaryOperator, newParentNode)
 	case *FunctionName: // Should not be expanded
-		return tokens
+
 	case *LetVariableReference: // Should not be expanded
-		return tokens
+
 	case *LetVariable: // Should not be expanded
-		return tokens
+
 	case *RecordTypeFieldReference: // Should not be expanded
-		return tokens
+
 	case *FunctionParameterReference: // Should not be expanded
-		return tokens
+
 	case *CaseConsequenceParameterReference: // Should not be expanded
-		return tokens
-	case *IntegerLiteral: // Should not be expanded
-		return tokens
+
+	case *IntegerLiteral:
 	case *FixedLiteral: // Should not be expanded
-		return tokens
+
 	case *CharacterLiteral: // Should not be expanded
-		return tokens
+
 	case *TypeIdLiteral: // Should not be expanded
-		return tokens
+
 	case *ResourceNameLiteral: // Should not be expanded
-		return tokens
+
 	case *StringInterpolation:
-		return append(tokens, expandChildNodesStringInterpolation(t)...)
+		expandStringInterpolation(t, newParentNode)
 	case *BooleanLiteral: // Should not be expanded
-		return tokens
+
 	case *StringLiteral: // Should not be expanded
-		return tokens
+
 	case *MultilineComment: // Should not be expanded
-		return tokens
+
 	case *RecordLiteralField: // Should not be expanded
-		return tokens
+
 	case *BitwiseUnaryOperator:
-		return expandChildNodes(&t.UnaryOperator)
+		expand(&t.UnaryOperator, newParentNode)
 	case *LogicalUnaryOperator:
-		return expandChildNodes(&t.UnaryOperator)
+		expand(&t.UnaryOperator, newParentNode)
 	case *UnaryOperator:
-		return expandChildNodes(t.Left())
+		expand(t.Left(), newParentNode)
 	case *Constant:
-		return append(tokens, expandChildNodesConstant(t)...)
+		expandConstant(t, newParentNode)
 	case *ConstantReference:
-		return tokens
+
 	case *AliasReference:
-		return append(tokens, expandChildNodes(t.Type())...)
+		expand(t.Type(), newParentNode)
 	case *BinaryOperator:
-		return expandChildNodesBinaryOperator(t)
+		expandBinaryOperator(t, newParentNode)
 	case *RecordLookups:
-		return append(tokens, expandChildNodesRecordLookups(t)...)
+		expandRecordLookups(t, newParentNode)
 	case *ExternalFunctionDeclarationExpression:
-		return tokens
+
 	case *dectype.LocalType:
-		return tokens
+
 	case *dectype.AnyMatchingTypes:
-		return tokens
+
 	case *dectype.Alias:
-		return append(tokens, expandChildNodesCaseForTypeAlias(t)...)
+		expandCaseForTypeAlias(t, newParentNode)
 	case *dectype.PrimitiveAtom:
-		return append(tokens, expandChildNodesPrimitive(t)...)
+		expandPrimitive(t, newParentNode)
 	case *dectype.InvokerType:
-		return append(tokens, expandChildNodesInvokerType(t)...)
+		expandInvokerType(t, newParentNode)
 	case *dectype.FunctionAtom:
-		return append(tokens, expandChildNodesFunctionType(t)...)
+		expandFunctionType(t, newParentNode)
 	case *dectype.CustomTypeAtom:
-		return append(tokens, expandChildNodesCustomType(t)...)
-	case *dectype.CustomTypeVariantAtom:
-		return tokens
+		expandCustomType(t, newParentNode)
 	case *dectype.RecordAtom:
-		return append(tokens, expandChildNodesRecordType(t)...)
+		expandRecordType(t, newParentNode)
 	case *dectype.TupleTypeAtom:
-		return append(tokens, expandChildNodesTupleType(t)...)
+		expandTupleType(t, newParentNode)
 	case *dectype.RecordFieldName:
-		return tokens
 	case *dectype.AliasReference:
-		return append(tokens, expandChildNodesTypeReference(t)...)
+		expandTypeReference(t, newParentNode)
 	case *dectype.CustomTypeReference:
-		return append(tokens, expandChildNodesTypeReference(t)...)
+		expandTypeReference(t, newParentNode)
 	case *dectype.PrimitiveTypeReference:
-		return append(tokens, expandChildNodesTypeReference(t)...)
+		expandTypeReference(t, newParentNode)
 	case *dectype.CustomTypeVariantReference:
-		return append(tokens, expandChildNodesTypeReference(t)...)
+		expandTypeReference(t, newParentNode)
 	case *dectype.FunctionTypeReference:
-		return append(tokens, expandChildNodesFunctionTypeReference(t)...)
+		expandFunctionTypeReference(t, newParentNode)
 	case *dectype.UnmanagedType:
-		return append(tokens, expandChildNodesUnmanagedType(t)...)
+		expandUnmanagedType(t, newParentNode)
 	default:
-		log.Printf("expand_nodes: could not expand: %T\n", t)
-		return tokens
+		panic(fmt.Errorf("expand_nodes: could not expand: %T", t))
+
 	}
 }
 
-func ExpandAllChildNodes(nodes []Node) []TypeOrToken {
-	var tokens []TypeOrToken
+func ExpandAllChildNodes(nodes []Node) []*ExpandedNode {
+	document := nodes[0].FetchPositionLength().Document
+	list := NewNodeList(document)
 	for _, node := range nodes {
-		tokens = append(tokens, expandChildNodes(node)...)
+		expand(node, list.rootNode)
 	}
 
-	return tokens
+	list.rootNode.DebugLog()
+
+	return list.rootNode.children
 }

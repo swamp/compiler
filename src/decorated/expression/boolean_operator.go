@@ -79,5 +79,5 @@ func (l *BooleanOperator) OperatorType() BooleanOperatorType {
 }
 
 func (l *BooleanOperator) FetchPositionLength() token.SourceFileReference {
-	return l.BinaryOperator.left.FetchPositionLength()
+	return l.BinaryOperator.FetchPositionLength()
 }

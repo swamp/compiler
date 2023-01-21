@@ -34,10 +34,13 @@ type FunctionCall struct {
 	assignments             []Expression
 	smashedFunctionType     *dectype.FunctionAtom
 	astFunctionCall         *ast.FunctionCall
+	inclusive               token.SourceFileReference
 }
 
 func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression, smashedFunctionType *dectype.FunctionAtom, assignments []Expression) *FunctionCall {
-	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, assignments: assignments, smashedFunctionType: smashedFunctionType}
+	inclusive := token.MakeInclusiveSourceFileReferenceFlipIfNeeded(astFunctionCall.FetchPositionLength(), assignments[len(assignments)-1].FetchPositionLength())
+
+	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, assignments: assignments, smashedFunctionType: smashedFunctionType, inclusive: inclusive}
 }
 
 func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
@@ -69,5 +72,5 @@ func (c *FunctionCall) HumanReadable() string {
 }
 
 func (c *FunctionCall) FetchPositionLength() token.SourceFileReference {
-	return c.astFunctionCall.FetchPositionLength()
+	return c.inclusive
 }

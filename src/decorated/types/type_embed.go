@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -16,6 +17,7 @@ import (
 type InvokerType struct {
 	typeToInvoke dtype.Type
 	params       []dtype.Type
+	inclusive    token.SourceFileReference
 }
 
 func (u *InvokerType) HumanReadable() string {
@@ -31,7 +33,7 @@ func (u *InvokerType) Params() []dtype.Type {
 }
 
 func (u *InvokerType) FetchPositionLength() token.SourceFileReference {
-	return u.typeToInvoke.FetchPositionLength()
+	return u.inclusive
 }
 
 func (u *InvokerType) String() string {
@@ -55,6 +57,28 @@ func (u *InvokerType) Next() dtype.Type {
 	return nil
 }
 
+func NewInvokerType(typeToInvoke dtype.Type, params []dtype.Type) (*InvokerType, decshared.DecoratedError) {
+	if len(params) != typeToInvoke.ParameterCount() {
+		return nil, &InternalError{fmt.Errorf("wrong parameter count")}
+	}
+	for _, param := range params {
+		if param == nil {
+			panic("sorry we have nil here in InvokerType")
+		}
+	}
+	log.Printf("invoker %T %v (%v) ", typeToInvoke, typeToInvoke.FetchPositionLength().ToStartAndEndReferenceString(), params)
+	for _, x := range params {
+		log.Printf(".. params %T %v (%v) ", x, x.FetchPositionLength().Range, x)
+
+	}
+	inclusive := token.MakeInclusiveSourceFileReference(params[0].FetchPositionLength(), params[len(params)-1].FetchPositionLength())
+	return &InvokerType{params: params, typeToInvoke: typeToInvoke, inclusive: inclusive}, nil
+}
+
+func (u *InvokerType) WasReferenced() bool {
+	return false // Invoker types are not reused
+}
+
 type InternalError struct {
 	Err error
 }
@@ -65,21 +89,4 @@ func (e *InternalError) FetchPositionLength() token.SourceFileReference {
 
 func (e *InternalError) Error() string {
 	return e.Err.Error()
-}
-
-func NewInvokerType(typeToInvoke dtype.Type, params []dtype.Type) (*InvokerType, decshared.DecoratedError) {
-	if len(params) != typeToInvoke.ParameterCount() {
-		return nil, &InternalError{fmt.Errorf("wrong parameter count")}
-	}
-	for _, param := range params {
-		if param == nil {
-			panic("sorry we have nil here in InvokerType")
-		}
-	}
-
-	return &InvokerType{params: params, typeToInvoke: typeToInvoke}, nil
-}
-
-func (u *InvokerType) WasReferenced() bool {
-	return false // Invoker types are not reused
 }

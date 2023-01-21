@@ -12,16 +12,19 @@ import (
 )
 
 type UnaryExpression struct {
-	token    token.Token
-	left     Expression
-	operator token.OperatorToken
+	token     token.Token
+	left      Expression
+	operator  token.OperatorToken
+	inclusive token.SourceFileReference
 }
 
-func NewUnaryExpression(token token.Token, operator token.OperatorToken, left Expression) *UnaryExpression {
+func NewUnaryExpression(unaryToken token.Token, operator token.OperatorToken, left Expression) *UnaryExpression {
+	inclusive := token.MakeInclusiveSourceFileReference(unaryToken.FetchPositionLength(), left.FetchPositionLength())
 	return &UnaryExpression{
-		token:    token,
-		operator: operator,
-		left:     left,
+		token:     unaryToken,
+		operator:  operator,
+		left:      left,
+		inclusive: inclusive,
 	}
 }
 
@@ -38,7 +41,7 @@ func (i *UnaryExpression) OperatorToken() token.OperatorToken {
 }
 
 func (i *UnaryExpression) FetchPositionLength() token.SourceFileReference {
-	return i.token.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *UnaryExpression) String() string {

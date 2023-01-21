@@ -93,7 +93,7 @@ type Module struct {
 	sourceFileUri            *token.SourceFileDocument
 	fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName
 	rootNodes                []Node
-	nodes                    []TypeOrToken
+	expandedRootNodes        []*ExpandedNode
 	references               []*ModuleReference
 	moduleType               ModuleType
 }
@@ -119,7 +119,7 @@ func NewModule(moduleType ModuleType, fullyQualifiedModuleName dectype.ArtifactF
 }
 
 func (m *Module) FetchPositionLength() token.SourceFileReference {
-	return token.MakeSourceFileReference(m.sourceFileUri, token.NewPositionLength(token.NewPositionTopLeft(), 0))
+	return token.MakeSourceFileReference(m.sourceFileUri, token.NewPositionLength(token.NewPositionTopLeft(), 1))
 }
 
 func (m *Module) ModuleType() ModuleType {
@@ -143,41 +143,49 @@ func (m *Module) Document() *token.SourceFileDocument {
 }
 
 func (m *Module) SetRootNodes(nodes []Node) {
+	if len(nodes) == 0 {
+		panic("must have root expandedRootNodes expandedRootNodes")
+	}
 	m.rootNodes = nodes
 	if false {
-		log.Printf("all root nodes in: %v\n", m.FullyQualifiedModuleName())
+		log.Printf("all root expandedRootNodes in: %v\n", m.FullyQualifiedModuleName())
 		for _, x := range m.rootNodes {
 			log.Printf("root node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
 		}
 	}
 	expandedNodes := ExpandAllChildNodes(nodes)
-	m.nodes = nil
+	if len(expandedNodes) == 0 {
+		log.Printf("must have expanded expandedRootNodes")
+	}
+
+	m.expandedRootNodes = nil
 
 	moduleLocalPath, _ := m.sourceFileUri.Uri.ToLocalFilePath()
-	// log.Printf("all nodes in: %v\n", m.FullyQualifiedModuleName())
+	log.Printf("all root nodes in: %v root node count: %d", m.FullyQualifiedModuleName(), len(nodes))
 	for _, node := range expandedNodes {
-		sourceRef := node.FetchPositionLength()
+		sourceRef := node.node.FetchPositionLength()
 		if sourceRef.Document == nil {
-			// panic(fmt.Sprintf("source ref can not be nil for %v", node))
+			panic(fmt.Sprintf("source ref can not be nil for %v", node))
 			continue
 		}
 		localPath, _ := sourceRef.Document.Uri.ToLocalFilePath()
 		if localPath != moduleLocalPath {
-			// panic(fmt.Sprintf("how can this be %v vs %v", localPath, m.sourceFileUri))
-			// log.Printf("not matching %v and %v\n", localPath, moduleLocalPath)
+			panic(fmt.Sprintf("how can this be %v vs %v", localPath, m.sourceFileUri))
+			log.Printf("not matching %v and %v\n", localPath, moduleLocalPath)
 			continue
 		}
-		// log.Printf("node: %v %v (%T)\n", x.FetchPositionLength(), x, x)
-		m.nodes = append(m.nodes, node)
+		//log.Printf("   node: %v %v (%T)", node.FetchPositionLength(), node, node)
 	}
+
+	m.expandedRootNodes = expandedNodes
 }
 
 func (m *Module) RootNodes() []Node {
 	return m.rootNodes
 }
 
-func (m *Module) Nodes() []TypeOrToken {
-	return m.nodes
+func (m *Module) ExpandedNodes() []*ExpandedNode {
+	return m.expandedRootNodes
 }
 
 func (m *Module) Program() *ast.SourceFile {

@@ -55,9 +55,10 @@ type SemanticBuilder struct {
 	lastDebug       string
 	encodedIntegers []uint
 	nodes           []SemanticNode
+	debugDocument   *token.SourceFileDocument
 }
 
-func NewSemanticBuilder() *SemanticBuilder {
+func NewSemanticBuilder(debugDocument *token.SourceFileDocument) *SemanticBuilder {
 	self := &SemanticBuilder{
 		tokenTypes: []string{
 			"namespace",
@@ -95,7 +96,8 @@ func NewSemanticBuilder() *SemanticBuilder {
 			"documentation",
 			"defaultLibrary",
 		},
-		lastRange: token.NewPositionLength(token.MakePosition(0, 0, 0), 0),
+		debugDocument: debugDocument,
+		lastRange:     token.NewPositionLength(token.MakePosition(0, 0, 0), 0),
 	}
 	return self
 }
@@ -115,16 +117,17 @@ func (s *SemanticBuilder) EncodedValues() []uint {
 }
 
 func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string, modifiers []string, node fmt.Stringer) error {
+	debugSourceFileReference := token.MakeSourceFileReference(s.debugDocument, tokenRange)
 	if !tokenRange.IsAfter(s.lastRange) {
-		/*
-			for _, existingNode := range s.nodes {
-				log.Printf("  node: %v : %v (%T\n%v)", existingNode.tokenRange, existingNode.tokenType, existingNode.debug, existingNode.debug)
-			}
-			log.Printf("--> added node: %v : %v (%T\n%v)", tokenRange, tokenType, node, node)
-		*/
-		return fmt.Errorf("they must be in order! %v to %v and \n%v", s.lastRange, tokenRange, s.lastDebug)
+		log.Printf("error in sematic code generation for document %v", s.debugDocument)
+		for _, existingNode := range s.nodes {
+			existingNodeSourceFileReference := token.MakeSourceFileReference(s.debugDocument, tokenRange)
+			log.Printf("  semantic node: %v : %v (%T) '%s'", existingNode.tokenRange, existingNode.tokenType, existingNode.debug, existingNodeSourceFileReference.ToStartAndEndReferenceString())
+		}
+		log.Printf("--> semantic added incorrect semantic node: %v : %v (%T) '%s'", tokenRange, tokenType, node, debugSourceFileReference.ToStartAndEndReferenceString())
+		panic(fmt.Errorf("semantic tokens must be encoded in order! previous:%v to: %v and \nprevious:%v to:%v", s.lastRange, tokenRange, s.lastDebug, node))
 	}
-	// log.Printf("adding symbol %v '%v'\n", tokenRange, debugString)
+	log.Printf("adding semantic symbol %v '%s' '%v'", tokenRange, debugSourceFileReference.ToStartAndEndReferenceString(), node)
 
 	tokenTypeId := FindInStrings(s.tokenTypes, tokenType)
 	if tokenTypeId < 0 {

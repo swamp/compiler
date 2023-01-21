@@ -19,10 +19,12 @@ type Constant struct {
 	expression        Expression
 	references        []*ConstantReference
 	localCommentBlock *ast.MultilineComment
+	inclusive         token.SourceFileReference
 }
 
 func NewConstant(identifier ast.ScopedOrNormalVariableIdentifier, astConstant *ast.ConstantDefinition, expression Expression, localCommentBlock *ast.MultilineComment) *Constant {
-	return &Constant{astConstant: astConstant, identifier: identifier, expression: expression, localCommentBlock: localCommentBlock}
+	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), expression.FetchPositionLength())
+	return &Constant{astConstant: astConstant, identifier: identifier, expression: expression, localCommentBlock: localCommentBlock, inclusive: inclusive}
 }
 
 func (c *Constant) String() string {
@@ -50,7 +52,7 @@ func (c *Constant) Expression() Expression {
 }
 
 func (c *Constant) FetchPositionLength() token.SourceFileReference {
-	return c.identifier.FetchPositionLength()
+	return c.inclusive
 }
 
 func (c *Constant) HumanReadable() string {

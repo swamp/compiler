@@ -94,6 +94,7 @@ type RecordLiteral struct {
 	sortedAssignments       []*RecordLiteralAssignment
 	parseOrderedAssignments []*RecordLiteralAssignment
 	recordTemplate          Expression
+	inclusive               token.SourceFileReference
 }
 
 func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate Expression,
@@ -110,10 +111,13 @@ func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate Expression,
 		}
 		lastFoundIndex = assignment.index
 	}
+	inclusive := token.MakeInclusiveSourceFileReference(parseOrderedAssignments[0].Expression().FetchPositionLength(), parseOrderedAssignments[len(parseOrderedAssignments)-1].expression.FetchPositionLength())
+
 	return &RecordLiteral{
 		t: t, recordTemplate: recordTemplate,
 		parseOrderedAssignments: parseOrderedAssignments,
 		sortedAssignments:       sortedAssignments,
+		inclusive:               inclusive,
 	}
 }
 
@@ -145,5 +149,5 @@ func (c *RecordLiteral) String() string {
 }
 
 func (c *RecordLiteral) FetchPositionLength() token.SourceFileReference {
-	return c.parseOrderedAssignments[0].fieldName.FetchPositionLength()
+	return c.inclusive
 }

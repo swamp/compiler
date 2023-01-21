@@ -634,7 +634,7 @@ else
 }
 
 func TestBoolean(t *testing.T) {
-	testParseExpression(t, "True", "€true")
+	testParseExpression(t, "true", "€true")
 }
 
 func TestOneLineIfWithCallAndPipeRight(t *testing.T) {

@@ -79,6 +79,6 @@ func NewModuleReference(parts []*ModuleNamePart) *ModuleReference {
 	if len(parts) == 0 {
 		panic("must have parts in module reference")
 	}
-	inclusive := token.MakeInclusiveSourceFileReference(parts[0].FetchPositionLength(), parts[len(parts)-1].FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(parts[0].FetchPositionLength(), parts[0].FetchPositionLength())
 	return &ModuleReference{parts: parts, inclusive: inclusive}
 }

@@ -128,7 +128,7 @@ func (f *FunctionValue) Expression() Expression {
 }
 
 func (f *FunctionValue) FetchPositionLength() token.SourceFileReference {
-	return f.astFunction.FetchPositionLength()
+	return f.sourceFileReference
 }
 
 func (f *FunctionValue) CommentBlock() *ast.MultilineComment {

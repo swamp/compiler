@@ -181,7 +181,7 @@ func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assig
 	return namedFunctionValue, nil
 }
 
-func (g *RootStatementHandler) defineNamedFunctionValue(d DecorateStream, target *decorated.FunctionValue) decshared.DecoratedError {
+func (g *RootStatementHandler) defineNamedFunctionValue(d DecorateStream, target *decorated.NamedFunctionValue) decshared.DecoratedError {
 	variableContext := d.NewVariableContext()
 
 	decoratedExpressionErr := DefineExpressionInPreparedFunctionValue(d, target, variableContext)
@@ -214,8 +214,7 @@ func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decor
 }
 
 func (g *RootStatementHandler) compileFunctionExpression(preparedFunctionNamedValue *decorated.NamedFunctionValue) decshared.DecoratedError {
-	preparedFunctionValue := preparedFunctionNamedValue.Value()
-	return g.defineNamedFunctionValue(g.decorateStream, preparedFunctionValue)
+	return g.defineNamedFunctionValue(g.decorateStream, preparedFunctionNamedValue)
 }
 
 func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {

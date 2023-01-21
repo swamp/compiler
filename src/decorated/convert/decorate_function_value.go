@@ -38,8 +38,9 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	return newVariableContext
 }
 
-func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionValue *decorated.FunctionValue, context *VariableContext) decshared.DecoratedError {
+func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNamedValue *decorated.NamedFunctionValue, context *VariableContext) decshared.DecoratedError {
 	var decoratedExpression decorated.Expression
+	targetFunctionValue := targetFunctionNamedValue.Value()
 	subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
 	functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
 	convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
@@ -78,7 +79,7 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionVal
 
 	*/
 
-	targetFunctionValue.DefineExpression(decoratedExpression)
+	targetFunctionNamedValue.DefineExpression(decoratedExpression)
 
 	return nil
 }

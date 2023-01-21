@@ -75,17 +75,15 @@ func (l *LspImpl) FindModuleHelper(sourceFile token.DocumentURI) *decorated.Modu
 	return module
 }
 
-func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []decorated.TypeOrToken {
+func (l *LspImpl) RootTokens(sourceFile token.DocumentURI) []*decorated.ExpandedNode {
 	module := l.FindModuleHelper(sourceFile)
 	if module == nil {
 		return nil
 	}
-	var tokens []decorated.TypeOrToken
-	for _, node := range module.RootNodes() {
-		tokens = append(tokens, node.(decorated.TypeOrToken))
-	}
 
-	return tokens
+	expandedNodes := decorated.ExpandAllChildNodes(module.RootNodes())
+
+	return expandedNodes
 }
 
 func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Position) decorated.TypeOrToken {
@@ -94,7 +92,7 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 		return nil
 	}
 
-	tokens := module.Nodes()
+	tokens := module.ExpandedNodes()
 
 	smallestRange := token.MakeRange(
 		token.MakePosition(0, 0, -1),
@@ -110,12 +108,12 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 			panic("bad here")
 		}
 		// log.Printf("checking node:%v '%v'\n", decoratedToken.FetchPositionLength(), decoratedToken.String())
-		foundRange := decoratedToken.FetchPositionLength().Range
+		foundRange := decoratedToken.TypeOrToken().FetchPositionLength().Range
 		if foundRange.Contains(position) {
 			// log.Printf("considered %v %T", foundRange, decoratedToken)
 			if foundRange.SmallerThan(smallestRange) {
 				smallestRange = foundRange
-				bestToken = decoratedToken
+				bestToken = decoratedToken.TypeOrToken()
 			}
 		}
 	}

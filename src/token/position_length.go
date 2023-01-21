@@ -127,6 +127,13 @@ func (s SourceFileReference) ToReferenceString() string {
 	return fmt.Sprintf("%v:%d:%d:", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1)
 }
 
+func (s SourceFileReference) ToStartAndEndReferenceString() string {
+	if s.Document == nil {
+		panic(fmt.Errorf("document is nil in sourcefilereference %T"))
+	}
+	return fmt.Sprintf("%v:%d:%d (%d:%d)", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
+}
+
 func (s SourceFileReference) ToCompleteReferenceString() string {
 	var uri DocumentURI
 	if s.Document != nil {
@@ -190,6 +197,13 @@ func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileR
 	}
 }
 
+func MakeInclusiveSourceFileReferenceFlipIfNeeded(start SourceFileReference, end SourceFileReference) SourceFileReference {
+	if start.Range.IsAfter(end.Range) {
+		return MakeInclusiveSourceFileReference(end, start)
+	}
+	return MakeInclusiveSourceFileReference(start, end)
+}
+
 type SourceFileReferenceProvider interface {
 	FetchPositionLength() SourceFileReference
 }
@@ -243,6 +257,9 @@ type Range struct {
 }
 
 func MakeRange(start Position, end Position) Range {
+	if !end.IsOnOrAfter(start) {
+		panic(fmt.Errorf("wrong range to create %v : %v", start, end))
+	}
 	return Range{start: start, end: end}
 }
 
@@ -272,6 +289,9 @@ func (p Range) IsEqual(other Range) bool {
 }
 
 func MakeInclusiveRange(start Range, end Range) Range {
+	if !end.End().IsOnOrAfter(start.Start()) {
+		panic(fmt.Errorf("wrong inclusive range %v : %v", start.Start(), end.End()))
+	}
 	return Range{
 		start: start.Start(),
 		end:   end.End(),

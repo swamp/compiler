@@ -48,12 +48,17 @@ type NamedFunctionValue struct {
 }
 
 func NewNamedFunctionValue(identifier *ast.VariableIdentifier, value *FunctionValue) *NamedFunctionValue {
-	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), value.sourceFileReference)
+	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), value.FetchPositionLength())
 	return &NamedFunctionValue{
 		identifier: NewFunctionName(identifier, value),
 		value:      value,
 		inclusive:  inclusive,
 	}
+}
+
+func (n *NamedFunctionValue) DefineExpression(decoratedExpression Expression) {
+	n.value.DefineExpression(decoratedExpression)
+	n.inclusive = token.MakeInclusiveSourceFileReference(n.identifier.FetchPositionLength(), n.value.FetchPositionLength())
 }
 
 func (n *NamedFunctionValue) String() string {
@@ -73,5 +78,5 @@ func (n *NamedFunctionValue) Value() *FunctionValue {
 }
 
 func (n *NamedFunctionValue) FetchPositionLength() token.SourceFileReference {
-	return n.value.FetchPositionLength()
+	return n.inclusive
 }

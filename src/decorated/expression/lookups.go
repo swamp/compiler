@@ -53,12 +53,16 @@ type RecordLookups struct {
 	ExpressionNode
 	expressionToRecord Expression
 	lookupFields       []LookupField
+	inclusive          token.SourceFileReference
 }
 
 func NewRecordLookups(expressionToRecord Expression, lookupFields []LookupField) *RecordLookups {
-	l := &RecordLookups{expressionToRecord: expressionToRecord, lookupFields: lookupFields}
+	inclusive := token.MakeInclusiveSourceFileReference(expressionToRecord.FetchPositionLength(), lookupFields[len(lookupFields)-1].FetchPositionLength())
+
+	l := &RecordLookups{expressionToRecord: expressionToRecord, lookupFields: lookupFields, inclusive: inclusive}
 	count := len(lookupFields)
 	l.decoratedType = lookupFields[count-1].reference.recordTypeField.Type()
+
 	return l
 }
 
@@ -75,5 +79,5 @@ func (l *RecordLookups) String() string {
 }
 
 func (l *RecordLookups) FetchPositionLength() token.SourceFileReference {
-	return l.expressionToRecord.FetchPositionLength()
+	return l.inclusive
 }
