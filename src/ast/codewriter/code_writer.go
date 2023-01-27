@@ -57,8 +57,8 @@ func writeCustomType(customType *ast.CustomType, colorer coloring.Colorer, inden
 	}
 }
 
-func writeLocalType(localType *ast.LocalType, colorer coloring.Colorer, indentation int) {
-	colorer.LocalType(localType.TypeParameter().Identifier().Symbol())
+func writeLocalType(localType *ast.LocalTypeNameReference, colorer coloring.Colorer, indentation int) {
+	colorer.LocalType(localType.LocalTypeNameDefinition().Identifier().Identifier().Symbol())
 }
 
 func writeUnmanagedType(unmanagedType *ast.UnmanagedType, colorer coloring.Colorer, indentation int) {
@@ -360,12 +360,12 @@ func writeLookups(lookups *ast.Lookups, colorer coloring.Colorer, indentation in
 }
 
 /* TODO:
-func writeTypeParameters(typeParameters []*ast.TypeParameter, colorer coloring.Colorer) {
+func writeTypeParameters(typeParameters []*ast.LocalTypeNameDefinition, colorer coloring.Colorer) {
 	for index, param := range typeParameters {
 		if index > 0 {
 			colorer.OneSpace()
 		}
-		colorer.LocalType(param.Parameter().Symbol())
+		colorer.LocalTypeNameReference(param.Parameter().Symbol())
 	}
 }
 */
@@ -502,7 +502,7 @@ func WriteType(astType ast.Type, colorer coloring.Colorer, addParen bool, indent
 		{
 			WriteCustomTypeStatement(t, colorer, indentation)
 		}
-	case *ast.LocalType:
+	case *ast.LocalTypeNameReference:
 		{
 			writeLocalType(t, colorer, indentation)
 		}

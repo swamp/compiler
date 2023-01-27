@@ -27,7 +27,7 @@ func DecorateRecordType(info *ast.Record, t decorated.TypeAddAndReferenceMaker) 
 
 	var convertedParameters []dtype.Type
 	for _, a := range info.TypeParameters() {
-		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
+		convertedParameter, convertedParameterErr := t.LookupLocalTypeName(a)
 		if convertedParameterErr != nil {
 			return nil, convertedParameterErr
 		}

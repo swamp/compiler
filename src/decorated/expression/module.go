@@ -18,6 +18,8 @@ import (
 
 type TypeReferenceMaker interface {
 	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError)
+	CreateLocalTypeReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeDefinitionReference, decshared.DecoratedError)
+	LookupLocalTypeName(some *ast.LocalTypeName) (dtype.Type, decshared.DecoratedError)
 }
 
 type TypeAddAndReferenceMaker interface {

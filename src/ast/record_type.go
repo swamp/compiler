@@ -12,19 +12,14 @@ import (
 )
 
 type Record struct {
-	typeParameters []*TypeParameter
-	fields         []*RecordTypeField
-	startParen     token.ParenToken
-	endParen       token.ParenToken
-	comment        *MultilineComment
+	fields     []*RecordTypeField
+	startParen token.ParenToken
+	endParen   token.ParenToken
+	comment    *MultilineComment
 }
 
-func NewRecordType(startParen token.ParenToken, endParen token.ParenToken, fields []*RecordTypeField, typeParameters []*TypeParameter, comment *MultilineComment) *Record {
-	return &Record{fields: fields, typeParameters: typeParameters, startParen: startParen, endParen: endParen, comment: comment}
-}
-
-func (i *Record) TypeParameters() []*TypeParameter {
-	return i.typeParameters
+func NewRecordType(startParen token.ParenToken, endParen token.ParenToken, fields []*RecordTypeField, comment *MultilineComment) *Record {
+	return &Record{fields: fields, startParen: startParen, endParen: endParen, comment: comment}
 }
 
 func (i *Record) Name() string {
@@ -32,7 +27,7 @@ func (i *Record) Name() string {
 }
 
 func (i *Record) String() string {
-	return fmt.Sprintf("[RecordType %v %v]", i.fields, i.typeParameters)
+	return fmt.Sprintf("[RecordType %v %v]", i.fields)
 }
 
 func (i *Record) Fields() []*RecordTypeField {

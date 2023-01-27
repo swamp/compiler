@@ -70,7 +70,7 @@ func IsListAny(checkType dtype.Type) bool {
 
 func IsLocalType(checkType dtype.Type) bool {
 	unliased := UnaliasWithResolveInvoker(checkType)
-	_, wasLocalType := unliased.(*LocalType)
+	_, wasLocalType := unliased.(*LocalTypeDefinitionReference)
 	return wasLocalType
 }
 

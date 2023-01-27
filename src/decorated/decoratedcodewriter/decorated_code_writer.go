@@ -134,7 +134,7 @@ func WriteTupleType(tupleType *dectype.TupleTypeAtom, colorer coloring.Decorated
 	colorer.OperatorString(")")
 }
 
-func WriteLocalType(localType *dectype.LocalType, colorer coloring.DecoratedColorer, indentation int) {
+func WriteLocalType(localType *dectype.LocalTypeDefinition, colorer coloring.DecoratedColorer, indentation int) {
 	colorer.LocalTypeName(localType)
 }
 
@@ -170,7 +170,7 @@ func WriteType(decoratedType dtype.Type, colorer coloring.DecoratedColorer, inde
 		WriteFunctionTypeReference(t, colorer, indentation)
 	case *dectype.TupleTypeAtom:
 		WriteTupleType(t, colorer, indentation)
-	case *dectype.LocalType:
+	case *dectype.LocalTypeDefinition:
 		WriteLocalType(t, colorer, indentation)
 	case *dectype.AnyMatchingTypes:
 		WriteAnyMatchingType(t, colorer)

@@ -1202,7 +1202,7 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 	return nil, fmt.Errorf("chunk: consume: unknown primitive %v", primitive)
 }
 
-func (c *Chunk) consumeLocalType(localType *dectype.LocalType) (InfoType, error) {
+func (c *Chunk) consumeLocalType(localType *dectype.LocalTypeDefinition) (InfoType, error) {
 	return &LocalType{
 		Type: Type{},
 		name: localType.Identifier().Name(),
@@ -1255,8 +1255,6 @@ func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 		return c.consumeFunction(t)
 	case *dectype.PrimitiveAtom:
 		return c.consumePrimitive(t)
-	case *dectype.LocalType:
-		return c.consumeLocalType(t)
 	case *dectype.TupleTypeAtom:
 		return c.consumeTuple(t)
 	case *dectype.UnmanagedType:
@@ -1294,9 +1292,9 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 	case *dectype.CustomTypeVariantReference:
 		// intentionally ignore
 		return c.Consume(t.Next())
-	case *dectype.LocalType:
+	case *dectype.LocalTypeDefinition:
 		// intentionally ignore
-		return nil, fmt.Errorf("not supporting local types")
+		return c.Consume(t.Next())
 	case *dectype.InvokerType:
 		invokerAtom, resolveErr := t.Resolve()
 		if resolveErr != nil {

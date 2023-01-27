@@ -11,11 +11,11 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func parseTypeAlias(p ParseStream, keywordType token.Keyword, keywordAlias token.Keyword, keywordIdentation int, nameOfAlias *ast.TypeIdentifier,
-	typeParameterContext *ast.TypeParameterIdentifierContext,
+func parseTypeAlias(p ParseStream, keywordType token.Keyword, keywordAlias token.Keyword, keywordIndentation int, nameOfAlias *ast.TypeIdentifier,
+	typeParameterContext *ast.LocalTypeNameDefinitionContext,
 	precedingComments *ast.MultilineComment) (*ast.Alias, parerr.ParseError) {
 
-	referencedType, referencedTypeErr := parseTypeTermReference(p, keywordIdentation, typeParameterContext, precedingComments)
+	referencedType, referencedTypeErr := parseTypeTermReference(p, keywordIndentation, typeParameterContext, precedingComments)
 	if referencedTypeErr != nil {
 		return nil, referencedTypeErr
 	}

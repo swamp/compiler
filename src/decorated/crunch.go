@@ -171,7 +171,7 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	importedModule := module.ImportedModules().ImportModule(rootModule.FullyQualifiedModuleName().Path(), rootModule, fakeImportStatement)
 
 	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.LocalTypes(), module.ImportedTypes())
-	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.LocalTypes())
+	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.LocalTypes(), dectype.NewTypeParameterContext())
 
 	converter := NewDecorator(moduleRepository, module, importedModule, createAndLookup)
 

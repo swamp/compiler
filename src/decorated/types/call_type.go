@@ -19,7 +19,7 @@ type Lookup interface {
 func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Type, error) {
 	target := Unalias(originalTarget)
 	switch info := originalTarget.(type) {
-	case *LocalType:
+	case *LocalTypeDefinition:
 		newType, newTypeErr := lookup.LookupType(info.identifier.Name())
 		if newTypeErr != nil {
 			return nil, newTypeErr
@@ -30,15 +30,21 @@ func ReplaceTypeFromContext(originalTarget dtype.Type, lookup Lookup) (dtype.Typ
 		return newType, nil
 	case *PrimitiveAtom:
 		var convertedTypes []dtype.Type
-		for _, someType := range info.genericTypes {
-			convertedType, convertedErr := ReplaceTypeFromContext(someType, lookup)
-			if convertedErr != nil {
-				return nil, convertedErr
+		/*
+			for _, someType := range info.localTypeContext.definitions {
+				if !someType.WantsToBeReplaced() {
+					continue
+				}
+				convertedType, convertedErr := ReplaceTypeFromContext(someType, lookup)
+				if convertedErr != nil {
+					return nil, convertedErr
+				}
+				convertedTypes = append(convertedTypes, convertedType)
 			}
-			convertedTypes = append(convertedTypes, convertedType)
-		}
-
-		return NewPrimitiveType(info.name, convertedTypes), nil
+		*/
+		newPrimitive := NewPrimitiveType(info.name, convertedTypes)
+		//newPrimitive.localTypeContext.BindLocalTypes(lookup)
+		return newPrimitive, nil
 	case *PrimitiveTypeReference:
 		return originalTarget, nil
 	case *AliasReference:
@@ -112,24 +118,21 @@ func replaceInvokerTypeFromContext(invoker *InvokerType, lookup Lookup) (*Invoke
 		convertedTypes = append(convertedTypes, converted)
 	}
 
+	// FIXME: converted types get wrong source file reference ranges for local types, etc
 	return NewInvokerType(invoker.typeToInvoke, convertedTypes)
 }
 
-func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*CustomTypeAtom, error) {
+/*
+func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup ParseReferenceFromName) (*CustomTypeAtom, error) {
 	var replacedVariants []*CustomTypeVariantAtom
 
 	var replacedGenerics []dtype.Type
 	for _, genericType := range customType.Parameters() {
-		localType, wasLocalType := genericType.(*LocalType)
-		foundGeneric := genericType
-		if wasLocalType {
-			lookedUpType, err := lookup.LookupType(localType.identifier.Name())
-			if err != nil {
-				return nil, err
-			}
-			foundGeneric = lookedUpType
+		lookedUpType, err := lookup.LookupType(genericType.identifier.Name())
+		if err != nil {
+			return nil, err
 		}
-		replacedGenerics = append(replacedGenerics, foundGeneric)
+		replacedGenerics = append(replacedGenerics, genericType)
 	}
 
 	newCustomType := NewCustomTypePrepare(customType.astCustomType, customType.artifactTypeName, replacedGenerics)
@@ -155,6 +158,7 @@ func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup Lookup) (*C
 
 	return newCustomType, nil
 }
+*/
 
 func replaceTupleTypeFromContext(tupleType *TupleTypeAtom, lookup Lookup) (dtype.Type, error) {
 	var convertedTypes []*TupleTypeField
@@ -197,7 +201,7 @@ func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, err
 
 	foundLocal := false
 	for index, foundType := range genericTypes {
-		_, wasLocal := foundType.(*LocalType)
+		_, wasLocal := foundType.(*LocalTypeDefinition)
 		argument := arguments[index]
 		convertedType := foundType
 		if wasLocal {
@@ -219,7 +223,7 @@ func callRecordType(record *RecordAtom, arguments []dtype.Type) (dtype.Type, err
 		context := NewTypeParameterContextOther()
 		for index, arg := range arguments {
 			genericType := genericTypes[index]
-			localType, wasLocal := genericType.(*LocalType)
+			localType, wasLocal := genericType.(*LocalTypeDefinition)
 			if wasLocal {
 				//argument := arguments[index]
 				context.SpecialSet(localType.Identifier().Name(), arg)
@@ -242,15 +246,13 @@ func callCustomType(customType *CustomTypeAtom, calledGenericTypes []dtype.Type)
 			calledGenericTypes, generics)
 	}
 
-	context := NewTypeParameterContextDynamic(customType.GenericNames())
-	for index, genericType := range generics {
-		localType, wasLocalType := genericType.(*LocalType)
-		if wasLocalType {
-			context.SpecialSet(localType.identifier.Name(), calledGenericTypes[index])
-		}
+	newCustomType := NewCustomTypePrepare(customType.astCustomType, customType.artifactTypeName, customType.ParameterNames())
+
+	for index, genericType := range newCustomType.parameters {
+		genericType.SetDefinition(calledGenericTypes[index])
 	}
 
-	return replaceCustomTypeFromContext(customType, context)
+	return newCustomType, nil
 }
 
 func callCustomTypeVariant(variant *CustomTypeVariantAtom, arguments []dtype.Type) (*CustomTypeVariantAtom, error) {
@@ -268,7 +270,7 @@ func callCustomTypeVariant(variant *CustomTypeVariantAtom, arguments []dtype.Typ
 
 	foundLocal := false
 	for index, foundType := range variant.ParameterTypes() {
-		_, wasLocal := foundType.(*LocalType)
+		_, wasLocal := foundType.(*LocalTypeDefinition)
 		argument := arguments[index]
 		convertedType := foundType
 		if wasLocal {
@@ -300,29 +302,10 @@ func callPrimitiveType(primitive *PrimitiveAtom, arguments []dtype.Type) (*Primi
 			genericTypes, arguments)
 	}
 
-	var convertedTypes []dtype.Type
+	newPrimitive := NewPrimitiveType(primitive.name, genericTypes)
+	//newPrimitive.localTypeContext.SetTypes(arguments)
 
-	foundLocal := false
-	for index, foundType := range genericTypes {
-		_, wasLocal := foundType.(*LocalType)
-		argument := arguments[index]
-		convertedType := foundType
-		if wasLocal {
-			convertedType = argument
-			foundLocal = true
-		} else {
-			if compatibleErr := CompatibleTypes(foundType, argument); compatibleErr != nil {
-				return nil, compatibleErr
-			}
-		}
-		convertedTypes = append(convertedTypes, convertedType)
-	}
-
-	if !foundLocal {
-		return nil, fmt.Errorf("no local types, why did you call it? %v", primitive)
-	}
-
-	return NewPrimitiveType(primitive.name, convertedTypes), nil
+	return newPrimitive, nil
 }
 
 func callTypeHelper(unaliasTarget dtype.Type, arguments []dtype.Type) (dtype.Type, error) {

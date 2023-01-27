@@ -13,7 +13,7 @@ import (
 )
 
 type TypeParameterContextDynamic struct {
-	argumentNames     []*dtype.TypeArgumentName
+	argumentNames     []*dtype.LocalTypeName
 	resolvedArguments []dtype.Type
 }
 
@@ -46,7 +46,7 @@ func (t *TypeParameterContextDynamic) ArgumentNamesCount() int {
 	return len(t.argumentNames)
 }
 
-func (t *TypeParameterContextDynamic) ArgumentNames() []*dtype.TypeArgumentName {
+func (t *TypeParameterContextDynamic) ArgumentNames() []*dtype.LocalTypeName {
 	return t.argumentNames
 }
 
@@ -54,7 +54,7 @@ func (t *TypeParameterContextDynamic) ArgumentTypes() []dtype.Type {
 	return t.resolvedArguments
 }
 
-func NewTypeParameterContextDynamic(names []*dtype.TypeArgumentName) *TypeParameterContextDynamic {
+func NewTypeParameterContextDynamic(names []*dtype.LocalTypeName) *TypeParameterContextDynamic {
 	return &TypeParameterContextDynamic{argumentNames: names, resolvedArguments: make([]dtype.Type, len(names))}
 }
 
@@ -125,6 +125,6 @@ func (t *TypeParameterContextDynamic) Verify() error {
 	return nil
 }
 
-func (t *TypeParameterContextDynamic) LookupTypeFromArgument(param *dtype.TypeArgumentName) dtype.Type {
+func (t *TypeParameterContextDynamic) LookupTypeFromArgument(param *dtype.LocalTypeName) dtype.Type {
 	return t.LookupTypeFromName(param.Name())
 }

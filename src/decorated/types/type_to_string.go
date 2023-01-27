@@ -51,7 +51,7 @@ func TypesToStringSuffix(types []dtype.Type) string {
 	return s
 }
 
-func TypeArgumentsToString(types []*dtype.TypeArgumentName) string {
+func TypeArgumentsToString(types []*dtype.LocalTypeName) string {
 	s := ""
 	for index, t := range types {
 		if index > 0 {

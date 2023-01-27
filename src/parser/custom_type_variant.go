@@ -10,7 +10,7 @@ import (
 	parerr "github.com/swamp/compiler/src/parser/errors"
 )
 
-func parseCustomTypeVariantTypesUntilNewline(p ParseStream, keywordIndentation int, typeParameterContext *ast.TypeParameterIdentifierContext) ([]ast.Type, parerr.ParseError) {
+func parseCustomTypeVariantTypesUntilNewline(p ParseStream, keywordIndentation int, typeParameterContext *ast.LocalTypeNameDefinitionContext) ([]ast.Type, parerr.ParseError) {
 	var customTypeVariantTypes []ast.Type
 	for {
 		foundSomething, wasNewLine := p.detectNewLineOrSpace()

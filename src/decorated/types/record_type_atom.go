@@ -109,7 +109,9 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 	case *TupleTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
-	case *LocalType:
+	case *LocalTypeDefinition:
+		return 0, 8
+	case *LocalTypeDefinitionReference:
 		return 0, 8
 	default:
 		panic(fmt.Errorf("calc: do not know memory size of %v %T", p, unaliased))

@@ -68,10 +68,10 @@ func NewInvokerType(typeToInvoke dtype.Type, params []dtype.Type) (*InvokerType,
 	}
 	log.Printf("invoker %T %v (%v) ", typeToInvoke, typeToInvoke.FetchPositionLength().ToStartAndEndReferenceString(), params)
 	for _, x := range params {
-		log.Printf(".. params %T %v (%v) ", x, x.FetchPositionLength().Range, x)
+		log.Printf(".. params %T %v '%s' (%v) ", x, x.FetchPositionLength().Range, x.FetchPositionLength().ToStartAndEndReferenceString(), x)
 
 	}
-	inclusive := token.MakeInclusiveSourceFileReference(params[0].FetchPositionLength(), params[len(params)-1].FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(typeToInvoke.FetchPositionLength(), params[len(params)-1].FetchPositionLength())
 	return &InvokerType{params: params, typeToInvoke: typeToInvoke, inclusive: inclusive}, nil
 }
 

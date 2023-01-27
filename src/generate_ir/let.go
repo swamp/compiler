@@ -66,7 +66,7 @@ func generateLet(let *decorated.Let, genContext *generateContext) (value.Value, 
 
 		   				varName := generateAssemblerVariable(letVariable, assignmentIndex, index)
 		   				typeString := assembler_sp.TypeString(letVariable.Type().HumanReadable())
-		   				letVariableTypeID, lookupErr := genContext.lookup.Lookup(letVariable.Type())
+		   				letVariableTypeID, lookupErr := genContext.lookup.ParseReferenceFromName(letVariable.Type())
 		   				if lookupErr != nil {
 		   					return lookupErr
 		   				}
@@ -88,7 +88,7 @@ func generateLet(let *decorated.Let, genContext *generateContext) (value.Value, 
 
 					letVariableScopeStartLabel := code.Label("scope start let", "let variable")
 					typeString := assembler_sp.TypeString(assignment.Type().HumanReadable())
-					letVariableTypeID, lookupErr := genContext.lookup.Lookup(assignment.Type())
+					letVariableTypeID, lookupErr := genContext.lookup.ParseReferenceFromName(assignment.Type())
 					if lookupErr != nil {
 						return lookupErr
 					}
@@ -108,7 +108,7 @@ func generateLet(let *decorated.Let, genContext *generateContext) (value.Value, 
 
 						varName := generateAssemblerVariable(variable, assignmentIndex, index)
 						typeString := assembler_sp.TypeString(variable.Type().HumanReadable())
-						letVariableTypeID, lookupErr := genContext.lookup.Lookup(variable.Type())
+						letVariableTypeID, lookupErr := genContext.lookup.ParseReferenceFromName(variable.Type())
 						if lookupErr != nil {
 							return lookupErr
 						}

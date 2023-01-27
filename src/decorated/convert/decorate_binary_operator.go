@@ -103,7 +103,7 @@ func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, s
 
 	leftCall, _ := left.(ast.FunctionCaller)
 	if leftCall == nil {
-		leftVar, _ := left.(*ast.VariableIdentifier)
+		leftVar, _ := left.(*ast.LocalTypeNameReference)
 		if leftVar == nil {
 			return nil, parerr.NewLeftPartOfPipeMustBeFunctionCallError(operatorToken)
 		}

@@ -35,15 +35,14 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		return nil, spaceAfterTypeIdentifierErr
 	}
 
-	var typeParameterIdentifiers []*ast.TypeParameter
+	var typeParameterIdentifiers []*ast.LocalTypeName
 
 	for !p.maybeAssign() {
 		typeParameterIdent, typeParameterErr := p.readVariableIdentifier()
 		if typeParameterErr != nil {
 			return nil, parerr.NewTypeMustBeFollowedByTypeArgumentOrEqualError(typeParameterErr)
 		}
-		typeParameterIdentifier := ast.NewTypeParameter(typeParameterIdent)
-		typeParameterIdentifiers = append(typeParameterIdentifiers, typeParameterIdentifier)
+		typeParameterIdentifiers = append(typeParameterIdentifiers, ast.NewLocalTypeName(typeParameterIdent))
 
 		_, spaceErr := p.eatOneSpace("after generic parameter")
 		if spaceErr != nil {

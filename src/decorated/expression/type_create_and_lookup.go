@@ -16,12 +16,13 @@ import (
 )
 
 type TypeCreateAndLookup struct {
-	lookup     *TypeLookup
-	localTypes *ModuleTypes
+	lookup          *TypeLookup
+	localTypeLookup *dectype.TypeParameterContext
+	localTypes      *ModuleTypes
 }
 
-func NewTypeCreateAndLookup(lookup *TypeLookup, localTypes *ModuleTypes) *TypeCreateAndLookup {
-	return &TypeCreateAndLookup{localTypes: localTypes, lookup: lookup}
+func NewTypeCreateAndLookup(lookup *TypeLookup, localTypes *ModuleTypes, localTypeContext *dectype.TypeParameterContext) *TypeCreateAndLookup {
+	return &TypeCreateAndLookup{localTypes: localTypes, lookup: lookup, localTypeLookup: localTypeContext}
 }
 
 func (l *TypeCreateAndLookup) AddTypeAlias(alias *dectype.Alias) TypeError {
@@ -44,6 +45,23 @@ func (l *TypeCreateAndLookup) FindBuiltInType(s string) dtype.Type {
 	}
 
 	return foundType
+}
+
+func (l *TypeCreateAndLookup) CreateLocalTypeReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeDefinitionReference, decshared.DecoratedError) {
+	found, err := l.localTypeLookup.LookupTypeAstRef(some)
+	if err != nil {
+		return nil, NewInternalError(err)
+	}
+
+	return found, nil
+}
+
+func (l *TypeCreateAndLookup) LookupLocalTypeName(some *ast.LocalTypeName) (dtype.Type, decshared.DecoratedError) {
+	found, err := l.localTypeLookup.LookupTypeName(some)
+	if err != nil {
+		return nil, NewInternalError(err)
+	}
+	return found, nil
 }
 
 func (l *TypeCreateAndLookup) SourceModule() *Module {

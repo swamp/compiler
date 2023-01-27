@@ -12,11 +12,11 @@ import (
 )
 
 type ExtraTypeParameterError struct {
-	extraParameter *TypeParameter
+	extraParameter *LocalTypeNameDefinition
 	searchedType   Type
 }
 
-func NewExtraTypeParameterError(extraParameter *TypeParameter, searchedType Type) *ExtraTypeParameterError {
+func NewExtraTypeParameterError(extraParameter *LocalTypeNameDefinition, searchedType Type) *ExtraTypeParameterError {
 	return &ExtraTypeParameterError{extraParameter: extraParameter, searchedType: searchedType}
 }
 
@@ -25,23 +25,41 @@ func (e *ExtraTypeParameterError) Error() string {
 }
 
 func (e *ExtraTypeParameterError) FetchPositionLength() token.SourceFileReference {
-	return e.extraParameter.ident.Symbol().SourceFileReference
+	return e.extraParameter.ident.FetchPositionLength()
 }
 
 type UndefinedTypeParameterError struct {
-	extraParameter *TypeParameter
-	context        *TypeParameterIdentifierContext
+	extraParameter *LocalTypeNameDefinition
+	context        *LocalTypeNameDefinitionContext
 }
 
-func NewUndefinedTypeParameterError(extraParameter *TypeParameter,
-	context *TypeParameterIdentifierContext) *UndefinedTypeParameterError {
+func NewUndefinedTypeParameterError(extraParameter *LocalTypeNameDefinition,
+	context *LocalTypeNameDefinitionContext) *UndefinedTypeParameterError {
 	return &UndefinedTypeParameterError{extraParameter: extraParameter, context: context}
 }
 
 func (e *UndefinedTypeParameterError) FetchPositionLength() token.SourceFileReference {
-	return e.extraParameter.ident.Symbol().SourceFileReference
+	return e.extraParameter.ident.FetchPositionLength()
 }
 
 func (e *UndefinedTypeParameterError) Error() string {
+	return fmt.Sprintf("you referenced %v but it wasn't declared in context %v", e.extraParameter, e.context)
+}
+
+type UnknownTypeParameterError struct {
+	extraParameter *LocalTypeName
+	context        *LocalTypeNameDefinitionContext
+}
+
+func NewUnknownTypeParameterError(extraParameter *LocalTypeName,
+	context *LocalTypeNameDefinitionContext) *UnknownTypeParameterError {
+	return &UnknownTypeParameterError{extraParameter: extraParameter, context: context}
+}
+
+func (e *UnknownTypeParameterError) FetchPositionLength() token.SourceFileReference {
+	return e.extraParameter.ident.FetchPositionLength()
+}
+
+func (e *UnknownTypeParameterError) Error() string {
 	return fmt.Sprintf("you referenced %v but it wasn't declared in context %v", e.extraParameter, e.context)
 }

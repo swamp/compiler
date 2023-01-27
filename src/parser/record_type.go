@@ -13,7 +13,7 @@ import (
 )
 
 func parseRecordTypeFields(p ParseStream, expectedIndentation int,
-	parameterIdentifierContext *ast.TypeParameterIdentifierContext,
+	parameterIdentifierContext *ast.LocalTypeNameDefinitionContext,
 	precedingComments *ast.MultilineComment) ([]*ast.RecordTypeField, parerr.ParseError) {
 	var fields []*ast.RecordTypeField
 	index := 0
@@ -64,10 +64,16 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 	return fields, nil
 }
 
-func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters []*ast.TypeParameter, keywordIndentation int,
+func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters []*ast.LocalTypeName, keywordIndentation int,
 	precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	if _, err := p.eatOneSpace("after record type left curly"); err != nil {
 		return nil, err
+	}
+
+	hasGenerics := len(typeParameters) > 0
+	var context *ast.LocalTypeNameDefinitionContext
+	if hasGenerics {
+		context = ast.NewTypeParameterIdentifierContext(typeParameters, nil)
 	}
 
 	fields, fieldsErr := parseRecordTypeFields(p, keywordIndentation, nil, precedingComments)
@@ -82,6 +88,12 @@ func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters 
 		return nil, rightCurlyErr
 	}
 
-	recordType := ast.NewRecordType(startCurly, rightCurly, fields, typeParameters, precedingComments)
+	recordType := ast.NewRecordType(startCurly, rightCurly, fields, precedingComments)
+
+	if hasGenerics {
+		context.SetNextType(recordType)
+		return context, nil
+	}
+
 	return recordType, nil
 }

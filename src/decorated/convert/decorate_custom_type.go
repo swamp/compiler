@@ -13,16 +13,16 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func DecorateCustomType(customTypeDefinition *ast.CustomType,
+func DecorateCustomType(astCustomType *ast.CustomType,
 	typeRepo decorated.TypeAddAndReferenceMaker) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	var variants []*dectype.CustomTypeVariantAtom
 
-	genericLocalTypes := AstParametersToLocalTypes(customTypeDefinition.FindAllLocalTypes())
-	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(customTypeDefinition.Identifier())
+	genericLocalTypes := AstLocalTypeNamesToTypeArgumentName(astCustomType.TypeParameterNames())
+	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(astCustomType.Identifier())
 
-	s := dectype.NewCustomTypePrepare(customTypeDefinition, artifactTypeName, genericLocalTypes)
+	s := dectype.NewCustomTypePrepare(astCustomType, artifactTypeName, genericLocalTypes)
 
-	for astVariantIndex, astVariant := range customTypeDefinition.Variants() {
+	for astVariantIndex, astVariant := range astCustomType.Variants() {
 		var astVariantTypes []dtype.Type
 
 		for _, astVariantType := range astVariant.Types() {

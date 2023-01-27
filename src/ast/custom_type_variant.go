@@ -13,6 +13,7 @@ import (
 
 type CustomTypeVariant struct {
 	typeIdentifier *TypeIdentifier
+	typeParameters *LocalTypeNameDefinitionContext
 	userTypes      []Type
 	parent         *CustomType
 	index          int
@@ -29,6 +30,10 @@ func (i *CustomTypeVariant) TypeIdentifier() *TypeIdentifier {
 
 func (i *CustomTypeVariant) Comment() token.Comment {
 	return i.comment
+}
+
+func (i *CustomTypeVariant) TypeParameterContext() *LocalTypeNameDefinitionContext {
+	return i.typeParameters
 }
 
 func (i *CustomTypeVariant) Name() string {

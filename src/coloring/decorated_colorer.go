@@ -26,5 +26,5 @@ type DecoratedColorer interface {
 	UnmanagedName(s *ast.UnmanagedType)
 	PrimitiveTypeName(identifier *ast.TypeIdentifier)
 	RightArrow()
-	LocalTypeName(localType *dectype.LocalType)
+	LocalTypeName(localType *dectype.LocalTypeDefinition)
 }

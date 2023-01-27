@@ -15,19 +15,10 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func AstParametersToArgumentNames(typeParameters []*ast.TypeParameter) []*dtype.TypeArgumentName {
-	var argumentNames []*dtype.TypeArgumentName
+func AstLocalTypeNamesToTypeArgumentName(typeParameters []*ast.LocalTypeName) []*dtype.LocalTypeName {
+	var argumentNames []*dtype.LocalTypeName
 	for _, param := range typeParameters {
-		argumentNames = append(argumentNames, dtype.NewTypeArgumentName(param.Identifier()))
-	}
-	return argumentNames
-}
-
-func AstParametersToLocalTypes(typeParameters []*ast.TypeParameter) []dtype.Type {
-	var argumentNames []dtype.Type
-	for _, param := range typeParameters {
-		astLocalType := ast.NewLocalType(param)
-		argumentNames = append(argumentNames, dectype.NewLocalType(astLocalType.TypeParameter()))
+		argumentNames = append(argumentNames, dtype.NewLocalTypeName(param))
 	}
 	return argumentNames
 }
@@ -112,8 +103,10 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		}
 		return foundType, nil
 
-	case *ast.LocalType:
-		return dectype.NewLocalType(info.TypeParameter()), nil
+	case *ast.LocalTypeNameReference:
+		//artifactTypeName := t.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(info.Identifier())
+		return t.CreateLocalTypeReference(info)
+		//return dectype.NewLocalTypeDefinitionReference(info, dectype.NewAnyType()), nil
 	case *ast.TypeReferenceScoped:
 		foundType, err := t.CreateSomeTypeReference(info.TypeResolver())
 		if err != nil {
@@ -134,8 +127,8 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		}
 
 		return newInvokerType(info, foundType, t)
-	case *ast.TypeParameter:
-		return dectype.NewLocalType(info), nil
+	//case *ast.LocalTypeNameDefinition:
+	//	return dectype.NewLocalTypeNameDefinition(info, dectype.NewAnyType()), nil
 	case *ast.AnyMatchingType:
 		return dectype.NewAnyMatchingTypes(info), nil
 	case *ast.UnmanagedType:

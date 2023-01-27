@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -43,26 +42,29 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomT
 			panic("wrong number of parameters to variant constructor")
 		}
 		var types []dtype.Type
-		foundLocal := false
+		//foundLocal := false
 		for index, x := range arguments {
 			originalType := customTypeVariant.ParameterTypes()[index]
-			_, wasLocal := originalType.(*dectype.LocalType)
+			_, wasLocal := originalType.(*dectype.LocalTypeDefinition)
 			if wasLocal {
-				foundLocal = true
+				//		foundLocal = true
 			}
 			types = append(types, x.Type())
 		}
 
-		if foundLocal {
+	}
+	/*
+
+		genericContext := customTypeVariantReference.CustomTypeVariant().TypeParameterContext()
+		if genericContext.HasDefinitions() {
+			concretizedCustomTypeVariant := concretize.ConcretizeCustomTypeVariant(customTypeVariantReference, arguments)
 			invokerType, typeErr := dectype.NewInvokerType(customTypeVariantReference, types)
 			if typeErr != nil {
 				panic(typeErr)
 			}
 			returnType = invokerType
-
 		}
-	}
-
+	*/
 	return &CustomTypeVariantConstructor{
 		customTypeVariantReference: customTypeVariantReference,
 		arguments:                  arguments,

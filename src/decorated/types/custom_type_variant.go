@@ -53,7 +53,7 @@ type CustomTypeVariantAtom struct {
 
 func NewCustomTypeVariant(index int, inCustomType *CustomTypeAtom, astCustomTypeVariant *ast.CustomTypeVariant, parameterTypes []dtype.Type) *CustomTypeVariantAtom {
 	if inCustomType == nil {
-		panic("must have valid in custom type")
+		//		panic("must have valid in custom type")
 	}
 	for _, paramType := range parameterTypes {
 		if paramType == nil {
@@ -71,7 +71,7 @@ func NewCustomTypeVariant(index int, inCustomType *CustomTypeAtom, astCustomType
 			panic("paramtype is nil")
 		}
 
-		_, wasLocalType := paramType.(*LocalType)
+		_, wasLocalType := paramType.(*LocalTypeNameReference)
 		var memorySize MemorySize
 		var memoryAlign MemoryAlign
 

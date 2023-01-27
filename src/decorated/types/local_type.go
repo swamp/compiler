@@ -8,60 +8,69 @@ package dectype
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
-type LocalType struct {
-	identifier    *ast.TypeParameter
-	wasReferenced bool
+type LocalTypeDefinition struct {
+	identifier     *dtype.LocalTypeName
+	referencedType dtype.Type
+	wasReferenced  bool
 }
 
-func (u *LocalType) String() string {
-	return fmt.Sprintf("[GenericParam %v]", u.identifier.Name())
+func (u *LocalTypeDefinition) String() string {
+	return fmt.Sprintf("[ConcreteGeneric %v %v]", u.identifier.Name(), u.referencedType)
 }
 
-func (u *LocalType) FetchPositionLength() token.SourceFileReference {
-	return u.identifier.Identifier().FetchPositionLength()
+func (u *LocalTypeDefinition) FetchPositionLength() token.SourceFileReference {
+	return u.identifier.LocalType().FetchPositionLength()
 }
 
-func (u *LocalType) HumanReadable() string {
+func (u *LocalTypeDefinition) HumanReadable() string {
 	return fmt.Sprintf("%v", u.identifier.Name())
 }
 
-func (u *LocalType) Identifier() *ast.TypeParameter {
+func (u *LocalTypeDefinition) Identifier() *dtype.LocalTypeName {
 	return u.identifier
 }
 
-func (u *LocalType) AtomName() string {
-	return u.identifier.Name()
+func (u *LocalTypeDefinition) WantsToBeReplaced() bool {
+	return IsAny(u.referencedType)
 }
 
-func (u *LocalType) IsEqual(_ dtype.Atom) error {
+func (u *LocalTypeDefinition) IsEqual(_ dtype.Atom) error {
 	return nil
 }
 
-func (u *LocalType) ParameterCount() int {
+func (u *LocalTypeDefinition) Resolve() (dtype.Atom, error) {
+	return u.referencedType.Resolve()
+}
+
+func (u *LocalTypeDefinition) ReferencedType() dtype.Type {
+	return u.referencedType
+}
+
+func (u *LocalTypeDefinition) ParameterCount() int {
 	return 0
 }
 
-func (u *LocalType) Resolve() (dtype.Atom, error) {
-	return u, nil
+func (u *LocalTypeDefinition) Next() dtype.Type {
+	return u.referencedType
 }
 
-func (u *LocalType) Next() dtype.Type {
-	return nil
-}
-
-func (u *LocalType) WasReferenced() bool {
+func (u *LocalTypeDefinition) WasReferenced() bool {
 	return u.wasReferenced
 }
 
-func (u *LocalType) MarkAsReferenced() {
+func (u *LocalTypeDefinition) MarkAsReferenced() {
 	u.wasReferenced = true
 }
 
-func NewLocalType(identifier *ast.TypeParameter) *LocalType {
-	return &LocalType{identifier: identifier}
+func (u *LocalTypeDefinition) SetDefinition(referencedType dtype.Type) error {
+	u.referencedType = referencedType
+	return nil
+}
+
+func NewLocalTypeDefinition(identifier *dtype.LocalTypeName, referencedType dtype.Type) *LocalTypeDefinition {
+	return &LocalTypeDefinition{identifier: identifier, referencedType: referencedType}
 }

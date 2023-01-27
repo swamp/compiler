@@ -11,22 +11,22 @@ import (
 	"github.com/swamp/compiler/src/ast"
 )
 
-type TypeArgumentName struct {
-	name *ast.VariableIdentifier
+type LocalTypeName struct {
+	name *ast.LocalTypeName
 }
 
-func NewTypeArgumentName(name *ast.VariableIdentifier) *TypeArgumentName {
-	return &TypeArgumentName{name: name}
+func NewLocalTypeName(name *ast.LocalTypeName) *LocalTypeName {
+	return &LocalTypeName{name: name}
 }
 
-func (t *TypeArgumentName) String() string {
+func (t *LocalTypeName) String() string {
 	return fmt.Sprintf("%v", t.name.Name())
 }
 
-func (t *TypeArgumentName) Name() string {
+func (t *LocalTypeName) Name() string {
 	return t.name.Name()
 }
 
-func (t *TypeArgumentName) VariableIdentifier() *ast.VariableIdentifier {
+func (t *LocalTypeName) LocalType() *ast.LocalTypeName {
 	return t.name
 }

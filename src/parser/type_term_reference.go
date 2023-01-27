@@ -32,16 +32,16 @@ func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (a
 }
 
 func parseTypeTermReference(p ParseStream, keywordIndentation int,
-	typeParameterContext *ast.TypeParameterIdentifierContext, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
+	typeParameterContext *ast.LocalTypeNameDefinitionContext, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, true, precedingComments)
 }
 
-func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParameterContext *ast.TypeParameterIdentifierContext) (ast.Type, parerr.ParseError) {
+func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParameterContext *ast.LocalTypeNameDefinitionContext) (ast.Type, parerr.ParseError) {
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, false, nil)
 }
 
 func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
-	typeParameterContext *ast.TypeParameterIdentifierContext,
+	typeParameterContext *ast.LocalTypeNameDefinitionContext,
 	checkTypeParam bool, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	if leftParen, wasLeftParen := p.maybeLeftParen(); wasLeftParen {
 		t, tErr := parseTypeReference(p, keywordIndentation, typeParameterContext, precedingComments)
@@ -59,7 +59,7 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 		}
 		return t, nil
 	} else if leftCurly, wasLeftCurly := p.maybeLeftCurly(); wasLeftCurly {
-		return parseRecordType(p, leftCurly, typeParameterContext.AllTypeParameters(), keywordIndentation, nil)
+		return parseRecordType(p, leftCurly, nil, keywordIndentation, nil)
 	} else if foundTypeIdentifier, wasTypeSymbol := p.wasTypeIdentifier(); wasTypeSymbol {
 		x, xErr := parseTypeSymbolWithOptionalModules(p, foundTypeIdentifier)
 		if xErr != nil {
@@ -96,8 +96,8 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 		}
 		return ast.NewTypeReference(x.(*ast.TypeIdentifier), typeParameters), nil
 	} else if ident, wasVariableIdentifier := p.wasVariableIdentifier(); wasVariableIdentifier {
-		typeParameter := ast.NewTypeParameter(ident)
-		return ast.NewLocalType(typeParameter), nil
+		typeParameter := typeParameterContext.ParseReferenceFromName(ast.NewLocalTypeName(ident))
+		return typeParameter, nil
 	} else if asterisk, wasAsterisk := p.maybeAsterisk(); wasAsterisk {
 		return ast.NewAnyMatchingType(asterisk), nil
 	}

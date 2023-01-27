@@ -81,6 +81,6 @@ func (t *TypeParameterContextOther) Verify() error {
 	return nil
 }
 
-func (t *TypeParameterContextOther) LookupTypeFromArgument(param *dtype.TypeArgumentName) dtype.Type {
+func (t *TypeParameterContextOther) LookupTypeFromArgument(param *dtype.LocalTypeName) dtype.Type {
 	return t.LookupTypeFromName(param.Name())
 }

@@ -538,7 +538,7 @@ func expand(node Node, parentNode *ExpandedNode) {
 		expandRecordLookups(t, newParentNode)
 	case *ExternalFunctionDeclarationExpression:
 
-	case *dectype.LocalType:
+	case *dectype.LocalTypeDefinition:
 
 	case *dectype.AnyMatchingTypes:
 

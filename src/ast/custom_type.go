@@ -7,13 +7,11 @@ package ast
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/token"
 )
 
 type CustomType struct {
 	name              *TypeIdentifier
-	typeParameters    []*TypeParameter
 	variants          []*CustomTypeVariant
 	keywordType       token.Keyword
 	precedingComments *MultilineComment
@@ -35,10 +33,6 @@ func (i *CustomType) Variants() []*CustomTypeVariant {
 	return i.variants
 }
 
-func (i *CustomType) FindAllLocalTypes() []*TypeParameter {
-	return i.typeParameters
-}
-
 func (i *CustomType) FetchPositionLength() token.SourceFileReference {
 	return i.name.FetchPositionLength()
 }
@@ -55,8 +49,8 @@ func (i *CustomType) DebugString() string {
 	return fmt.Sprintf("[CustomType %v]", i.name)
 }
 
-func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, variants []*CustomTypeVariant, typeParameterIdentifiers []*TypeParameter, comment *MultilineComment) *CustomType {
-	c := &CustomType{keywordType: keywordType, name: customTypeName, variants: variants, typeParameters: typeParameterIdentifiers, precedingComments: comment}
+func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, variants []*CustomTypeVariant, comment *MultilineComment) *CustomType {
+	c := &CustomType{keywordType: keywordType, name: customTypeName, variants: variants, precedingComments: comment}
 	for _, variant := range variants {
 		variant.SetParent(c)
 	}

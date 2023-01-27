@@ -204,6 +204,26 @@ func MakeInclusiveSourceFileReferenceFlipIfNeeded(start SourceFileReference, end
 	return MakeInclusiveSourceFileReference(start, end)
 }
 
+func MakeInclusiveSourceFileReferenceWithoutCheck(start SourceFileReference, end SourceFileReference) SourceFileReference {
+	tokenRange := MakeInclusiveRangeWithoutCheck(start.Range, end.Range)
+	if start.Document == nil {
+		panic("start document can not be nil")
+	}
+
+	if end.Document == nil {
+		panic("end document can not be nil")
+	}
+
+	if !start.Document.EqualTo(end.Document.Uri) {
+		//panic(fmt.Sprintf("start and end must come from same document. '%v' vs '%v'", start.Document, end.Document))
+	}
+
+	return SourceFileReference{
+		Range:    tokenRange,
+		Document: start.Document,
+	}
+}
+
 type SourceFileReferenceProvider interface {
 	FetchPositionLength() SourceFileReference
 }
@@ -298,6 +318,13 @@ func MakeInclusiveRange(start Range, end Range) Range {
 	}
 }
 
+func MakeInclusiveRangeWithoutCheck(start Range, end Range) Range {
+	return Range{
+		start: start.Start(),
+		end:   end.End(),
+	}
+}
+
 func NewPositionLength(start Position, octetCountIncludingWhitespace int) Range {
 	return Range{start: start, end: Position{
 		line:                            start.line,
@@ -340,7 +367,7 @@ func (p Range) Contains(pos Position) bool {
 }
 
 func (p Range) ContainsRange(other Range) bool {
-	return other.Start().IsOnOrAfter(other.Start()) && p.end.IsOnOrAfter(other.End())
+	return other.Start().IsOnOrAfter(p.Start()) && p.end.IsOnOrAfter(other.End())
 }
 
 func (p Range) ContainsSameLineRanges(other []SameLineRange) bool {

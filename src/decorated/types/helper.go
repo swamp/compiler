@@ -7,13 +7,10 @@ package dectype
 
 import "github.com/swamp/compiler/src/decorated/dtype"
 
-func LocalTypesToArgumentNames(types []dtype.Type) []*dtype.TypeArgumentName {
-	var argumentNames []*dtype.TypeArgumentName
-	for _, genericType := range types {
-		localType, wasLocalType := genericType.(*LocalType)
-		if wasLocalType {
-			argumentNames = append(argumentNames, dtype.NewTypeArgumentName(localType.Identifier().Identifier()))
-		}
+func LocalTypesToArgumentNames(types []*LocalTypeDefinition) []*dtype.LocalTypeName {
+	var argumentNames []*dtype.LocalTypeName
+	for _, localType := range types {
+		argumentNames = append(argumentNames, localType.identifier)
 	}
 	return argumentNames
 }

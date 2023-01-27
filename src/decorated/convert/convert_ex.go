@@ -11,5 +11,5 @@ import (
 )
 
 type LookupLocalType interface {
-	LookupLocalType(localType *ast.LocalType) (dtype.Type, error)
+	LookupLocalType(localType *ast.LocalTypeNameReference) (dtype.Type, error)
 }

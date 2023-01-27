@@ -46,7 +46,7 @@ func TypeIsTemplateHasLocalTypes(p dtype.Type) bool {
 		if TypesIsTemplateHasLocalTypes(t.Params()) {
 			return true
 		}
-	case *LocalType:
+	case *LocalTypeDefinition:
 		return true
 	}
 
@@ -100,12 +100,16 @@ func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 	return unaliased
 }
 
-func fillContextFromPrimitive(context *TypeParameterContextOther, original *PrimitiveAtom, other *PrimitiveAtom) (*PrimitiveAtom, error) {
+func concretizePrimitive(context *TypeParameterContextOther, original *PrimitiveAtom, template *PrimitiveAtom) (*PrimitiveAtom, error) {
 	var converted []dtype.Type
+
+	if len(template.GenericTypes()) == 0 {
+		return nil, fmt.Errorf("can not conretize a primitive that does not have local types")
+	}
 
 	wasConverted := false
 	for index, funcParam := range original.GenericTypes() {
-		otherType := other.GenericTypes()[index]
+		otherType := template.GenericTypes()[index]
 		convertedType, convertErr := smashTypes(context, funcParam, otherType)
 		if convertErr != nil {
 			return nil, convertErr
@@ -124,10 +128,10 @@ func fillContextFromPrimitive(context *TypeParameterContextOther, original *Prim
 		return original, nil
 	}
 
-	return NewPrimitiveType(other.name, converted), nil
+	return NewPrimitiveType(template.name, converted), nil
 }
 
-func fillContextFromRecordType(context *TypeParameterContextOther, original *RecordAtom, other *RecordAtom) (*RecordAtom, error) {
+func concretizeRecordType(context *TypeParameterContextOther, original *RecordAtom, other *RecordAtom) (*RecordAtom, error) {
 	var converted []dtype.Type
 
 	wasConverted := false
@@ -160,7 +164,7 @@ func fillContextFromRecordType(context *TypeParameterContextOther, original *Rec
 	return NewRecordType(original.AstRecord(), other.SortedFields(), converted), nil
 }
 
-func fillContextFromCustomTypeVariant2(context *TypeParameterContextOther, originalVariant *CustomTypeVariantAtom, otherVariant *CustomTypeVariantAtom) (*CustomTypeVariantAtom, error) {
+func concretizeCustomTypeVariant2(context *TypeParameterContextOther, originalVariant *CustomTypeVariantAtom, otherVariant *CustomTypeVariantAtom) (*CustomTypeVariantAtom, error) {
 	if otherVariant.index != originalVariant.index {
 		return nil, fmt.Errorf("index error")
 	}
@@ -185,7 +189,7 @@ func fillContextFromCustomTypeVariant2(context *TypeParameterContextOther, origi
 	return convertedVariant, nil
 }
 
-func fillContextFromCustomType(context *TypeParameterContextOther, original *CustomTypeAtom, other *CustomTypeAtom) (*CustomTypeAtom, error) {
+func concretizeCustomType(context *TypeParameterContextOther, original *CustomTypeAtom, other *CustomTypeAtom) (*CustomTypeAtom, error) {
 	if len(original.Variants()) != len(other.Variants()) {
 		return nil, fmt.Errorf("not the same number of variants")
 	}
@@ -194,24 +198,12 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 		return nil, fmt.Errorf("not the same number of generics")
 	}
 
-	var replacedGenerics []dtype.Type
-	for genericIndex, genericType := range original.Parameters() {
-		localType, wasLocalType := genericType.(*LocalType)
-		foundGeneric := genericType
-		if wasLocalType {
-			otherGeneric := other.parameters[genericIndex]
-			foundGeneric = otherGeneric
-			context.SpecialSet(localType.identifier.Name(), otherGeneric)
-		}
-		replacedGenerics = append(replacedGenerics, foundGeneric)
-	}
-
-	customType := NewCustomTypePrepare(original.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, replacedGenerics)
+	customType := NewCustomTypePrepare(original.astCustomType, ArtifactFullyQualifiedTypeName{ModuleName{path: nil}}, original.ParameterNames())
 	wasConverted := false
 	var convertedVariants []*CustomTypeVariantAtom
 	for index, originalVariant := range original.Variants() {
 		otherVariant := other.Variants()[index]
-		convertedVariant, convertedErr := fillContextFromCustomTypeVariant2(context, originalVariant, otherVariant)
+		convertedVariant, convertedErr := concretizeCustomTypeVariant2(context, originalVariant, otherVariant)
 		if convertedErr != nil {
 			return nil, convertedErr
 		}
@@ -228,7 +220,7 @@ func fillContextFromCustomType(context *TypeParameterContextOther, original *Cus
 	return customType, nil
 }
 
-func fillContextFromFunctions(context *TypeParameterContextOther, original *FunctionAtom, other *FunctionAtom) (*FunctionAtom, error) {
+func concretizeFunction(context *TypeParameterContextOther, original *FunctionAtom, other *FunctionAtom) (*FunctionAtom, error) {
 	var converted []dtype.Type
 
 	if hasAnyMatching, startIndex := HasAnyMatchingTypes(original.parameterTypes); hasAnyMatching {
@@ -253,7 +245,7 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 
 		created := NewFunctionAtom(original.astFunctionType, allConverted)
 
-		return fillContextFromFunctions(context, created, other)
+		return concretizeFunction(context, created, other)
 	} else {
 		if len(original.parameterTypes) < len(other.parameterTypes) {
 			return nil, fmt.Errorf("too few parameter types")
@@ -288,7 +280,7 @@ func fillContextFromFunctions(context *TypeParameterContextOther, original *Func
 	return NewFunctionAtom(original.astFunctionType, converted), nil
 }
 
-func fillContextFromTuples(context *TypeParameterContextOther, original *TupleTypeAtom, other *TupleTypeAtom) (*TupleTypeAtom, error) {
+func concretizeTuples(context *TypeParameterContextOther, original *TupleTypeAtom, other *TupleTypeAtom) (*TupleTypeAtom, error) {
 	var converted []*TupleTypeField
 
 	if len(original.parameterTypes) < len(other.parameterTypes) {
@@ -340,9 +332,9 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 		panic("other was nil")
 	}
 
-	localType, wasLocalType := original.(*LocalType)
+	localType, wasLocalType := original.(*LocalTypeDefinition)
 	if wasLocalType {
-		_, wasLocalType := other.(*LocalType)
+		_, wasLocalType := other.(*LocalTypeDefinition)
 		if wasLocalType {
 			return nil, fmt.Errorf("not great")
 		}
@@ -364,7 +356,7 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 			otherVariant, wasOtherVariant := other.(*CustomTypeVariantAtom)
 			if wasOtherVariant {
 				originalVariant := customType.FindVariant(otherVariant.Name().Name())
-				return fillContextFromCustomTypeVariant2(context, originalVariant, otherVariant)
+				return concretizeCustomTypeVariant2(context, originalVariant, otherVariant)
 			}
 		}
 		sameType := reflect.TypeOf(original) == reflect.TypeOf(other)
@@ -399,12 +391,12 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 	case *FunctionAtom:
 		{
 			otherFunc := other.(*FunctionAtom)
-			return fillContextFromFunctions(context, t, otherFunc)
+			return concretizeFunction(context, t, otherFunc)
 		}
 	case *TupleTypeAtom:
 		{
 			otherTuple := other.(*TupleTypeAtom)
-			return fillContextFromTuples(context, t, otherTuple)
+			return concretizeTuples(context, t, otherTuple)
 		}
 	case *PrimitiveAtom:
 		{
@@ -415,17 +407,17 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 			if otherPrimitive.PrimitiveName().Name() != t.PrimitiveName().Name() {
 				return nil, fmt.Errorf("not same primitive type. %v vs %v", t.PrimitiveName(), otherPrimitive.PrimitiveName())
 			}
-			return fillContextFromPrimitive(context, t, otherPrimitive)
+			return concretizePrimitive(context, t, otherPrimitive)
 		}
 	case *CustomTypeAtom:
 		{
 			otherCustomType := other.(*CustomTypeAtom)
-			return fillContextFromCustomType(context, t, otherCustomType)
+			return concretizeCustomType(context, t, otherCustomType)
 		}
 	case *CustomTypeVariantAtom:
 		{
 			otherCustomTypeVariant := other.(*CustomTypeVariantAtom)
-			return fillContextFromCustomTypeVariant2(context, t, otherCustomTypeVariant)
+			return concretizeCustomTypeVariant2(context, t, otherCustomTypeVariant)
 		}
 	case *RecordAtom:
 		{
@@ -433,12 +425,12 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 			if otherRecordType == nil {
 				return nil, fmt.Errorf("how can this happen %T and %T", t, other)
 			}
-			return fillContextFromRecordType(context, t, otherRecordType)
+			return concretizeRecordType(context, t, otherRecordType)
 		}
 	case *InvokerType:
 		var converted []dtype.Type
 		for _, param := range t.params {
-			localType, wasLocal := param.(*LocalType)
+			localType, wasLocal := param.(*LocalTypeDefinition)
 			if wasLocal {
 				foundType := context.LookupTypeFromName(localType.identifier.Name())
 				if foundType == nil {
@@ -476,7 +468,7 @@ func smashTypes(context *TypeParameterContextOther, originalUnchanged dtype.Type
 func SmashFunctions(original *FunctionAtom, otherFunc *FunctionAtom) (*FunctionAtom, error) {
 	context := NewTypeParameterContextOther()
 
-	result, resultErr := fillContextFromFunctions(context, original, otherFunc)
+	result, resultErr := concretizeFunction(context, original, otherFunc)
 	if resultErr != nil {
 		return nil, resultErr
 	}
