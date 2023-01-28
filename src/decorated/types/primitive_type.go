@@ -16,7 +16,7 @@ import (
 func GetListType(p dtype.Type) (*PrimitiveAtom, error) {
 	unresolvedType := UnaliasWithResolveInvoker(p)
 	primitive, wasPrimitive := unresolvedType.(*PrimitiveAtom)
-	if !wasPrimitive || len(primitive.GenericTypes()) != 1 {
+	if !wasPrimitive || len(primitive.ParameterTypes()) != 1 {
 		return nil, fmt.Errorf("wasnt a list type")
 	}
 
@@ -65,7 +65,7 @@ func IsListAny(checkType dtype.Type) bool {
 	if err != nil {
 		return false
 	}
-	return IsAny(listAtom.GenericTypes()[0])
+	return IsAny(listAtom.ParameterTypes()[0])
 }
 
 func IsLocalType(checkType dtype.Type) bool {
@@ -119,18 +119,18 @@ func IsAtomAny(checkType dtype.Atom) bool {
 }
 
 type PrimitiveAtom struct {
-	name         *ast.TypeIdentifier
-	genericTypes []dtype.Type
-	references   []*PrimitiveTypeReference
+	name           *ast.TypeIdentifier
+	parameterTypes []dtype.Type
+	references     []*PrimitiveTypeReference
 }
 
-func NewPrimitiveType(name *ast.TypeIdentifier, genericTypes []dtype.Type) *PrimitiveAtom {
-	for _, generic := range genericTypes {
-		if generic == nil {
-			panic("not allowed to be nil generic")
+func NewPrimitiveType(name *ast.TypeIdentifier, parameterTypes []dtype.Type) *PrimitiveAtom {
+	for _, parameterType := range parameterTypes {
+		if parameterType == nil {
+			panic("not allowed to be nil parameterType")
 		}
 	}
-	return &PrimitiveAtom{name: name, genericTypes: genericTypes}
+	return &PrimitiveAtom{name: name, parameterTypes: parameterTypes}
 }
 
 func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
@@ -152,8 +152,8 @@ func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
 		return fmt.Errorf("different number of parameters")
 	}
 
-	for index, genericType := range u.genericTypes {
-		otherGenericType := other.genericTypes[index]
+	for index, genericType := range u.parameterTypes {
+		otherGenericType := other.parameterTypes[index]
 		if err := CompatibleTypes(genericType, otherGenericType); err != nil {
 			return fmt.Errorf("not same generic type %v and %v %v", genericType.HumanReadable(), otherGenericType.HumanReadable(), err)
 		}
@@ -171,7 +171,7 @@ func (u *PrimitiveAtom) PrimitiveName() *ast.TypeIdentifier {
 }
 
 func (u *PrimitiveAtom) String() string {
-	return fmt.Sprintf("[Primitive %v%v]", u.name.Name(), TypeParametersSuffix(u.genericTypes))
+	return fmt.Sprintf("[Primitive %v%v]", u.name.Name(), TypeParametersSuffix(u.parameterTypes))
 }
 
 func (u *PrimitiveAtom) HumanReadable() string {
@@ -182,8 +182,8 @@ func (u *PrimitiveAtom) AtomName() string {
 	return u.name.Name()
 }
 
-func (u *PrimitiveAtom) GenericTypes() []dtype.Type {
-	return u.genericTypes
+func (u *PrimitiveAtom) ParameterTypes() []dtype.Type {
+	return u.parameterTypes
 }
 
 func (u *PrimitiveAtom) Next() dtype.Type {
@@ -191,7 +191,7 @@ func (u *PrimitiveAtom) Next() dtype.Type {
 }
 
 func (u *PrimitiveAtom) ParameterCount() int {
-	return len(u.genericTypes)
+	return len(u.parameterTypes)
 }
 
 func (u *PrimitiveAtom) Resolve() (dtype.Atom, error) {

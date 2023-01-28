@@ -260,7 +260,7 @@ func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator,
 		if err != nil {
 			return nil, decorated.NewUnExpectedListTypeForCons(infix, leftExpression, rightExpression)
 		}
-		listTypeType := listType.GenericTypes()[0]
+		listTypeType := listType.ParameterTypes()[0]
 		compatibleErr := dectype.CompatibleTypes(leftExpression.Type(), listTypeType)
 		if compatibleErr != nil {
 			return nil, decorated.NewUnMatchingBinaryOperatorTypes(infix, leftExpression.Type(), rightExpression.Type())

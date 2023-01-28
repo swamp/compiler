@@ -103,13 +103,13 @@ func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 func concretizePrimitive(context *TypeParameterContextOther, original *PrimitiveAtom, template *PrimitiveAtom) (*PrimitiveAtom, error) {
 	var converted []dtype.Type
 
-	if len(template.GenericTypes()) == 0 {
+	if len(template.ParameterTypes()) == 0 {
 		return nil, fmt.Errorf("can not conretize a primitive that does not have local types")
 	}
 
 	wasConverted := false
-	for index, funcParam := range original.GenericTypes() {
-		otherType := template.GenericTypes()[index]
+	for index, funcParam := range original.ParameterTypes() {
+		otherType := template.ParameterTypes()[index]
 		convertedType, convertErr := smashTypes(context, funcParam, otherType)
 		if convertErr != nil {
 			return nil, convertErr
@@ -281,7 +281,7 @@ func concretizeFunction(context *TypeParameterContextOther, original *FunctionAt
 }
 
 func concretizeTuples(context *TypeParameterContextOther, original *TupleTypeAtom, other *TupleTypeAtom) (*TupleTypeAtom, error) {
-	var converted []*TupleTypeField
+	var converted []dtype.Type
 
 	if len(original.parameterTypes) < len(other.parameterTypes) {
 		return nil, fmt.Errorf("too few parameter types")
@@ -297,8 +297,8 @@ func concretizeTuples(context *TypeParameterContextOther, original *TupleTypeAto
 			panic("converted was nil")
 		}
 
-		field := NewTupleTypeField(index, convertedType)
-		converted = append(converted, field)
+		//field := NewTupleTypeField(index, convertedType)
+		converted = append(converted, convertedType)
 	}
 
 	for index := len(other.parameterTypes); index < len(original.parameterTypes); index++ {
@@ -310,8 +310,8 @@ func concretizeTuples(context *TypeParameterContextOther, original *TupleTypeAto
 		if convertedType == nil {
 			panic(fmt.Sprintf("conversion is not working %v %T", originalParam, originalParam))
 		}
-		field := NewTupleTypeField(index, convertedType)
-		converted = append(converted, field)
+		//field := NewTupleTypeField(index, convertedType)
+		converted = append(converted, convertedType)
 	}
 
 	return NewTupleTypeAtom(original.astTupleType, converted), nil

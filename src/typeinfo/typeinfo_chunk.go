@@ -1176,9 +1176,9 @@ func (c *Chunk) consumeAnyMatchingTypes() (InfoType, error) {
 func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, error) {
 	name := primitive.PrimitiveName().Name()
 	if name == "List" {
-		return c.consumeList(primitive.GenericTypes())
+		return c.consumeList(primitive.ParameterTypes())
 	} else if name == "Array" {
-		return c.consumeArray(primitive.GenericTypes())
+		return c.consumeArray(primitive.ParameterTypes())
 	} else if name == "Int" {
 		return c.consumeInt()
 	} else if name == "Fixed" {
@@ -1194,7 +1194,7 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 	} else if name == "Blob" {
 		return c.consumeBlob()
 	} else if name == "TypeRef" {
-		return c.consumeTypeRef(primitive.GenericTypes()[0])
+		return c.consumeTypeRef(primitive.ParameterTypes()[0])
 	} else if name == "Any" {
 		return c.consumeAny()
 	}

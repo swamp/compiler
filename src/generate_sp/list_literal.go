@@ -26,7 +26,7 @@ func generateList(code *assembler_sp.Code, target assembler_sp.TargetStackPosRan
 		variables[index] = exprVar.Pos
 	}
 	primitive, _ := list.Type().(*dectype.PrimitiveAtom)
-	firstPrimitiveType := primitive.GenericTypes()[0]
+	firstPrimitiveType := primitive.ParameterTypes()[0]
 	itemSize, itemAlign := dectype.GetMemorySizeAndAlignment(firstPrimitiveType)
 	filePosition := genContext.toFilePosition(list.FetchPositionLength())
 	code.ListLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize), opcode_sp_type.MemoryAlign(itemAlign), filePosition)

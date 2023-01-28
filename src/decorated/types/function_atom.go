@@ -38,6 +38,10 @@ func (u *FunctionAtom) FunctionParameterTypes() []dtype.Type {
 	return u.parameterTypes
 }
 
+func (u *FunctionAtom) AstFunction() *ast.FunctionType {
+	return u.astFunctionType
+}
+
 func (u *FunctionAtom) ParameterAndReturn() ([]dtype.Type, dtype.Type) {
 	count := len(u.parameterTypes)
 	ret := u.parameterTypes[count-1]

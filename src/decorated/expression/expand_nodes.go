@@ -137,7 +137,7 @@ func expandFunctionTypeReference(fn *dectype.FunctionTypeReference, list *Expand
 }
 
 func expandPrimitive(fn *dectype.PrimitiveAtom, list *ExpandedNode) {
-	for _, parameter := range fn.GenericTypes() {
+	for _, parameter := range fn.ParameterTypes() {
 		expand(parameter, list)
 	}
 }

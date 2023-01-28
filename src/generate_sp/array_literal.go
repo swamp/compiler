@@ -26,7 +26,7 @@ func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		variables[index] = exprVar.Pos
 	}
 	primitive, _ := array.Type().(*dectype.PrimitiveAtom)
-	firstPrimitiveType := primitive.GenericTypes()[0]
+	firstPrimitiveType := primitive.ParameterTypes()[0]
 	itemSize, itemAlign := dectype.GetMemorySizeAndAlignment(firstPrimitiveType)
 
 	filePosition := genContext.toFilePosition(array.FetchPositionLength())

@@ -13,6 +13,10 @@ func IfNeeded(reference dtype.Type, concrete dtype.Type, resolveLocalTypeNames *
 	switch t := reference.(type) {
 	case *dectype.PrimitiveAtom:
 		return Primitive(t, concrete.(*dectype.PrimitiveAtom), resolveLocalTypeNames)
+	case *dectype.TupleTypeAtom:
+		return Tuple(t, concrete.(*dectype.TupleTypeAtom), resolveLocalTypeNames)
+	case *dectype.LocalTypeNameReference:
+		return concrete, nil
 	default:
 		log.Printf("what is this %T", reference)
 	}
@@ -42,13 +46,13 @@ func ResolveSlices(references []dtype.Type, concretes []dtype.Type, resolver *de
 		if wasLocalTypeRef {
 			var err error
 			resolvedType, err = resolver.SetType(localTypeRef, resolvedType)
-			log.Printf("resolved after settype to %T %v", resolvedType, resolvedType)
+			//log.Printf("resolved after settype to %T %v", resolvedType, resolvedType)
 			if err != nil {
 				log.Printf("ERR: %v", err)
 				return nil, decorated.NewInternalError(err)
 			}
 		}
-		log.Printf("resolved to %T", resolvedType)
+		//log.Printf("resolved to %T", resolvedType)
 
 		resolvedTypes = append(resolvedTypes, resolvedType)
 	}
@@ -59,12 +63,23 @@ func ResolveSlices(references []dtype.Type, concretes []dtype.Type, resolver *de
 func Primitive(reference *dectype.PrimitiveAtom, concrete *dectype.PrimitiveAtom, resolver *dectype.TypeParameterContext) (*dectype.PrimitiveAtom, decshared.DecoratedError) {
 	log.Printf("checking %v <- %v", reference, concrete)
 
-	convertedTypes, err := ResolveSlices(reference.GenericTypes(), concrete.GenericTypes(), resolver)
+	convertedTypes, err := ResolveSlices(reference.ParameterTypes(), concrete.ParameterTypes(), resolver)
 	if err != nil {
 		return nil, err
 	}
 
 	return dectype.NewPrimitiveType(concrete.PrimitiveName(), convertedTypes), nil
+}
+
+func Tuple(reference *dectype.TupleTypeAtom, concrete *dectype.TupleTypeAtom, resolver *dectype.TypeParameterContext) (*dectype.TupleTypeAtom, decshared.DecoratedError) {
+	log.Printf("checking %v <- %v", reference, concrete)
+
+	convertedTypes, err := ResolveSlices(reference.ParameterTypes(), concrete.ParameterTypes(), resolver)
+	if err != nil {
+		return nil, err
+	}
+
+	return dectype.NewTupleTypeAtom(concrete.AstTuple(), convertedTypes), nil
 }
 
 func CustomTypeVariant(reference *dectype.CustomTypeVariantAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.CustomTypeVariantAtom, decshared.DecoratedError) {
@@ -76,6 +91,46 @@ func CustomTypeVariant(reference *dectype.CustomTypeVariantAtom, arguments []dty
 	newVariant := dectype.NewCustomTypeVariant(reference.Index(), nil, reference.AstCustomTypeVariant(), convertedTypes)
 
 	return newVariant, nil
+}
+
+func Function(reference *dectype.FunctionAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
+	if hasAnyMatching, startIndex := dectype.HasAnyMatchingTypes(reference.FunctionParameterTypes()); hasAnyMatching {
+		originalInitialCount := startIndex
+		originalEndCount := len(reference.FunctionParameterTypes()) - startIndex - 2
+
+		originalFirst := append([]dtype.Type{}, reference.FunctionParameterTypes()[0:startIndex]...)
+
+		if len(arguments) >= len(reference.FunctionParameterTypes()) {
+			originalEndCount++
+		}
+
+		otherMiddle := arguments[originalInitialCount : len(arguments)-originalEndCount]
+		if len(otherMiddle) < 1 {
+			return nil, decorated.NewInternalError(fmt.Errorf("currently, you must have at least one wildcard parameter"))
+		}
+
+		originalEnd := reference.FunctionParameterTypes()[startIndex+1 : len(reference.FunctionParameterTypes())]
+
+		allConverted := append(originalFirst, otherMiddle...)
+		allConverted = append(allConverted, originalEnd...)
+
+		//created := dectype.NewFunctionAtom(reference.AstFunction(), allConverted)
+
+		return Function(reference, allConverted, resolver)
+	} else {
+		if len(reference.FunctionParameterTypes()) < len(arguments) {
+			return nil, decorated.NewInternalError(fmt.Errorf("too few parameter types"))
+		}
+	}
+
+	convertedTypes, err := ResolveSlices(reference.FunctionParameterTypes(), arguments, resolver)
+	if err != nil {
+		return nil, err
+	}
+
+	newFunction := dectype.NewFunctionAtom(reference.AstFunction(), convertedTypes)
+
+	return newFunction, nil
 }
 
 func Concrete(reference dtype.Type, concrete dtype.Type) (dtype.Type, decshared.DecoratedError) {
@@ -102,6 +157,11 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 	switch t := localTypeNameContext.Next().(type) {
 	case *dectype.CustomTypeVariantAtom:
 		resolvedType, err = CustomTypeVariant(t, concreteArguments, resolveLocalTypeNames)
+		if err != nil {
+			return nil, err
+		}
+	case *dectype.FunctionAtom:
+		resolvedType, err = Function(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {
 			return nil, err
 		}

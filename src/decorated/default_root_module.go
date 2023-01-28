@@ -321,10 +321,12 @@ func kickstartPrimitives() *decorated.Module {
 	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReference(), 0))
 
 	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", token.NewInternalSourceFileReference(), 0))
-	typeParameter := ast.NewLocalTypeNameDefinition(localTypeVariable)
+	localTypeName := ast.NewLocalTypeName(localTypeVariable)
+	typeParameter := ast.NewLocalTypeNameDefinition(localTypeName)
 	localType := ast.NewLocalTypeNameReference(typeParameter)
-	typeParameter2 := dtype.NewLocalTypeName(typeParameter)
-	localType := dectype.NewLocalTypeNameReference(typeParameter2, anyType)
+
+	decTypeName := dtype.NewLocalTypeName(localTypeName)
+	localType := dectype.NewLocalTypeNameReference(localType, decTypeName)
 	listType := dectype.NewPrimitiveType(listIdentifier, []dtype.Type{localType})
 
 	addPrimitive(primitiveModuleLocalTypes, listType)

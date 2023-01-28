@@ -10,6 +10,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"log"
 )
 
 type TypeParameterContext struct {
@@ -67,7 +68,7 @@ func (t *TypeParameterContext) SetTypes(types []dtype.Type) error {
 
 func (t *TypeParameterContext) IsDefined() bool {
 	for _, def := range t.definitions {
-		if IsAny(def.referencedType) {
+		if !def.hasBeenDefined {
 			return false
 		}
 	}
@@ -93,13 +94,19 @@ func (t *TypeParameterContext) SetType(defRef *LocalTypeNameReference, definedTy
 		return nil, fmt.Errorf("could not find %v %v", defRef.Identifier().Name(), t)
 	}
 
-	if definition.referencedType != nil {
+	localNameRef, wasLocal := definedType.(*LocalTypeNameReference)
+	if wasLocal {
+		panic(fmt.Errorf("not allowed to set a type to a name reference, that won't help us %v", localNameRef))
+	}
+	if definition.hasBeenDefined {
 		if err := CompatibleTypes(definition.referencedType, definedType); err != nil {
 			return nil, fmt.Errorf(" %v was already set %w", defRef.Identifier().Name(), err)
 		}
+	} else {
+		log.Printf("set %v to %v", defRef.Identifier().Name(), definedType)
+		definition.referencedType = definedType
+		definition.hasBeenDefined = true
 	}
-
-	definition.referencedType = definedType
 
 	return NewLocalTypeDefinitionReference(defRef.Identifier(), definition), nil
 }

@@ -50,16 +50,13 @@ type TupleTypeAtom struct {
 	memoryAlign     MemoryAlign
 }
 
-func NewTupleTypeAtom(astTupleType *ast.TupleType, parameterFields []*TupleTypeField) *TupleTypeAtom {
-	for _, param := range parameterFields {
-		if reflect.TypeOf(param) == nil {
+func NewTupleTypeAtom(astTupleType *ast.TupleType, parameterTypes []dtype.Type) *TupleTypeAtom {
+	var parameterFields []*TupleTypeField
+	for index, paramType := range parameterTypes {
+		if reflect.TypeOf(paramType) == nil {
 			panic("function atom: nil parameter type")
 		}
-	}
-
-	var parameterTypes []dtype.Type
-	for _, param := range parameterFields {
-		parameterTypes = append(parameterTypes, param.Type())
+		parameterFields = append(parameterFields, NewTupleTypeField(index, paramType))
 	}
 
 	memorySize, memoryAlign := calculateTupleFieldOffsetsAndRecordMemorySizeAndAlign(parameterFields)
@@ -84,6 +81,10 @@ func (u *TupleTypeAtom) MemoryAlignment() MemoryAlign {
 
 func (u *TupleTypeAtom) ParameterTypes() []dtype.Type {
 	return u.parameterTypes
+}
+
+func (u *TupleTypeAtom) AstTuple() *ast.TupleType {
+	return u.astTupleType
 }
 
 func (u *TupleTypeAtom) ParameterAndReturn() ([]dtype.Type, dtype.Type) {

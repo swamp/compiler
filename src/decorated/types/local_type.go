@@ -15,6 +15,7 @@ import (
 type LocalTypeDefinition struct {
 	identifier     *dtype.LocalTypeName
 	referencedType dtype.Type
+	hasBeenDefined bool
 	wasReferenced  bool
 }
 
