@@ -73,7 +73,7 @@ func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters 
 	hasGenerics := len(typeParameters) > 0
 	var context *ast.LocalTypeNameDefinitionContext
 	if hasGenerics {
-		context = ast.NewTypeParameterIdentifierContext(typeParameters, nil)
+		context = ast.NewLocalTypeNameContext(typeParameters, nil)
 	}
 
 	fields, fieldsErr := parseRecordTypeFields(p, keywordIndentation, nil, precedingComments)

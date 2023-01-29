@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/decorated/concretize"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -23,43 +24,30 @@ func AstLocalTypeNamesToTypeArgumentName(typeParameters []*ast.LocalTypeName) []
 	return argumentNames
 }
 
-func newInvokerType(astTypeReference ast.TypeReferenceScopedOrNormal, foundType dectype.TypeReferenceScopedOrNormal, t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
-	unaliasedTypeToCheck := dectype.Unalias(foundType)
-
-	if unaliasedTypeToCheck.ParameterCount() != len(astTypeReference.Arguments()) {
-		return nil, decorated.NewInternalError(fmt.Errorf("problems number of arguments %v (\n\n%v\n vs\n\n%v\n) (found %T, expected %T) found %v vs expected %v (%v)", astTypeReference, foundType, astTypeReference, foundType, astTypeReference, foundType.ParameterCount(), len(astTypeReference.Arguments()), astTypeReference.Arguments()))
-	}
-
-	if foundType.ParameterCount() == 0 {
-		return foundType, nil
-	}
-
+func DecorateTupleType(tupleType *ast.TupleType, t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
 	var convertedParameters []dtype.Type
-
-	for _, a := range astTypeReference.Arguments() {
+	for _, a := range tupleType.Types() {
 		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
 		if convertedParameterErr != nil {
 			return nil, convertedParameterErr
 		}
-
 		convertedParameters = append(convertedParameters, convertedParameter)
 	}
 
-	return dectype.NewInvokerType(foundType, convertedParameters)
+	return dectype.NewTupleTypeAtom(tupleType, convertedParameters), nil
 }
 
-func DecorateTupleType(tupleType *ast.TupleType, t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
-	var convertedParameters []*dectype.TupleTypeField
-	for index, a := range tupleType.Types() {
-		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
+func ConvertFromAstToDecoratedSlice(astTypes []ast.Type, t decorated.TypeAddAndReferenceMaker) ([]dtype.Type, decshared.DecoratedError) {
+	var types []dtype.Type
+	for _, astType := range astTypes {
+		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(astType, t)
 		if convertedParameterErr != nil {
 			return nil, convertedParameterErr
 		}
-		field := dectype.NewTupleTypeField(index, convertedParameter)
-		convertedParameters = append(convertedParameters, field)
+		types = append(types, convertedParameter)
 	}
 
-	return dectype.NewTupleTypeAtom(tupleType, convertedParameters), nil
+	return types, nil
 }
 
 func ConvertFromAstToDecorated(astType ast.Type,
@@ -115,7 +103,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if foundType == nil {
 			return nil, decorated.NewInternalError(fmt.Errorf("coulfdn't find type reference %v", info))
 		}
-		return newInvokerType(info, foundType, t)
+		return foundType, nil
 	case *ast.TypeReference:
 		refName := info.TypeIdentifier()
 		foundType, err := t.CreateSomeTypeReference(refName)
@@ -125,8 +113,15 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if foundType == nil {
 			return nil, decorated.NewInternalError(fmt.Errorf("coulfdn't find type reference %v", refName))
 		}
-
-		return newInvokerType(info, foundType, t)
+		types, sliceErr := ConvertFromAstToDecoratedSlice(info.Arguments(), t)
+		if sliceErr != nil {
+			return nil, sliceErr
+		}
+		nameOnlyContext := dectype.FindNameOnlyContextWithUnalias(foundType)
+		if nameOnlyContext != nil {
+			return concretize.ConcreteArguments(nameOnlyContext, types)
+		}
+		return foundType, nil
 	//case *ast.LocalTypeNameDefinition:
 	//	return dectype.NewLocalTypeNameDefinition(info, dectype.NewAnyType()), nil
 	case *ast.AnyMatchingType:

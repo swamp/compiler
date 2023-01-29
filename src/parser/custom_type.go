@@ -55,7 +55,7 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		return nil, afterAssignSpacingErr
 	}
 
-	typeParameterContext := ast.NewTypeParameterIdentifierContext(typeParameterIdentifiers)
+	typeParameterContext := ast.NewLocalTypeNameContext(typeParameterIdentifiers, nil)
 
 	if isAlias {
 		return parseTypeAlias(p, keywordType, tokenAlias, continuationIndentation, nameOfType, typeParameterContext, precedingComments)
@@ -106,7 +106,9 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		index++
 	}
 
-	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, typeParameterIdentifiers, precedingComments)
+	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, precedingComments)
 
-	return newCustomType, nil
+	typeParameterContext.SetNextType(newCustomType)
+
+	return typeParameterContext, nil
 }

@@ -16,34 +16,12 @@ import (
 
 type CustomTypeAtom struct {
 	nameToField      map[string]*CustomTypeVariantAtom
-	parameters       []*LocalTypeDefinition
 	variants         []*CustomTypeVariantAtom
 	astCustomType    *ast.CustomType
 	artifactTypeName ArtifactFullyQualifiedTypeName
 	references       []*CustomTypeReference
 	memorySize       MemorySize
 	memoryAlign      MemoryAlign
-}
-
-func (s *CustomTypeAtom) GenericNames() []*dtype.LocalTypeName {
-	argumentNames := LocalTypesToArgumentNames(s.parameters)
-	return argumentNames
-}
-
-func genericNamesString(argumentNames []*dtype.LocalTypeName) string {
-	s := ""
-	for index, argumentName := range argumentNames {
-		if index > 0 {
-			s += ", "
-		}
-		s += argumentName.Name()
-	}
-
-	if len(s) > 0 {
-		s = "<" + s + ">"
-	}
-
-	return s
 }
 
 func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
@@ -59,8 +37,7 @@ func (s *CustomTypeAtom) MemoryAlignment() MemoryAlign {
 }
 
 func (s *CustomTypeAtom) String() string {
-
-	return fmt.Sprintf("[CustomType %v%v %v]", s.artifactTypeName, genericNamesString(s.GenericNames()), s.variants)
+	return fmt.Sprintf("[CustomType %v %v]", s.artifactTypeName, s.variants)
 }
 
 func (s *CustomTypeAtom) HumanReadable() string {
@@ -145,20 +122,10 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariantAtom) (MemorySi
 	return maxVariantSize, maxVariantAlign
 }
 
-func createLocalTypeDefinitionFromNames(generics []*dtype.LocalTypeName) []*LocalTypeDefinition {
-	var definitions []*LocalTypeDefinition
-	for _, x := range generics {
-		definitions = append(definitions, NewLocalTypeDefinition(x, NewAnyType()))
-	}
-	return definitions
-}
-
-func NewCustomTypePrepare(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName,
-	names []*dtype.LocalTypeName) *CustomTypeAtom {
+func NewCustomTypePrepare(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName) *CustomTypeAtom {
 
 	s := &CustomTypeAtom{
 		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
-		parameters: createLocalTypeDefinitionFromNames(names),
 	}
 
 	return s
@@ -201,20 +168,7 @@ func (s *CustomTypeAtom) HasVariant(variantToLookFor *CustomTypeVariantAtom) boo
 }
 
 func (s *CustomTypeAtom) ParameterCount() int {
-	return len(s.parameters)
-}
-
-func (s *CustomTypeAtom) Parameters() []*LocalTypeDefinition {
-	return s.parameters
-}
-
-func (s *CustomTypeAtom) ParameterNames() []*dtype.LocalTypeName {
-	var names []*dtype.LocalTypeName
-	for _, parameter := range s.parameters {
-		names = append(names, parameter.identifier)
-	}
-
-	return names
+	return 0
 }
 
 func (s *CustomTypeAtom) Resolve() (dtype.Atom, error) {
@@ -247,19 +201,6 @@ func compareCustomType(u *CustomTypeAtom, other *CustomTypeAtom) error {
 	otherVariants := other.variants
 	if len(u.variants) != len(otherVariants) {
 		return fmt.Errorf("different number of variants %v %v", u.variants, otherVariants)
-	}
-
-	otherParameters := other.parameters
-
-	if len(u.parameters) != len(otherParameters) {
-		return fmt.Errorf("different number of variants %v %v", u.variants, otherVariants)
-	}
-
-	for index, param := range u.parameters {
-		equalErr := CompatibleTypes(param, otherParameters[index])
-		if equalErr != nil {
-			return fmt.Errorf("different generics %v %v %v", param, otherParameters[index], equalErr)
-		}
 	}
 
 	for index, variant := range u.variants {

@@ -115,6 +115,7 @@ func colorCustomType(recordType *dectype.CustomTypeAtom, indentation int, inside
 	}
 }
 
+/*
 func colorTypeEmbed(recordType *dectype.InvokerType, colorer coloring.Colorer) {
 	shortName := recordType.TypeGenerator().String()
 	typeSymbolToken := token.NewTypeSymbolToken(shortName, token.SourceFileReference{}, 0)
@@ -128,6 +129,7 @@ func colorTypeEmbed(recordType *dectype.InvokerType, colorer coloring.Colorer) {
 	}
 	colorer.OperatorString(")")
 }
+*/
 
 func colorPrimitive(primitive *dectype.PrimitiveAtom, indentation int, inside bool, colorer coloring.Colorer) {
 	fakeSymbol := token.NewTypeSymbolToken(primitive.HumanReadable(), token.SourceFileReference{}, 0)
@@ -167,8 +169,6 @@ func ColorType(dType dtype.Type, indentation int, inside bool, colorer coloring.
 		colorAlias(t, colorer)
 	case *dectype.LocalTypeDefinition:
 		colorLocalType(t, indentation, inside, colorer)
-	case *dectype.InvokerType:
-		colorTypeEmbed(t, colorer)
 	case *dectype.FunctionTypeReference:
 		colorFunctionType(t.FunctionAtom(), indentation, inside, colorer)
 	case *dectype.CustomTypeReference:

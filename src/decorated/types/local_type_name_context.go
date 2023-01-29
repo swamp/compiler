@@ -8,6 +8,7 @@ package dectype
 import (
 	"fmt"
 	"github.com/swamp/compiler/src/decorated/dtype"
+	"github.com/swamp/compiler/src/token"
 )
 
 type LocalTypeNameContext struct {
@@ -62,6 +63,26 @@ func NewLocalTypeNameContext() *LocalTypeNameContext {
 
 	*/
 	return t
+}
+
+func (t *LocalTypeNameContext) HumanReadable() string {
+	return fmt.Sprintf("local type name context")
+}
+
+func (t *LocalTypeNameContext) Resolve() (dtype.Atom, error) {
+	return nil, fmt.Errorf("can not be resolved since it is a type name context")
+}
+
+func (t *LocalTypeNameContext) ParameterCount() int {
+	return 0
+}
+
+func (t *LocalTypeNameContext) FetchPositionLength() token.SourceFileReference {
+	return t.Next().FetchPositionLength()
+}
+
+func (t *LocalTypeNameContext) WasReferenced() bool {
+	return true
 }
 
 func (t *LocalTypeNameContext) SetType(d dtype.Type) {

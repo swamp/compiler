@@ -142,13 +142,6 @@ func expandPrimitive(fn *dectype.PrimitiveAtom, list *ExpandedNode) {
 	}
 }
 
-func expandInvokerType(fn *dectype.InvokerType, list *ExpandedNode) {
-	expand(fn.TypeGenerator(), list)
-	for _, param := range fn.Params() {
-		expand(param, list)
-	}
-}
-
 func expandLetAssignment(assignment *LetAssignment, list *ExpandedNode) {
 	for _, param := range assignment.LetVariables() {
 		expand(param, list)
@@ -546,8 +539,6 @@ func expand(node Node, parentNode *ExpandedNode) {
 		expandCaseForTypeAlias(t, newParentNode)
 	case *dectype.PrimitiveAtom:
 		expandPrimitive(t, newParentNode)
-	case *dectype.InvokerType:
-		expandInvokerType(t, newParentNode)
 	case *dectype.FunctionAtom:
 		expandFunctionType(t, newParentNode)
 	case *dectype.CustomTypeAtom:

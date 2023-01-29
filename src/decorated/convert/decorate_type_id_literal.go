@@ -6,7 +6,9 @@
 package decorator
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -24,7 +26,12 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 		return nil, decorated.NewInternalError(err)
 	}
 
-	constructedType, err2 := dectype.CallType(typeRefType, []dtype.Type{decoratedType})
+	contextForTypeRef := dectype.FindNameOnlyContextWithUnalias(decoratedType)
+	if contextForTypeRef == nil {
+		panic(fmt.Errorf("internal error, TypeRef must have name only context"))
+	}
+
+	constructedType, err2 := concretize.ConcreteArguments(contextForTypeRef, []dtype.Type{decoratedType})
 	if err2 != nil {
 		return nil, decorated.NewInternalError(err2)
 	}

@@ -33,6 +33,16 @@ func IsAny(checkType dtype.Type) bool {
 	return primitive.PrimitiveName().Name() == "Any"
 }
 
+func FindNameOnlyContextWithUnalias(checkType dtype.Type) *LocalTypeNameContext {
+	unliased := Unalias(checkType)
+	localTypeNameContext, wasLocalTypeNameContext := unliased.(*LocalTypeNameContext)
+	if !wasLocalTypeNameContext {
+		return nil
+	}
+
+	return localTypeNameContext
+}
+
 func IsListLike(typeToCheck dtype.Type) bool {
 	unaliasType := UnaliasWithResolveInvoker(typeToCheck)
 

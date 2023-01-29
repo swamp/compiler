@@ -75,7 +75,7 @@ func MakeFakeNameContext(names []string) *ast.LocalTypeNameDefinitionContext {
 		generics = append(generics, generic)
 	}
 
-	return ast.NewTypeParameterIdentifierContext(generics, nil)
+	return ast.NewLocalTypeNameContext(generics, nil)
 }
 
 func MakeIntegerType() *dectype.PrimitiveAtom {

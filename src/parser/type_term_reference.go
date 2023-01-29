@@ -7,6 +7,7 @@ package parser
 
 import (
 	"github.com/swamp/compiler/src/ast"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 )
 
@@ -32,7 +33,7 @@ func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (a
 }
 
 func parseTypeTermReference(p ParseStream, keywordIndentation int,
-	typeParameterContext *ast.LocalTypeNameDefinitionContext, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
+	typeParameterContext ast.LocalTypeNameDefinitionContextDynamic, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, true, precedingComments)
 }
 
@@ -41,7 +42,7 @@ func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParame
 }
 
 func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
-	typeParameterContext *ast.LocalTypeNameDefinitionContext,
+	typeParameterContext ast.LocalTypeNameDefinitionContextDynamic,
 	checkTypeParam bool, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
 	if leftParen, wasLeftParen := p.maybeLeftParen(); wasLeftParen {
 		t, tErr := parseTypeReference(p, keywordIndentation, typeParameterContext, precedingComments)
@@ -96,7 +97,10 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 		}
 		return ast.NewTypeReference(x.(*ast.TypeIdentifier), typeParameters), nil
 	} else if ident, wasVariableIdentifier := p.wasVariableIdentifier(); wasVariableIdentifier {
-		typeParameter := typeParameterContext.ParseReferenceFromName(ast.NewLocalTypeName(ident))
+		typeParameter, refErr := typeParameterContext.GetOrCreateReferenceFromName(ast.NewLocalTypeName(ident))
+		if refErr != nil {
+			return nil, decorated.NewInternalError(refErr)
+		}
 		return typeParameter, nil
 	} else if asterisk, wasAsterisk := p.maybeAsterisk(); wasAsterisk {
 		return ast.NewAnyMatchingType(asterisk), nil

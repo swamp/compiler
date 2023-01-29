@@ -10,7 +10,7 @@ import (
 	parerr "github.com/swamp/compiler/src/parser/errors"
 )
 
-func readOptionalTypeParameters(p ParseStream, keywordIndentation int, typeParameterContext *ast.LocalTypeNameDefinitionContext) ([]ast.Type, parerr.ParseError) {
+func readOptionalTypeParameters(p ParseStream, keywordIndentation int, typeParameterContext ast.LocalTypeNameDefinitionContextDynamic) ([]ast.Type, parerr.ParseError) {
 	var parameterTypes []ast.Type
 
 	for {

@@ -37,7 +37,7 @@ func isConstant(expression ast.Expression) bool {
 	return false
 }
 
-func parseParameters(p ParseStream, keywordIndentation int) ([]*ast.FunctionParameter, parerr.ParseError) {
+func parseParameters(p ParseStream, keywordIndentation int, nameOnlyContext ast.LocalTypeNameDefinitionContextDynamic) ([]*ast.FunctionParameter, parerr.ParseError) {
 	var parameters []*ast.FunctionParameter
 
 	for {
@@ -66,10 +66,9 @@ func parseParameters(p ParseStream, keywordIndentation int) ([]*ast.FunctionPara
 		}
 
 		var astType ast.Type
-		typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
 
 		var tErr parerr.ParseError
-		astType, tErr = parseTypeReference(p, keywordIndentation, typeParameterContext, nil)
+		astType, tErr = parseTypeReference(p, keywordIndentation, nameOnlyContext, nil)
 		if tErr != nil {
 			return nil, tErr
 		}
@@ -96,12 +95,13 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 	}
 
 	expressionFollows := false
+	nameOnlyDynamicContext := ast.NewLocalTypeNameContext(nil, nil)
 	if !p.maybeAssign() {
 		_, foundLeftParen := p.maybeLeftParen()
 
 		if foundLeftParen {
 			var paramErr parerr.ParseError
-			parameters, paramErr = parseParameters(p, keywordIndentation)
+			parameters, paramErr = parseParameters(p, keywordIndentation, nameOnlyDynamicContext)
 			if paramErr != nil {
 				return nil, paramErr
 			}
@@ -115,10 +115,8 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 
 		p.eatOneSpace("Return type")
 
-		typeParameterContext := ast.NewTypeParameterIdentifierContext(nil)
-
 		var tErr parerr.ParseError
-		returnType, tErr = parseTypeReference(p, keywordIndentation, typeParameterContext, nil)
+		returnType, tErr = parseTypeReference(p, keywordIndentation, nameOnlyDynamicContext, nil)
 		if tErr != nil {
 			return nil, tErr
 		}
@@ -157,6 +155,10 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 	}
 
 	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, returnType, expression, precedingComments)
+
+	if !nameOnlyDynamicContext.IsEmpty() {
+
+	}
 
 	return ast.NewFunctionValueNamedDefinition(ident, newFunction), nil
 }

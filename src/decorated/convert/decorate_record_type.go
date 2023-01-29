@@ -7,7 +7,6 @@ package decorator
 
 import (
 	"github.com/swamp/compiler/src/ast"
-	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
@@ -25,16 +24,7 @@ func DecorateRecordType(info *ast.Record, t decorated.TypeAddAndReferenceMaker) 
 		convertedFields = append(convertedFields, convertedField)
 	}
 
-	var convertedParameters []dtype.Type
-	for _, a := range info.TypeParameters() {
-		convertedParameter, convertedParameterErr := t.LookupLocalTypeName(a)
-		if convertedParameterErr != nil {
-			return nil, convertedParameterErr
-		}
-		convertedParameters = append(convertedParameters, convertedParameter)
-	}
-
-	record := dectype.NewRecordType(info, convertedFields, convertedParameters)
+	record := dectype.NewRecordType(info, convertedFields)
 
 	return record, nil
 }

@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -24,7 +25,7 @@ func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, contex
 
 func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.FunctionCall, functionValueExpressionFunctionType *dectype.FunctionAtom, encounteredCallParametersType *dectype.FunctionAtom, context *VariableContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
 	/* Smash functions */
-	smashedFunctionType, smashErr := dectype.SmashFunctions(functionValueExpressionFunctionType, encounteredCallParametersType)
+	smashedFunctionType, smashErr := concretize.Function(functionValueExpressionFunctionType, encounteredCallParametersType)
 	if smashErr != nil {
 		return nil, decorated.NewCouldNotSmashFunctions(call, functionValueExpressionFunctionType, encounteredCallParametersType, smashErr)
 	}

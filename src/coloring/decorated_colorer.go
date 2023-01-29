@@ -19,7 +19,6 @@ type DecoratedColorer interface {
 	OperatorString(s string)
 	OneSpace()
 	CustomTypeVariant(t *dectype.CustomTypeVariantAtom)
-	InvokerType(t *dectype.InvokerType)
 	RecordTypeField(t *dectype.RecordField)
 	AliasName(t *dectype.Alias)
 	KeywordString(s string)

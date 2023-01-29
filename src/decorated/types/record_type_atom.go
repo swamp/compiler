@@ -20,7 +20,6 @@ type RecordAtom struct {
 	nameToField       map[string]*RecordField
 	parsedOrderFields []*RecordField
 	sortedFields      []*RecordField
-	genericTypes      []dtype.Type
 	record            *ast.Record
 	memorySize        MemorySize
 	memoryAlign       MemoryAlign
@@ -34,16 +33,12 @@ func (s *RecordAtom) MemoryAlignment() MemoryAlign {
 	return s.memoryAlign
 }
 
-func (s *RecordAtom) GenericTypes() []dtype.Type {
-	return s.genericTypes
-}
-
 func (s *RecordAtom) AstRecord() *ast.Record {
 	return s.record
 }
 
 func (s *RecordAtom) String() string {
-	return fmt.Sprintf("[RecordType %v%v]", s.sortedFields, s.genericTypes)
+	return fmt.Sprintf("[RecordType %v]", s.sortedFields)
 }
 
 func (s *RecordAtom) HumanReadable() string {
@@ -161,35 +156,27 @@ func (a ByFieldName) Len() int           { return len(a) }
 func (a ByFieldName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByFieldName) Less(i, j int) bool { return a[i].Name() < a[j].Name() }
 
-func NewRecordType(info *ast.Record, fields []*RecordField, genericTypes []dtype.Type) *RecordAtom {
+func NewRecordType(info *ast.Record, fields []*RecordField) *RecordAtom {
 	sortedFields := make([]*RecordField, len(fields))
 	copy(sortedFields, fields)
 	sort.Sort(ByFieldName(sortedFields))
 
 	nameToField := make(map[string]*RecordField)
-	foundLocalType := false
 	for index, field := range sortedFields {
 		name := field.Name()
 		if nameToField[name] != nil {
 			panic("we already have that struct name")
 		}
-		if IsLocalType(field.Type()) {
-			foundLocalType = true
-		}
 		field.SetIndexBySorter(index)
 		nameToField[name] = field
-	}
-
-	if foundLocalType && len(genericTypes) == 0 {
-		panic(fmt.Errorf("not allowed to contain local types without parameters %v %v", info, fields))
 	}
 
 	memorySize, memoryAlign := calculateFieldOffsetsAndRecordMemorySizeAndAlign(sortedFields)
 
 	return &RecordAtom{
 		sortedFields: sortedFields, record: info, parsedOrderFields: fields,
-		nameToField: nameToField, genericTypes: genericTypes,
-		memorySize: memorySize, memoryAlign: memoryAlign,
+		nameToField: nameToField,
+		memorySize:  memorySize, memoryAlign: memoryAlign,
 	}
 }
 
@@ -227,7 +214,7 @@ func (s *RecordAtom) FindField(name string) *RecordField {
 }
 
 func (s *RecordAtom) ParameterCount() int {
-	return len(s.genericTypes)
+	return 0
 }
 
 func (u *RecordAtom) Resolve() (dtype.Atom, error) {
