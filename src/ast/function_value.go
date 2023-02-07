@@ -7,6 +7,7 @@ package ast
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/swamp/compiler/src/token"
 )
@@ -17,23 +18,15 @@ type FunctionValue struct {
 	debugAssignedValue token.VariableSymbolToken
 	commentBlock       *MultilineComment
 	inclusive          token.SourceFileReference
-	returnType         Type
 	functionType       Type
 }
 
 func NewFunctionValue(debugAssignedValue token.VariableSymbolToken, parameters []*FunctionParameter,
-	returnType Type, expression Expression, commentBlock *MultilineComment) *FunctionValue {
+	functionType Type, expression Expression, commentBlock *MultilineComment) *FunctionValue {
 	inclusive := token.MakeInclusiveSourceFileReference(debugAssignedValue.FetchPositionLength(), expression.FetchPositionLength())
 
-	var types []Type
-	for _, param := range parameters {
-		types = append(types, param.parameterType)
-	}
-	types = append(types, returnType)
-
 	return &FunctionValue{
-		returnType:         returnType,
-		functionType:       NewFunctionType(types),
+		functionType:       functionType,
 		debugAssignedValue: debugAssignedValue, parameters: parameters,
 		expression: expression, commentBlock: commentBlock, inclusive: inclusive,
 	}
@@ -63,8 +56,19 @@ func (i *FunctionValue) DebugFunctionIdentifier() token.VariableSymbolToken {
 	return i.debugAssignedValue
 }
 
+func (i *FunctionValue) parametersString() string {
+	var typeParams []string
+	if len(i.parameters) == 0 {
+		return ""
+	}
+	for _, p := range i.parameters {
+		typeParams = append(typeParams, p.Name())
+	}
+	return strings.Join(typeParams, ", ")
+}
+
 func (i *FunctionValue) String() string {
-	return fmt.Sprintf("[Fn (%v) => %v = %v]", i.parameters, i.returnType, i.expression)
+	return fmt.Sprintf("[Fn %v (%s) = %v]", i.functionType, i.parametersString(), i.expression)
 }
 
 func (i *FunctionValue) DebugString() string {

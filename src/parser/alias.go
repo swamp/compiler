@@ -20,5 +20,11 @@ func parseTypeAlias(p ParseStream, keywordType token.Keyword, keywordAlias token
 		return nil, referencedTypeErr
 	}
 
-	return ast.NewAlias(keywordType, keywordAlias, nameOfAlias, referencedType, precedingComments), nil
+	typeToUse := referencedType
+	if !typeParameterContext.IsEmpty() {
+		typeParameterContext.SetNextType(referencedType)
+		typeToUse = typeParameterContext
+	}
+
+	return ast.NewAlias(keywordType, keywordAlias, nameOfAlias, typeToUse, precedingComments), nil
 }

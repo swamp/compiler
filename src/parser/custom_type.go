@@ -108,7 +108,13 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 
 	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, precedingComments)
 
-	typeParameterContext.SetNextType(newCustomType)
+	var expressionToReturn ast.Expression
 
-	return typeParameterContext, nil
+	expressionToReturn = newCustomType
+	if !typeParameterContext.IsEmpty() {
+		typeParameterContext.SetNextType(newCustomType)
+		expressionToReturn = typeParameterContext
+	}
+
+	return expressionToReturn, nil
 }

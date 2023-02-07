@@ -34,7 +34,7 @@ func (t *LocalTypeNameDefinitionContext) arrayToString() string {
 }
 
 func (t *LocalTypeNameDefinitionContext) String() string {
-	return fmt.Sprintf("[type-param-context %s]", t.arrayToString())
+	return fmt.Sprintf("[TypeParamContext %s +> %v]", t.arrayToString(), t.nextType)
 }
 
 func (t *LocalTypeNameDefinitionContext) DebugString() string {

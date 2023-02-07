@@ -286,6 +286,28 @@ func addPrimitive(types *decorated.ModuleTypes, atom *dectype.PrimitiveAtom) {
 	types.InternalAddPrimitive(atom.PrimitiveName(), atom)
 }
 
+func addLocalTypeNameContextPrimitive(types *decorated.ModuleTypes, context *dectype.LocalTypeNameContext) {
+	primitiveAtom, _ := context.Next().(*dectype.PrimitiveAtom)
+	types.InternalAddType(primitiveAtom.PrimitiveName(), context)
+}
+
+func MakeLocalTypeNameContext(name *ast.TypeIdentifier) *dectype.LocalTypeNameContext {
+	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", token.NewInternalSourceFileReference(), 0))
+	localTypeName := ast.NewLocalTypeName(localTypeVariable)
+	typeParameter := ast.NewLocalTypeNameDefinition(localTypeName)
+	localType := ast.NewLocalTypeNameReference(typeParameter)
+
+	decLocalTypeNameContext := dectype.NewLocalTypeNameContext()
+	decLocalTypeName := dtype.NewLocalTypeName(localTypeName)
+	decTypeNameDef := decLocalTypeNameContext.AddDef(decLocalTypeName)
+	decLocalTypeRef := dectype.NewLocalTypeNameReference(localType, decTypeNameDef)
+	primitiveType := dectype.NewPrimitiveType(name, []dtype.Type{decLocalTypeRef})
+
+	decLocalTypeNameContext.SetType(primitiveType)
+
+	return decLocalTypeNameContext
+}
+
 func kickstartPrimitives() *decorated.Module {
 	newSourceFileUri := token.MakeDocumentURI("file://internal/")
 	doc := &token.SourceFileDocument{Uri: newSourceFileUri}
@@ -319,27 +341,16 @@ func kickstartPrimitives() *decorated.Module {
 	addPrimitive(primitiveModuleLocalTypes, unmanagedType)
 
 	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReference(), 0))
-
-	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", token.NewInternalSourceFileReference(), 0))
-	localTypeName := ast.NewLocalTypeName(localTypeVariable)
-	typeParameter := ast.NewLocalTypeNameDefinition(localTypeName)
-	localType := ast.NewLocalTypeNameReference(typeParameter)
-
-	decTypeName := dtype.NewLocalTypeName(localTypeName)
-	localType := dectype.NewLocalTypeNameReference(localType, decTypeName)
-	listType := dectype.NewPrimitiveType(listIdentifier, []dtype.Type{localType})
-
-	addPrimitive(primitiveModuleLocalTypes, listType)
+	listIdentifierNameContext := MakeLocalTypeNameContext(listIdentifier)
+	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, listIdentifierNameContext)
 
 	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.NewInternalSourceFileReference(), 0))
-	arrayType := dectype.NewPrimitiveType(arrayIdentifier, []dtype.Type{localType})
-
-	addPrimitive(primitiveModuleLocalTypes, arrayType)
+	arrayTypeNameContext := MakeLocalTypeNameContext(arrayIdentifier)
+	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, arrayTypeNameContext)
 
 	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.NewInternalSourceFileReference(), 0))
-	typeRefType := dectype.NewPrimitiveType(typeRefIdentifier, []dtype.Type{localType})
-
-	addPrimitive(primitiveModuleLocalTypes, typeRefType)
+	typeRefTypeNameContext := MakeLocalTypeNameContext(typeRefIdentifier)
+	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, typeRefTypeNameContext)
 
 	ExposeEverythingInModule(rootPrimitiveModule)
 

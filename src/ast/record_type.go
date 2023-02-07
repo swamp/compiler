@@ -27,7 +27,7 @@ func (i *Record) Name() string {
 }
 
 func (i *Record) String() string {
-	return fmt.Sprintf("[RecordType %v %v]", i.fields)
+	return fmt.Sprintf("[RecordType %v]", i.fields)
 }
 
 func (i *Record) Fields() []*RecordTypeField {

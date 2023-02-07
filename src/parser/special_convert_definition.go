@@ -96,8 +96,13 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 
 	expressionFollows := false
 	nameOnlyDynamicContext := ast.NewLocalTypeNameContext(nil, nil)
+
+	//var functionType *ast.FunctionType
+	var typeToUse ast.Type
 	if !p.maybeAssign() {
 		_, foundLeftParen := p.maybeLeftParen()
+
+		var allTypes []ast.Type
 
 		if foundLeftParen {
 			var paramErr parerr.ParseError
@@ -111,6 +116,9 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 			if err := p.eatRightArrow(); err != nil {
 				return nil, err
 			}
+			for _, parameter := range parameters {
+				allTypes = append(allTypes, parameter.Type())
+			}
 		}
 
 		p.eatOneSpace("Return type")
@@ -121,9 +129,19 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 			return nil, tErr
 		}
 
+		allTypes = append(allTypes, returnType)
+
 		p.eatOneSpace("after arrow")
 
 		expressionFollows = p.maybeAssign()
+
+		functionType := ast.NewFunctionType(allTypes)
+
+		typeToUse = functionType
+		if !nameOnlyDynamicContext.IsEmpty() {
+			nameOnlyDynamicContext.SetNextType(typeToUse)
+			typeToUse = nameOnlyDynamicContext
+		}
 	} else {
 		expressionFollows = true
 	}
@@ -154,11 +172,7 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 		expression = ast.NewFunctionDeclarationExpression(ident.Symbol(), annotationFunctionType)
 	}
 
-	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, returnType, expression, precedingComments)
-
-	if !nameOnlyDynamicContext.IsEmpty() {
-
-	}
+	newFunction := ast.NewFunctionValue(ident.Symbol(), parameters, typeToUse, expression, precedingComments)
 
 	return ast.NewFunctionValueNamedDefinition(ident, newFunction), nil
 }

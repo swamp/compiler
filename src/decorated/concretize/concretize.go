@@ -93,7 +93,7 @@ func CustomTypeVariant(reference *dectype.CustomTypeVariantAtom, arguments []dty
 	return newVariant, nil
 }
 
-func Function(reference *dectype.FunctionAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
+func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
 	if hasAnyMatching, startIndex := dectype.HasAnyMatchingTypes(reference.FunctionParameterTypes()); hasAnyMatching {
 		originalInitialCount := startIndex
 		originalEndCount := len(reference.FunctionParameterTypes()) - startIndex - 2
@@ -116,7 +116,7 @@ func Function(reference *dectype.FunctionAtom, arguments []dtype.Type, resolver 
 
 		//created := dectype.NewFunctionAtom(reference.AstFunction(), allConverted)
 
-		return Function(reference, allConverted, resolver)
+		return FunctionType(reference, allConverted, resolver)
 	} else {
 		if len(reference.FunctionParameterTypes()) < len(arguments) {
 			return nil, decorated.NewInternalError(fmt.Errorf("too few parameter types"))
@@ -161,7 +161,7 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 			return nil, err
 		}
 	case *dectype.FunctionAtom:
-		resolvedType, err = Function(t, concreteArguments, resolveLocalTypeNames)
+		resolvedType, err = FunctionType(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {
 			return nil, err
 		}

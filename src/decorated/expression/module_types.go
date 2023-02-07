@@ -35,9 +35,10 @@ func (t *ModuleTypes) SourceModule() *Module {
 }
 
 // -----------------------------------------------------
-//                    Find
-// -----------------------------------------------------
 //
+//	Find
+//
+// -----------------------------------------------------
 func (t *ModuleTypes) FindType(identifier *ast.TypeIdentifier) dtype.Type {
 	found := t.identifierToType[identifier.Name()]
 	return found
@@ -52,7 +53,7 @@ func (t *ModuleTypes) FindBuiltInType(name string) dtype.Type {
 //                    Declare
 // -----------------------------------------------------
 
-func (t *ModuleTypes) internalAddType(typeIdentifier *ast.TypeIdentifier, realType dtype.Type) error {
+func (t *ModuleTypes) InternalAddType(typeIdentifier *ast.TypeIdentifier, realType dtype.Type) error {
 	existingType := t.FindType(typeIdentifier)
 	if existingType != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingType)
@@ -62,7 +63,7 @@ func (t *ModuleTypes) internalAddType(typeIdentifier *ast.TypeIdentifier, realTy
 }
 
 func (t *ModuleTypes) InternalAddPrimitive(typeIdentifier *ast.TypeIdentifier, atom *dectype.PrimitiveAtom) error {
-	return t.internalAddType(typeIdentifier, atom)
+	return t.InternalAddType(typeIdentifier, atom)
 }
 
 type TypeError interface {
@@ -89,7 +90,7 @@ func (c *UnknownType) FetchPositionLength() token.SourceFileReference {
 }
 
 func (t *ModuleTypes) AddTypeAlias(alias *dectype.Alias) TypeError {
-	if err := t.internalAddType(alias.TypeIdentifier(), alias); err != nil {
+	if err := t.InternalAddType(alias.TypeIdentifier(), alias); err != nil {
 		return &UnknownType{sourceFileReference: alias.AstAlias().FetchPositionLength(), errString: err.Error()}
 	}
 
@@ -98,12 +99,12 @@ func (t *ModuleTypes) AddTypeAlias(alias *dectype.Alias) TypeError {
 
 func (t *ModuleTypes) addCustomTypeVariantConstructors(customType *dectype.CustomTypeAtom) {
 	for _, variant := range customType.Variants() {
-		t.internalAddType(variant.Name(), variant)
+		t.InternalAddType(variant.Name(), variant)
 	}
 }
 
 func (t *ModuleTypes) AddCustomType(customType *dectype.CustomTypeAtom) TypeError {
-	t.internalAddType(customType.TypeIdentifier(), customType)
+	t.InternalAddType(customType.TypeIdentifier(), customType)
 	t.addCustomTypeVariantConstructors(customType)
 	return nil
 }
