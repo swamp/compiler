@@ -57,6 +57,9 @@ func (g *RootStatementHandler) findTypeFromAstType(constantType ast.Type) (dtype
 
 func ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType ast.Type, typeRepo decorated.TypeAddAndReferenceMaker, localComments []ast.LocalComment) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	customType2, _ := hopefullyCustomType.(*ast.CustomType)
+	if customType2 == nil {
+		panic(fmt.Errorf("what is this %T", customType2))
+	}
 	resultType, tErr := DecorateCustomType(customType2, typeRepo)
 	if tErr != nil {
 		return nil, tErr
@@ -64,8 +67,9 @@ func ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType ast.Type, typ
 	return resultType, nil
 }
 
-func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *ast.CustomType) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
-	customType, convertErr := ConvertWrappedOrNormalCustomTypeStatement(customTypeStatement, g.typeRepo, nil)
+func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *ast.CustomType, localNameContext *dectype.LocalTypeNameContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+	subRepo := g.typeRepo.MakeLocalNameContext(localNameContext)
+	customType, convertErr := ConvertWrappedOrNormalCustomTypeStatement(customTypeStatement, subRepo, nil)
 	g.localComments = nil
 	if convertErr != nil {
 		return nil, convertErr
@@ -192,12 +196,44 @@ func (g *RootStatementHandler) defineNamedFunctionValue(d DecorateStream, target
 	return nil
 }
 
+func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *ast.CustomTypeNamedDefinition) (decorated.Statement, decshared.DecoratedError) {
+	astContext, wasAstContext := customTypeStatement.CustomType().(*ast.LocalTypeNameDefinitionContext)
+
+	context := dectype.NewLocalTypeNameContext()
+	var customType *ast.CustomType
+	if wasAstContext {
+		for _, name := range astContext.LocalTypeNames() {
+			decLocalTypeName := dtype.NewLocalTypeName(name)
+			context.AddDef(decLocalTypeName)
+		}
+		customType = astContext.Next().(*ast.CustomType)
+	} else {
+		customType = customTypeStatement.CustomType().(*ast.CustomType)
+	}
+
+	decCustomType, err := g.handleCustomTypeStatement(customType, context)
+	if err != nil {
+		return nil, err
+	}
+
+	var typeToUse dtype.Type
+
+	if context.HasDefinitions() {
+		context.SetType(decCustomType)
+		typeToUse = context
+	} else {
+		typeToUse = decCustomType
+	}
+
+	return decorated.NewNamedCustomType(customType.Identifier(), typeToUse), nil
+}
+
 func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {
 	switch v := statement.(type) {
 	case *ast.Alias:
 		return g.handleAliasStatement(v)
-	case *ast.CustomType:
-		return g.handleCustomTypeStatement(v)
+	case *ast.CustomTypeNamedDefinition:
+		return g.handleCustomTypeStatementEx(v)
 	case *ast.FunctionValueNamedDefinition:
 		return g.declareNamedFunctionValue(g.decorateStream, v)
 	case *ast.MultilineComment:

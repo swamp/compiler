@@ -18,7 +18,7 @@ import (
 
 type TypeReferenceMaker interface {
 	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError)
-	CreateLocalTypeReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeDefinitionReference, decshared.DecoratedError)
+	CreateLocalTypeNameOnlyReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeNameReference, decshared.DecoratedError)
 	LookupLocalTypeName(some *ast.LocalTypeName) (dtype.Type, decshared.DecoratedError)
 }
 
@@ -26,8 +26,10 @@ type TypeAddAndReferenceMaker interface {
 	TypeReferenceMaker
 	AddTypeAlias(alias *dectype.Alias) TypeError
 	AddCustomType(customType *dectype.CustomTypeAtom) TypeError
+	AddCustomTypeWrappedInNameOnlyContext(localNameContext *dectype.LocalTypeNameContext) TypeError
 	FindBuiltInType(s string) dtype.Type
 	SourceModule() *Module
+	MakeLocalNameContext(localNameContext *dectype.LocalTypeNameContext) TypeAddAndReferenceMaker
 }
 
 type FullyQualifiedPackageVariableName struct {
@@ -163,7 +165,7 @@ func (m *Module) SetRootNodes(nodes []Node) {
 	m.expandedRootNodes = nil
 
 	moduleLocalPath, _ := m.sourceFileUri.Uri.ToLocalFilePath()
-	log.Printf("all root nodes in: %v root node count: %d", m.FullyQualifiedModuleName(), len(nodes))
+	//log.Printf("all root nodes in: %v root node count: %d", m.FullyQualifiedModuleName(), len(nodes))
 	for _, node := range expandedNodes {
 		sourceRef := node.node.FetchPositionLength()
 		if sourceRef.Document == nil {

@@ -23,7 +23,7 @@ func (g *FunctionParameterReference) Type() dtype.Type {
 }
 
 func (g *FunctionParameterReference) String() string {
-	return fmt.Sprintf("[FunctionParamRef %v]", g.referencedParameter)
+	return fmt.Sprintf("[ParamRef %v]", g.referencedParameter)
 }
 
 func (g *FunctionParameterReference) HumanReadable() string {

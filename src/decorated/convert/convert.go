@@ -74,6 +74,18 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		newType := dectype.NewAliasType(info, artifactTypeName, subType)
 		return newType, t.AddTypeAlias(newType)
 
+	case *ast.LocalTypeNameDefinitionContext:
+		decContext := dectype.NewLocalTypeNameContext()
+		for _, name := range info.LocalTypeNames() {
+			decName := dtype.NewLocalTypeName(name)
+			decContext.AddDef(decName)
+		}
+		subContext := t.MakeLocalNameContext(decContext)
+		subType, subTypeErr := ConvertFromAstToDecorated(info.Next(), subContext)
+		if subTypeErr != nil {
+			return nil, subTypeErr
+		}
+		return subType, nil
 	case *ast.Record:
 		return DecorateRecordType(info, t)
 
@@ -93,7 +105,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 
 	case *ast.LocalTypeNameReference:
 		//artifactTypeName := t.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(info.Identifier())
-		return t.CreateLocalTypeReference(info)
+		return t.CreateLocalTypeNameOnlyReference(info)
 		//return dectype.NewLocalTypeDefinitionReference(info, dectype.NewAnyType()), nil
 	case *ast.TypeReferenceScoped:
 		foundType, err := t.CreateSomeTypeReference(info.TypeResolver())

@@ -7,6 +7,7 @@ package dectype
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
@@ -99,4 +100,13 @@ func (t *LocalTypeNameContext) AddDef(identifier *dtype.LocalTypeName) *LocalTyp
 	t.definitions = append(t.definitions, nameDef)
 
 	return nameDef
+}
+
+func (t *LocalTypeNameContext) ReferenceNameOnly(identifier *ast.LocalTypeNameReference) (*LocalTypeNameReference, error) {
+	found := t.resolvedArguments[identifier.Name()]
+	if found == nil {
+		return nil, fmt.Errorf("could not find %v", identifier)
+	}
+
+	return NewLocalTypeNameReference(identifier, found), nil
 }

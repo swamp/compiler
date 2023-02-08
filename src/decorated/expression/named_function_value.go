@@ -62,11 +62,11 @@ func (n *NamedFunctionValue) DefineExpression(decoratedExpression Expression) {
 }
 
 func (n *NamedFunctionValue) String() string {
-	return fmt.Sprintf("named function value %v = %v", n.identifier, n.value)
+	return fmt.Sprintf("named function customTypeAtom %v = %v", n.identifier, n.value)
 }
 
 func (n *NamedFunctionValue) StatementString() string {
-	return fmt.Sprintf("named function value %v = %v", n.identifier, n.value)
+	return fmt.Sprintf("named function customTypeAtom %v = %v", n.identifier, n.value)
 }
 
 func (n *NamedFunctionValue) FunctionName() *FunctionName {

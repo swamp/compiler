@@ -77,6 +77,10 @@ func Unalias(t dtype.Type) dtype.Type {
 
 func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 	unaliased := Unalias(t)
+	localTypeNameRef, _ := unaliased.(*LocalTypeNameReference)
+	if localTypeNameRef != nil {
+		return Unalias(localTypeNameRef.ReferencedType())
+	}
 
 	return unaliased
 }

@@ -42,6 +42,9 @@ func (t *LocalTypeNameDefinitionContext) DebugString() string {
 }
 
 func (t *LocalTypeNameDefinitionContext) GetOrCreateReferenceFromName(parameter *LocalTypeName) (*LocalTypeNameReference, error) {
+	if t == nil {
+		panic(fmt.Errorf("no local type name definition context"))
+	}
 	if !t.isDynamic {
 		return t.ParseReferenceFromName(parameter)
 	}
@@ -90,7 +93,15 @@ func (t *LocalTypeNameDefinitionContext) Name() string {
 }
 
 func (t *LocalTypeNameDefinitionContext) SetNextType(p Type) {
+	next, _ := p.(*LocalTypeNameDefinitionContext)
+	if next != nil {
+		panic(fmt.Errorf("next type can't be a context itself"))
+	}
 	t.nextType = p
+}
+
+func (t *LocalTypeNameDefinitionContext) Next() Type {
+	return t.nextType
 }
 
 func NewLocalTypeNameContext(typeParameterNames []*LocalTypeName, nextType Type) *LocalTypeNameDefinitionContext {

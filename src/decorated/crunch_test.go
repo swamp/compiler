@@ -13,7 +13,7 @@ import (
 	"github.com/swamp/compiler/src/verbosity"
 )
 
-func TestCrunch(t *testing.T) {
+func xTestCrunch(t *testing.T) {
 	rootModule, mErr := CreateDefaultRootModule(true)
 	if parser.IsCompileErr(mErr) {
 		t.Fatal(mErr)

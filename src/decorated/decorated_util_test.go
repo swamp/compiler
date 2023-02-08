@@ -82,6 +82,8 @@ func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
 			}
 		}
 		t.Errorf("Mismatch strings received \n%v\n but expected\n%v", decorationString, ast)
+	} else {
+		log.Printf("passed")
 	}
 }
 

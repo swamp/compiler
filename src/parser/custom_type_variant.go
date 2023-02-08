@@ -6,11 +6,16 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
+	"reflect"
 )
 
 func parseCustomTypeVariantTypesUntilNewline(p ParseStream, keywordIndentation int, typeParameterContext *ast.LocalTypeNameDefinitionContext) ([]ast.Type, parerr.ParseError) {
+	if reflect.ValueOf(typeParameterContext).IsNil() {
+		panic(fmt.Errorf("can not be nil"))
+	}
 	var customTypeVariantTypes []ast.Type
 	for {
 		foundSomething, wasNewLine := p.detectNewLineOrSpace()

@@ -190,6 +190,11 @@ func expandNamedFunctionValue(namedFunctionValue *NamedFunctionValue, list *Expa
 	expand(namedFunctionValue.Value(), list)
 }
 
+func expandNamedCustomType(namedCustomType *NamedCustomType, list *ExpandedNode) {
+	//expand(namedCustomType.FunctionName(), list)
+	expand(namedCustomType.customTypeAtom, list)
+}
+
 func expandFunctionParameterDefinition(parameter *FunctionParameterDefinition, list *ExpandedNode) {
 	expand(parameter.Type(), list)
 }
@@ -451,6 +456,8 @@ func expand(node Node, parentNode *ExpandedNode) {
 		expandFunctionParameterDefinition(t, newParentNode)
 	case *NamedFunctionValue:
 		expandNamedFunctionValue(t, newParentNode)
+	case *NamedCustomType:
+		expandNamedCustomType(t, newParentNode)
 	case *CustomTypeVariantConstructor:
 		expandCustomTypeVariantConstructor(t, newParentNode)
 	case *RecordConstructorFromParameters:
@@ -550,6 +557,10 @@ func expand(node Node, parentNode *ExpandedNode) {
 	case *dectype.RecordFieldName:
 	case *dectype.AliasReference:
 		expandTypeReference(t, newParentNode)
+	case *dectype.LocalTypeNameContext:
+		expand(t.Next(), newParentNode)
+	case *dectype.LocalTypeNameReference:
+
 	case *dectype.CustomTypeReference:
 		expandTypeReference(t, newParentNode)
 	case *dectype.PrimitiveTypeReference:

@@ -6,15 +6,20 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/tokenize"
+	"reflect"
 )
 
 func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 	parameterIdentifierContext *ast.LocalTypeNameDefinitionContext,
 	precedingComments *ast.MultilineComment) ([]*ast.RecordTypeField, parerr.ParseError) {
+	if reflect.ValueOf(parameterIdentifierContext).IsNil() {
+		panic(fmt.Errorf("parameterIdentifierContext is nil"))
+	}
 	var fields []*ast.RecordTypeField
 	index := 0
 	for {
@@ -70,13 +75,9 @@ func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters 
 		return nil, err
 	}
 
-	hasGenerics := len(typeParameters) > 0
-	var context *ast.LocalTypeNameDefinitionContext
-	if hasGenerics {
-		context = ast.NewLocalTypeNameContext(typeParameters, nil)
-	}
+	context := ast.NewLocalTypeNameContext(typeParameters, nil)
 
-	fields, fieldsErr := parseRecordTypeFields(p, keywordIndentation, nil, precedingComments)
+	fields, fieldsErr := parseRecordTypeFields(p, keywordIndentation, context, precedingComments)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
@@ -90,7 +91,7 @@ func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters 
 
 	recordType := ast.NewRecordType(startCurly, rightCurly, fields, precedingComments)
 
-	if hasGenerics {
+	if !context.IsEmpty() {
 		context.SetNextType(recordType)
 		return context, nil
 	}

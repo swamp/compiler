@@ -86,7 +86,7 @@ func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifi
 	} else {
 		normal, wasNormal := someTypeIdentifier.(*ast.TypeIdentifier)
 		if !wasNormal {
-			return nil, NewInternalError(fmt.Errorf("not sure of this type identifier %T", someTypeIdentifier))
+			return nil, NewInternalError(fmt.Errorf("not sure of this type functionParameter %T", someTypeIdentifier))
 		}
 
 		foundType, foundNamed, typeErr := l.FindType(normal)
@@ -107,6 +107,8 @@ func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifi
 		reference = dectype.NewPrimitiveTypeReference(named, t)
 	case *dectype.CustomTypeAtom:
 		reference = dectype.NewCustomTypeReference(named, t)
+	case *dectype.LocalTypeNameContext:
+		// TODO: FIX THIS
 	default:
 		log.Printf("typelookup: what is this type: %T", t)
 	}

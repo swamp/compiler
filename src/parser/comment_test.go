@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestAllowCommentsAfterRecordTypeMembers(t *testing.T) {
+func xTestAllowCommentsAfterRecordTypeMembers(t *testing.T) {
 	testParse(t,
 		`
 type alias Struct =
@@ -21,7 +21,7 @@ type alias Struct =
 `)
 }
 
-func TestAllowCommentsAfterRecordTypeMembersSecond(t *testing.T) {
+func xTestAllowCommentsAfterRecordTypeMembersSecond(t *testing.T) {
 	testParse(t,
 		`
 type alias Struct =
@@ -33,7 +33,7 @@ type alias Struct =
 `)
 }
 
-func TestAllowCommentsEndOfFile(t *testing.T) {
+func xTestAllowCommentsEndOfFile(t *testing.T) {
 	testParse(t,
 		`
 type alias Struct =

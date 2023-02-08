@@ -16,10 +16,16 @@ type CustomTypeVariantConstructor struct {
 	arguments                  []Expression
 	customTypeVariantReference *dectype.CustomTypeVariantReference
 	returnType                 dtype.Type
+	inclusive                  token.SourceFileReference
 }
 
 func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomTypeVariantReference,
 	arguments []Expression) *CustomTypeVariantConstructor {
+	inclusive := customTypeVariantReference.FetchPositionLength()
+	if len(arguments) > 0 {
+		inclusive = token.MakeInclusiveSourceFileReference(customTypeVariantReference.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength())
+	}
+
 	if customTypeVariantReference == nil {
 		panic("custom customTypeVariant is nil")
 	}
@@ -68,6 +74,7 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomT
 	return &CustomTypeVariantConstructor{
 		customTypeVariantReference: customTypeVariantReference,
 		arguments:                  arguments,
+		inclusive:                  inclusive,
 		returnType:                 returnType,
 	}
 }
@@ -101,5 +108,5 @@ func (c *CustomTypeVariantConstructor) HumanReadable() string {
 }
 
 func (c *CustomTypeVariantConstructor) FetchPositionLength() token.SourceFileReference {
-	return c.customTypeVariantReference.FetchPositionLength()
+	return c.inclusive
 }

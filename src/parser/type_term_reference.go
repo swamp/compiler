@@ -6,9 +6,11 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	parerr "github.com/swamp/compiler/src/parser/errors"
+	"reflect"
 )
 
 func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (ast.TypeIdentifierNormalOrScoped, parerr.ParseError) {
@@ -44,6 +46,9 @@ func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParame
 func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 	typeParameterContext ast.LocalTypeNameDefinitionContextDynamic,
 	checkTypeParam bool, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
+	if reflect.ValueOf(typeParameterContext).IsNil() {
+		panic(fmt.Errorf("can not be nil"))
+	}
 	if leftParen, wasLeftParen := p.maybeLeftParen(); wasLeftParen {
 		t, tErr := parseTypeReference(p, keywordIndentation, typeParameterContext, precedingComments)
 		if tErr != nil {

@@ -15,17 +15,20 @@ import (
 )
 
 type FunctionParameterDefinition struct {
-	identifier    *ast.FunctionParameter
-	generatedType dtype.Type
-	references    []*FunctionParameterReference
+	functionParameter *ast.FunctionParameter
+	generatedType     dtype.Type
+	references        []*FunctionParameterReference
 }
 
 func NewFunctionParameterDefinition(identifier *ast.FunctionParameter, convertedType dtype.Type) *FunctionParameterDefinition {
-	return &FunctionParameterDefinition{identifier: identifier, generatedType: convertedType}
+	if identifier == nil {
+		panic(fmt.Errorf("functionParameter must be set"))
+	}
+	return &FunctionParameterDefinition{functionParameter: identifier, generatedType: convertedType}
 }
 
 func (a *FunctionParameterDefinition) Parameter() *ast.FunctionParameter {
-	return a.identifier
+	return a.functionParameter
 }
 
 func (a *FunctionParameterDefinition) Type() dtype.Type {
@@ -33,7 +36,7 @@ func (a *FunctionParameterDefinition) Type() dtype.Type {
 }
 
 func (a *FunctionParameterDefinition) String() string {
-	return fmt.Sprintf("[Arg %v : %v]", a.identifier, a.generatedType)
+	return fmt.Sprintf("[Param %v : %v]", a.functionParameter.SymbolName(), a.generatedType)
 }
 
 func (a *FunctionParameterDefinition) HumanReadable() string {
@@ -41,7 +44,7 @@ func (a *FunctionParameterDefinition) HumanReadable() string {
 }
 
 func (a *FunctionParameterDefinition) FetchPositionLength() token.SourceFileReference {
-	return a.identifier.FetchPositionLength()
+	return a.functionParameter.FetchPositionLength()
 }
 
 func (a *FunctionParameterDefinition) AddReferee(ref *FunctionParameterReference) {

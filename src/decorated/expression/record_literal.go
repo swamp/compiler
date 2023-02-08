@@ -49,7 +49,7 @@ func (n *RecordLiteralField) String() string {
 }
 
 func (n *RecordLiteralField) HumanReadable() string {
-	return "Record field identifier"
+	return "Record field functionParameter"
 }
 
 func (n *RecordLiteralField) InAssignment() *RecordLiteralAssignment {
@@ -111,7 +111,7 @@ func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate Expression,
 		}
 		lastFoundIndex = assignment.index
 	}
-	inclusive := token.MakeInclusiveSourceFileReference(parseOrderedAssignments[0].Expression().FetchPositionLength(), parseOrderedAssignments[len(parseOrderedAssignments)-1].expression.FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(parseOrderedAssignments[0].FieldName().FetchPositionLength(), parseOrderedAssignments[len(parseOrderedAssignments)-1].expression.FetchPositionLength())
 
 	return &RecordLiteral{
 		t: t, recordTemplate: recordTemplate,

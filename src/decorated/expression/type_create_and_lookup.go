@@ -16,13 +16,22 @@ import (
 )
 
 type TypeCreateAndLookup struct {
-	lookup          *TypeLookup
-	localTypeLookup *dectype.TypeParameterContext
-	localTypes      *ModuleTypes
+	lookup           *TypeLookup
+	localTypeLookup  *dectype.TypeParameterContext
+	localNameContext *dectype.LocalTypeNameContext
+	localTypes       *ModuleTypes
 }
 
 func NewTypeCreateAndLookup(lookup *TypeLookup, localTypes *ModuleTypes, localTypeContext *dectype.TypeParameterContext) *TypeCreateAndLookup {
 	return &TypeCreateAndLookup{localTypes: localTypes, lookup: lookup, localTypeLookup: localTypeContext}
+}
+
+func (l *TypeCreateAndLookup) MakeLocalNameContext(localNameContext *dectype.LocalTypeNameContext) TypeAddAndReferenceMaker {
+	if localNameContext == nil {
+		panic(fmt.Errorf("can not set to nil local name context"))
+	}
+
+	return &TypeCreateAndLookup{localTypes: l.localTypes, lookup: l.lookup, localTypeLookup: l.localTypeLookup, localNameContext: localNameContext}
 }
 
 func (l *TypeCreateAndLookup) AddTypeAlias(alias *dectype.Alias) TypeError {
@@ -31,6 +40,10 @@ func (l *TypeCreateAndLookup) AddTypeAlias(alias *dectype.Alias) TypeError {
 
 func (l *TypeCreateAndLookup) AddCustomType(customType *dectype.CustomTypeAtom) TypeError {
 	return l.localTypes.AddCustomType(customType)
+}
+
+func (l *TypeCreateAndLookup) AddCustomTypeWrappedInNameOnlyContext(customTypeWrappedInContext *dectype.LocalTypeNameContext) TypeError {
+	return l.localTypes.AddCustomTypeWrappedInNameOnlyContext(customTypeWrappedInContext)
 }
 
 func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
@@ -47,8 +60,11 @@ func (l *TypeCreateAndLookup) FindBuiltInType(s string) dtype.Type {
 	return foundType
 }
 
-func (l *TypeCreateAndLookup) CreateLocalTypeReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeDefinitionReference, decshared.DecoratedError) {
-	found, err := l.localTypeLookup.LookupTypeAstRef(some)
+func (l *TypeCreateAndLookup) CreateLocalTypeNameOnlyReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeNameReference, decshared.DecoratedError) {
+	if l.localNameContext == nil {
+		panic(fmt.Errorf("no localNameContext set"))
+	}
+	found, err := l.localNameContext.ReferenceNameOnly(some)
 	if err != nil {
 		return nil, NewInternalError(err)
 	}

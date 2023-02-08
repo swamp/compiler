@@ -75,7 +75,7 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 			return nil, variantIdentifierErr
 		}
 
-		variantTypes, variantTypesErr := parseCustomTypeVariantTypesUntilNewline(p, keywordIndentation, nil)
+		variantTypes, variantTypesErr := parseCustomTypeVariantTypesUntilNewline(p, keywordIndentation, typeParameterContext)
 		if variantTypesErr != nil {
 			return nil, variantTypesErr
 		}
@@ -108,13 +108,13 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 
 	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, precedingComments)
 
-	var expressionToReturn ast.Expression
+	var typeToReturn ast.Type
 
-	expressionToReturn = newCustomType
+	typeToReturn = newCustomType
 	if !typeParameterContext.IsEmpty() {
 		typeParameterContext.SetNextType(newCustomType)
-		expressionToReturn = typeParameterContext
+		typeToReturn = typeParameterContext
 	}
 
-	return expressionToReturn, nil
+	return ast.NewCustomTypeNamedDefinition(typeToReturn), nil
 }

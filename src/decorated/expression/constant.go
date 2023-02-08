@@ -60,7 +60,7 @@ func (c *Constant) HumanReadable() string {
 }
 
 func (n *Constant) StatementString() string {
-	return fmt.Sprintf("constant value %v = %v", n.identifier, n.expression)
+	return fmt.Sprintf("constant customTypeAtom %v = %v", n.identifier, n.expression)
 }
 
 func (c *Constant) Type() dtype.Type {

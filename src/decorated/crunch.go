@@ -8,7 +8,6 @@ package deccy
 import (
 	"fmt"
 	"github.com/swamp/compiler/src/semantic"
-	"log"
 	"reflect"
 	"strings"
 
@@ -171,7 +170,7 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	importedModule := module.ImportedModules().ImportModule(rootModule.FullyQualifiedModuleName().Path(), rootModule, fakeImportStatement)
 
 	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.LocalTypes(), module.ImportedTypes())
-	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.LocalTypes(), dectype.NewTypeParameterContext())
+	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.LocalTypes(), nil)
 
 	converter := NewDecorator(moduleRepository, module, importedModule, createAndLookup)
 
@@ -206,7 +205,7 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	}
 	module.SetRootNodes(rootNodesConverted)
 
-	log.Printf("expandedNodes : %d", len(module.ExpandedNodes()))
+	//	log.Printf("expandedNodes : %d", len(module.ExpandedNodes()))
 
 	_, semanticErr := semantic.GenerateTokensEncodedValues(module.ExpandedNodes(), module.Document())
 	if semanticErr != nil {

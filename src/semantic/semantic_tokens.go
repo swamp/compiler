@@ -1055,12 +1055,16 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenTypeReference(t, builder)
 	case *dectype.AliasReference:
 		return addSemanticTokenTypeReference(t, builder)
+	case *dectype.LocalTypeNameReference:
+		return addSemanticToken(t.ReferencedType(), builder)
 	case *dectype.FunctionAtom:
 		return addSemanticTokenFunctionType(t, builder)
 	case *dectype.Alias:
 		return addSemanticTokenTypeAlias(t, builder)
 	case *dectype.RecordAtom:
 		return addSemanticTokenRecordType(t, builder)
+	case *dectype.PrimitiveAtom:
+		return nil
 	case *dectype.TupleTypeAtom:
 		return addSemanticTokenTupleType(t, builder)
 	case *dectype.CustomTypeAtom:

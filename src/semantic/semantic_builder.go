@@ -127,7 +127,7 @@ func (s *SemanticBuilder) EncodeSymbol(tokenRange token.Range, tokenType string,
 		log.Printf("--> semantic added incorrect semantic node: %v : %v (%T) '%s'", tokenRange, tokenType, node, debugSourceFileReference.ToStartAndEndReferenceString())
 		panic(fmt.Errorf("semantic tokens must be encoded in order! previous:%v to: %v and \nprevious:%v to:%v", s.lastRange, tokenRange, s.lastDebug, node))
 	}
-	log.Printf("adding semantic symbol %v '%s' '%v'", tokenRange, debugSourceFileReference.ToStartAndEndReferenceString(), node)
+	//log.Printf("adding semantic symbol %v '%s' '%v'", tokenRange, debugSourceFileReference.ToStartAndEndReferenceString(), node)
 
 	tokenTypeId := FindInStrings(s.tokenTypes, tokenType)
 	if tokenTypeId < 0 {
