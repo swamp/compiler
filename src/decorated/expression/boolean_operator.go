@@ -28,11 +28,12 @@ const (
 
 type BooleanOperator struct {
 	BinaryOperator
-	operatorType BooleanOperatorType
+	operatorType      BooleanOperatorType
+	astBinaryOperator *ast.BinaryOperator
 }
 
 func NewBooleanOperator(infix *ast.BinaryOperator, left Expression, right Expression, operatorType BooleanOperatorType, booleanType dtype.Type) (*BooleanOperator, decshared.DecoratedError) {
-	a := &BooleanOperator{operatorType: operatorType}
+	a := &BooleanOperator{operatorType: operatorType, astBinaryOperator: infix}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
 	if err := dectype.CompatibleTypes(left.Type(), right.Type()); err != nil {

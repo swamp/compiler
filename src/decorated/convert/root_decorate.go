@@ -55,12 +55,8 @@ func (g *RootStatementHandler) findTypeFromAstType(constantType ast.Type) (dtype
 	return t, nil
 }
 
-func ConvertWrappedOrNormalCustomTypeStatement(hopefullyCustomType ast.Type, typeRepo decorated.TypeAddAndReferenceMaker, localComments []ast.LocalComment) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
-	customType2, _ := hopefullyCustomType.(*ast.CustomType)
-	if customType2 == nil {
-		panic(fmt.Errorf("what is this %T", customType2))
-	}
-	resultType, tErr := DecorateCustomType(customType2, typeRepo)
+func ConvertWrappedOrNormalCustomTypeStatement(customType *ast.CustomType, typeRepo decorated.TypeAddAndReferenceMaker, localComments []ast.LocalComment) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+	resultType, tErr := DecorateCustomType(customType, typeRepo)
 	if tErr != nil {
 		return nil, tErr
 	}
@@ -74,10 +70,7 @@ func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *as
 	if convertErr != nil {
 		return nil, convertErr
 	}
-	typeErr := g.typeRepo.AddCustomType(customType)
-	if typeErr != nil {
-		panic(typeErr)
-	}
+
 	return customType, nil
 }
 
@@ -200,32 +193,38 @@ func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *
 	astContext, wasAstContext := customTypeStatement.CustomType().(*ast.LocalTypeNameDefinitionContext)
 
 	context := dectype.NewLocalTypeNameContext()
-	var customType *ast.CustomType
+	var astCustomType *ast.CustomType
 	if wasAstContext {
 		for _, name := range astContext.LocalTypeNames() {
 			decLocalTypeName := dtype.NewLocalTypeName(name)
 			context.AddDef(decLocalTypeName)
 		}
-		customType = astContext.Next().(*ast.CustomType)
+		astCustomType, _ = astContext.Next().(*ast.CustomType)
 	} else {
-		customType = customTypeStatement.CustomType().(*ast.CustomType)
+		astCustomType = customTypeStatement.CustomType().(*ast.CustomType)
 	}
-
-	decCustomType, err := g.handleCustomTypeStatement(customType, context)
+	decCustomType, err := g.handleCustomTypeStatement(astCustomType, context)
 	if err != nil {
 		return nil, err
 	}
 
 	var typeToUse dtype.Type
-
-	if context.HasDefinitions() {
+	if wasAstContext {
 		context.SetType(decCustomType)
+		typeErr := g.typeRepo.AddCustomTypeWrappedInNameOnlyContext(context)
+		if typeErr != nil {
+			panic(typeErr)
+		}
 		typeToUse = context
 	} else {
 		typeToUse = decCustomType
+		typeErr := g.typeRepo.AddCustomType(decCustomType)
+		if typeErr != nil {
+			panic(typeErr)
+		}
 	}
 
-	return decorated.NewNamedCustomType(customType.Identifier(), typeToUse), nil
+	return decorated.NewNamedCustomType(astCustomType.Identifier(), typeToUse), nil
 }
 
 func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {

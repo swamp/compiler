@@ -13,13 +13,14 @@ import (
 )
 
 type BinaryOperator struct {
-	token    token.Token
-	left     Expression
-	operator token.OperatorToken
-	right    Expression
+	operatorToken token.Token
+	left          Expression
+	operator      token.OperatorToken
+	right         Expression
+	inclusive     token.SourceFileReference
 }
 
-func NewBinaryOperator(token token.Token, operator token.OperatorToken, left Expression,
+func NewBinaryOperator(operatorToken token.Token, operator token.OperatorToken, left Expression,
 	right Expression) *BinaryOperator {
 	if left == nil {
 		panic("left is nil")
@@ -28,12 +29,14 @@ func NewBinaryOperator(token token.Token, operator token.OperatorToken, left Exp
 	if right == nil {
 		panic("right is nil")
 	}
+	inclusive := token.MakeInclusiveSourceFileReference(left.FetchPositionLength(), right.FetchPositionLength())
 
 	return &BinaryOperator{
-		token:    token,
-		operator: operator,
-		left:     left,
-		right:    right,
+		operatorToken: operatorToken,
+		operator:      operator,
+		left:          left,
+		right:         right,
+		inclusive:     inclusive,
 	}
 }
 
@@ -42,7 +45,7 @@ func (i *BinaryOperator) Left() Expression {
 }
 
 func (i *BinaryOperator) OperatorType() token.Type {
-	return i.token.Type()
+	return i.operatorToken.Type()
 }
 
 func (i *BinaryOperator) Right() Expression {
@@ -50,7 +53,7 @@ func (i *BinaryOperator) Right() Expression {
 }
 
 func (i *BinaryOperator) Token() token.Token {
-	return i.token
+	return i.operatorToken
 }
 
 func (i *BinaryOperator) OperatorToken() token.OperatorToken {
@@ -58,7 +61,7 @@ func (i *BinaryOperator) OperatorToken() token.OperatorToken {
 }
 
 func (i *BinaryOperator) FetchPositionLength() token.SourceFileReference {
-	return i.token.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *BinaryOperator) String() string {

@@ -295,7 +295,7 @@ func MakeLocalTypeNameContext(name *ast.TypeIdentifier) *dectype.LocalTypeNameCo
 	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", token.NewInternalSourceFileReference(), 0))
 	localTypeName := ast.NewLocalTypeName(localTypeVariable)
 	typeParameter := ast.NewLocalTypeNameDefinition(localTypeName)
-	localType := ast.NewLocalTypeNameReference(typeParameter)
+	localType := ast.NewLocalTypeNameReference(localTypeName, typeParameter)
 
 	decLocalTypeNameContext := dectype.NewLocalTypeNameContext()
 	decLocalTypeName := dtype.NewLocalTypeName(localTypeName)

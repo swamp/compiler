@@ -122,7 +122,7 @@ func (e FunctionAtomMismatch) Error() string {
 func (u *FunctionAtom) IsEqual(other_ dtype.Atom) error {
 	other, wasFunctionAtom := other_.(*FunctionAtom)
 	if !wasFunctionAtom {
-		return fmt.Errorf("wasnt a function %v", other)
+		return fmt.Errorf("wasnt a function %v", other_)
 	}
 
 	otherParams := other.parameterTypes

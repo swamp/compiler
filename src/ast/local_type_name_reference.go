@@ -12,6 +12,7 @@ import (
 )
 
 type LocalTypeNameReference struct {
+	variable               *LocalTypeName
 	typeParameterReference *LocalTypeNameDefinition
 }
 
@@ -28,11 +29,11 @@ func (i *LocalTypeNameReference) LocalTypeNameDefinition() *LocalTypeNameDefinit
 }
 
 func (i *LocalTypeNameReference) FetchPositionLength() token.SourceFileReference {
-	return i.typeParameterReference.FetchPositionLength()
+	return i.variable.FetchPositionLength()
 }
 
-func NewLocalTypeNameReference(localTypeDefinition *LocalTypeNameDefinition) *LocalTypeNameReference {
-	x := &LocalTypeNameReference{typeParameterReference: localTypeDefinition}
+func NewLocalTypeNameReference(variable *LocalTypeName, localTypeDefinition *LocalTypeNameDefinition) *LocalTypeNameReference {
+	x := &LocalTypeNameReference{typeParameterReference: localTypeDefinition, variable: variable}
 	localTypeDefinition.AddReference(x)
 	return x
 }

@@ -55,7 +55,7 @@ func (t *LocalTypeNameDefinitionContext) GetOrCreateReferenceFromName(parameter 
 		t.lookup[parameter.Name()] = def
 	}
 
-	return NewLocalTypeNameReference(def), nil
+	return NewLocalTypeNameReference(parameter, def), nil
 }
 
 func (t *LocalTypeNameDefinitionContext) HasTypeParameter(parameter *LocalTypeNameDefinition) bool {
@@ -72,7 +72,7 @@ func (t *LocalTypeNameDefinitionContext) ParseReferenceFromName(parameter *Local
 		return nil, NewUnknownTypeParameterError(parameter, t)
 	}
 
-	return NewLocalTypeNameReference(definition), nil
+	return NewLocalTypeNameReference(parameter, definition), nil
 }
 
 func (t *LocalTypeNameDefinitionContext) LocalTypeNames() []*LocalTypeName {

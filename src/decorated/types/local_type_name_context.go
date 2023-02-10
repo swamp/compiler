@@ -10,6 +10,7 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
+	"strings"
 )
 
 type LocalTypeNameContext struct {
@@ -35,8 +36,18 @@ func (t *LocalTypeNameContext) Names() []*dtype.LocalTypeName {
 	return x
 }
 
+func (t *LocalTypeNameContext) NamesString() string {
+	var x []string
+
+	for _, f := range t.definitions {
+		x = append(x, f.identifier.Name())
+	}
+
+	return strings.Join(x, ", ")
+}
+
 func (t *LocalTypeNameContext) String() string {
-	return fmt.Sprintf("[typeparamcontext %v]", t.resolvedArguments)
+	return fmt.Sprintf("[LocalTypeNameContext %v]", t.NamesString())
 }
 
 func (t *LocalTypeNameContext) Next() dtype.Type {

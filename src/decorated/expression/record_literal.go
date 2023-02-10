@@ -111,7 +111,13 @@ func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate Expression,
 		}
 		lastFoundIndex = assignment.index
 	}
-	inclusive := token.MakeInclusiveSourceFileReference(parseOrderedAssignments[0].FieldName().FetchPositionLength(), parseOrderedAssignments[len(parseOrderedAssignments)-1].expression.FetchPositionLength())
+
+	first := parseOrderedAssignments[0].FieldName().FetchPositionLength()
+	if recordTemplate != nil {
+		first = recordTemplate.FetchPositionLength()
+	}
+
+	inclusive := token.MakeInclusiveSourceFileReference(first, parseOrderedAssignments[len(parseOrderedAssignments)-1].expression.FetchPositionLength())
 
 	return &RecordLiteral{
 		t: t, recordTemplate: recordTemplate,

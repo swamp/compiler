@@ -56,6 +56,7 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 			}
 			currentIndentation = newIndentation
 			var functionTypes []ast.Type
+			p.debugInfo("add FunctionType")
 			functionTypes = append(functionTypes, term)
 			for {
 				t, tErr := parseTypeTermReference(p, currentIndentation, typeParameterContext, precedingComments)

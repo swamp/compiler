@@ -7,6 +7,7 @@ package ast
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/token"
 )
@@ -49,10 +50,18 @@ func (i *GuardDefault) String() string {
 type GuardExpression struct {
 	items       []GuardItem
 	defaultItem *GuardDefault
+	inclusive   token.SourceFileReference
 }
 
 func NewGuardExpression(items []GuardItem, defaultItem *GuardDefault) *GuardExpression {
-	return &GuardExpression{items: items, defaultItem: defaultItem}
+	lastRange := items[len(items)-1].Consequence.FetchPositionLength()
+	if defaultItem != nil {
+		lastRange = defaultItem.Consequence.FetchPositionLength()
+	}
+	start := items[0].GuardToken.FetchPositionLength()
+	inclusive := token.MakeInclusiveSourceFileReference(start, lastRange)
+	log.Printf("guard expression: %T %v (%v)", items[0].Condition, start.ToStartAndEndReferenceString(), items[0])
+	return &GuardExpression{items: items, defaultItem: defaultItem, inclusive: inclusive}
 }
 
 func (i *GuardExpression) Items() []GuardItem {
@@ -64,7 +73,7 @@ func (i *GuardExpression) Default() *GuardDefault {
 }
 
 func (i *GuardExpression) FetchPositionLength() token.SourceFileReference {
-	return i.items[0].Condition.FetchPositionLength()
+	return i.inclusive
 }
 
 func (i *GuardExpression) String() string {
