@@ -77,12 +77,20 @@ func NewLocalTypeNameContext() *LocalTypeNameContext {
 	return t
 }
 
+func (t *LocalTypeNameContext) AtomName() string {
+	return "NameOnlyContext"
+}
+
+func (t *LocalTypeNameContext) IsEqual(other dtype.Atom) error {
+	return nil
+}
+
 func (t *LocalTypeNameContext) HumanReadable() string {
 	return fmt.Sprintf("local type name context")
 }
 
 func (t *LocalTypeNameContext) Resolve() (dtype.Atom, error) {
-	return nil, fmt.Errorf("can not be resolved since it is a type name context")
+	return t, nil //fmt.Errorf("can not be resolved since it is a type name context %T", t)
 }
 
 func (t *LocalTypeNameContext) ParameterCount() int {

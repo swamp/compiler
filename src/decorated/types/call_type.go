@@ -14,11 +14,11 @@ type Lookup interface {
 }
 
 /*
-func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup ParseReferenceFromName) (*CustomTypeAtom, error) {
+func replaceCustomTypeFromContext(nameContext *CustomTypeAtom, lookup ParseReferenceFromName) (*CustomTypeAtom, error) {
 	var replacedVariants []*CustomTypeVariantAtom
 
 	var replacedGenerics []dtype.Type
-	for _, genericType := range customType.Parameters() {
+	for _, genericType := range nameContext.Parameters() {
 		lookedUpType, err := lookup.LookupType(genericType.identifier.Name())
 		if err != nil {
 			return nil, err
@@ -26,8 +26,8 @@ func replaceCustomTypeFromContext(customType *CustomTypeAtom, lookup ParseRefere
 		replacedGenerics = append(replacedGenerics, genericType)
 	}
 
-	newCustomType := NewCustomTypePrepare(customType.astCustomType, customType.artifactTypeName, replacedGenerics)
-	for _, field := range customType.Variants() {
+	newCustomType := NewCustomTypePrepare(nameContext.astCustomType, nameContext.artifactTypeName, replacedGenerics)
+	for _, field := range nameContext.Variants() {
 		var variantParameters []dtype.Type
 		for _, param := range field.parameterFields {
 			converted, convertedErr := ReplaceTypeFromContext(param.parameterType, lookup)

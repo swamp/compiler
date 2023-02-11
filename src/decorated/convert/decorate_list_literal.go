@@ -6,7 +6,9 @@
 package decorator
 
 import (
+	"fmt"
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -43,13 +45,19 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 		panic("container literal must have a container type defined to use literals")
 	}
 	unaliasListType := dectype.Unalias(listType)
-	collectionType, wasCollectionType := unaliasListType.(*dectype.PrimitiveAtom)
+	localNameContext, wasCollectionType := unaliasListType.(*dectype.LocalTypeNameContext)
 	if !wasCollectionType {
-		panic("must have a List type defined to use [] list literals")
+		panic(fmt.Errorf("must have a List type defined to use [] list literals %T", listType))
 	}
-	wrapped := dectype.NewPrimitiveType(collectionType.PrimitiveName(), []dtype.Type{detectedType})
 
-	return wrapped, listExpressions, nil
+	concretizedLiteral, concreteErr := concretize.ConcreteArguments(localNameContext, []dtype.Type{detectedType})
+	if concreteErr != nil {
+		return nil, nil, concreteErr
+	}
+
+	primitiveAtom, _ := concretizedLiteral.(*dectype.PrimitiveAtom)
+
+	return primitiveAtom, listExpressions, nil
 }
 
 func decorateListLiteral(d DecorateStream, list *ast.ListLiteral, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {

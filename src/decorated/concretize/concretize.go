@@ -63,12 +63,18 @@ func ResolveSlices(references []dtype.Type, concretes []dtype.Type, resolver *de
 func Primitive(reference *dectype.PrimitiveAtom, concrete *dectype.PrimitiveAtom, resolver *dectype.TypeParameterContext) (*dectype.PrimitiveAtom, decshared.DecoratedError) {
 	log.Printf("checking %v <- %v", reference, concrete)
 
-	convertedTypes, err := ResolveSlices(reference.ParameterTypes(), concrete.ParameterTypes(), resolver)
+	return PrimitiveArguments(reference, concrete.ParameterTypes(), resolver)
+}
+
+func PrimitiveArguments(reference *dectype.PrimitiveAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.PrimitiveAtom, decshared.DecoratedError) {
+	log.Printf("checking %v <- %v", reference, arguments)
+
+	convertedTypes, err := ResolveSlices(reference.ParameterTypes(), arguments, resolver)
 	if err != nil {
 		return nil, err
 	}
 
-	return dectype.NewPrimitiveType(concrete.PrimitiveName(), convertedTypes), nil
+	return dectype.NewPrimitiveType(reference.PrimitiveName(), convertedTypes), nil
 }
 
 func Tuple(reference *dectype.TupleTypeAtom, concrete *dectype.TupleTypeAtom, resolver *dectype.TypeParameterContext) (*dectype.TupleTypeAtom, decshared.DecoratedError) {
@@ -165,6 +171,13 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 		if err != nil {
 			return nil, err
 		}
+	case *dectype.PrimitiveAtom:
+		resolvedType, err = PrimitiveArguments(t, concreteArguments, resolveLocalTypeNames)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		panic(fmt.Errorf("not handled concrete %T", localTypeNameContext.Next()))
 	}
 
 	if !resolveLocalTypeNames.IsDefined() {

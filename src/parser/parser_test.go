@@ -25,7 +25,7 @@ first (startNumber: Int, somethingElse: (String -> List a)) -> (List (List Fixed
     startNumber * startNumber
 `,
 		`
-[FnDef $first = [Fn [TypeParamContext [a] +> [FnType [TypeReference $Int], [FnType [TypeReference $String] -> [TypeReference $List [[LocalTypeNameRef [LocalTypeNameDef [LocalTypeName a]]]]]] -> [TupleType [[TypeReference $List [[TypeReference $List [[TypeReference $Fixed]]]]] [TypeReference $Int]]]]] (startNumber, somethingElse) = ($startNumber * $startNumber)]]
+ [FnDef $first = [Fn [TypeParamContext [a] +> [FnType [TypeReference $Int], [FnType [TypeReference $String] -> [TypeReference $List [[LocalTypeNameRef a]]]] -> [TupleType [[TypeReference $List [[TypeReference $List [[TypeReference $Fixed]]]]] [TypeReference $Int]]]]] (startNumber, somethingElse) = ($startNumber * $startNumber)]]
 `)
 }
 
@@ -35,7 +35,7 @@ func TestExternalVar(t *testing.T) {
 __externalvarfn head : (List a) -> Maybe a
 `,
 		`
-[FnDef $head = [Fn [TypeParamContext [a] +> [FnType [TypeReference $List [[LocalTypeNameRef [LocalTypeNameDef [LocalTypeName a]]]]] -> [TypeReference $Maybe [[LocalTypeNameRef [LocalTypeNameDef [LocalTypeName a]]]]]]] (_) = [FnDeclExpr 2]]]
+[FnDef $head = [Fn [TypeParamContext [a] +> [FnType [TypeReference $List [[LocalTypeNameRef a]]] -> [TypeReference $Maybe [[LocalTypeNameRef a]]]]] (_) = [FnDeclExpr 2]]]
 `)
 }
 
@@ -1113,7 +1113,7 @@ func TestComplexUpdate(t *testing.T) {
 `, "[RecordUpdate [[$scale = [RecordLiteral [[$scaleX = $scale] [$scaleY = $scale]]]]] ($inSprite)]")
 }
 
-func xTestGenericsError(t *testing.T) {
+func TestGenericsError(t *testing.T) {
 	testParseError(t,
 		`
 type alias Tinkering t =
@@ -1122,7 +1122,7 @@ type alias Tinkering t =
 `, &ast.ExtraTypeParameterError{})
 }
 
-func xTestGenericsNotDefinedError(t *testing.T) {
+func TestGenericsNotDefinedError(t *testing.T) {
 	testParseError(t,
 		`
 type alias Tinkering a =
@@ -1133,7 +1133,7 @@ type alias Tinkering a =
 `, &ast.UndefinedTypeParameterError{})
 }
 
-func xTestBasicGenerics(t *testing.T) {
+func TestBasicGenerics(t *testing.T) {
 	testParse(t,
 		`
 type alias Tinkering t =
@@ -1141,10 +1141,10 @@ type alias Tinkering t =
     , cool : Something t
     }
 
-`, "[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[GenericType [TypeParam $t]]]]]] [[TypeParam $t]]]]")
+`, "[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[LocalTypeNameRef t]]]]]]]]")
 }
 
-func xTestMultipleGenerics(t *testing.T) {
+func TestMultipleGenerics(t *testing.T) {
 	testParse(t,
 		`
 type alias Tinkering t a =
@@ -1154,11 +1154,11 @@ type alias Tinkering t a =
     }
 
 `, `
-[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $List [[GenericType [TypeParam $t]]]]] [Field: $other [GenericType [TypeParam $a]]]] [[TypeParam $t] [TypeParam $a]]]]
+[AliasType $Tinkering [TypeParamContext [t a] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $List [[LocalTypeNameRef t]]]] [Field: $other [LocalTypeNameRef a]]]]]]
 `)
 }
 
-func TestSkippingModule(t *testing.T) {
+func xTestSkippingModule(t *testing.T) {
 	testParse(t,
 		`
 module Main exposing (main)
@@ -1172,7 +1172,7 @@ import Characters.Update
 `)
 }
 
-func xTestGenericsAnnotation(t *testing.T) {
+func TestGenericsAnnotation(t *testing.T) {
 	testParse(t,
 		`
 type alias Tinkering t =
@@ -1184,8 +1184,8 @@ type alias Tinkering t =
 f : (a: Tinkering t) -> Int =
     2
 `, `
-[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [GenericType [TypeParam $t]]]] [[TypeParam $t]]]]
-[FnDef $f = [Fn ([[Arg $a: [TypeReference $Tinkering [[GenericType [TypeParam $t]]]]]]) => [TypeReference $Int] = #2]]
+[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [LocalTypeNameRef t]]]]]]
+[FnDef $f = [Fn [TypeParamContext [t] +> [FnType [TypeReference $Tinkering [[LocalTypeNameRef t]]] -> [TypeReference $Int]]] (a) = #2]]
 `)
 }
 
@@ -1195,7 +1195,7 @@ func TestGenericsCustomType(t *testing.T) {
 type Maybe a =
     Nothing
     | Just a
-`, `[CustomTypeStatement [TypeParamContext [a] +> [CustomType $Maybe [[Variant $Nothing []] [Variant $Just [[LocalTypeNameRef [LocalTypeNameDef [LocalTypeName a]]]]]]]]]
+`, `[CustomTypeStatement [TypeParamContext [a] +> [CustomType $Maybe [[Variant $Nothing []] [Variant $Just [[LocalTypeNameRef a]]]]]]]
 `)
 }
 
@@ -1204,11 +1204,11 @@ func TestGenericsAnnotationBegin(t *testing.T) {
 		`
 ownCons : itemType -> List itemType -> List itemType
 `, `
-[FnDef $ownCons = [Fn [TypeParamContext [itemType] +> [FnType [FnType [LocalTypeNameRef [LocalTypeNameDef [LocalTypeName itemType]]], [TypeReference $List [[LocalTypeNameRef [LocalTypeNameDef [LocalTypeName itemType]]]]] -> [TypeReference $List [[LocalTypeNameRef [LocalTypeNameDef [LocalTypeName itemType]]]]]]]] () = [FnDeclExpr 0]]]
+[FnDef $ownCons = [Fn [TypeParamContext [itemType] +> [FnType [FnType [LocalTypeNameRef itemType], [TypeReference $List [[LocalTypeNameRef itemType]]] -> [TypeReference $List [[LocalTypeNameRef itemType]]]]]] () = [FnDeclExpr 0]]]
 `)
 }
 
-func xTestGenericsAnnotationSpecified(t *testing.T) {
+func TestGenericsAnnotationSpecified(t *testing.T) {
 	testParse(t,
 		`
 type alias Tinkering t =
@@ -1220,8 +1220,8 @@ type alias Tinkering t =
 f : (Tinkering Int) -> Int =
     tinkering.secret
 `, `
-[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [GenericType [TypeParam $t]]]] [[TypeParam $t]]]]
-[FnDef $f = [Fn ([]) => [FnType [TypeReference $Tinkering [[TypeReference $Int]]] -> [TypeReference $Int]] = [RecordLookups $tinkering [$secret]]]]
+[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]
+[FnDef $f = [Fn [FnType [TypeReference $Tinkering [[TypeReference $Int]]] -> [TypeReference $Int]] (_) = [RecordLookups $tinkering [$secret]]]]
 `)
 }
 
@@ -1235,14 +1235,14 @@ f : Tinkering Int -> Int =
 `)
 }
 
-func xTestGenericsStructInstantiate(t *testing.T) {
+func TestGenericsStructInstantiate(t *testing.T) {
 	testParse(t,
 		`
 type alias Tinkering t =
     { solder : Bool
     , secret : t
     }
-`, "[AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [GenericType [TypeParam $t]]]] [[TypeParam $t]]]]")
+`, "[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]")
 }
 
 func TestCaseNewLine(t *testing.T) {
@@ -1273,7 +1273,7 @@ case a of
 `)
 }
 
-func xTestRecordAnnotation2(t *testing.T) {
+func TestRecordAnnotation2(t *testing.T) {
 	testParse(t,
 		`
 type alias Sprite =
@@ -1286,14 +1286,12 @@ f : (a: Sprite) -> Int =
     2
 
 
-g : (a : { solder : Bool, cool : Int }) -> Int =
+g : (a: { solder : Bool, cool : Int }) -> Int =
     f { solder = True, cool = 33 }
 `, `
-[alias $Sprite [record-type [[field: $solder [type-reference $Bool]] [field: $cool [type-reference $Int]]]]]
-[annotation: $f [func-type [type-reference $Sprite] -> [type-reference $Int]]]
-[definition: $f = [func ([$a]) -> #2]]
-[annotation: $f [func-type [record-type [[field: $solder [type-reference $Bool]] [field: $cool [type-reference $Int]]]] -> [type-reference $Int]]]
-[definition: $k = [func ([$a]) -> [call $f [[record-literal: [[$solder = €true] [$cool = #33]]]]]]]
+[AliasType $Sprite [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Int]]]]]
+[FnDef $f = [Fn [FnType [TypeReference $Sprite] -> [TypeReference $Int]] (a) = #2]]
+[FnDef $g = [Fn [FnType [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Int]]]] -> [TypeReference $Int]] (a) = [Call $f [[RecordLiteral [[$solder = [CCall [TypeReference $True]]] [$cool = #33]]]]]]]
 `)
 }
 

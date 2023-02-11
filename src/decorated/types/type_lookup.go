@@ -84,13 +84,18 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 		panic(fmt.Sprintf("shouldn't happen. actualType is nil, expectedType is %v", expectedType))
 	}
 
+	unaliasExpectedType := Unalias(expectedType)
+
+	expectedLocalTypeNameOnlyContext, wasLocalTypeNameContext := unaliasExpectedType.(*LocalTypeNameContext)
+	if wasLocalTypeNameContext {
+		return CompatibleTypes(expectedLocalTypeNameOnlyContext.Next(), actualType)
+	}
+
 	pureExpected, expectedErr := expectedType.Resolve()
 	pureActual, actualErr := actualType.Resolve()
+
 	if pureActual == nil {
 		panic(fmt.Errorf("pureActual is nil"))
-	}
-	if pureExpected == nil {
-		panic(fmt.Errorf("pureExpected is nil"))
 	}
 
 	isAny := IsAtomAny(pureActual)
@@ -104,9 +109,11 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 	}
 
 	if actualErr != nil {
+		panic(fmt.Errorf("pureActual can not be resolved: %w", actualErr))
 		return actualErr
 	}
 	if expectedErr != nil {
+		panic(fmt.Errorf("pureExpected can not be resolved: %w", expectedErr))
 		return expectedErr
 	}
 

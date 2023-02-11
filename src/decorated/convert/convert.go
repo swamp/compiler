@@ -123,7 +123,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			return nil, err
 		}
 		if foundType == nil {
-			return nil, decorated.NewInternalError(fmt.Errorf("coulfdn't find type reference %v", refName))
+			return nil, decorated.NewInternalError(fmt.Errorf("couldn't find type reference %v", refName))
 		}
 		types, sliceErr := ConvertFromAstToDecoratedSlice(info.Arguments(), t)
 		if sliceErr != nil {

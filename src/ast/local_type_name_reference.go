@@ -17,7 +17,7 @@ type LocalTypeNameReference struct {
 }
 
 func (i *LocalTypeNameReference) String() string {
-	return fmt.Sprintf("[LocalTypeNameRef %v]", i.typeParameterReference)
+	return fmt.Sprintf("[LocalTypeNameRef %v]", i.typeParameterReference.ident.Name())
 }
 
 func (i *LocalTypeNameReference) Name() string {

@@ -1041,6 +1041,7 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenFunctionParameterReference(t, builder)
 	case *decorated.CaseConsequenceParameterReference:
 		return addSemanticTokenCustomTypeVariantParameterExpandReference(t, builder)
+	case *decorated.ExternalFunctionDeclarationExpression:
 	case *dectype.CustomTypeVariantReference:
 		return addSemanticTokenCustomTypeVariantReference(t, builder)
 

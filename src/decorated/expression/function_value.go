@@ -107,7 +107,7 @@ func (f *FunctionValue) ForcedFunctionType() dectype.FunctionTypeLike {
 }
 
 func (f *FunctionValue) String() string {
-	return fmt.Sprintf("[FunctionValue (%v) -> %v]", f.parameters, f.decoratedExpression)
+	return fmt.Sprintf("[FunctionValue %v (%v) -> %v]", f.forcedFunctionType, f.parameters, f.decoratedExpression)
 }
 
 func (f *FunctionValue) HumanReadable() string {

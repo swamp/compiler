@@ -23,13 +23,15 @@ type RecordLiteral struct {
 	sortedAssignments  []*RecordLiteralFieldAssignment
 	templateExpression Expression
 	parenToken         token.ParenToken
+	inclusive          token.SourceFileReference
 }
 
 func NewRecordLiteral(parenToken token.ParenToken, templateExpression Expression, assignments []*RecordLiteralFieldAssignment) *RecordLiteral {
 	sortedAssignments := make([]*RecordLiteralFieldAssignment, len(assignments))
 	copy(sortedAssignments, assignments)
 	sort.Sort(ByAssignmentName(sortedAssignments))
-	return &RecordLiteral{parenToken: parenToken, templateExpression: templateExpression, assignments: assignments, sortedAssignments: sortedAssignments}
+	inclusive := token.MakeInclusiveSourceFileReference(parenToken.FetchPositionLength(), assignments[len(assignments)-1].expression.FetchPositionLength())
+	return &RecordLiteral{parenToken: parenToken, templateExpression: templateExpression, assignments: assignments, sortedAssignments: sortedAssignments, inclusive: inclusive}
 }
 
 func (i *RecordLiteral) String() string {
@@ -44,7 +46,7 @@ func (i *RecordLiteral) DebugString() string {
 }
 
 func (i *RecordLiteral) FetchPositionLength() token.SourceFileReference {
-	return i.parenToken.SourceFileReference
+	return i.inclusive
 }
 
 func (i *RecordLiteral) SortedAssignments() []*RecordLiteralFieldAssignment {
