@@ -66,6 +66,18 @@ func (t *LocalTypeNameDefinitionContext) IsEmpty() bool {
 	return len(t.typeParameterIdentifiers) == 0
 }
 
+func (t *LocalTypeNameDefinitionContext) NotReferencedNames() []*LocalTypeNameDefinition {
+	var unusedTypeParameterNames []*LocalTypeNameDefinition
+
+	for _, parameter := range t.typeParameterIdentifiers {
+		if !parameter.HasReferences() {
+			unusedTypeParameterNames = append(unusedTypeParameterNames, parameter)
+		}
+	}
+
+	return unusedTypeParameterNames
+}
+
 func (t *LocalTypeNameDefinitionContext) ParseReferenceFromName(parameter *LocalTypeName) (*LocalTypeNameReference, error) {
 	definition, foundDefinition := t.lookup[parameter.Identifier().Name()]
 	if !foundDefinition {

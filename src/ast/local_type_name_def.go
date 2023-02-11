@@ -32,6 +32,10 @@ func (t *LocalTypeNameDefinition) Name() string {
 	return t.ident.Name()
 }
 
+func (t *LocalTypeNameDefinition) HasReferences() bool {
+	return len(t.references) > 0
+}
+
 func (t *LocalTypeNameDefinition) FetchPositionLength() token.SourceFileReference {
 	return t.ident.FetchPositionLength()
 }

@@ -21,14 +21,14 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 		panic("internal error. TypeRef is an unknown type")
 	}
 
+	contextForTypeRef := dectype.FindNameOnlyContextWithUnalias(typeRefType)
+	if contextForTypeRef == nil {
+		panic(fmt.Errorf("internal error, TypeRef must have name only context"))
+	}
+	
 	decoratedType, err := d.TypeReferenceMaker().CreateSomeTypeReference(typeId.TypeIdentifier())
 	if err != nil {
 		return nil, decorated.NewInternalError(err)
-	}
-
-	contextForTypeRef := dectype.FindNameOnlyContextWithUnalias(decoratedType)
-	if contextForTypeRef == nil {
-		panic(fmt.Errorf("internal error, TypeRef must have name only context"))
 	}
 
 	constructedType, err2 := concretize.ConcreteArguments(contextForTypeRef, []dtype.Type{decoratedType})

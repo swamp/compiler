@@ -31,7 +31,7 @@ func (i *TypeId) TypeIdentifier() TypeIdentifierNormalOrScoped {
 }
 
 func (i *TypeId) String() string {
-	return fmt.Sprintf("[type-id %v]", i.typeRef)
+	return fmt.Sprintf("[TypeId %v]", i.typeRef)
 }
 
 func (i *TypeId) Name() string {

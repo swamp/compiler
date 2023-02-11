@@ -1119,7 +1119,7 @@ func TestGenericsError(t *testing.T) {
 type alias Tinkering t =
     { solder : Bool
     }
-`, &ast.ExtraTypeParameterError{})
+`, &ast.ExtraTypeParametersError{})
 }
 
 func TestGenericsNotDefinedError(t *testing.T) {
@@ -1141,7 +1141,7 @@ type alias Tinkering t =
     , cool : Something t
     }
 
-`, "[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[LocalTypeNameRef t]]]]]]]]")
+`, "[TypeParamContext [t] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[LocalTypeNameRef t]]]]]]]]")
 }
 
 func TestMultipleGenerics(t *testing.T) {
@@ -1154,7 +1154,7 @@ type alias Tinkering t a =
     }
 
 `, `
-[AliasType $Tinkering [TypeParamContext [t a] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $List [[LocalTypeNameRef t]]]] [Field: $other [LocalTypeNameRef a]]]]]]
+[TypeParamContext [t a] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $List [[LocalTypeNameRef t]]]] [Field: $other [LocalTypeNameRef a]]]]]]
 `)
 }
 
@@ -1184,7 +1184,7 @@ type alias Tinkering t =
 f : (a: Tinkering t) -> Int =
     2
 `, `
-[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [LocalTypeNameRef t]]]]]]
+[TypeParamContext [t] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [LocalTypeNameRef t]]]]]]
 [FnDef $f = [Fn [TypeParamContext [t] +> [FnType [TypeReference $Tinkering [[LocalTypeNameRef t]]] -> [TypeReference $Int]]] (a) = #2]]
 `)
 }
@@ -1220,7 +1220,7 @@ type alias Tinkering t =
 f : (Tinkering Int) -> Int =
     tinkering.secret
 `, `
-[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]
+[TypeParamContext [t] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]
 [FnDef $f = [Fn [FnType [TypeReference $Tinkering [[TypeReference $Int]]] -> [TypeReference $Int]] (_) = [RecordLookups $tinkering [$secret]]]]
 `)
 }
@@ -1242,7 +1242,7 @@ type alias Tinkering t =
     { solder : Bool
     , secret : t
     }
-`, "[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]")
+`, "[TypeParamContext [t] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]")
 }
 
 func TestCaseNewLine(t *testing.T) {

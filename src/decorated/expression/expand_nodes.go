@@ -346,7 +346,7 @@ func (n *ExpandedNode) TypeOrToken() TypeOrToken {
 func (n *ExpandedNode) addChild(expandedNode *ExpandedNode) {
 	nodeRange := expandedNode.node.FetchPositionLength().Range
 
-	log.Printf("adding %T %v", expandedNode.node, nodeRange)
+	//log.Printf("adding %T %v", expandedNode.node, nodeRange)
 
 	if !n.node.FetchPositionLength().Range.ContainsRange(nodeRange) {
 		panic(fmt.Errorf("can not add a child that is not within the range of the parent %v %v (%T and %T)", n.node.FetchPositionLength().Range, nodeRange, n.node, expandedNode.node))

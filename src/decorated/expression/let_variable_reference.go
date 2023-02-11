@@ -23,7 +23,7 @@ func (g *LetVariableReference) Type() dtype.Type {
 }
 
 func (g *LetVariableReference) String() string {
-	return fmt.Sprintf("[LetVarRef %v]", g.assignment)
+	return fmt.Sprintf("[LetVarRef %v]", g.assignment.Name())
 }
 
 func (g *LetVariableReference) HumanReadable() string {

@@ -11,21 +11,23 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type ExtraTypeParameterError struct {
-	extraParameter *LocalTypeNameDefinition
+type ExtraTypeParametersError struct {
+	extraParameter []*LocalTypeNameDefinition
 	searchedType   Type
+	inclusive      token.SourceFileReference
 }
 
-func NewExtraTypeParameterError(extraParameter *LocalTypeNameDefinition, searchedType Type) *ExtraTypeParameterError {
-	return &ExtraTypeParameterError{extraParameter: extraParameter, searchedType: searchedType}
+func NewExtraTypeNameParametersError(extraParameter []*LocalTypeNameDefinition, searchedType Type) *ExtraTypeParametersError {
+	inclusive := token.MakeInclusiveSourceFileReference(extraParameter[0].FetchPositionLength(), extraParameter[len(extraParameter)-1].FetchPositionLength())
+	return &ExtraTypeParametersError{extraParameter: extraParameter, searchedType: searchedType, inclusive: inclusive}
 }
 
-func (e *ExtraTypeParameterError) Error() string {
+func (e *ExtraTypeParametersError) Error() string {
 	return fmt.Sprintf("you defined %v but wasn't used in type %v", e.extraParameter, e.searchedType)
 }
 
-func (e *ExtraTypeParameterError) FetchPositionLength() token.SourceFileReference {
-	return e.extraParameter.ident.FetchPositionLength()
+func (e *ExtraTypeParametersError) FetchPositionLength() token.SourceFileReference {
+	return e.inclusive
 }
 
 type UndefinedTypeParameterError struct {

@@ -13,7 +13,7 @@ import (
 
 func parseTypeAlias(p ParseStream, keywordType token.Keyword, keywordAlias token.Keyword, keywordIndentation int, nameOfAlias *ast.TypeIdentifier,
 	typeParameterContext *ast.LocalTypeNameDefinitionContext,
-	precedingComments *ast.MultilineComment) (*ast.Alias, parerr.ParseError) {
+	precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
 
 	referencedType, referencedTypeErr := parseTypeTermReference(p, keywordIndentation, typeParameterContext, precedingComments)
 	if referencedTypeErr != nil {
@@ -28,6 +28,17 @@ func parseTypeAlias(p ParseStream, keywordType token.Keyword, keywordAlias token
 		}
 
 	*/
+	unusedNames := typeParameterContext.NotReferencedNames()
+	if len(unusedNames) != 0 {
+		return nil, ast.NewExtraTypeNameParametersError(unusedNames, referencedType)
+	}
 
-	return ast.NewAlias(keywordType, keywordAlias, nameOfAlias, referencedType, precedingComments), nil
+	alias := ast.NewAlias(keywordType, keywordAlias, nameOfAlias, referencedType, precedingComments)
+
+	if !typeParameterContext.IsEmpty() {
+		typeParameterContext.SetNextType(alias)
+		return typeParameterContext, nil
+	}
+
+	return alias, nil
 }

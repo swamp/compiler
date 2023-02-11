@@ -65,7 +65,7 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 		}
 		return t, nil
 	} else if leftCurly, wasLeftCurly := p.maybeLeftCurly(); wasLeftCurly {
-		return parseRecordType(p, leftCurly, nil, keywordIndentation, nil)
+		return parseRecordType(p, leftCurly, keywordIndentation, nil, typeParameterContext)
 	} else if foundTypeIdentifier, wasTypeSymbol := p.wasTypeIdentifier(); wasTypeSymbol {
 		x, xErr := parseTypeSymbolWithOptionalModules(p, foundTypeIdentifier)
 		if xErr != nil {

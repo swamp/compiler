@@ -15,7 +15,7 @@ import (
 )
 
 func parseRecordTypeFields(p ParseStream, expectedIndentation int,
-	parameterIdentifierContext *ast.LocalTypeNameDefinitionContext,
+	parameterIdentifierContext ast.LocalTypeNameDefinitionContextDynamic,
 	precedingComments *ast.MultilineComment) ([]*ast.RecordTypeField, parerr.ParseError) {
 	if reflect.ValueOf(parameterIdentifierContext).IsNil() {
 		panic(fmt.Errorf("parameterIdentifierContext is nil"))
@@ -69,13 +69,11 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 	return fields, nil
 }
 
-func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters []*ast.LocalTypeName, keywordIndentation int,
-	precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
+func parseRecordType(p ParseStream, startCurly token.ParenToken, keywordIndentation int,
+	precedingComments *ast.MultilineComment, context ast.LocalTypeNameDefinitionContextDynamic) (ast.Type, parerr.ParseError) {
 	if _, err := p.eatOneSpace("after record type left curly"); err != nil {
 		return nil, err
 	}
-
-	context := ast.NewLocalTypeNameContext(typeParameters, nil)
 
 	fields, fieldsErr := parseRecordTypeFields(p, keywordIndentation, context, precedingComments)
 	if fieldsErr != nil {
@@ -90,11 +88,6 @@ func parseRecordType(p ParseStream, startCurly token.ParenToken, typeParameters 
 	}
 
 	recordType := ast.NewRecordType(startCurly, rightCurly, fields, precedingComments)
-
-	if !context.IsEmpty() {
-		context.SetNextType(recordType)
-		return context, nil
-	}
 
 	return recordType, nil
 }
