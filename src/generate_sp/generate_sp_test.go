@@ -27,8 +27,8 @@ func TestBooleanOperator(t *testing.T) {
 		`
 main : (Int) -> Bool =
     let
-        a = True
-        b = False
+        a = true
+        b = false
     in
     a && b
 `, `

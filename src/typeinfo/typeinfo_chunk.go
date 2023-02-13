@@ -760,21 +760,11 @@ func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, erro
 		panic("custom name must be set here")
 	}
 
-	var consumedParameters []InfoType
-	for _, generic := range custom.Parameters() {
-		consumedParameter, err := c.Consume(generic)
-		if err != nil {
-			return nil, err
-		}
-
-		consumedParameters = append(consumedParameters, consumedParameter)
-	}
-
 	proposedNewCustom := &CustomType{
 		Type:     Type{},
 		name:     customName,
 		variants: nil,
-		generics: consumedParameters,
+		generics: nil, // TODO: FIX THIS
 		memoryInfo: MemoryInfo{
 			MemorySize:  MemorySize(0),
 			MemoryAlign: MemoryAlign(0),
@@ -1287,6 +1277,8 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 	switch t := p.(type) {
 	case *dectype.Alias:
 		return c.consumeAlias(t)
+	case *dectype.LocalTypeDefinitionReference:
+		return c.Consume(t.Next())
 	case *dectype.FunctionTypeReference:
 		return c.Consume(t.Next())
 	case *dectype.CustomTypeVariantReference:
@@ -1295,15 +1287,6 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 	case *dectype.LocalTypeDefinition:
 		// intentionally ignore
 		return c.Consume(t.Next())
-	case *dectype.InvokerType:
-		invokerAtom, resolveErr := t.Resolve()
-		if resolveErr != nil {
-			return nil, resolveErr
-		}
-		if invokerAtom == nil {
-			return nil, fmt.Errorf("wrong atom invoke")
-		}
-		return c.ConsumeAtom(invokerAtom)
 	case *dectype.PrimitiveTypeReference:
 		return c.Consume(t.Next())
 	case *dectype.AliasReference:
