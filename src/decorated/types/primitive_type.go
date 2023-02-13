@@ -37,6 +37,10 @@ func FindNameOnlyContextWithUnalias(checkType dtype.Type) *LocalTypeNameContext 
 	unliased := Unalias(checkType)
 	localTypeNameContext, wasLocalTypeNameContext := unliased.(*LocalTypeNameContext)
 	if !wasLocalTypeNameContext {
+		localTypeNameContextRef, wasLocalTypeNameContextRef := unliased.(*LocalTypeNameContextReference)
+		if wasLocalTypeNameContextRef {
+			return localTypeNameContextRef.nameContext
+		}
 		return nil
 	}
 
@@ -132,6 +136,7 @@ type PrimitiveAtom struct {
 	name           *ast.TypeIdentifier
 	parameterTypes []dtype.Type
 	references     []*PrimitiveTypeReference
+	inclusive      token.SourceFileReference
 }
 
 func NewPrimitiveType(name *ast.TypeIdentifier, parameterTypes []dtype.Type) *PrimitiveAtom {
@@ -140,7 +145,11 @@ func NewPrimitiveType(name *ast.TypeIdentifier, parameterTypes []dtype.Type) *Pr
 			panic("not allowed to be nil parameterType")
 		}
 	}
-	return &PrimitiveAtom{name: name, parameterTypes: parameterTypes}
+	inclusive := name.FetchPositionLength()
+	if len(parameterTypes) > 0 {
+		inclusive = token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), parameterTypes[len(parameterTypes)-1].FetchPositionLength())
+	}
+	return &PrimitiveAtom{name: name, parameterTypes: parameterTypes, inclusive: inclusive}
 }
 
 func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
@@ -173,7 +182,7 @@ func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
 }
 
 func (u *PrimitiveAtom) FetchPositionLength() token.SourceFileReference {
-	return u.name.FetchPositionLength()
+	return u.inclusive
 }
 
 func (u *PrimitiveAtom) PrimitiveName() *ast.TypeIdentifier {

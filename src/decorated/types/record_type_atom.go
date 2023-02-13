@@ -7,7 +7,9 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 	"sort"
+	"strings"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -55,6 +57,24 @@ func (s *RecordAtom) HumanReadable() string {
 
 func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
 	return s.record.FetchPositionLength()
+}
+
+func TypeChain(p dtype.Type, tabs int) {
+	if p == nil {
+		log.Printf("end")
+		return
+	}
+	log.Printf("%v%v =>", strings.Repeat("  ", tabs), p)
+
+	if tabs > 2 {
+		log.Printf("break here")
+	}
+
+	if tabs > 20 {
+		panic("too far")
+	}
+
+	TypeChain(p.Next(), tabs+1)
 }
 
 func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
@@ -105,9 +125,9 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	case *TupleTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	case *LocalTypeDefinition:
-		return 0, 8
+		return GetMemorySizeAndAlignmentInternal(t.Next())
 	case *LocalTypeDefinitionReference:
-		return 0, 8
+		return GetMemorySizeAndAlignmentInternal(t.Next())
 	case *CustomTypeVariantReference:
 		return GetMemorySizeAndAlignmentInternal(t.Next())
 	case *LocalTypeNameContextReference:

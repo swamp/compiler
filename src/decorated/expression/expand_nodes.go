@@ -586,7 +586,7 @@ func ExpandAllChildNodes(nodes []Node) []*ExpandedNode {
 		expand(node, list.rootNode)
 	}
 
-	list.rootNode.DebugLog()
+	//list.rootNode.DebugLog()
 
 	return list.rootNode.children
 }

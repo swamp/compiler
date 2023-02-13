@@ -40,7 +40,7 @@ func (i *StringInterpolation) AstStringInterpolation() *ast.StringInterpolation 
 }
 
 func (i *StringInterpolation) String() string {
-	return fmt.Sprintf("[strinterpolation %v]", i.str)
+	return fmt.Sprintf("[StringInterpolation %v]", i.str)
 }
 
 func (i *StringInterpolation) FetchPositionLength() token.SourceFileReference {

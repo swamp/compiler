@@ -49,7 +49,7 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 
 	const enforceStyle = true
 
-	absoluteFilename := "fortest.swamp"
+	absoluteFilename := "/test/fortest.swamp"
 	module, compileErr := InternalCompileToModule(decorated.ModuleTypeNormal, importRepository, rootModule, dectype.MakeArtifactFullyQualifiedModuleName(nil), absoluteFilename, code,
 		enforceStyle, verbose, errorsAsWarnings)
 

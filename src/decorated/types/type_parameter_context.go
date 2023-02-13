@@ -66,6 +66,12 @@ func (t *TypeParameterContext) SetTypes(types []dtype.Type) error {
 	return nil
 }
 
+func (t *TypeParameterContext) Debug() {
+	for _, def := range t.definitions {
+		log.Printf("%v +> %T", def.Identifier(), def.ReferencedType())
+	}
+}
+
 func (t *TypeParameterContext) IsDefined() bool {
 	for _, def := range t.definitions {
 		if !def.hasBeenDefined {
@@ -77,7 +83,7 @@ func (t *TypeParameterContext) IsDefined() bool {
 }
 
 func (t *TypeParameterContext) AddExpectedDef(name *dtype.LocalTypeName) {
-	def := NewLocalTypeDefinition(name, NewAnyType())
+	def := NewLocalTypeDefinition(name)
 	t.resolvedArguments[name.Name()] = def
 	t.definitions = append(t.definitions, def)
 }
@@ -94,16 +100,16 @@ func (t *TypeParameterContext) SetType(defRef *LocalTypeNameReference, definedTy
 		return nil, fmt.Errorf("could not find %v %v", defRef.Identifier().Name(), t)
 	}
 
-	localNameRef, wasLocal := definedType.(*LocalTypeNameReference)
-	if wasLocal {
-		panic(fmt.Errorf("not allowed to set a type to a name reference, that won't help us %v", localNameRef))
-	}
+	//localNameRef, wasLocal := definedType.(*LocalTypeNameReference)
+	//if wasLocal {
+	//		panic(fmt.Errorf("not allowed to set a type to a name reference, that won't help us %v", localNameRef))
+	//}
 	if definition.hasBeenDefined {
 		if err := CompatibleTypes(definition.referencedType, definedType); err != nil {
 			return nil, fmt.Errorf(" %v was already set %w", defRef.Identifier().Name(), err)
 		}
 	} else {
-		log.Printf("set %v to %v", defRef.Identifier().Name(), definedType)
+		//log.Printf("set %v to %v", defRef.Identifier().Name(), definedType)
 		definition.referencedType = definedType
 		definition.hasBeenDefined = true
 	}

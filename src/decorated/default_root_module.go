@@ -157,7 +157,7 @@ func compileToModule(globalModule *decorated.Module, name string, code string) (
 
 	newModule, err := InternalCompileToModule(decorated.ModuleTypeNormal, nil, globalModule,
 		fullyQualifiedName,
-		name+"_internal", strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
+		"/test/"+name+"_internal", strings.TrimSpace(code), enforceStyle, verbose, errorAsWarning)
 	if parser.IsCompileError(err) {
 		return nil, err
 	}

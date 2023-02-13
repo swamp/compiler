@@ -13,6 +13,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"log"
 )
 
 func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string) (*dectype.PrimitiveAtom, []decorated.Expression, decshared.DecoratedError) {
@@ -54,6 +55,7 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 	if concreteErr != nil {
 		return nil, nil, concreteErr
 	}
+	log.Printf("concreteListLiteral %v", concretizedLiteral)
 
 	primitiveAtom, _ := concretizedLiteral.(*dectype.PrimitiveAtom)
 

@@ -1141,7 +1141,7 @@ type alias Tinkering t =
     , cool : Something t
     }
 
-`, "[TypeParamContext [t] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[LocalTypeNameRef t]]]]]]]]")
+`, "[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[LocalTypeNameRef t]]]]]]]]")
 }
 
 func TestMultipleGenerics(t *testing.T) {
@@ -1154,7 +1154,7 @@ type alias Tinkering t a =
     }
 
 `, `
-[TypeParamContext [t a] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $List [[LocalTypeNameRef t]]]] [Field: $other [LocalTypeNameRef a]]]]]]
+[AliasType $Tinkering [TypeParamContext [t a] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $List [[LocalTypeNameRef t]]]] [Field: $other [LocalTypeNameRef a]]]]]]
 `)
 }
 
@@ -1184,7 +1184,7 @@ type alias Tinkering t =
 f : (a: Tinkering t) -> Int =
     2
 `, `
-[TypeParamContext [t] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [LocalTypeNameRef t]]]]]]
+[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [LocalTypeNameRef t]]]]]]
 [FnDef $f = [Fn [TypeParamContext [t] +> [FnType [TypeReference $Tinkering [[LocalTypeNameRef t]]] -> [TypeReference $Int]]] (a) = #2]]
 `)
 }
@@ -1220,7 +1220,7 @@ type alias Tinkering t =
 f : (Tinkering Int) -> Int =
     tinkering.secret
 `, `
-[TypeParamContext [t] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]
+[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]
 [FnDef $f = [Fn [FnType [TypeReference $Tinkering [[TypeReference $Int]]] -> [TypeReference $Int]] (_) = [RecordLookups $tinkering [$secret]]]]
 `)
 }
@@ -1242,7 +1242,7 @@ type alias Tinkering t =
     { solder : Bool
     , secret : t
     }
-`, "[TypeParamContext [t] +> [AliasType $Tinkering [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]")
+`, "[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]")
 }
 
 func TestCaseNewLine(t *testing.T) {

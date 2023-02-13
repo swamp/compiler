@@ -11,13 +11,16 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"log"
 )
 
 func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomType, context *VariableContext) (*decorated.CaseCustomType, decshared.DecoratedError) {
+	log.Printf("before %v", caseExpression)
 	decoratedTest, decoratedTestErr := DecorateExpression(d, caseExpression.Test(), context)
 	if decoratedTestErr != nil {
 		return nil, decoratedTestErr
 	}
+	log.Printf("after %v", decoratedTest)
 
 	pureTestType := dectype.UnaliasWithResolveInvoker(decoratedTest.Type())
 	testType := pureTestType

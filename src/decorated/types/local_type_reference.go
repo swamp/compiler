@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
@@ -19,7 +18,7 @@ type LocalTypeDefinitionReference struct {
 }
 
 func (u *LocalTypeDefinitionReference) String() string {
-	return fmt.Sprintf("[ConcreteGenericRef %v=%v]", u.typeDefinition.identifier, u.typeDefinition.ReferencedType())
+	return fmt.Sprintf("[ConcreteGenericRef %v => %v]", u.typeDefinition.identifier, u.typeDefinition.referencedType)
 }
 
 func (u *LocalTypeDefinitionReference) FetchPositionLength() token.SourceFileReference {
@@ -58,6 +57,9 @@ func (u *LocalTypeDefinitionReference) WasReferenced() bool {
 	return false
 }
 
-func NewLocalTypeDefinitionReference(identifier *ast.LocalTypeNameReference, referencedType *LocalTypeDefinition) *LocalTypeDefinitionReference {
-	return &LocalTypeDefinitionReference{identifier: identifier, typeDefinition: referencedType}
+func NewLocalTypeDefinitionReference(identifier *ast.LocalTypeNameReference, referencedDefinition *LocalTypeDefinition) *LocalTypeDefinitionReference {
+	x := &LocalTypeDefinitionReference{identifier: identifier, typeDefinition: referencedDefinition}
+	referencedDefinition.AddReference(x)
+
+	return x
 }

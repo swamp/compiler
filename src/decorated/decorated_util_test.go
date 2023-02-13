@@ -6,6 +6,7 @@
 package deccy
 
 import (
+	"github.com/swamp/compiler/src/parser"
 	"log"
 	"reflect"
 	"strings"
@@ -19,7 +20,7 @@ import (
 func testDecorateInternal(code string, useCores bool, errorsAsWarnings bool) (string, decshared.DecoratedError) {
 	code = strings.TrimSpace(code)
 	module, compileErr := CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
-	if compileErr != nil {
+	if parser.IsCompileError(compileErr) {
 		return "", compileErr
 	}
 	return module.ShortString(), nil
@@ -53,6 +54,8 @@ func testDecorate(t *testing.T, code string, ast string) {
 		}
 		t.Errorf("Mismatch strings received \n%v\n but expected\n%v", decorationString, ast)
 	}
+
+	t.Logf("passed")
 }
 
 func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
