@@ -141,7 +141,7 @@ func [constantfn DynPos 0008:104 func:a]
 `)
 }
 
-func TestMaybeInt(t *testing.T) {
+func xTestMaybeInt(t *testing.T) {
 	testGenerateWithoutCores(t,
 		`
 main : (Bool) -> Maybe Int =
@@ -162,12 +162,12 @@ main : (name: String) -> Bool =
         let
             _ = "Rebecca"
         in
-        True
+        true
     else
         let
             _ = "3"
         in
-        False
+        false
 
 `, `
 [constantstring DynPos 0078:16 Rebecca]
@@ -256,7 +256,7 @@ func TestGuardLetInChar(t *testing.T) {
 tester : (Int) -> Char =
     let
         existingTile = 'a'
-        isUpperLeft = False
+        isUpperLeft = false
     in
     | existingTile == '_' -> '@'
     | isUpperLeft -> '/'

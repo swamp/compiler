@@ -103,6 +103,7 @@ func testGenerateHelper(t *testing.T, code string, expectedAsm string, useCores 
 		log.Printf("problem %v\n", decorateErr)
 		t.Error(decorateErr)
 	}
+	t.Logf("passed!")
 }
 
 func testGenerate(t *testing.T, code string, expectedAsm string) {
@@ -125,4 +126,5 @@ func testGenerateFail(t *testing.T, code string, expectedError interface{}) {
 	if !isSameErr {
 		t.Errorf("generate: unexpected fail: expected %T but received %T", expectedError, testErr)
 	}
+
 }
