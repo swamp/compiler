@@ -139,7 +139,7 @@ func TraverseToString(t dtype.Type) string {
 func (t *ModuleTypes) DebugString() string {
 	s := ""
 	for _, v := range t.allNamedTypes {
-		s += fmt.Sprintf("%v : %v\n", v.name, TraverseToString(v.realType))
+		s += fmt.Sprintf("%v : %v\n", v.name, v.realType)
 	}
 	return s
 }

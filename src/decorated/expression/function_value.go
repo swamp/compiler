@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -60,7 +59,7 @@ func (a *FunctionParameterDefinition) References() []*FunctionParameterReference
 }
 
 type FunctionValue struct {
-	forcedFunctionType  dectype.FunctionTypeLike
+	forcedFunctionType  dtype.Type
 	decoratedExpression Expression
 	parameters          []*FunctionParameterDefinition
 	commentBlock        *ast.MultilineComment
@@ -69,9 +68,9 @@ type FunctionValue struct {
 	references          []*FunctionReference
 }
 
-func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType dectype.FunctionTypeLike, parameters []*FunctionParameterDefinition, commentBlock *ast.MultilineComment) *FunctionValue {
-	if len(parameters) != (forcedFunctionType.ParameterCount() - 1) {
-		panic("not great. different parameters")
+func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType dtype.Type, parameters []*FunctionParameterDefinition, convertedFunctionType *dectype.FunctionAtom, commentBlock *ast.MultilineComment) *FunctionValue {
+	if len(parameters) != (convertedFunctionType.ParameterCount() - 1) {
+		panic(fmt.Errorf("not great. different number of parameters %d vs %v", len(parameters), convertedFunctionType))
 	}
 	if forcedFunctionType == nil {
 		panic("must provide forced function type")
@@ -102,7 +101,7 @@ func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
 	return f.parameters
 }
 
-func (f *FunctionValue) ForcedFunctionType() dectype.FunctionTypeLike {
+func (f *FunctionValue) ForcedFunctionType() dtype.Type {
 	return f.forcedFunctionType
 }
 

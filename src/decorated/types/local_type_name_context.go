@@ -47,7 +47,7 @@ func (t *LocalTypeNameContext) NamesString() string {
 }
 
 func (t *LocalTypeNameContext) String() string {
-	return fmt.Sprintf("[LocalTypeNameContext %v]", t.NamesString())
+	return fmt.Sprintf("[LocalTypeNameContext %v = %v]", t.NamesString(), t.typeThatIsReferencingTheNames)
 }
 
 func (t *LocalTypeNameContext) Next() dtype.Type {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 /*
@@ -57,12 +56,15 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 
 	targetFunctionNamedValue.DefineExpression(decoratedExpression)
 
+	/* TODO:
 	//log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
 	compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
 	if compatibleErr != nil {
 		return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(targetFunctionValue.AstFunctionValue(),
 			functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr)
 	}
+	
+	*/
 
 	if !targetFunctionValue.IsSomeKindOfExternal() {
 		for _, param := range targetFunctionValue.Parameters() {

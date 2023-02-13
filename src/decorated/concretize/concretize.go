@@ -17,6 +17,8 @@ func IfNeeded(reference dtype.Type, concrete dtype.Type, resolveLocalTypeNames *
 		return Tuple(t, concrete.(*dectype.TupleTypeAtom), resolveLocalTypeNames)
 	case *dectype.LocalTypeNameReference:
 		return concrete, nil
+	case *dectype.FunctionTypeReference:
+		return FunctionTypeArg(t.FunctionAtom(), concrete.(*dectype.FunctionTypeReference).FunctionAtom(), resolveLocalTypeNames)
 	default:
 		log.Printf("what is this %T", reference)
 	}
@@ -27,7 +29,7 @@ func IfNeeded(reference dtype.Type, concrete dtype.Type, resolveLocalTypeNames *
 func ResolveSlices(references []dtype.Type, concretes []dtype.Type, resolver *dectype.TypeParameterContext) ([]dtype.Type, decshared.DecoratedError) {
 	var resolvedTypes []dtype.Type
 	if len(concretes) != len(references) {
-		return nil, decorated.NewInternalError(fmt.Errorf("must have equal number of arguments to concretize custom type variant"))
+		return nil, decorated.NewInternalError(fmt.Errorf("must have equal number of arguments to concretize slices"))
 	}
 	for index, parameterType := range references {
 		resolvedType := parameterType
@@ -162,7 +164,33 @@ func CustomType(reference *dectype.CustomTypeAtom, arguments []dtype.Type, resol
 	return newCustomType, nil
 }
 
+func Record(reference *dectype.RecordAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.RecordAtom, decshared.DecoratedError) {
+
+	var fieldTypes []dtype.Type
+
+	for _, field := range reference.ParseOrderedFields() {
+		fieldTypes = append(fieldTypes, field.Type())
+	}
+
+	resolvedTypes, resolveErr := ResolveSlices(fieldTypes, arguments, resolver)
+	if resolveErr != nil {
+		return nil, resolveErr
+	}
+
+	var newFields []*dectype.RecordField
+	for index, field := range reference.ParseOrderedFields() {
+		newField := dectype.NewRecordField(field.FieldName(), field.AstRecordTypeField(), resolvedTypes[index])
+		newFields = append(newFields, newField)
+	}
+
+	newRecord := dectype.NewRecordType(reference.AstRecord(), newFields)
+
+	return newRecord, nil
+}
+
 func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
+	log.Printf("%v <==- %v", reference, arguments)
+
 	if hasAnyMatching, startIndex := dectype.HasAnyMatchingTypes(reference.FunctionParameterTypes()); hasAnyMatching {
 		originalInitialCount := startIndex
 		originalEndCount := len(reference.FunctionParameterTypes()) - startIndex - 2
@@ -192,7 +220,7 @@ func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resol
 		}
 	}
 
-	convertedTypes, err := ResolveSlices(reference.FunctionParameterTypes(), arguments, resolver)
+	convertedTypes, err := ResolveSlices(reference.FunctionParameterTypes()[:len(reference.FunctionParameterTypes())-1], arguments, resolver)
 	if err != nil {
 		return nil, err
 	}
@@ -200,6 +228,11 @@ func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resol
 	newFunction := dectype.NewFunctionAtom(reference.AstFunction(), convertedTypes)
 
 	return newFunction, nil
+}
+
+func FunctionTypeArg(reference *dectype.FunctionAtom, concrete *dectype.FunctionAtom, resolver *dectype.TypeParameterContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
+	log.Printf("%v \n<- %v", reference, concrete)
+	return FunctionType(reference, concrete.FunctionParameterTypes(), resolver)
 }
 
 func Concrete(reference dtype.Type, concrete dtype.Type) (dtype.Type, decshared.DecoratedError) {
@@ -234,6 +267,11 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 		if err != nil {
 			return nil, err
 		}
+	case *dectype.FunctionTypeReference:
+		resolvedType, err = FunctionType(t.FunctionAtom(), concreteArguments, resolveLocalTypeNames)
+		if err != nil {
+			return nil, err
+		}
 	case *dectype.FunctionAtom:
 		resolvedType, err = FunctionType(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {
@@ -241,6 +279,11 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 		}
 	case *dectype.PrimitiveAtom:
 		resolvedType, err = PrimitiveArguments(t, concreteArguments, resolveLocalTypeNames)
+		if err != nil {
+			return nil, err
+		}
+	case *dectype.RecordAtom:
+		resolvedType, err = Record(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {
 			return nil, err
 		}

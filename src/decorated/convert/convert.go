@@ -63,7 +63,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			convertedParameters = append(convertedParameters, convertedParameter)
 		}
 		functionType := dectype.NewFunctionAtom(info, convertedParameters)
-		return dectype.NewFunctionTypeReference(info, functionType, nil), nil
+		return functionType, nil
 
 	case *ast.Alias:
 		subType, subTypeErr := ConvertFromAstToDecorated(info.ReferencedType(), t)
@@ -85,7 +85,9 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if subTypeErr != nil {
 			return nil, subTypeErr
 		}
-		return subType, nil
+		decContext.SetType(subType)
+
+		return decContext, nil
 	case *ast.Record:
 		return DecorateRecordType(info, t)
 
@@ -129,6 +131,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if sliceErr != nil {
 			return nil, sliceErr
 		}
+
 		nameOnlyContext := dectype.FindNameOnlyContextWithUnalias(foundType)
 		if nameOnlyContext != nil {
 			return concretize.ConcreteArguments(nameOnlyContext, types)

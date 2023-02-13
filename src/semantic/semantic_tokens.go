@@ -27,11 +27,14 @@ func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *Semantic
 		if err := addSemanticToken(parameter.Type(), builder); err != nil {
 			return err
 		}
+
 	}
+
+	/* TODO:
 	if err := addSemanticToken(f.ForcedFunctionType().ReturnType(), builder); err != nil {
 		return err
 	}
-
+	*/
 	return addSemanticToken(f.Expression(), builder)
 }
 

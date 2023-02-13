@@ -1030,12 +1030,12 @@ func (e *UnknownVariable) FetchPositionLength() token.SourceFileReference {
 }
 
 type TooFewIdentifiersForFunctionType struct {
-	forcedFunctionType    *dectype.FunctionAtom
+	forcedFunctionType    dtype.Type
 	functionValue         *ast.FunctionValue
 	annotationIdentifiers []*ast.FunctionParameter
 }
 
-func NewTooFewIdentifiersForFunctionType(annotationIdentifiers []*ast.FunctionParameter, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooFewIdentifiersForFunctionType {
+func NewTooFewIdentifiersForFunctionType(annotationIdentifiers []*ast.FunctionParameter, forcedFunctionType dtype.Type, functionValue *ast.FunctionValue) *TooFewIdentifiersForFunctionType {
 	return &TooFewIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers, forcedFunctionType: forcedFunctionType, functionValue: functionValue}
 }
 

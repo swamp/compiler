@@ -69,20 +69,23 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 	unaliasedType := dectype.UnaliasWithResolveInvoker(originalFunctionValueType)
 	functionValueExpressionFunctionType, wasFunction := unaliasedType.(*dectype.FunctionAtom)
 	if !wasFunction {
-		return nil, decorated.NewExpectedFunctionTypeForCall(functionValueExpression)
-		/*
+		functionTypeReference, wasFunctionTypeReference := unaliasedType.(*dectype.FunctionTypeReference)
+		if !wasFunctionTypeReference {
 			localTypeContext, wasLocalTypeContext := unaliasedType.(*dectype.LocalTypeNameContext)
 			if !wasLocalTypeContext {
-			}
-
-			unaliasedContextTarget := dectype.Unalias(localTypeContext.Next())
-			_, wasFunctionAtom := unaliasedContextTarget.(*dectype.FunctionAtom)
-			if !wasFunctionAtom {
 				return nil, decorated.NewExpectedFunctionTypeForCall(functionValueExpression)
 			}
-			concretize.ConcreteArguments(localTypeContext, encounteredArgumentTypes)
 
-		*/
+			concreteFunctionType, concreteErr := concretize.ConcreteArguments(localTypeContext, encounteredArgumentTypes)
+			if concreteErr != nil {
+				return nil, concreteErr
+			}
+
+			functionValueExpressionFunctionType, _ = concreteFunctionType.(*dectype.FunctionAtom)
+
+		} else {
+			functionValueExpressionFunctionType = functionTypeReference.FunctionAtom()
+		}
 	}
 
 	completeCalledFunctionType, determineErr := determineEncounteredFunctionTypeAndArguments(d, call, functionValueExpressionFunctionType, encounteredFunctionCallType, context)
@@ -133,9 +136,12 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 
 	localName, wasLocal := functionValueExpression.Type().(*dectype.LocalTypeNameContext)
 	if wasLocal {
-		_, wasFunctionAtom := functionValueExpression.Type().Next().(*dectype.FunctionAtom)
-		if !wasFunctionAtom {
-			return nil, decorated.NewInternalError(fmt.Errorf("unknown function type %v", functionValueExpression.Type()))
+		_, wasPointingToFunctionAtom := functionValueExpression.Type().Next().(*dectype.FunctionAtom)
+		if !wasPointingToFunctionAtom {
+			_, wasPointingToFunctionAtomRef := functionValueExpression.Type().Next().(*dectype.FunctionTypeReference)
+			if !wasPointingToFunctionAtomRef {
+				return nil, decorated.NewInternalError(fmt.Errorf("unknown function type %v", functionValueExpression.Type().Next()))
+			}
 		}
 		_, concreteErr := concretize.ConcreteArguments(localName, decoratedEncounteredArgumentTypes)
 		if concreteErr != nil {

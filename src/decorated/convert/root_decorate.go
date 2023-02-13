@@ -126,7 +126,7 @@ func createParameterDefinitions(referenceMaker decorated.TypeAddAndReferenceMake
 	return parameters, nil
 }
 
-func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
+func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 
 	/*
 		forcedFunctionTypeLike := targetFunctionValue.ForcedFunctionType()
@@ -145,31 +145,35 @@ func (g *RootStatementHandler) declareNamedFunctionValue(d DecorateStream, assig
 
 	*/
 
-	annotatedType, convertedTypeErr := g.findTypeFromAstType(assignment.FunctionValue().Type())
+	foundFunctionTypeLike, convertedTypeErr := g.findTypeFromAstType(assignment.FunctionValue().Type())
 	if convertedTypeErr != nil {
 		return nil, decorated.NewUnknownAnnotationTypeReference(assignment.Identifier(), convertedTypeErr)
 	}
-
-	name := assignment.Identifier()
-	if annotatedType == nil {
+	if foundFunctionTypeLike == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 	}
 
-	foundFunctionType := DerefFunctionType(annotatedType)
-	if foundFunctionType == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("expected function type"))
-	}
-	forcedFunctionType := DerefFunctionTypeLike(foundFunctionType)
+	name := assignment.Identifier()
+
+	forcedFunctionType := DerefFunctionType(foundFunctionTypeLike)
 	if forcedFunctionType == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("no forced function type %v", assignment))
+		return nil, decorated.NewInternalError(fmt.Errorf("expected function type %T", forcedFunctionType))
 	}
+
+	/*
+		forcedFunctionType := DerefFunctionTypeLike(foundFunctionType)
+		if forcedFunctionType == nil {
+			return nil, decorated.NewInternalError(fmt.Errorf("no forced function type %v", assignment))
+		}
+
+	*/
 
 	parameters, parametersErr := createParameterDefinitions(d.TypeReferenceMaker(), forcedFunctionType, assignment.FunctionValue())
 	if parametersErr != nil {
 		return nil, parametersErr
 	}
 
-	preparedFunctionValue := decorated.NewPrepareFunctionValue(assignment.FunctionValue(), foundFunctionType, parameters, g.localCommentBlock)
+	preparedFunctionValue := decorated.NewPrepareFunctionValue(assignment.FunctionValue(), foundFunctionTypeLike, parameters, forcedFunctionType, g.localCommentBlock)
 
 	d.AddDefinition(name, preparedFunctionValue)
 
@@ -234,7 +238,7 @@ func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decor
 	case *ast.CustomTypeNamedDefinition:
 		return g.handleCustomTypeStatementEx(v)
 	case *ast.FunctionValueNamedDefinition:
-		return g.declareNamedFunctionValue(g.decorateStream, v)
+		return g.convertFunctionStatement(g.decorateStream, v)
 	case *ast.MultilineComment:
 		return g.handleMultilineComment(g.decorateStream, v)
 	case *ast.SingleLineComment:
