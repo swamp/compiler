@@ -50,3 +50,9 @@ func (r *NamedDefinitionTypeReference) DebugString() string {
 func (r *NamedDefinitionTypeReference) FetchPositionLength() token.SourceFileReference {
 	return r.ident.FetchPositionLength()
 }
+
+func MakeFakeNamedDefinitionTypeReference(sourceFileRef token.SourceFileReference, primitiveName string) *NamedDefinitionTypeReference {
+	typeIdent := ast.NewTypeIdentifier(token.NewTypeSymbolToken(primitiveName, sourceFileRef, 0))
+	typeRef := ast.NewTypeReference(typeIdent, nil)
+	return NewNamedDefinitionTypeReference(nil, typeRef)
+}

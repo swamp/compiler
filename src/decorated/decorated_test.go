@@ -121,7 +121,7 @@ main : (Bool) -> Int =
 `,
 		`
 [ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $ResourceName]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $ResourceName]]]]]) -> [Integer 2]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /first]] [[ResourceName this/is/something.txt]]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $ResourceName]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] [FunctionRef [NamedDefinitionReference /first]] [[ResourceName this/is/something.txt]]]]]
 `)
 }
 
@@ -160,11 +160,11 @@ fn : (String, *) -> Int =
 
 
 main : Int =
-    fn "hello" 42.0
+    fn "hello" 42.0 33
 `,
 		`
 [ModuleDef $fn = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [AnyMatching AnyMatchingType] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Param $_ : [AnyMatching AnyMatchingType]]]) -> [Integer 23]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([]) -> [FnCall [FunctionRef [NamedDefinitionReference /fn]] [[String hello] [Fixed 42000]]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [AnyMatching AnyMatchingType] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] [FunctionRef [NamedDefinitionReference /fn]] [[String hello] [Fixed 42000] [Integer 33]]]]]
 `)
 }
 
@@ -231,7 +231,7 @@ main : (Bool) -> Int =
 `,
 		`
 [ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Char]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Char]]]]]) -> [Integer 2]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /first]] [[Char 99]]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Char]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] [FunctionRef [NamedDefinitionReference /first]] [[Char 99]]]]]
 `)
 }
 
@@ -247,8 +247,8 @@ another : (Int) -> Fixed =
     first 2
 `,
 		`
-[ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] ([[Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference Int/toFixed]] [[ParamRef [Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]]]
-[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /first]] [[Integer 2]]]]]
+[ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] ([[Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] [FunctionRef [NamedDefinitionReference Int/toFixed]] [[ParamRef [Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]]]
+[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] [FunctionRef [NamedDefinitionReference /first]] [[Integer 2]]]]]
 `)
 }
 
@@ -264,8 +264,8 @@ another : (_: Int) -> Int =
     first 2.3
 `,
 		`
-[ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference Int/round]] [[ParamRef [Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]]]]]
-[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /first]] [[Fixed 2300]]]]]
+[ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] [FunctionRef [NamedDefinitionReference Int/round]] [[ParamRef [Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]]]]]]
+[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] [FunctionRef [NamedDefinitionReference /first]] [[Fixed 2300]]]]]
 `)
 }
 
@@ -285,7 +285,7 @@ another : (Int) -> Fixed =
 `,
 		`
 [ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Fixed 300]]]
-[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $x]] = [FnCall [FunctionRef [NamedDefinitionReference /first]] [[Integer 2]]]]] in [LetVarRef $x]]]]
+[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $x]] = [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Fixed]]]]] [FunctionRef [NamedDefinitionReference /first]] [[Integer 2]]]]] in [LetVarRef $x]]]]
 `)
 }
 
@@ -306,7 +306,7 @@ another : (Int) -> State =
 		`
 State : [Alias State [RecordType [[Field $playerX [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]
 
-[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [AliasRef [Alias State [RecordType [[Field $playerX [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $state]] = [RecordLiteral [RecordType [[Field $playerX [Primitive Int] (0)]]] [0 = [Integer 0]]]]] in [RecordLiteral [RecordType [[Field $playerX [Primitive Int] (0)]]] [0 = [Integer 22]]]]]]
+[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [AliasRef [Alias State [RecordType [[Field $playerX [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $state]] = [RecordLiteral [RecordType [[Field $playerX [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]] [0 = [Integer 0]]]]] in [RecordLiteral [RecordType [[Field $playerX [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]] [0 = [Integer 22]]]]]]
 `)
 }
 
@@ -437,7 +437,7 @@ Unknown : [Variant $Unknown []]
 Something : [Variant $Something [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]
 
 [ModuleDef $receiveStatus = [FunctionValue [FunctionType [[VariantRef [NamedDefTypeRef :[TypeReference $Status]]] [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]] ([[Param $status : [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]]) -> [ParamRef [Param $status : [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]]]]
-[ModuleDef $someFunc = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /receiveStatus]] [[VariantConstructor [Variant $Unknown []] []]]]]]
+[ModuleDef $someFunc = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionType [[VariantRef [NamedDefTypeRef :[TypeReference $Status]]] [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]] [FunctionRef [NamedDefinitionReference /receiveStatus]] [[VariantConstructor [Variant $Unknown []] []]]]]]
 `)
 }
 
@@ -470,7 +470,7 @@ ShouldNotMatch : [Variant $ShouldNotMatch []]
 SomethingElse : [Variant $SomethingElse [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]
 
 [ModuleDef $receiveStatus = [FunctionValue [FunctionType [[VariantRef [NamedDefTypeRef :[TypeReference $Unknown]] [Variant $Unknown []]] [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]] ([[Param $status : [VariantRef [NamedDefTypeRef :[TypeReference $Unknown]] [Variant $Unknown []]]]]) -> [ParamRef [Param $status : [VariantRef [NamedDefTypeRef :[TypeReference $Unknown]] [Variant $Unknown []]]]]]]
-[ModuleDef $someFunc = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /receiveStatus]] [[VariantConstructor [Variant $Unknown []] []]]]]]
+[ModuleDef $someFunc = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionType [[VariantRef [NamedDefTypeRef :[TypeReference $Unknown]] [Variant $Unknown []]] [VariantRef [NamedDefTypeRef :[TypeReference $Status]]]]] [FunctionRef [NamedDefinitionReference /receiveStatus]] [[VariantConstructor [Variant $Unknown []] []]]]]]
 `)
 }
 
@@ -618,7 +618,7 @@ Position : [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTyp
 Sprite : [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]
 
 [ModuleDef $move = [FunctionValue [FunctionType [[AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]] ([[Param $pos : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]] [Param $delta : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]]) -> [Let [[LetAssign [[LetVar $newX]] = (Arithmetic [lookups [ParamRef [Param $pos : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]] [[lookup [Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]] PLUS [lookups [ParamRef [Param $delta : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]] [[lookup [Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]])] [LetAssign [[LetVar $newY]] = (Arithmetic [lookups [ParamRef [Param $pos : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]] [[lookup [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]] PLUS [lookups [ParamRef [Param $delta : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]] [[lookup [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]])]] in [RecordLiteral [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]] [0 = [LetVarRef $newX] 1 = [LetVarRef $newY]]]]]]
-[ModuleDef $moveSprite = [FunctionValue [FunctionType [[AliasRef [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]] [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] [AliasRef [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]]]] ([[Param $sprite : [AliasRef [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]]] [Param $delta : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]]) -> [RecordLiteral [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]] [0 = [FnCall [FunctionRef [NamedDefinitionReference /move]] [[lookups [ParamRef [Param $sprite : [AliasRef [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]]]] [[lookup [Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]] [ParamRef [Param $delta : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]]]]]]]]
+[ModuleDef $moveSprite = [FunctionValue [FunctionType [[AliasRef [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]] [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] [AliasRef [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]]]] ([[Param $sprite : [AliasRef [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]]] [Param $delta : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]]) -> [RecordLiteral [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]] [0 = [FnCall [FunctionType [[AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]] [FunctionRef [NamedDefinitionReference /move]] [[lookups [ParamRef [Param $sprite : [AliasRef [Alias Sprite [RecordType [[Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]]]]] [[lookup [Field $rootPosition [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]] (0)]]]] [ParamRef [Param $delta : [AliasRef [Alias Position [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)] [Field $y [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (1)]]]]]]]]]]]]]
 `)
 }
 
@@ -785,7 +785,7 @@ main : (Bool) -> Int =
     fn 2 3
 `, `
 [ModuleDef $move = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $pos : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] [Param $delta : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [ParamRef [Param $pos : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] PLUS [ParamRef [Param $delta : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [Let [[LetAssign [[LetVar $fn]] = [FunctionRef [NamedDefinitionReference /move]]]] in [FnCall [LetVarRef $fn] [[Integer 2] [Integer 3]]]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [Let [[LetAssign [[LetVar $fn]] = [FunctionRef [NamedDefinitionReference /move]]]] in [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] [LetVarRef $fn] [[Integer 2] [Integer 3]]]]]]
 `)
 }
 
@@ -923,7 +923,7 @@ main : (String) -> Bool =
     isLoveOfMyLife "Lisa"
 `, `
 [ModuleDef $isLoveOfMyLife = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [BoolOp [ParamRef [Param $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] EQ [String Rebecca]]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /isLoveOfMyLife]] [[String Lisa]]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] [FunctionRef [NamedDefinitionReference /isLoveOfMyLife]] [[String Lisa]]]]]
 `)
 }
 
@@ -938,7 +938,7 @@ main : (String) -> Bool =
     isLoveOfMyLife "Lisa" 2
 `, `
 [ModuleDef $isLoveOfMyLife = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [BoolOp [ParamRef [Param $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] EQ [String Rebecca]]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /isLoveOfMyLife]] [[String Lisa] [Integer 2]]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] [FunctionRef [NamedDefinitionReference /isLoveOfMyLife]] [[String Lisa] [Integer 2]]]]]
 `)
 }
 
@@ -1031,7 +1031,7 @@ another : (score: Int) -> Bool =
     af score
 `, `
 [ModuleDef $f = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Param $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [If [BoolOp [ParamRef [Param $name : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]] EQ [String Peter]] then [BoolOp (Arithmetic [ParamRef [Param $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [Integer 2]) GR [Integer 100]] else [BoolOp [ParamRef [Param $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] GR [Integer 100]]]]]
-[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $af]] = [Curry [FunctionRef [NamedDefinitionReference /f]] [[String Peter]]]]] in [FnCall [LetVarRef $af] [[ParamRef [Param $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]]]]
+[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Let [[LetAssign [[LetVar $af]] = [Curry [FunctionRef [NamedDefinitionReference /f]] [[String Peter]]]]] in [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] [LetVarRef $af] [[ParamRef [Param $score : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]]]]
 `)
 }
 
@@ -1065,7 +1065,7 @@ a : (Bool) -> (Int, String) =
 `)
 }
 
-func xTestTupleSecond(t *testing.T) {
+func TestTupleSecond(t *testing.T) {
 	testDecorate(t,
 		`
 a : Bool -> String
@@ -1097,8 +1097,8 @@ createTuple : (first: a, second: b) -> (a, b) =
 a : (Bool) -> (Int, String) =
     createTuple 2 "Hello"
 `, `
-[ModuleDef $createTuple = [FunctionValue [FunctionType [[LocalTypeNameRef a] [LocalTypeNameRef b] [TupleType [[LocalTypeNameRef a] [LocalTypeNameRef b]]]]] ([[Param $first : [LocalTypeNameRef a]] [Param $second : [LocalTypeNameRef b]]]) -> [TupleLiteral [TupleType [[LocalTypeNameRef a] [LocalTypeNameRef b]]] [TupleLiteral [$first $second]] [[ParamRef [Param $first : [LocalTypeNameRef a]]] [ParamRef [Param $second : [LocalTypeNameRef b]]]]]]]
-[ModuleDef $a = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [TupleType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /createTuple]] [[Integer 2] [String Hello]]]]]
+[ModuleDef $createTuple = [FunctionValue [LocalTypeNameContext a, b = [FunctionType [[LocalTypeNameRef a] [LocalTypeNameRef b] [TupleType [[LocalTypeNameRef a] [LocalTypeNameRef b]]]]]] ([[Param $first : [LocalTypeNameRef a]] [Param $second : [LocalTypeNameRef b]]]) -> [TupleLiteral [TupleType [[LocalTypeNameRef a] [LocalTypeNameRef b]]] [TupleLiteral [$first $second]] [[ParamRef [Param $first : [LocalTypeNameRef a]]] [ParamRef [Param $second : [LocalTypeNameRef b]]]]]]]
+[ModuleDef $a = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [TupleType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[ConcreteGenericRef a => [Primitive Int]] [ConcreteGenericRef b => [Primitive String]] [TupleType [[ConcreteGenericRef a => [Primitive Int]] [ConcreteGenericRef b => [Primitive String]]]]]] [FunctionRef [NamedDefinitionReference /createTuple]] [[Integer 2] [String Hello]]]]]
 `)
 }
 
@@ -1309,9 +1309,9 @@ type alias Tinkering t =
 f : (tinkering: Tinkering Int) -> Int =
     tinkering.secret
 `, `
-Tinkering : [Alias Tinkering [RecordType [[RecordTypeField $secret [LocalTypeNameRef t] (0)] [RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]] => [RecordType [[RecordTypeField $secret [LocalTypeNameRef t] (0)] [RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]
+Tinkering : [Alias Tinkering [LocalTypeNameContext t = [RecordType [[Field $secret [LocalTypeNameRef t] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]
 
-[ModuleDef $f = [FunctionValue [FunctionType [[AliasRef [Alias Tinkering [RecordType [[RecordTypeField $secret [LocalTypeNameRef t] (0)] [RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $tinkering : [AliasRef [Alias Tinkering [RecordType [[RecordTypeField $secret [LocalTypeNameRef t] (0)] [RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]]]) -> [lookups [ParamRef [Param $tinkering : [AliasRef [Alias Tinkering [RecordType [[RecordTypeField $secret [LocalTypeNameRef t] (0)] [RecordTypeField $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]]] [[lookup [RecordTypeField $secret [LocalTypeNameRef t] (0)]]]]]]
+[ModuleDef $f = [FunctionValue [FunctionType [[RecordType [[Field $secret [ConcreteGenericRef t => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $tinkering : [RecordType [[Field $secret [ConcreteGenericRef t => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]) -> [lookups [ParamRef [Param $tinkering : [RecordType [[Field $secret [ConcreteGenericRef t => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]] [[lookup [Field $secret [ConcreteGenericRef t => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)]]]]]]
 `)
 }
 
@@ -1342,7 +1342,7 @@ Tinkering : [Alias Tinkering [LocalTypeNameContext t = [RecordType [[Field $secr
 }
 
 // can not add a child that is not within the range of the parent [[2:5](23) to [3:5](167) (145)]  [[1:1](0) to [1:1](0) (1)]  (*dectype.RecordAtom and *dectype.PrimitiveAtom)
-func xTestRecordList(t *testing.T) {
+func TestRecordList(t *testing.T) {
 	testDecorateWithoutDefault(t, //-- just a comment
 		`
 type alias Enemy =
@@ -1366,16 +1366,16 @@ updateWorld : (w: World) -> Bool =
 main : (Bool) -> Bool =
     updateWorld { enemies = [ { values = [ 1, 3 ] } ] }
 `, `
-Enemy : [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]] => [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]
-World : [Alias World [RecordType [[RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]][]]] => [RecordType [[RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]][]]
+Enemy : [Alias Enemy [RecordType [[Field $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]]]
+World : [Alias World [RecordType [[Field $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]]]
 
-[ModuleDef $updateEnemy = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]>]]) -> [Bool true]]]
-[ModuleDef $updateWorld = [FunctionValue ([[Arg $w : [AliasRef [Alias World [RecordType [[RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]][]]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /updateEnemy]] [[lookups [FunctionParamRef [Arg $w : [AliasRef [Alias World [RecordType [[RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]][]]]]]] [[lookup [RecordTypeField $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[AliasRef [Alias Enemy [RecordType [[RecordTypeField $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]<[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]> (0)]][]]]]> (0)]]]]]]]]
-[ModuleDef $main = [FunctionValue ([[Arg $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionRef [NamedDefinitionReference /updateWorld]] [[RecordLiteral [RecordType [[RecordTypeField $enemies [Primitive List<[RecordType [[RecordTypeField $values [Primitive List<[Primitive Int]>] (0)]][]]>] (0)]][]] [0 = [ListLiteral [[RecordLiteral [RecordType [[RecordTypeField $values [Primitive List<[Primitive Int]>] (0)]][]] [0 = [ListLiteral [[Integer 1] [Integer 3]]]]]]]]]]]]]
+[ModuleDef $updateEnemy = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]]]) -> [Bool true]]]
+[ModuleDef $updateWorld = [FunctionValue [FunctionType [[AliasRef [Alias World [RecordType [[Field $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $w : [AliasRef [Alias World [RecordType [[Field $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] [FunctionRef [NamedDefinitionReference /updateEnemy]] [[lookups [ParamRef [Param $w : [AliasRef [Alias World [RecordType [[Field $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]]]]]] [[lookup [Field $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]]]]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[AliasRef [Alias World [RecordType [[Field $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] [FunctionRef [NamedDefinitionReference /updateWorld]] [[RecordLiteral [RecordType [[Field $enemies [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]] [0 = [ListLiteral [[RecordLiteral [RecordType [[Field $values [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] (0)]]] [0 = [ListLiteral [[Integer 1] [Integer 3]]]]]]]]]]]]]
 `)
 }
 
-func xTestRecordListInList(t *testing.T) {
+func TestRecordListInList(t *testing.T) {
 	testDecorate(t,
 
 		`
@@ -1721,7 +1721,7 @@ isVertical : (direction: Direction) -> Int =
 `, &decorated.UnMatchingFunctionReturnTypesInFunctionValue{})
 }
 
-func xTestMinimalMaybeAndJust(t *testing.T) {
+func TestMinimalMaybeAndJust(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 type alias Thing =

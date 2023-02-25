@@ -17,6 +17,11 @@ func decorateInteger(d DecorateStream, integer *ast.IntegerLiteral) (decorated.E
 	if integerType == nil {
 		panic("internal error. Int is an unknown type")
 	}
-	decoratedInteger := decorated.NewIntegerLiteral(integer, integerType.(*dectype.PrimitiveAtom))
+
+	namedTypeRef := dectype.MakeFakeNamedDefinitionTypeReference(integerType.FetchPositionLength(), "Int")
+
+	primitiveReference := dectype.NewPrimitiveTypeReference(namedTypeRef, integerType.(*dectype.PrimitiveAtom))
+
+	decoratedInteger := decorated.NewIntegerLiteral(integer, primitiveReference)
 	return decoratedInteger, nil
 }

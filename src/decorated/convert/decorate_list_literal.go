@@ -13,10 +13,11 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"github.com/swamp/compiler/src/token"
 	"log"
 )
 
-func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string) (*dectype.PrimitiveAtom, []decorated.Expression, decshared.DecoratedError) {
+func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string) (*dectype.PrimitiveTypeReference, []decorated.Expression, decshared.DecoratedError) {
 	var listExpressions []decorated.Expression
 	var detectedType dtype.Type
 
@@ -58,8 +59,11 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 	log.Printf("concreteListLiteral %v", concretizedLiteral)
 
 	primitiveAtom, _ := concretizedLiteral.(*dectype.PrimitiveAtom)
+	typeIdent := ast.NewTypeIdentifier(token.NewTypeSymbolToken(containerName, listType.FetchPositionLength(), 0))
+	typeRef := ast.NewTypeReference(typeIdent, nil)
+	decTypeRef := dectype.NewPrimitiveTypeReference(dectype.NewNamedDefinitionTypeReference(nil, typeRef), primitiveAtom)
 
-	return primitiveAtom, listExpressions, nil
+	return decTypeRef, listExpressions, nil
 }
 
 func decorateListLiteral(d DecorateStream, list *ast.ListLiteral, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {

@@ -258,7 +258,7 @@ func HighestSeverity(err error) ReportAsSeverity {
 func IsCompileError(parseError parerr.ParseError) bool {
 	isError := HighestSeverity(parseError) == ReportAsSeverityError
 	if isError {
-		log.Printf("errror here")
+		log.Printf("errror here %T %v", parseError, parseError)
 	}
 
 	return isError

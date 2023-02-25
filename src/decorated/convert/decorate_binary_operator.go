@@ -195,7 +195,7 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 
 	allArguments := append(arguments, rightDecorated)
 
-	fullLeftFunctionCall, functionCallErr := decorateFunctionCallInternal(d, leftAstCall, functionExpression, allArguments, context)
+	fullLeftFunctionCall, functionCallErr := decorateFunctionCallInternal(d, leftAstCall, functionExpression, allArguments, nil, context)
 	if functionCallErr != nil {
 		return nil, functionCallErr
 	}
@@ -223,7 +223,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 
 	allArguments := append(arguments, leftDecorated)
 
-	fullRightFunctionCall, functionCallErr := decorateFunctionCallInternal(d, rightAstCall, functionExpression, allArguments, context)
+	fullRightFunctionCall, functionCallErr := decorateFunctionCallInternal(d, rightAstCall, functionExpression, allArguments, nil, context)
 	if functionCallErr != nil {
 		return nil, functionCallErr
 	}

@@ -115,5 +115,7 @@ func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifi
 		log.Printf("typelookup: what is this type: %T", t)
 	}
 
+	log.Printf("reference is %T %v", reference, someTypeIdentifier)
+
 	return reference, nil
 }

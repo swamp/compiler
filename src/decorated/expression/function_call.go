@@ -31,16 +31,16 @@ func CallIsExternal(fn Expression) (*ast.FunctionDeclarationExpression, bool) {
 
 type FunctionCall struct {
 	functionValueExpression Expression
-	assignments             []Expression
+	arguments               []Expression
 	smashedFunctionType     *dectype.FunctionAtom
 	astFunctionCall         *ast.FunctionCall
 	inclusive               token.SourceFileReference
 }
 
-func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression, smashedFunctionType *dectype.FunctionAtom, assignments []Expression) *FunctionCall {
-	inclusive := token.MakeInclusiveSourceFileReferenceFlipIfNeeded(astFunctionCall.FetchPositionLength(), assignments[len(assignments)-1].FetchPositionLength())
+func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression, smashedFunctionType *dectype.FunctionAtom, arguments []Expression) *FunctionCall {
+	inclusive := token.MakeInclusiveSourceFileReferenceFlipIfNeeded(astFunctionCall.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength())
 
-	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, assignments: assignments, smashedFunctionType: smashedFunctionType, inclusive: inclusive}
+	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, arguments: arguments, smashedFunctionType: smashedFunctionType, inclusive: inclusive}
 }
 
 func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
@@ -52,7 +52,7 @@ func (c *FunctionCall) FunctionExpression() Expression {
 }
 
 func (c *FunctionCall) Arguments() []Expression {
-	return c.assignments
+	return c.arguments
 }
 
 func (c *FunctionCall) Type() dtype.Type {
@@ -64,7 +64,7 @@ func (c *FunctionCall) SmashedFunctionType() *dectype.FunctionAtom {
 }
 
 func (c *FunctionCall) String() string {
-	return fmt.Sprintf("[FnCall %v %v]", c.functionValueExpression, c.assignments) // c.functionValueExpression, c.assignments)
+	return fmt.Sprintf("[FnCall %v %v %v]", c.smashedFunctionType, c.functionValueExpression, c.arguments) // c.functionValueExpression, c.arguments)
 }
 
 func (c *FunctionCall) HumanReadable() string {

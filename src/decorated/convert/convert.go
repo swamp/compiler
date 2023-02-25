@@ -7,13 +7,13 @@ package decorator
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/decorated/concretize"
-
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"log"
 )
 
 func AstLocalTypeNamesToTypeArgumentName(typeParameters []*ast.LocalTypeName) []*dtype.LocalTypeName {
@@ -109,6 +109,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		//artifactTypeName := t.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(info.Identifier())
 		return t.CreateLocalTypeNameOnlyReference(info)
 		//return dectype.NewLocalTypeDefinitionReference(info, dectype.NewAnyType()), nil
+
 	case *ast.TypeReferenceScoped:
 		foundType, err := t.CreateSomeTypeReference(info.TypeResolver())
 		if err != nil {
@@ -134,7 +135,17 @@ func ConvertFromAstToDecorated(astType ast.Type,
 
 		nameOnlyContext := dectype.FindNameOnlyContextWithUnalias(foundType)
 		if nameOnlyContext != nil {
-			return concretize.ConcreteArguments(nameOnlyContext, types)
+			newType, concreteErr := concretize.ConcreteArguments(nameOnlyContext, types)
+			if concreteErr != nil {
+				return nil, concreteErr
+			}
+			switch t := newType.(type) {
+			case *dectype.PrimitiveAtom:
+				foundType = dectype.NewPrimitiveTypeReference(foundType.NameReference(), t)
+				break
+			default:
+				log.Printf("nameOnly what is this: %T", newType)
+			}
 		}
 		return foundType, nil
 	//case *ast.LocalTypeNameDefinition:
