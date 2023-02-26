@@ -27,10 +27,6 @@ func NewPipeRightOperator(left Expression, right Expression, calculatedRight Exp
 	}
 }
 
-func (b *PipeRightOperator) GenerateRight() Expression {
-	return b.calculatedRight
-}
-
 func (b *PipeRightOperator) FetchPositionLength() token.SourceFileReference {
 	inclusive := token.MakeInclusiveSourceFileReference(b.left.FetchPositionLength(), b.right.FetchPositionLength())
 	return inclusive

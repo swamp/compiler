@@ -8,6 +8,7 @@ package decorator
 import (
 	"fmt"
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -216,23 +217,44 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		return nil, leftErr
 	}
 
-	rightAstCall, functionExpression, arguments, halfErr := decorateHalfOfAFunctionCall(d, right, context)
-	if halfErr != nil {
-		return nil, halfErr
+	rightDecorated, rightErr := DecorateExpression(d, right, context)
+	if rightErr != nil {
+		return nil, rightErr
+	}
+
+	var arguments []decorated.Expression
+
+	switch t := rightDecorated.(type) {
+	case *ast.FunctionCall:
+		funcExpr, funcExprErr := DecorateExpression(d, t.FunctionExpression(), context)
+		if funcExprErr != nil {
+			return nil, nil, nil, funcExprErr
+		}
+		functionExpression = funcExpr
+		for _, astArgument := range t.Arguments() {
+			expr, exprErr := DecorateExpression(d, astArgument, context)
+			if exprErr != nil {
+				return nil, nil, nil, exprErr
+			}
+		}
+		arguments = append(arguments, expr)
 	}
 
 	allArguments := append(arguments, leftDecorated)
+	concretize.ConcreteArguments(context, arguments)
 
-	fullRightFunctionCall, functionCallErr := decorateFunctionCallInternal(d, rightAstCall, functionExpression, allArguments, nil, context)
-	if functionCallErr != nil {
-		return nil, functionCallErr
-	}
+	/*
+		fullRightFunctionCall, functionCallErr := decorateFunctionCallInternal(d, rightAstCall, functionExpression, allArguments, nil, context)
+		if functionCallErr != nil {
+			return nil, functionCallErr
+		}
 
-	functionCall := fullRightFunctionCall.(*decorated.FunctionCall)
+		functionCall := fullRightFunctionCall.(*decorated.FunctionCall)
 
-	halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionCall, functionCall.SmashedFunctionType(), arguments)
+		halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionCall, functionCall.SmashedFunctionType(), arguments)
+	*/
 
-	return decorated.NewPipeRightOperator(leftDecorated, halfRightFunctionCall, fullRightFunctionCall), nil
+	return decorated.NewPipeRightOperator(leftDecorated, rightDecorated, fullRightFunctionCall), nil
 }
 
 func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {

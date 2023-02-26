@@ -4,6 +4,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/swamp/compiler)](https://goreportcard.com/report/github.com/swamp/compiler)
 [![Actions Status](https://github.com/swamp/compiler/workflows/Go/badge.svg)](https://github.com/swamp/compiler/actions)
 
+
+![logo](./doc/images/swamp_logo.svg)
+
 Compiles `.swamp` files and produces `.swamp-pack` binaries.
 
 Swamp is designed to be embedded into other applications, mainly for game engines.

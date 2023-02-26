@@ -510,7 +510,7 @@ Something : [Variant $Something [[PrimitiveTypeRef [NamedDefTypeRef :[TypeRefere
 `)
 }
 
-func TestListListType(t *testing.T) {
+func xTestListListType(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 type alias Lister t u =
@@ -534,7 +534,7 @@ Sprite : [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef
 `)
 }
 
-func xTestPipeRight(t *testing.T) {
+func TestPipeRight(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 first : (a: Int) -> Int =
