@@ -51,6 +51,10 @@ func NewTypeParameterContext() *TypeParameterContext {
 	return t
 }
 
+func (t *TypeParameterContext) Definitions() []*LocalTypeDefinition {
+	return t.definitions
+}
+
 func (t *TypeParameterContext) SetTypes(types []dtype.Type) error {
 	if len(types) != len(t.definitions) {
 		return fmt.Errorf("wrong number of definitions")

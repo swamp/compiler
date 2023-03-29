@@ -63,19 +63,6 @@ func (t *BoolType) HumanReadable() string {
 	return "Bool"
 }
 
-type LocalType struct {
-	Type
-	name string
-}
-
-func (t *LocalType) String() string {
-	return t.name
-}
-
-func (t *LocalType) HumanReadable() string {
-	return t.name
-}
-
 type AnyMatchingTypes struct {
 	Type
 }
@@ -246,6 +233,45 @@ func (t *AliasType) HumanReadableExpanded() string {
 	return fmt.Sprintf("%s => %v", t.name, t.realType.HumanReadable())
 }
 
+type LocalType struct {
+	Type
+	name     string
+	realType InfoType
+}
+
+func NewLocalType(name string, realType InfoType) *LocalType {
+	return &LocalType{
+		Type:     Type{},
+		name:     name,
+		realType: realType,
+	}
+}
+
+func (t *LocalType) String() string {
+	return t.name
+}
+
+func (t *LocalType) HumanReadable() string {
+	return t.name
+}
+
+type LocalTypesCollection struct {
+	Type
+	LocalTypes []*LocalType
+}
+
+func (t *LocalTypesCollection) Add(localType *LocalType) {
+	t.LocalTypes = append(t.LocalTypes, localType)
+}
+
+func (t *LocalTypesCollection) String() string {
+	return fmt.Sprintf("[localTypes %v]", t.LocalTypes)
+}
+
+func (t *LocalTypesCollection) HumanReadable() string {
+	return fmt.Sprintf("[localTypes %v]", t.LocalTypes)
+}
+
 type RecordField struct {
 	name             string
 	fieldType        InfoType
@@ -337,7 +363,6 @@ func (t *Variant) HumanReadable() string {
 type CustomType struct {
 	Type
 	name       string
-	generics   []InfoType
 	variants   []*Variant
 	memoryInfo MemoryInfo
 }
@@ -422,13 +447,6 @@ type Chunk struct {
 func customsAreSame(custom *CustomType, other *CustomType) bool {
 	if custom.name != other.name {
 		return false
-	}
-
-	for genericIndex, generic := range custom.generics {
-		otherGeneric := other.generics[genericIndex]
-		if generic.Index() != otherGeneric.Index() {
-			return false
-		}
 	}
 
 	return true
@@ -764,7 +782,6 @@ func (c *Chunk) consumeCustom(custom *dectype.CustomTypeAtom) (*CustomType, erro
 		Type:     Type{},
 		name:     customName,
 		variants: nil,
-		generics: nil, // TODO: FIX THIS
 		memoryInfo: MemoryInfo{
 			MemorySize:  MemorySize(0),
 			MemoryAlign: MemoryAlign(0),
@@ -1228,6 +1245,10 @@ func (c *Chunk) consumeAlias(alias *dectype.Alias) (InfoType, error) {
 	return proposedNewAlias, nil
 }
 
+func (c *Chunk) consumeTypeNameContext(localTypeNameContext *dectype.LocalTypeNameContext) (InfoType, error) {
+	return nil, nil
+}
+
 func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
 	switch t := a.(type) {
 	case *dectype.CustomTypeAtom:
@@ -1277,6 +1298,8 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 	switch t := p.(type) {
 	case *dectype.Alias:
 		return c.consumeAlias(t)
+	case *dectype.LocalTypeNameContext:
+		return c.consumeTypeNameContext(t)
 	case *dectype.LocalTypeDefinitionReference:
 		return c.Consume(t.Next())
 	case *dectype.FunctionTypeReference:
@@ -1293,6 +1316,7 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 		return c.Consume(t.Next())
 	case *dectype.CustomTypeReference:
 		return c.Consume(t.Next())
+
 	}
 
 	err := fmt.Errorf("chunk: consume: unknown thing %T", p)

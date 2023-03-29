@@ -36,6 +36,10 @@ func (t *LocalTypeNameContext) Names() []*dtype.LocalTypeName {
 	return x
 }
 
+func (t *LocalTypeNameContext) Definitions() []*LocalTypeNameDefinition {
+	return t.definitions
+}
+
 func (t *LocalTypeNameContext) NamesString() string {
 	var x []string
 
