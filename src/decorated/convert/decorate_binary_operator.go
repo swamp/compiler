@@ -208,6 +208,23 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 	return decorated.NewPipeLeftOperator(halfLeftSideFunctionCall, rightDecorated, fullLeftFunctionCall), nil
 }
 
+func resolveToFunctionAtom(leftDecorated decorated.Expression) *dectype.FunctionAtom {
+	var leftSmashedFunctionType *dectype.FunctionAtom
+	leftFunctionCall, _ := leftDecorated.(*decorated.FunctionCall)
+	if leftFunctionCall == nil {
+		//		x :=
+		pipeRightOperator, _ := leftDecorated.(*decorated.PipeRightOperator)
+		leftSmashedFunctionType, _ = pipeRightOperator.Type().(*dectype.FunctionAtom)
+		if leftSmashedFunctionType == nil {
+			panic(fmt.Errorf("this should have leftFunctionCall or node:%T", pipeRightOperator))
+		}
+	} else {
+		leftSmashedFunctionType = leftFunctionCall.SmashedFunctionType()
+	}
+
+	return leftSmashedFunctionType
+}
+
 func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
 	left := infix.Left()
 	right := infix.Right()
@@ -225,10 +242,9 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 	log.Printf("left: %T %v", leftDecorated, leftDecorated)
 	log.Printf("right: %T %v", rightDecorated, rightDecorated)
 
-	leftFunctionCall, _ := leftDecorated.(*decorated.FunctionCall)
-	if leftFunctionCall == nil {
-		panic(fmt.Errorf("this should have leftFunctionCall:%T", leftFunctionCall))
-	}
+	leftSmashedFunctionType := resolveToFunctionAtom(leftDecorated)
+
+	var resultingFunctionType *dectype.FunctionAtom
 
 	switch t := rightDecorated.(type) {
 	case *decorated.CurryFunction:
@@ -237,7 +253,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 			panic(fmt.Errorf("can not convert to function type:%v", t.Type()))
 		}
 		log.Printf("curryFunction: %T %v", t.Type(), t.Type())
-		leftSideReturns := leftFunctionCall.SmashedFunctionType().ReturnType()
+		leftSideReturns := leftSmashedFunctionType.ReturnType()
 		log.Printf("%T %v", t, t)
 		rightSideParameterTypes, _ := t.OriginalFunctionType().ParameterAndReturn()
 		allTypes := append(rightSideParameterTypes[:len(rightSideParameterTypes)-1], leftSideReturns)
@@ -245,6 +261,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		for _, parameterType := range allTypes {
 			log.Printf("  %T %v", parameterType, parameterType)
 		}
+		resultingFunctionType = dectype.NewFunctionAtom(rightFunctionAtom.AstFunction(), allTypes)
 	}
 	/*
 		var arguments []decorated.Expression
@@ -280,7 +297,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionCall, functionCall.SmashedFunctionType(), arguments)
 	*/
 
-	return decorated.NewPipeRightOperator(leftDecorated, rightDecorated, nil), nil
+	return decorated.NewPipeRightOperator(leftDecorated, rightDecorated, resultingFunctionType), nil
 }
 
 func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {

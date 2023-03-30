@@ -7,23 +7,22 @@ package decorated
 
 import (
 	"fmt"
+	"github.com/swamp/compiler/src/decorated/dtype"
 
 	"github.com/swamp/compiler/src/token"
 )
 
 type PipeRightOperator struct {
 	BinaryOperator
-	calculatedRight Expression
 }
 
-func NewPipeRightOperator(left Expression, right Expression, calculatedRight Expression) *PipeRightOperator {
+func NewPipeRightOperator(left Expression, right Expression, resolvedType dtype.Type) *PipeRightOperator {
 	return &PipeRightOperator{
 		BinaryOperator: BinaryOperator{
-			ExpressionNode: ExpressionNode{decoratedType: calculatedRight.Type()},
+			ExpressionNode: ExpressionNode{decoratedType: resolvedType},
 			left:           left,
 			right:          right,
 		},
-		calculatedRight: calculatedRight,
 	}
 }
 
