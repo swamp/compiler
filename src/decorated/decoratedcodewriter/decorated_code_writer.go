@@ -83,15 +83,6 @@ func WriteAliasReference(aliasReference *dectype.AliasReference, colorer colorin
 	colorer.AliasName(aliasReference.Alias())
 }
 
-func WriteInvokerType(invokerType *dectype.InvokerType, colorer coloring.DecoratedColorer, indentation int) {
-	colorer.InvokerType(invokerType)
-
-	for _, parameterType := range invokerType.Params() {
-		colorer.OneSpace()
-		WriteType(parameterType, colorer, indentation)
-	}
-}
-
 func WriteUnmanagedType(unmanaged *dectype.UnmanagedType, colorer coloring.DecoratedColorer) {
 	colorer.KeywordString("Unmanaged")
 	colorer.OperatorString("<")
@@ -152,8 +143,6 @@ func WriteType(decoratedType dtype.Type, colorer coloring.DecoratedColorer, inde
 		WriteCustomType(t, colorer, indentation)
 	case *dectype.CustomTypeReference:
 		WriteCustomTypeReference(t, colorer, indentation)
-	case *dectype.InvokerType:
-		WriteInvokerType(t, colorer, indentation)
 	case *dectype.RecordAtom:
 		WriteRecordType(t, colorer, indentation)
 	case *dectype.Alias:

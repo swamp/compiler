@@ -19,10 +19,13 @@ type CurryFunction struct {
 	curryFunctionType       *dectype.FunctionAtom
 	argumentsToSave         []Expression
 	astFunctionCall         *ast.FunctionCall
+	originalFunctionType    *dectype.FunctionAtom
 }
 
 func NewCurryFunction(astFunctionCall *ast.FunctionCall, curryFunctionType *dectype.FunctionAtom, functionValueExpression Expression, argumentsToSave []Expression) *CurryFunction {
-	return &CurryFunction{astFunctionCall: astFunctionCall, curryFunctionType: curryFunctionType, functionValueExpression: functionValueExpression, argumentsToSave: argumentsToSave}
+	originalFunctionType, _ := dectype.UnaliasWithResolveInvoker(functionValueExpression.Type()).(*dectype.FunctionAtom)
+	
+	return &CurryFunction{astFunctionCall: astFunctionCall, curryFunctionType: curryFunctionType, functionValueExpression: functionValueExpression, originalFunctionType: originalFunctionType, argumentsToSave: argumentsToSave}
 }
 
 func (c *CurryFunction) ArgumentsToSave() []Expression {
@@ -35,6 +38,10 @@ func (c *CurryFunction) FunctionAtom() *dectype.FunctionAtom {
 
 func (c *CurryFunction) FunctionValue() Expression {
 	return c.functionValueExpression
+}
+
+func (c *CurryFunction) OriginalFunctionType() *dectype.FunctionAtom {
+	return c.originalFunctionType
 }
 
 func (c *CurryFunction) Type() dtype.Type {
