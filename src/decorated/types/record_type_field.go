@@ -55,7 +55,7 @@ type RecordField struct {
 func NewRecordField(fieldName *RecordFieldName, recordTypeField *ast.RecordTypeField, fieldType dtype.Type) *RecordField {
 	_, wasPrimitive := fieldType.(*PrimitiveAtom)
 	if wasPrimitive {
-		panic(fmt.Errorf("use type reference, not primitive directly %v = %v %v", fieldName, recordTypeField, fieldType))
+		panic(fmt.Errorf("use type reference, not primitive directly %v = %v %v %T", fieldName, recordTypeField, fieldType, fieldType))
 	}
 
 	return &RecordField{index: -1, name: fieldName, fieldType: fieldType, recordTypeField: recordTypeField}

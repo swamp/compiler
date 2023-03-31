@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -24,7 +23,7 @@ type CurryFunction struct {
 
 func NewCurryFunction(astFunctionCall *ast.FunctionCall, curryFunctionType *dectype.FunctionAtom, functionValueExpression Expression, argumentsToSave []Expression) *CurryFunction {
 	originalFunctionType, _ := dectype.UnaliasWithResolveInvoker(functionValueExpression.Type()).(*dectype.FunctionAtom)
-	
+
 	return &CurryFunction{astFunctionCall: astFunctionCall, curryFunctionType: curryFunctionType, functionValueExpression: functionValueExpression, originalFunctionType: originalFunctionType, argumentsToSave: argumentsToSave}
 }
 

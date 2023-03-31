@@ -59,13 +59,14 @@ func (a *FunctionParameterDefinition) References() []*FunctionParameterReference
 }
 
 type FunctionValue struct {
-	forcedFunctionType  dtype.Type
-	decoratedExpression Expression
-	parameters          []*FunctionParameterDefinition
-	commentBlock        *ast.MultilineComment
-	astFunction         *ast.FunctionValue
-	sourceFileReference token.SourceFileReference
-	references          []*FunctionReference
+	forcedFunctionType    dtype.Type
+	decoratedExpression   Expression
+	parameters            []*FunctionParameterDefinition
+	commentBlock          *ast.MultilineComment
+	astFunction           *ast.FunctionValue
+	sourceFileReference   token.SourceFileReference
+	references            []*FunctionReference
+	convertedFunctionType *dectype.FunctionAtom
 }
 
 func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType dtype.Type, parameters []*FunctionParameterDefinition, convertedFunctionType *dectype.FunctionAtom, commentBlock *ast.MultilineComment) *FunctionValue {
@@ -75,7 +76,11 @@ func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType 
 	if forcedFunctionType == nil {
 		panic("must provide forced function type")
 	}
-	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock, sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference}
+	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, convertedFunctionType: convertedFunctionType, parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock, sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference}
+}
+
+func (f *FunctionValue) ConvertedFunctionType() *dectype.FunctionAtom {
+	return f.convertedFunctionType
 }
 
 func (f *FunctionValue) DefineExpression(decoratedExpression Expression) {
