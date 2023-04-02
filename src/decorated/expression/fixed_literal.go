@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -15,10 +16,10 @@ import (
 
 type FixedLiteral struct {
 	integer         *ast.FixedLiteral
-	globalFixedType dtype.Type
+	globalFixedType *dectype.PrimitiveTypeReference
 }
 
-func NewFixedLiteral(integer *ast.FixedLiteral, globalFixedType dtype.Type) *FixedLiteral {
+func NewFixedLiteral(integer *ast.FixedLiteral, globalFixedType *dectype.PrimitiveTypeReference) *FixedLiteral {
 	return &FixedLiteral{integer: integer, globalFixedType: globalFixedType}
 }
 

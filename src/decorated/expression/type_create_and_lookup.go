@@ -50,14 +50,14 @@ func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.Typ
 	return l.lookup.CreateSomeTypeReference(someTypeIdentifier)
 }
 
-func (l *TypeCreateAndLookup) FindBuiltInType(s string) dtype.Type {
+func (l *TypeCreateAndLookup) FindBuiltInType(s string, reference token.SourceFileReference) dectype.TypeReferenceScopedOrNormal {
 	identifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(s, token.NewInternalSourceFileReference(), 0))
-	foundType, _, err := l.lookup.FindType(identifier)
+	someReference, err := l.CreateSomeTypeReference(identifier)
 	if err != nil {
-		panic(fmt.Errorf("could not find %v", identifier))
+		panic(err)
 	}
 
-	return foundType
+	return someReference
 }
 
 func (l *TypeCreateAndLookup) CreateLocalTypeNameOnlyReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeNameReference, decshared.DecoratedError) {

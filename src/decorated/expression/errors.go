@@ -323,7 +323,7 @@ func NewMustBeCustomType(typeA Expression) *MustBeCustomType {
 }
 
 func (e *MustBeCustomType) Error() string {
-	return fmt.Sprintf("must be a custom type %v", e.typeA)
+	return fmt.Sprintf("must be a custom type %v %T", e.typeA, e.typeA.Type())
 }
 
 func (e *MustBeCustomType) FetchPositionLength() token.SourceFileReference {

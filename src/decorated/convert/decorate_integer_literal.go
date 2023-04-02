@@ -13,15 +13,11 @@ import (
 )
 
 func decorateInteger(d DecorateStream, integer *ast.IntegerLiteral) (decorated.Expression, decshared.DecoratedError) {
-	integerType := d.TypeReferenceMaker().FindBuiltInType("Int")
-	if integerType == nil {
+	integerReferenceType := d.TypeReferenceMaker().FindBuiltInType("Int", integer.FetchPositionLength())
+	if integerReferenceType == nil {
 		panic("internal error. Int is an unknown type")
 	}
 
-	namedTypeRef := dectype.MakeFakeNamedDefinitionTypeReference(integerType.FetchPositionLength(), "Int")
-
-	primitiveReference := dectype.NewPrimitiveTypeReference(namedTypeRef, integerType.(*dectype.PrimitiveAtom))
-
-	decoratedInteger := decorated.NewIntegerLiteral(integer, primitiveReference)
+	decoratedInteger := decorated.NewIntegerLiteral(integer, integerReferenceType.(*dectype.PrimitiveTypeReference))
 	return decoratedInteger, nil
 }

@@ -62,6 +62,10 @@ func (t *TypeParameterContext) SetTypes(types []dtype.Type) error {
 
 	for index, typeToSet := range types {
 		def := t.definitions[index]
+		_, wasPrimitive := typeToSet.(*PrimitiveAtom)
+		if wasPrimitive {
+			panic(fmt.Errorf("should not have primitive atoms, I want type references"))
+		}
 		if err := def.SetDefinition(typeToSet); err != nil {
 			return err
 		}

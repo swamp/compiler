@@ -51,7 +51,7 @@ func MakeFakeList(localTypeName string) *dectype.PrimitiveAtom {
 
 	localTypeVariable := MakeFakeLocalTypeName(localTypeName)
 	astNameDef := ast.NewLocalTypeNameDefinition(localTypeVariable)
-	localType := ast.NewLocalTypeNameReference(astNameDef)
+	localType := ast.NewLocalTypeNameReference(localTypeVariable, astNameDef)
 
 	decLocalTypeName := dtype.NewLocalTypeName(localTypeVariable)
 	decDef := dectype.NewLocalTypeNameDefinition(decLocalTypeName)

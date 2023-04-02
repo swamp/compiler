@@ -132,8 +132,13 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		return GetMemorySizeAndAlignmentInternal(t.Next())
 	case *LocalTypeNameContextReference:
 		return 0, 8
+	case *AliasReference:
+		return GetMemorySizeAndAlignmentInternal(t.Next())
+	case *LocalTypeNameContext:
+		log.Printf("LocalTypeNameContext: %v", t)
+		return 0, 8
 	default:
-		panic(fmt.Errorf("calc: do not know memory size of %v %T", p, unaliased))
+		panic(fmt.Errorf("calc: do not know memory size of %v %T %T", p, unaliased, p))
 	}
 }
 

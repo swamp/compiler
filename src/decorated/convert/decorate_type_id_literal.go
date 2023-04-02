@@ -16,7 +16,7 @@ import (
 )
 
 func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression, decshared.DecoratedError) {
-	typeRefType := d.TypeReferenceMaker().FindBuiltInType("TypeRef")
+	typeRefType := d.TypeReferenceMaker().FindBuiltInType("TypeRef", typeId.FetchPositionLength())
 	if typeRefType == nil {
 		panic("internal error. TypeRef is an unknown type")
 	}
@@ -25,7 +25,7 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 	if contextForTypeRef == nil {
 		panic(fmt.Errorf("internal error, TypeRef must have name only context"))
 	}
-	
+
 	decoratedType, err := d.TypeReferenceMaker().CreateSomeTypeReference(typeId.TypeIdentifier())
 	if err != nil {
 		return nil, decorated.NewInternalError(err)

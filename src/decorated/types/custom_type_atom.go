@@ -86,7 +86,7 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariantAtom) (MemorySi
 			}
 			memorySize, memoryAlign := GetMemorySizeAndAlignment(fieldType)
 			if memorySize == 0 || memoryAlign == 0 {
-				panic(fmt.Errorf("illegal size or align values. index %d, field %T", index, fieldType))
+				panic(fmt.Errorf("illegal size or align values. index %d, field %T in variant %v", index, fieldType, variant))
 			}
 
 			rest := MemoryAlign(uint32(offset) % uint32(memoryAlign))

@@ -28,7 +28,7 @@ type FunctionAtom struct {
 func NewFunctionAtom(astFunctionType *ast.FunctionType, parameterTypes []dtype.Type) *FunctionAtom {
 	for _, param := range parameterTypes {
 		if param == nil || reflect.ValueOf(param).IsNil() {
-			panic("function atom: nil parameter type")
+			panic(fmt.Errorf("function atom: nil parameter type to function %v", astFunctionType))
 		}
 	}
 	return &FunctionAtom{parameterTypes: parameterTypes, astFunctionType: astFunctionType}

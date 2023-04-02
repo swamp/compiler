@@ -9,14 +9,13 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 func decorateCharacter(d DecorateStream, ch *ast.CharacterLiteral) (decorated.Expression, decshared.DecoratedError) {
-	characterType := d.TypeReferenceMaker().FindBuiltInType("Char")
+	characterType := d.TypeReferenceMaker().FindBuiltInType("Char", ch.FetchPositionLength())
 	if characterType == nil {
 		panic("internal error. String is an unknown type")
 	}
-	decoratedCharacter := decorated.NewCharacterLiteral(ch, characterType.(*dectype.PrimitiveAtom))
+	decoratedCharacter := decorated.NewCharacterLiteral(ch, characterType)
 	return decoratedCharacter, nil
 }

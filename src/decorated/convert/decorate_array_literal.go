@@ -13,7 +13,7 @@ import (
 
 func decorateArrayLiteral(d DecorateStream, list *ast.ArrayLiteral, context *VariableContext) (decorated.Expression,
 	decshared.DecoratedError) {
-	wrappedType, listExpressions, err := decorateContainerLiteral(d, list.Expressions(), context, "Array")
+	wrappedType, listExpressions, err := decorateContainerLiteral(d, list.Expressions(), context, "Array", list.FetchPositionLength())
 	if err != nil {
 		return nil, err
 	}

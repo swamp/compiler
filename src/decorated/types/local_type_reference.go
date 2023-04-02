@@ -26,7 +26,7 @@ func (u *LocalTypeDefinitionReference) FetchPositionLength() token.SourceFileRef
 }
 
 func (u *LocalTypeDefinitionReference) HumanReadable() string {
-	return fmt.Sprintf("%v", u.identifier.Name())
+	return fmt.Sprintf("%v", u.typeDefinition.HumanReadable())
 }
 
 func (u *LocalTypeDefinitionReference) Identifier() *ast.LocalTypeNameReference {

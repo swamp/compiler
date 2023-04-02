@@ -27,7 +27,7 @@ func decorateGuard(d DecorateStream, guardExpression *ast.GuardExpression,
 		if condition == nil {
 			panic("condition is nil")
 		}
-		boolType := d.TypeReferenceMaker().FindBuiltInType("Bool")
+		boolType := d.TypeReferenceMaker().FindBuiltInType("Bool", condition.FetchPositionLength())
 		if boolType == nil {
 			panic("internal error. Bool type doesn't exist")
 		}

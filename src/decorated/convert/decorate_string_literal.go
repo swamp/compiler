@@ -13,15 +13,12 @@ import (
 )
 
 func decorateString(d DecorateStream, str *ast.StringLiteral) (decorated.Expression, decshared.DecoratedError) {
-	stringType := d.TypeReferenceMaker().FindBuiltInType("String")
+	stringType := d.TypeReferenceMaker().FindBuiltInType("String", str.FetchPositionLength())
 
 	if stringType == nil {
 		panic("internal error. String is an unknown type")
 	}
-	namedTypeRef := dectype.MakeFakeNamedDefinitionTypeReference(stringType.FetchPositionLength(), "String")
-
-	typeRef := dectype.NewPrimitiveTypeReference(namedTypeRef, stringType.(*dectype.PrimitiveAtom))
-	decoratedString := decorated.NewStringLiteral(str, typeRef)
+	decoratedString := decorated.NewStringLiteral(str, stringType.(*dectype.PrimitiveTypeReference))
 	return decoratedString, nil
 }
 

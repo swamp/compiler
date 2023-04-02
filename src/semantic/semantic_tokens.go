@@ -1011,6 +1011,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenCaseForCustomType(t, builder)
 	case *decorated.CaseForPatternMatching:
 		return addSemanticTokenCaseForPatternMatching(t, builder)
+	case *decorated.CaseConsequenceParameterForCustomType:
+		return addSemanticToken(t.Identifier(), builder)
 	case *decorated.Guard:
 		return addSemanticTokenGuard(t, builder)
 	case *decorated.ArithmeticOperator:
@@ -1067,6 +1069,8 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenTypeAlias(t, builder)
 	case *dectype.RecordAtom:
 		return addSemanticTokenRecordType(t, builder)
+	case *decorated.RecordTypeFieldReference:
+		return nil
 	case *dectype.PrimitiveAtom:
 		return nil
 	case *dectype.TupleTypeAtom:

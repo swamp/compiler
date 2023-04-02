@@ -13,10 +13,10 @@ import (
 )
 
 func decorateFixed(d DecorateStream, fixed *ast.FixedLiteral) (decorated.Expression, decshared.DecoratedError) {
-	fixedType := d.TypeReferenceMaker().FindBuiltInType("Fixed")
+	fixedType := d.TypeReferenceMaker().FindBuiltInType("Fixed", fixed.FetchPositionLength())
 	if fixedType == nil {
 		panic("internal error. Int is an unknown type")
 	}
-	decoratedInteger := decorated.NewFixedLiteral(fixed, fixedType.(*dectype.PrimitiveAtom))
+	decoratedInteger := decorated.NewFixedLiteral(fixed, fixedType.(*dectype.PrimitiveTypeReference))
 	return decoratedInteger, nil
 }

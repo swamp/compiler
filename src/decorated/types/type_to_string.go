@@ -23,6 +23,14 @@ func TypesToHumanReadable(types []dtype.Type) string {
 	return s
 }
 
+func TypesToHumanReadableWithinBrackets(types []dtype.Type) string {
+	if len(types) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("<%v>", TypesToHumanReadable(types))
+}
+
 func TypesToString(types []dtype.Type) string {
 	s := ""
 	for index, t := range types {

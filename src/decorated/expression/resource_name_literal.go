@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -15,10 +16,10 @@ import (
 
 type ResourceNameLiteral struct {
 	resourceName    *ast.ResourceNameLiteral
-	globalFixedType dtype.Type
+	globalFixedType *dectype.PrimitiveTypeReference
 }
 
-func NewResourceNameLiteral(resourceName *ast.ResourceNameLiteral, globalFixedType dtype.Type) *ResourceNameLiteral {
+func NewResourceNameLiteral(resourceName *ast.ResourceNameLiteral, globalFixedType *dectype.PrimitiveTypeReference) *ResourceNameLiteral {
 	return &ResourceNameLiteral{resourceName: resourceName, globalFixedType: globalFixedType}
 }
 

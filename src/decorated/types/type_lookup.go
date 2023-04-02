@@ -123,14 +123,15 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 }
 
 func ResolveToRecordType(expectedRecord dtype.Type) (*RecordAtom, error) {
-	atom, atomErr := expectedRecord.Resolve()
-	if atomErr != nil {
-		return nil, fmt.Errorf("couldn't resolve to record %w", atomErr)
+	atom := UnaliasWithResolveInvoker(expectedRecord)
+	nameOnlyContext, wasLocalNameOnlyContext := atom.(*LocalTypeNameContext)
+	if wasLocalNameOnlyContext {
+		atom = nameOnlyContext.Next()
 	}
 
 	recordAtom, wasRecord := atom.(*RecordAtom)
 	if !wasRecord {
-		return nil, fmt.Errorf("resolved to something else than a record %v", atom)
+		return nil, fmt.Errorf("resolved to something else than a record %T", atom)
 	}
 
 	return recordAtom, nil

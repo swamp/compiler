@@ -27,7 +27,7 @@ type TypeAddAndReferenceMaker interface {
 	AddTypeAlias(alias *dectype.Alias) TypeError
 	AddCustomType(customType *dectype.CustomTypeAtom) TypeError
 	AddCustomTypeWrappedInNameOnlyContext(localNameContext *dectype.LocalTypeNameContext) TypeError
-	FindBuiltInType(s string) dtype.Type
+	FindBuiltInType(s string, reference token.SourceFileReference) dectype.TypeReferenceScopedOrNormal
 	SourceModule() *Module
 	MakeLocalNameContext(localNameContext *dectype.LocalTypeNameContext) TypeAddAndReferenceMaker
 }

@@ -27,7 +27,7 @@ func NewConsOperator(leftItem Expression, rightList Expression, refMaker TypeAdd
 		if dectype.IsAny(leftItem.Type()) {
 			return nil, NewInternalError(fmt.Errorf("cons, both sides are any"))
 		}
-		listType := refMaker.FindBuiltInType("List")
+		listType := refMaker.FindBuiltInType("List", rightList.FetchPositionLength())
 		if listType == nil {
 			panic("container literal must have a container type defined to use literals")
 		}

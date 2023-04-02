@@ -57,6 +57,8 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 		return newReference, nil
 	}
 
+	log.Printf("concrete:\n  %v\n  %v", reference, concrete)
+
 	switch t := reference.(type) {
 	case *dectype.PrimitiveAtom:
 		return Primitive(t, concrete.(*dectype.PrimitiveTypeReference), resolveLocalTypeNames)
@@ -85,6 +87,8 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 
 func ResolveTypeFromContext(parameterType dtype.Type, resolver *dectype.TypeParameterContext) (dtype.Type, error) {
 	resolvedType := parameterType
+
+	//log.Printf("ResolveTypeFromContext:\n  %v\n  %v", parameterType.HumanReadable(), resolver)
 
 	var err error
 	switch t := parameterType.(type) {
@@ -323,7 +327,7 @@ func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resol
 		}
 	}
 
-	arguments = append(arguments, dectype.NewAnyType())
+	log.Printf("functionType\n  %v\n  %v", reference.HumanReadable(), dectype.TypesToHumanReadable(arguments))
 
 	convertedTypes, err := ResolveSlices(reference.FunctionParameterTypes(), arguments, resolver)
 	if err != nil {
@@ -336,7 +340,7 @@ func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resol
 }
 
 func FunctionTypeArg(reference *dectype.FunctionAtom, concrete *dectype.FunctionAtom, resolver *dectype.TypeParameterContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
-	log.Printf("%v \n<- %v", reference, concrete)
+	log.Printf("<-\n  %v\n  %v", reference, concrete)
 	return FunctionType(reference, concrete.FunctionParameterTypes(), resolver)
 }
 
@@ -373,11 +377,13 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 			return nil, err
 		}
 	case *dectype.FunctionTypeReference:
+		concreteArguments = append(concreteArguments, dectype.NewAnyType())
 		resolvedType, err = FunctionType(t.FunctionAtom(), concreteArguments, resolveLocalTypeNames)
 		if err != nil {
 			return nil, err
 		}
 	case *dectype.FunctionAtom:
+		concreteArguments = append(concreteArguments, dectype.NewAnyType())
 		resolvedType, err = FunctionType(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {
 			return nil, err

@@ -84,7 +84,7 @@ func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
 
 	localConcreteTypeRef, _ := unaliased.(*LocalTypeDefinitionReference)
 	if localConcreteTypeRef != nil {
-		return Unalias(localConcreteTypeRef.ReferencedType())
+		return UnaliasWithResolveInvoker(localConcreteTypeRef.ReferencedType())
 	}
 
 	return unaliased

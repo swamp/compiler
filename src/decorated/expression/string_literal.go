@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -15,10 +16,10 @@ import (
 
 type StringLiteral struct {
 	str              *ast.StringLiteral
-	globalStringType dtype.Type
+	globalStringType *dectype.PrimitiveTypeReference
 }
 
-func NewStringLiteral(str *ast.StringLiteral, globalStringType dtype.Type) *StringLiteral {
+func NewStringLiteral(str *ast.StringLiteral, globalStringType *dectype.PrimitiveTypeReference) *StringLiteral {
 	return &StringLiteral{str: str, globalStringType: globalStringType}
 }
 
