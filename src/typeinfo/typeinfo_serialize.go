@@ -335,10 +335,6 @@ func writeCustom(writer io.Writer, custom *CustomType) error {
 		return err
 	}
 
-	if err := writeGenerics(writer, custom.generics); err != nil {
-		return err
-	}
-
 	if err := writeCount(writer, len(custom.variants)); err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ import "github.com/swamp/compiler/src/decorated/dtype"
 func LocalTypesToArgumentNames(types []*LocalTypeDefinition) []*dtype.LocalTypeName {
 	var argumentNames []*dtype.LocalTypeName
 	for _, localType := range types {
-		argumentNames = append(argumentNames, localType.identifier)
+		argumentNames = append(argumentNames, localType.identifier.LocalTypeName())
 	}
 	return argumentNames
 }

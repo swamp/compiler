@@ -8,6 +8,7 @@ package deccy
 import (
 	"fmt"
 	"github.com/swamp/compiler/src/semantic"
+	"log"
 	"reflect"
 	"strings"
 
@@ -63,6 +64,8 @@ func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle
 	ioReader := strings.NewReader(code)
 
 	var errors decshared.DecoratedError
+
+	log.Printf("reading file '%v'", absoluteFilename)
 
 	runeReader, runeReaderErr := runestream.NewRuneReader(ioReader, absoluteFilename)
 	if runeReaderErr != nil {

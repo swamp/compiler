@@ -303,7 +303,9 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		return nil, decorated.NewInternalError(err)
 	}
 
-	return decorated.NewPipeRightOperator(leftDecorated, rightDecorated, resultingFunctionType), nil
+	resultingReturnType := allTypes[len(allTypes)-1]
+
+	return decorated.NewPipeRightOperator(leftDecorated, rightDecorated, resultingReturnType), nil
 }
 
 func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {

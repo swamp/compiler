@@ -1110,6 +1110,19 @@ a : Bool -> (Int, String) =
 `, &decorated.UnMatchingFunctionReturnTypesInFunctionValue{})
 }
 
+func TestTypeRef(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+haveTypeRefAsParameter : (TypeRef a) -> Bool
+
+main : Bool =
+    haveTypeRefAsParameter "hi"
+`, `
+[ModuleDef $haveTypeRefAsParameter = [FunctionValue [LocalTypeNameContext a = [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $TypeRef]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $TypeRef]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([]) -> [FnCall [FunctionType [[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Primitive Bool]]] [FunctionRef [NamedDefinitionReference /haveTypeRefAsParameter]] [[String hi]]]]]
+`)
+}
+
 func TestArrayLiteral2(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`

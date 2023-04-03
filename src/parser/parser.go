@@ -11,6 +11,7 @@ import (
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/tokenize"
+	"log"
 )
 
 var precedences = map[token.Type]Precedence{
@@ -104,6 +105,8 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 			}
 			errors = parerr.AppendError(errors, expressionErr)
 		}
+
+		log.Printf("parsed expression %T %v", expression, expression.FetchPositionLength().ToCompleteReferenceString())
 
 		if IsCompileError(expressionErr) {
 			return nil, errors

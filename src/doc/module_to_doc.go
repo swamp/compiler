@@ -71,8 +71,6 @@ func classNameFromType(typeToConvert dtype.Type) string {
 		return "customtype"
 	case *dectype.TupleTypeAtom:
 		return "tuple"
-	case *dectype.InvokerType:
-		return "invokertype"
 	case *dectype.FunctionAtom:
 		return "functiontype"
 	case *dectype.FunctionTypeReference:

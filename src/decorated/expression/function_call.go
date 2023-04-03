@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -38,7 +37,12 @@ type FunctionCall struct {
 }
 
 func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression, smashedFunctionType *dectype.FunctionAtom, arguments []Expression) *FunctionCall {
-	inclusive := token.MakeInclusiveSourceFileReferenceFlipIfNeeded(astFunctionCall.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength())
+	//log.Printf("handling %v arguments: %v", astFunctionCall.String(), len(arguments))
+
+	inclusive := astFunctionCall.FetchPositionLength()
+	if len(arguments) > 0 {
+		inclusive = token.MakeInclusiveSourceFileReferenceFlipIfNeeded(astFunctionCall.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength())
+	}
 
 	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, arguments: arguments, smashedFunctionType: smashedFunctionType, inclusive: inclusive}
 }

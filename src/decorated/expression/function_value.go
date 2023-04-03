@@ -106,8 +106,8 @@ func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
 	return f.parameters
 }
 
-func (f *FunctionValue) ForcedFunctionType() dtype.Type {
-	return f.forcedFunctionType
+func (f *FunctionValue) ForcedFunctionType() *dectype.FunctionAtom {
+	return f.forcedFunctionType.(*dectype.FunctionAtom)
 }
 
 func (f *FunctionValue) String() string {

@@ -60,6 +60,8 @@ func UnReference(t dtype.Type) dtype.Type {
 		return UnReference(info.customTypeVariant)
 	case *FunctionTypeReference:
 		return UnReference(info.referencedType)
+	case *LocalTypeDefinition:
+		return UnReference(info.referencedType)
 	}
 
 	return t

@@ -90,8 +90,23 @@ func (t *TypeParameterContext) IsDefined() bool {
 	return true
 }
 
+func (t *TypeParameterContext) DebugAllNotDefined() string {
+	s := ""
+	for _, def := range t.definitions {
+		if !def.hasBeenDefined {
+			if len(s) != 0 {
+				s += "\n"
+			}
+			s += def.String()
+		}
+	}
+
+	return s
+}
+
 func (t *TypeParameterContext) AddExpectedDef(name *dtype.LocalTypeName) {
-	def := NewLocalTypeDefinition(name)
+	nameDef := NewLocalTypeNameDefinition(name)
+	def := NewLocalTypeDefinition(nameDef)
 	t.resolvedArguments[name.Name()] = def
 	t.definitions = append(t.definitions, def)
 }
@@ -122,7 +137,7 @@ func (t *TypeParameterContext) SetType(defRef *LocalTypeNameReference, definedTy
 		definition.hasBeenDefined = true
 	}
 
-	return NewLocalTypeDefinitionReference(defRef.Identifier(), definition), nil
+	return NewLocalTypeDefinitionReference(defRef, definition), nil
 }
 
 func (t *TypeParameterContext) HasDefinitions() bool {
@@ -130,7 +145,7 @@ func (t *TypeParameterContext) HasDefinitions() bool {
 }
 
 func (t *TypeParameterContext) LookupType(definition *LocalTypeDefinitionReference) *LocalTypeDefinition {
-	return t.resolvedArguments[definition.identifier.Name()]
+	return t.resolvedArguments[definition.identifier.identifier.Name()]
 }
 
 /*
@@ -149,7 +164,9 @@ func (t *TypeParameterContext) LookupTypeAstRef(astReference *ast.LocalTypeNameR
 	if !found {
 		return nil, NewCouldNotFindLocalTypeName(astReference, fmt.Errorf("could not find %v", astReference.Name()))
 	}
-	return NewLocalTypeDefinitionReference(astReference, definition), nil
+
+	decoratedNameReference := NewLocalTypeNameReference(astReference, definition.identifier)
+	return NewLocalTypeDefinitionReference(decoratedNameReference, definition), nil
 }
 
 func (t *TypeParameterContext) LookupTypeRef(decReference *LocalTypeNameReference) (*LocalTypeDefinitionReference, decshared.DecoratedError) {

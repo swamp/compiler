@@ -14,7 +14,7 @@ import (
 )
 
 type LocalTypeDefinition struct {
-	identifier     *dtype.LocalTypeName
+	identifier     *LocalTypeNameDefinition
 	referencedType dtype.Type
 	hasBeenDefined bool
 	wasReferenced  bool
@@ -33,14 +33,14 @@ func (u *LocalTypeDefinition) AddReference(ref *LocalTypeDefinitionReference) {
 }
 
 func (u *LocalTypeDefinition) FetchPositionLength() token.SourceFileReference {
-	return u.identifier.LocalType().FetchPositionLength()
+	return u.identifier.identifier.LocalType().FetchPositionLength()
 }
 
 func (u *LocalTypeDefinition) HumanReadable() string {
 	return fmt.Sprintf("%v", u.referencedType.HumanReadable())
 }
 
-func (u *LocalTypeDefinition) Identifier() *dtype.LocalTypeName {
+func (u *LocalTypeDefinition) Identifier() *LocalTypeNameDefinition {
 	return u.identifier
 }
 
@@ -99,7 +99,7 @@ func (u *LocalTypeDefinition) SetDefinition(referencedType dtype.Type) error {
 	return nil
 }
 
-func NewLocalTypeDefinition(identifier *dtype.LocalTypeName) *LocalTypeDefinition {
+func NewLocalTypeDefinition(identifier *LocalTypeNameDefinition) *LocalTypeDefinition {
 	//TypeChain(referencedType, 0)
 	x := &LocalTypeDefinition{identifier: identifier, referencedType: NewAnyType()}
 	x.hasBeenDefined = false

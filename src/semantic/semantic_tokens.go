@@ -1083,9 +1083,11 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenAnyMatchingTypes(t, builder)
 	case *dectype.UnmanagedType:
 		return addSemanticTokenUnmanagedTypes(t, builder)
-
+	case *decorated.ModuleReference:
+	case *decorated.LetVariable:
 	case *dectype.RecordFieldName:
-
+	case *ast.VariableIdentifier:
+	case *decorated.RecordLiteralField:
 	default:
 		log.Printf("semantic unhandled %T\n", t)
 	}

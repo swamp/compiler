@@ -33,6 +33,14 @@ func (u *LocalTypeNameDefinition) Identifier() *dtype.LocalTypeName {
 	return u.identifier
 }
 
+func (u *LocalTypeNameDefinition) Name() string {
+	return u.identifier.Name()
+}
+
+func (u *LocalTypeNameDefinition) LocalTypeName() *dtype.LocalTypeName {
+	return u.identifier
+}
+
 func (u *LocalTypeNameDefinition) IsEqual(_ dtype.Atom) error {
 	return nil
 }

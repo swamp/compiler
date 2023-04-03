@@ -7,13 +7,12 @@ package dectype
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
 type LocalTypeDefinitionReference struct {
-	identifier     *ast.LocalTypeNameReference
+	identifier     *LocalTypeNameReference
 	typeDefinition *LocalTypeDefinition
 }
 
@@ -29,7 +28,11 @@ func (u *LocalTypeDefinitionReference) HumanReadable() string {
 	return fmt.Sprintf("%v", u.typeDefinition.HumanReadable())
 }
 
-func (u *LocalTypeDefinitionReference) Identifier() *ast.LocalTypeNameReference {
+func (u *LocalTypeDefinitionReference) TypeDefinition() *LocalTypeDefinition {
+	return u.typeDefinition
+}
+
+func (u *LocalTypeDefinitionReference) Identifier() *LocalTypeNameReference {
 	return u.identifier
 }
 
@@ -57,7 +60,7 @@ func (u *LocalTypeDefinitionReference) WasReferenced() bool {
 	return false
 }
 
-func NewLocalTypeDefinitionReference(identifier *ast.LocalTypeNameReference, referencedDefinition *LocalTypeDefinition) *LocalTypeDefinitionReference {
+func NewLocalTypeDefinitionReference(identifier *LocalTypeNameReference, referencedDefinition *LocalTypeDefinition) *LocalTypeDefinitionReference {
 	x := &LocalTypeDefinitionReference{identifier: identifier, typeDefinition: referencedDefinition}
 	referencedDefinition.AddReference(x)
 

@@ -62,10 +62,6 @@ func (c *HtmlColorer) CustomTypeVariant(t *dectype.CustomTypeVariantAtom) {
 	spanWrite(c.writer, "customtypevariant", t.Name().Name())
 }
 
-func (c *HtmlColorer) InvokerType(t *dectype.InvokerType) {
-	spanWriteLink(c.writer, t.TypeGenerator(), t.TypeGenerator().HumanReadable())
-}
-
 func (c *HtmlColorer) RecordTypeField(t *dectype.RecordField) {
 	spanWrite(c.writer, "recordtypefield", t.Name())
 }

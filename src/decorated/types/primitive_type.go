@@ -100,6 +100,21 @@ func IsTypeIdRef(checkType dtype.Type) bool {
 	return wasTypeRef
 }
 
+func TryTypeIdRef(checkType dtype.Type) (*PrimitiveAtom, bool) {
+	unliased := UnaliasWithResolveInvoker(checkType)
+	primitive, wasPrimitive := unliased.(*PrimitiveAtom)
+	if !wasPrimitive {
+		return nil, false
+	}
+
+	wasTypeRef := primitive.AtomName() == "TypeRef"
+	if !wasTypeRef {
+		return nil, false
+	}
+
+	return primitive, true
+}
+
 func ArgumentNeedsTypeIdInsertedBefore(p dtype.Type) bool {
 	unaliased := UnaliasWithResolveInvoker(p)
 	return IsAny(unaliased)

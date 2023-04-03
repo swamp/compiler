@@ -54,14 +54,43 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 		if err != nil {
 			return nil, decorated.NewInternalError(err)
 		}
+
+		if newReference == nil {
+			panic(fmt.Errorf("newReference is nil"))
+		}
 		return newReference, nil
 	}
 
-	log.Printf("concrete:\n  %v\n  %v", reference, concrete)
+	//log.Printf("concrete: \n %v\n %v\n    %v\n<-  %v\n (%v %v)", reference.HumanReadable(), concrete.HumanReadable(), reference, concrete, reference.FetchPositionLength().ToStandardReferenceString(), concrete.FetchPositionLength().ToCompleteReferenceString())
 
 	switch t := reference.(type) {
+	case *dectype.Alias:
+		return ConcreteTypeIfNeeded(t.Next(), concrete, resolveLocalTypeNames)
 	case *dectype.PrimitiveAtom:
-		return Primitive(t, concrete.(*dectype.PrimitiveTypeReference), resolveLocalTypeNames)
+		if typeIdRef, wasTypeIdRef := dectype.TryTypeIdRef(reference); wasTypeIdRef {
+			//log.Printf("detected type id ref! %v", typeIdRef)
+			pointingToRef := typeIdRef.ParameterTypes()[0]
+			localTypeDefRef, wasRef := pointingToRef.(*dectype.LocalTypeDefinitionReference)
+			if wasRef {
+				concreteTypeRef, wasConcreteTypeRef := dectype.TryTypeIdRef(concrete)
+				if wasConcreteTypeRef {
+					concrete = concreteTypeRef.ParameterTypes()[0]
+				}
+				ref, err := resolveLocalTypeNames.SetType(localTypeDefRef.Identifier(), concrete)
+				if err != nil {
+					return nil, decorated.NewInternalError(err)
+				}
+				//log.Printf("ref:%v <- %v (%T)", localTypeDefRef.Identifier().Identifier().Name(), concrete.HumanReadable(), ref)
+				return ref, nil
+			} else {
+				log.Printf("what is this %T", pointingToRef)
+			}
+		}
+		ref, wasRef := concrete.(*dectype.PrimitiveTypeReference)
+		if !wasRef {
+			return concrete, nil
+		}
+		return Primitive(t, ref, resolveLocalTypeNames)
 	case *dectype.TupleTypeAtom:
 		return Tuple(t, concrete.(*dectype.TupleTypeAtom), resolveLocalTypeNames)
 	case *dectype.LocalTypeNameReference:
@@ -78,6 +107,10 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 		return RecordArg(t, concrete.(*dectype.RecordAtom), resolveLocalTypeNames)
 	case *dectype.PrimitiveTypeReference:
 		return ConcreteTypeIfNeeded(t.Next(), concrete, resolveLocalTypeNames)
+	case *dectype.AliasReference:
+		return ConcreteTypeIfNeeded(t.Next(), concrete, resolveLocalTypeNames)
+	case *dectype.UnmanagedType:
+		return concrete, nil
 	default:
 		panic(fmt.Errorf("concrete: what is this %T", reference))
 	}
@@ -110,12 +143,16 @@ func ResolveTypeFromContext(parameterType dtype.Type, resolver *dectype.TypePara
 		return FunctionType(t, t.FunctionParameterTypes(), resolver)
 	case *dectype.TupleTypeAtom:
 		return TupleArgs(t, t.ParameterTypes(), resolver)
+	case *dectype.UnmanagedType:
+		return t, nil
+	case *dectype.CustomTypeAtom:
+		return CustomTypeHelper(t, resolver)
 	default:
 		next := t.Next()
 		if next != nil && next != t {
 			return ResolveTypeFromContext(next, resolver)
 		}
-		return nil, nil
+		return nil, decorated.NewInternalError(fmt.Errorf("do not know what this is %T %v", parameterType, parameterType))
 	}
 
 	//log.Printf("resolved to %T", resolvedType)
@@ -144,6 +181,10 @@ func ResolveSlices(references []dtype.Type, concretes []dtype.Type, resolver *de
 			return nil, lookupErr
 		}
 
+		if resolvedType == nil {
+			panic(fmt.Errorf("how can resolvedType be nil %T %T %v", parameterType, argument, argument))
+		}
+
 		localTypeRef, wasLocalTypeRef := parameterType.(*dectype.LocalTypeNameReference)
 		if wasLocalTypeRef {
 			var err error
@@ -153,6 +194,10 @@ func ResolveSlices(references []dtype.Type, concretes []dtype.Type, resolver *de
 				log.Printf("ERR: %v", err)
 				return nil, decorated.NewInternalError(err)
 			}
+		}
+
+		if resolvedType == nil {
+			panic(fmt.Errorf("how can the resolvedType be nil %T %v", argument, argument))
 		}
 		//log.Printf("resolved to %T", resolvedType)
 
@@ -233,7 +278,6 @@ func CustomTypeVariantFromContext(reference *dectype.CustomTypeVariantAtom, reso
 }
 
 func CustomType(reference *dectype.CustomTypeAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
-	var decVariants []*dectype.CustomTypeVariantAtom
 
 	setErr := resolver.SetTypes(arguments)
 	if setErr != nil {
@@ -244,6 +288,12 @@ func CustomType(reference *dectype.CustomTypeAtom, arguments []dtype.Type, resol
 	}
 
 	//resolver.Debug()
+
+	return CustomTypeHelper(reference, resolver)
+}
+
+func CustomTypeHelper(reference *dectype.CustomTypeAtom, resolver *dectype.TypeParameterContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+	var decVariants []*dectype.CustomTypeVariantAtom
 
 	for _, variantReference := range reference.Variants() {
 		decVariant, decVariantErr := CustomTypeVariantFromContext(variantReference, resolver)
@@ -327,7 +377,7 @@ func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resol
 		}
 	}
 
-	log.Printf("functionType\n  %v\n  %v", reference.HumanReadable(), dectype.TypesToHumanReadable(arguments))
+	//log.Printf("functionType\n  %v\n  %v", reference.HumanReadable(), dectype.TypesToHumanReadable(arguments))
 
 	convertedTypes, err := ResolveSlices(reference.FunctionParameterTypes(), arguments, resolver)
 	if err != nil {
@@ -403,7 +453,7 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 	}
 
 	if !resolveLocalTypeNames.IsDefined() {
-		return nil, decorated.NewInternalError(fmt.Errorf("not all local type names where resolved, sorry about that %T %v", localTypeNameContext.Next(), localTypeNameContext))
+		return nil, decorated.NewInternalError(fmt.Errorf("not all local type names where resolved, sorry about that \nNOT DEFINED: %v\n %T %v", resolveLocalTypeNames.DebugAllNotDefined(), localTypeNameContext.Next(), localTypeNameContext))
 	}
 
 	/*
