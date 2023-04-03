@@ -88,6 +88,12 @@ func IsLocalType(checkType dtype.Type) bool {
 	return wasLocalType
 }
 
+func TryLocalTypeDef(checkType dtype.Type) (*LocalTypeDefinitionReference, bool) {
+	unliased := UnaliasWithResolveInvoker(checkType)
+	localDef, wasLocalType := unliased.(*LocalTypeDefinitionReference)
+	return localDef, wasLocalType
+}
+
 func IsTypeIdRef(checkType dtype.Type) bool {
 	unliased := UnaliasWithResolveInvoker(checkType)
 	primitive, wasPrimitive := unliased.(*PrimitiveAtom)

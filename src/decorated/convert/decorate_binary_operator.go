@@ -191,7 +191,7 @@ func resolveToFunctionAtom(leftDecorated decorated.Expression) *dectype.Function
 			var wasOk bool
 			leftSmashedFunctionType, wasOk = pipeRightOperator.Type().(*dectype.FunctionAtom)
 			if !wasOk {
-				panic(fmt.Errorf("problem"))
+				panic(fmt.Errorf("problem %T %v", pipeRightOperator.Type(), pipeRightOperator.Type()))
 			}
 			if leftSmashedFunctionType == nil {
 				panic(fmt.Errorf("this should have leftFunctionCall or node:%T", pipeRightOperator))

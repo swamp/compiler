@@ -7,8 +7,10 @@ package parser
 
 import (
 	"github.com/swamp/compiler/src/ast"
+	decorated "github.com/swamp/compiler/src/decorated/expression"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
+	"log"
 )
 
 func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments *ast.MultilineComment, keywordIndentation int) (ast.Expression, parerr.ParseError) {
@@ -106,7 +108,16 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		index++
 	}
 
-	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, precedingComments)
+	var localTypeNameReferences []ast.Type
+	for _, localTypeName := range typeParameterContext.LocalTypeNames() {
+		x, err := typeParameterContext.GetOrCreateReferenceFromName(localTypeName)
+		if err != nil {
+			return nil, decorated.NewInternalError(err)
+		}
+		localTypeNameReferences = append(localTypeNameReferences, x)
+	}
+
+	newCustomType := ast.NewCustomType(keywordType, nameOfType, localTypeNameReferences, fields, precedingComments)
 
 	var typeToReturn ast.Type
 
@@ -114,6 +125,7 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 	if !typeParameterContext.IsEmpty() {
 		typeParameterContext.SetNextType(newCustomType)
 		typeToReturn = typeParameterContext
+		log.Printf("customtype with context:%v customType:%v", typeParameterContext, newCustomType)
 	}
 
 	return ast.NewCustomTypeNamedDefinition(typeToReturn), nil

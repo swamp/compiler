@@ -15,10 +15,15 @@ type CustomType struct {
 	variants          []*CustomTypeVariant
 	keywordType       token.Keyword
 	precedingComments *MultilineComment
+	parameterTypes    []Type
+}
+
+func (i *CustomType) Arguments() []Type {
+	return i.parameterTypes
 }
 
 func (i *CustomType) String() string {
-	return fmt.Sprintf("[CustomType %v %v]", i.name, i.variants)
+	return fmt.Sprintf("[CustomType %v<%v> %v]", i.name, i.parameterTypes, i.variants)
 }
 
 func (i *CustomType) Identifier() *TypeIdentifier {
@@ -49,8 +54,8 @@ func (i *CustomType) DebugString() string {
 	return fmt.Sprintf("[CustomType %v]", i.name)
 }
 
-func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, variants []*CustomTypeVariant, comment *MultilineComment) *CustomType {
-	c := &CustomType{keywordType: keywordType, name: customTypeName, variants: variants, precedingComments: comment}
+func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, parameterTypes []Type, variants []*CustomTypeVariant, comment *MultilineComment) *CustomType {
+	c := &CustomType{keywordType: keywordType, name: customTypeName, parameterTypes: parameterTypes, variants: variants, precedingComments: comment}
 	for _, variant := range variants {
 		variant.SetParent(c)
 	}

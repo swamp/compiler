@@ -18,6 +18,7 @@ type CustomTypeAtom struct {
 	nameToField      map[string]*CustomTypeVariantAtom
 	variants         []*CustomTypeVariantAtom
 	astCustomType    *ast.CustomType
+	arguments        []dtype.Type
 	artifactTypeName ArtifactFullyQualifiedTypeName
 	references       []*CustomTypeReference
 	memorySize       MemorySize
@@ -26,6 +27,10 @@ type CustomTypeAtom struct {
 
 func (s *CustomTypeAtom) AstCustomType() *ast.CustomType {
 	return s.astCustomType
+}
+
+func (s *CustomTypeAtom) Arguments() []dtype.Type {
+	return s.arguments
 }
 
 func (s *CustomTypeAtom) MemorySize() MemorySize {
@@ -41,7 +46,7 @@ func (s *CustomTypeAtom) String() string {
 }
 
 func (s *CustomTypeAtom) HumanReadable() string {
-	return s.astCustomType.Identifier().Name()
+	return fmt.Sprintf("%v%v", s.astCustomType.Identifier().Name(), TypesToHumanReadableWithinBrackets(s.arguments))
 }
 
 func (s *CustomTypeAtom) FetchPositionLength() token.SourceFileReference {
@@ -122,10 +127,9 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariantAtom) (MemorySi
 	return maxVariantSize, maxVariantAlign
 }
 
-func NewCustomTypePrepare(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName) *CustomTypeAtom {
-
+func NewCustomTypePrepare(astCustomType *ast.CustomType, arguments []dtype.Type, artifactTypeName ArtifactFullyQualifiedTypeName) *CustomTypeAtom {
 	s := &CustomTypeAtom{
-		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
+		astCustomType: astCustomType, arguments: arguments, artifactTypeName: artifactTypeName,
 	}
 
 	return s

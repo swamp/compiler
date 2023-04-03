@@ -19,7 +19,17 @@ func DecorateCustomType(astCustomType *ast.CustomType,
 
 	artifactTypeName := typeRepo.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(astCustomType.Identifier())
 
-	s := dectype.NewCustomTypePrepare(astCustomType, artifactTypeName)
+	var astArgumentTypes []dtype.Type
+
+	for _, astArgumentType := range astCustomType.Arguments() {
+		newType, newTypeErr := ConvertFromAstToDecorated(astArgumentType, typeRepo)
+		if newTypeErr != nil {
+			return nil, decorated.NewInternalError(newTypeErr)
+		}
+		astArgumentTypes = append(astArgumentTypes, newType)
+	}
+
+	s := dectype.NewCustomTypePrepare(astCustomType, astArgumentTypes, artifactTypeName)
 
 	for astVariantIndex, astVariant := range astCustomType.Variants() {
 		var astVariantTypes []dtype.Type

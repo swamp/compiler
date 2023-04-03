@@ -146,7 +146,7 @@ func ResolveTypeFromContext(parameterType dtype.Type, resolver *dectype.TypePara
 	case *dectype.UnmanagedType:
 		return t, nil
 	case *dectype.CustomTypeAtom:
-		return CustomTypeHelper(t, resolver)
+		return CustomType(t, t.Arguments(), resolver)
 	default:
 		next := t.Next()
 		if next != nil && next != t {
@@ -278,7 +278,6 @@ func CustomTypeVariantFromContext(reference *dectype.CustomTypeVariantAtom, reso
 }
 
 func CustomType(reference *dectype.CustomTypeAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
-
 	setErr := resolver.SetTypes(arguments)
 	if setErr != nil {
 		panic(setErr)
@@ -293,6 +292,19 @@ func CustomType(reference *dectype.CustomTypeAtom, arguments []dtype.Type, resol
 }
 
 func CustomTypeHelper(reference *dectype.CustomTypeAtom, resolver *dectype.TypeParameterContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+	var decArguments []dtype.Type
+	for _, argument := range reference.Arguments() {
+		if localDef, wasLocalDef := dectype.TryLocalTypeDef(argument); wasLocalDef {
+			decVariant, decVariantErr := resolver.LookupTypeName(localDef.TypeDefinition().Identifier().LocalTypeName().LocalType())
+			if decVariantErr != nil {
+				return nil, decorated.NewInternalError(decVariantErr)
+			}
+			decArguments = append(decArguments, decVariant)
+		} else {
+			decArguments = append(decArguments, argument)
+		}
+	}
+
 	var decVariants []*dectype.CustomTypeVariantAtom
 
 	for _, variantReference := range reference.Variants() {
@@ -303,7 +315,7 @@ func CustomTypeHelper(reference *dectype.CustomTypeAtom, resolver *dectype.TypeP
 		decVariants = append(decVariants, decVariant)
 	}
 
-	newCustomType := dectype.NewCustomTypePrepare(reference.AstCustomType(), reference.ArtifactTypeName())
+	newCustomType := dectype.NewCustomTypePrepare(reference.AstCustomType(), decArguments, reference.ArtifactTypeName())
 	newCustomType.FinalizeVariants(decVariants)
 
 	return newCustomType, nil
@@ -377,7 +389,7 @@ func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resol
 		}
 	}
 
-	//log.Printf("functionType\n  %v\n  %v", reference.HumanReadable(), dectype.TypesToHumanReadable(arguments))
+	log.Printf("functionType\n  %v\n  %v", reference.HumanReadable(), dectype.TypesToHumanReadable(arguments))
 
 	convertedTypes, err := ResolveSlices(reference.FunctionParameterTypes(), arguments, resolver)
 	if err != nil {
