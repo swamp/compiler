@@ -42,7 +42,7 @@ func (s *CustomTypeAtom) MemoryAlignment() MemoryAlign {
 }
 
 func (s *CustomTypeAtom) String() string {
-	return fmt.Sprintf("[CustomType %v %v]", s.artifactTypeName, s.variants)
+	return fmt.Sprintf("[CustomType %v%v %v]", s.artifactTypeName, TypesToStringSuffix(s.arguments), s.variants)
 }
 
 func (s *CustomTypeAtom) HumanReadable() string {
@@ -91,7 +91,7 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariantAtom) (MemorySi
 			}
 			memorySize, memoryAlign := GetMemorySizeAndAlignment(fieldType)
 			if memorySize == 0 || memoryAlign == 0 {
-				panic(fmt.Errorf("illegal size or align values. index %d, field %T in variant %v", index, fieldType, variant))
+				//panic(fmt.Errorf("illegal size or align values. index %d, field %T %v in variant %v", index, fieldType, fieldType, variant))
 			}
 
 			rest := MemoryAlign(uint32(offset) % uint32(memoryAlign))
@@ -136,6 +136,7 @@ func NewCustomTypePrepare(astCustomType *ast.CustomType, arguments []dtype.Type,
 }
 
 func (s *CustomTypeAtom) FinalizeVariants(variants []*CustomTypeVariantAtom) {
+	log.Printf("finalizing %v %v", s.astCustomType.Identifier().Name(), s.astCustomType.Arguments())
 	nameToField := make(map[string]*CustomTypeVariantAtom)
 	for index, variant := range variants {
 		key := variant.Name().Name()

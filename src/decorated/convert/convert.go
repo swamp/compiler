@@ -139,12 +139,13 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			if concreteErr != nil {
 				return nil, concreteErr
 			}
-			switch t := newType.(type) {
+			switch newTypeT := newType.(type) {
 			case *dectype.PrimitiveAtom:
-				foundType = dectype.NewPrimitiveTypeReference(foundType.NameReference(), t)
+				foundType = dectype.NewPrimitiveTypeReference(foundType.NameReference(), newTypeT)
 				break
 			case *dectype.CustomTypeAtom:
-				foundType = dectype.NewCustomTypeReference(foundType.NameReference(), t)
+				foundType = dectype.NewCustomTypeReference(foundType.NameReference(), newTypeT)
+			case *dectype.RecordAtom:
 			default:
 				log.Printf("nameOnly what is this: %T", newType)
 			}

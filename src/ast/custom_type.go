@@ -51,7 +51,7 @@ func (i *CustomType) Comment() *MultilineComment {
 }
 
 func (i *CustomType) DebugString() string {
-	return fmt.Sprintf("[CustomType %v]", i.name)
+	return fmt.Sprintf("[CustomType %v %v]", i.name, i.parameterTypes)
 }
 
 func NewCustomType(keywordType token.Keyword, customTypeName *TypeIdentifier, parameterTypes []Type, variants []*CustomTypeVariant, comment *MultilineComment) *CustomType {

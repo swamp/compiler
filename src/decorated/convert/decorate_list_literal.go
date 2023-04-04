@@ -14,7 +14,6 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
-	"log"
 )
 
 func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string, reference token.SourceFileReference) (*dectype.PrimitiveTypeReference, []decorated.Expression, decshared.DecoratedError) {
@@ -56,7 +55,6 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 	if concreteErr != nil {
 		return nil, nil, concreteErr
 	}
-	log.Printf("concreteListLiteral %v", concretizedLiteral)
 
 	primitiveAtom, _ := concretizedLiteral.(*dectype.PrimitiveAtom)
 	typeIdent := ast.NewTypeIdentifier(token.NewTypeSymbolToken(containerName, listType.FetchPositionLength(), 0))

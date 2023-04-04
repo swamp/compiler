@@ -24,6 +24,13 @@ func IsTypeCompletelyConcrete(reference dtype.Type) error {
 			}
 		}
 		return nil
+	case *dectype.CustomTypeAtom:
+		for _, x := range t.Arguments() {
+			if err := IsTypeCompletelyConcrete(x); err != nil {
+				return err
+			}
+		}
+		return nil
 	case *dectype.FunctionAtom:
 		for _, x := range t.FunctionParameterTypes() {
 			if err := IsTypeCompletelyConcrete(x); err != nil {
@@ -110,6 +117,8 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 	case *dectype.AliasReference:
 		return ConcreteTypeIfNeeded(t.Next(), concrete, resolveLocalTypeNames)
 	case *dectype.UnmanagedType:
+		return concrete, nil
+	case *dectype.LocalTypeNameContext:
 		return concrete, nil
 	default:
 		panic(fmt.Errorf("concrete: what is this %T", reference))
@@ -278,17 +287,51 @@ func CustomTypeVariantFromContext(reference *dectype.CustomTypeVariantAtom, reso
 }
 
 func CustomType(reference *dectype.CustomTypeAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+	//convertedTypes, err := ResolveSlices(reference.Arguments(), arguments, resolver)
+	//if err != nil {
+	//	return nil, err
+	//}
 	setErr := resolver.SetTypes(arguments)
 	if setErr != nil {
 		panic(setErr)
 	}
+	/*
+		setErr := resolver.SetTypes(arguments)
+		if setErr != nil {
+			panic(setErr)
+		}
+		if !resolver.IsDefined() {
+			panic(fmt.Errorf("it is not defined"))
+		}
+		&
+	*/
+
 	if !resolver.IsDefined() {
-		panic(fmt.Errorf("it is not defined"))
+		//panic(fmt.Errorf("it is not defined"))
+	}
+
+	convertedTypes, err := ResolveSlices(reference.Arguments(), arguments, resolver)
+	if err != nil {
+		return nil, err
+	}
+
+	newCustomType := dectype.NewCustomTypePrepare(reference.AstCustomType(), convertedTypes, reference.ArtifactTypeName())
+
+	var newVariants []*dectype.CustomTypeVariantAtom
+	for _, variant := range reference.Variants() {
+		variantParameterTypes, variantErr := ResolveFromContext(variant.ParameterTypes(), resolver)
+		if variantErr != nil {
+			return nil, variantErr
+		}
+		newVariant := dectype.NewCustomTypeVariant(variant.Index(), newCustomType, variant.AstCustomTypeVariant(), variantParameterTypes)
+		newVariants = append(newVariants, newVariant)
 	}
 
 	//resolver.Debug()
 
-	return CustomTypeHelper(reference, resolver)
+	newCustomType.FinalizeVariants(newVariants)
+
+	return newCustomType, nil
 }
 
 func CustomTypeHelper(reference *dectype.CustomTypeAtom, resolver *dectype.TypeParameterContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
@@ -421,6 +464,10 @@ func Concrete(reference dtype.Type, concrete dtype.Type) (dtype.Type, decshared.
 }
 
 func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concreteArguments []dtype.Type) (dtype.Type, decshared.DecoratedError) {
+	if localTypeNameContext == nil {
+		panic(fmt.Errorf("localTypeNameContext is nil"))
+	}
+	log.Printf("ConcreteArguments %v '%v'", localTypeNameContext, dectype.TypesToHumanReadable(concreteArguments))
 	resolveLocalTypeNames := dectype.NewTypeParameterContext()
 	resolveLocalTypeNames.AddExpectedDefs(localTypeNameContext.Names())
 
@@ -429,10 +476,12 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 
 	switch t := localTypeNameContext.Next().(type) {
 	case *dectype.CustomTypeAtom:
+		log.Printf("concretize CustomType %v %v", t.ArtifactTypeName(), concreteArguments)
 		resolvedType, err = CustomType(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {
 			return nil, err
 		}
+		log.Printf("resolved:%v", resolvedType.HumanReadable())
 	case *dectype.CustomTypeVariantAtom:
 		resolvedType, err = CustomTypeVariant(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {

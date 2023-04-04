@@ -40,6 +40,22 @@ func (c *CustomTypeVariantField) String() string {
 	return c.parameterType.String()
 }
 
+func CustomTypeGVariantFieldsToStringSuffix(types []*CustomTypeVariantField) string {
+	if len(types) == 0 {
+		return ""
+	}
+	s := " ["
+	for index, t := range types {
+		if index > 0 {
+			s += ","
+		}
+		s += t.String()
+	}
+	s += "]"
+
+	return s
+}
+
 type CustomTypeVariantAtom struct {
 	index                int
 	astCustomTypeVariant *ast.CustomTypeVariant
@@ -203,7 +219,7 @@ func (s *CustomTypeVariantAtom) ParameterCount() int {
 }
 
 func (s *CustomTypeVariantAtom) String() string {
-	return fmt.Sprintf("[Variant %v %v]", s.astCustomTypeVariant.TypeIdentifier(), s.parameterFields)
+	return fmt.Sprintf("[Variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), CustomTypeGVariantFieldsToStringSuffix(s.parameterFields))
 }
 
 func (s *CustomTypeVariantAtom) MemorySize() MemorySize {
