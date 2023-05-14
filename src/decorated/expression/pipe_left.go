@@ -16,10 +16,10 @@ type PipeLeftOperator struct {
 	BinaryOperator
 }
 
-func NewPipeLeftOperator(left Expression, right Expression, resultingType dtype.Type) *PipeLeftOperator {
+func NewPipeLeftOperator(left Expression, right Expression, resolvedType dtype.Type) *PipeLeftOperator {
 	return &PipeLeftOperator{
 		BinaryOperator: BinaryOperator{
-			ExpressionNode: ExpressionNode{decoratedType: resultingType},
+			ExpressionNode: ExpressionNode{decoratedType: resolvedType},
 			left:           left,
 			right:          right,
 		},

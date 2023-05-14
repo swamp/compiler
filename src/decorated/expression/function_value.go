@@ -107,7 +107,7 @@ func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
 }
 
 func (f *FunctionValue) ForcedFunctionType() *dectype.FunctionAtom {
-	return f.forcedFunctionType.(*dectype.FunctionAtom)
+	return dectype.DerefFunctionType(f.forcedFunctionType)
 }
 
 func (f *FunctionValue) String() string {

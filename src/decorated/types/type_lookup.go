@@ -91,6 +91,12 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 		return CompatibleTypes(expectedLocalTypeNameOnlyContext.Next(), actualType)
 	}
 
+	unaliasActualType := Unalias(actualType)
+	actualLocalTypeNameOnlyContext, wasActualLocalTypeNameContext := unaliasActualType.(*LocalTypeNameContext)
+	if wasActualLocalTypeNameContext {
+		return CompatibleTypes(expectedType, actualLocalTypeNameOnlyContext.Next())
+	}
+
 	pureExpected, expectedErr := expectedType.Resolve()
 	pureActual, actualErr := actualType.Resolve()
 

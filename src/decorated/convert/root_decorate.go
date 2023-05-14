@@ -155,18 +155,10 @@ func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream, assign
 
 	name := assignment.Identifier()
 
-	forcedFunctionType := DerefFunctionType(foundFunctionTypeLike)
+	forcedFunctionType := dectype.DerefFunctionType(foundFunctionTypeLike)
 	if forcedFunctionType == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("expected function type %T", forcedFunctionType))
 	}
-
-	/*
-		forcedFunctionType := DerefFunctionTypeLike(foundFunctionType)
-		if forcedFunctionType == nil {
-			return nil, decorated.NewInternalError(fmt.Errorf("no forced function type %v", assignment))
-		}
-
-	*/
 
 	parameters, parametersErr := createParameterDefinitions(d.TypeReferenceMaker(), forcedFunctionType, assignment.FunctionValue())
 	if parametersErr != nil {

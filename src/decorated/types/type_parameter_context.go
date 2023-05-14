@@ -132,9 +132,11 @@ func (t *TypeParameterContext) SetType(defRef *LocalTypeNameReference, definedTy
 			return nil, fmt.Errorf(" %v was already set %w", defRef.Identifier().Name(), err)
 		}
 	} else {
-		//log.Printf("set %v to %v", defRef.Identifier().Name(), definedType)
-		definition.referencedType = definedType
-		definition.hasBeenDefined = true
+		if !IsAny(definedType) {
+			log.Printf("set %v to %v", defRef.Identifier().Name(), definedType.HumanReadable())
+			definition.referencedType = definedType
+			definition.hasBeenDefined = true
+		}
 	}
 
 	return NewLocalTypeDefinitionReference(defRef, definition), nil

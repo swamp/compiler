@@ -399,7 +399,7 @@ someFunc : (Int) -> String =
 another : (Int) -> String =
     someFunc "2"
 `,
-		&decorated.FunctionCallTypeMismatch{})
+		&decorated.FunctionArgumentTypeMismatch{})
 }
 
 func TestSomething2(t *testing.T) {
@@ -1518,7 +1518,7 @@ intConvert : (List Int) -> Bool =
     true
 
 
-simple : ((List a -> Bool), List a) -> Bool
+simple : ((List a -> Bool), List a) -> Bool =
     true
 
 
@@ -1573,7 +1573,7 @@ main : (Bool) -> Int =
     in
     -- This should fail, since fn takes a String instead of an Int
     intConvert (fn 22)
-`, &decorated.FunctionCallTypeMismatch{})
+`, &decorated.FunctionArgumentTypeMismatch{})
 }
 
 func TestUpdateComplex(t *testing.T) {
@@ -1844,8 +1844,8 @@ main : (Bool) -> Maybe (Thing String) =
 `, `
 Thing : [Alias Thing [LocalTypeNameContext a = [RecordType [[Field $something [LocalTypeNameRef a] (0)]]]]]
 
-[ModuleDef $get = [FunctionValue [LocalTypeNameContext a = [FunctionType [[AliasRef [Alias Thing [LocalTypeNameContext a = [RecordType [[Field $something [LocalTypeNameRef a] (0)]]]]]] [VariantRef [NamedDefTypeRef :[TypeReference $Maybe]]]]]] ([[Param $_ : [AliasRef [Alias Thing [LocalTypeNameContext a = [RecordType [[Field $something [LocalTypeNameRef a] (0)]]]]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [VariantRef [NamedDefTypeRef :[TypeReference $Maybe]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [Let [[LetAssign [[LetVar $v]] = [RecordLiteral [RecordType [[Field $something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]]] [0 = [String Something]]]] [LetAssign [[LetVar $_]] = [FnCall [FunctionType [[RecordType [[Field $something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]]] [CustomType Maybe [[Variant $Nothing []] [Variant $Just [[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]]]]]]] [FunctionRef [NamedDefinitionReference /get]] [[LetVarRef $v]]]]] in [VariantConstructor [Variant $Just [[LocalTypeNameRef a]]] [[LetVarRef $v]]]]]]
+[ModuleDef $get = [FunctionValue [LocalTypeNameContext a = [FunctionType [[AliasRef [Alias Thing [LocalTypeNameContext a = [RecordType [[Field $something [LocalTypeNameRef a] (0)]]]]]] [CustomTypeRef [NamedDefTypeRef :[TypeReference $Maybe]] [CustomType Maybe [[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]] [[Variant $Nothing] [Variant $Just [[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]]]]]]]]] ([[Param $_ : [AliasRef [Alias Thing [LocalTypeNameContext a = [RecordType [[Field $something [LocalTypeNameRef a] (0)]]]]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [CustomTypeRef [NamedDefTypeRef :[TypeReference $Maybe]] [CustomType Maybe [[ConcreteGenericRef [GenericParam a] => [AliasRef [Alias Thing [LocalTypeNameContext a = [RecordType [[Field $something [LocalTypeNameRef a] (0)]]]]]]]] [[Variant $Nothing] [Variant $Just [[ConcreteGenericRef [GenericParam a] => [AliasRef [Alias Thing [LocalTypeNameContext a = [RecordType [[Field $something [LocalTypeNameRef a] (0)]]]]]]]]]]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [Let [[LetAssign [[LetVar $v]] = [RecordLiteral [RecordType [[Field $something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]]] [0 = [String Something]]]] [LetAssign [[LetVar $_]] = [FnCall [FunctionType [[RecordType [[Field $something [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] (0)]]] [CustomType Maybe [[ConcreteGenericRef [GenericParam a] => [ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]]] [[Variant $Nothing] [Variant $Just [[ConcreteGenericRef [GenericParam a] => [ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]]]]]]]] [FunctionRef [NamedDefinitionReference /get]] [[LetVarRef $v]]]]] in [VariantConstructor [Variant $Just [[LocalTypeNameRef a]]] [[LetVarRef $v]]]]]]
 `)
 }
 

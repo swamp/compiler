@@ -6,28 +6,11 @@
 package decorator
 
 import (
-	"fmt"
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
-	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
-
-func DerefFunctionType(expectedFunctionType dtype.Type) *dectype.FunctionAtom {
-	switch info := expectedFunctionType.(type) {
-	case *dectype.FunctionAtom:
-		return info
-	case *dectype.FunctionTypeReference:
-		return info.FunctionAtom()
-	case *dectype.LocalTypeNameContext:
-		return DerefFunctionType(info.Next())
-	default:
-		panic(fmt.Errorf("unhandled %T", expectedFunctionType))
-	}
-
-	return nil
-}
 
 func DerefFunctionTypeLike(functionTypeLike dectype.FunctionTypeLike) *dectype.FunctionAtom {
 	switch info := functionTypeLike.(type) {

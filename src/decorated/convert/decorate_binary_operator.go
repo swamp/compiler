@@ -340,23 +340,19 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 		}
 
 		originalLeftFunctionAtom = t.OriginalFunctionType()
-		rightSideParameterTypes, originalReturn := originalLeftFunctionAtom.ParameterAndReturn()
-		allTypes = append(allTypes, rightSideParameterTypes[:len(rightSideParameterTypes)-1]...)
+		leftSideParameterTypes, originalReturn := originalLeftFunctionAtom.ParameterAndReturn()
+		allTypes = append(allTypes, leftSideParameterTypes[:len(leftSideParameterTypes)-1]...)
 		allTypes = append(allTypes, rightSideReturns)
 		allTypes = append(allTypes, originalReturn)
 	case *decorated.FunctionReference:
 		originalLeftFunctionAtom = t.FunctionValue().Type().(*dectype.FunctionAtom)
 		leftFunctionAtom = t.FunctionValue().ConvertedFunctionType()
-		rightParameterTypes, originalRightReturn := originalLeftFunctionAtom.ParameterAndReturn()
-		allTypes = append(allTypes, rightParameterTypes[:len(rightParameterTypes)-1]...)
+		leftParameterTypes, originalLeftReturn := originalLeftFunctionAtom.ParameterAndReturn()
+		allTypes = append(allTypes, leftParameterTypes[:len(leftParameterTypes)-1]...)
 		allTypes = append(allTypes, rightSideReturns)
-		allTypes = append(allTypes, originalRightReturn)
+		allTypes = append(allTypes, originalLeftReturn)
 	default:
 		panic(fmt.Errorf("unknown right decorated %T", rightDecorated))
-	}
-
-	for _, x := range allTypes {
-		log.Printf("  param:%v", x)
 	}
 
 	resultingFunctionType = dectype.NewFunctionAtom(leftFunctionAtom.AstFunction(), allTypes)
@@ -365,7 +361,9 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 		return nil, decorated.NewInternalError(err)
 	}
 
-	return decorated.NewPipeLeftOperator(leftDecorated, rightDecorated, resultingFunctionType), nil
+	resultingReturnType := allTypes[len(allTypes)-1]
+
+	return decorated.NewPipeLeftOperator(leftDecorated, rightDecorated, resultingReturnType), nil
 }
 
 func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {

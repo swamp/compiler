@@ -68,7 +68,7 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 		return newReference, nil
 	}
 
-	//log.Printf("concrete: \n %v\n %v\n    %v\n<-  %v\n (%v %v)", reference.HumanReadable(), concrete.HumanReadable(), reference, concrete, reference.FetchPositionLength().ToStandardReferenceString(), concrete.FetchPositionLength().ToCompleteReferenceString())
+	log.Printf("concrete: \n %v\n %v\n    %v\n<-  %v\n (%v %v)", reference.HumanReadable(), concrete.HumanReadable(), reference, concrete, reference.FetchPositionLength().ToStandardReferenceString(), concrete.FetchPositionLength().ToCompleteReferenceString())
 
 	switch t := reference.(type) {
 	case *dectype.Alias:
@@ -93,6 +93,8 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 				log.Printf("what is this %T", pointingToRef)
 			}
 		}
+		log.Printf("checking primitive %v <- %v", reference.HumanReadable(), concrete.HumanReadable())
+
 		ref, wasRef := concrete.(*dectype.PrimitiveTypeReference)
 		if !wasRef {
 			return concrete, nil
@@ -232,13 +234,13 @@ func ResolveFromContext(references []dtype.Type, resolver *dectype.TypeParameter
 
 func Primitive(reference *dectype.PrimitiveAtom, concrete_ *dectype.PrimitiveTypeReference, resolver *dectype.TypeParameterContext) (*dectype.PrimitiveAtom, decshared.DecoratedError) {
 	concrete, _ := concrete_.Next().(*dectype.PrimitiveAtom)
-	log.Printf("checking primitive %v <- paramters: %v", reference, concrete.ParameterTypes())
+	log.Printf("checking primitive %v <- parameters: %v", reference, concrete.ParameterTypes())
 
 	return PrimitiveArguments(reference, concrete.ParameterTypes(), resolver)
 }
 
 func PrimitiveArguments(reference *dectype.PrimitiveAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.PrimitiveAtom, decshared.DecoratedError) {
-	//log.Printf("checking primitiveArguments %v <- %v", reference, arguments)
+	log.Printf("checking primitiveArguments %v <- %v", reference, arguments)
 
 	convertedTypes, err := ResolveSlices(reference.ParameterTypes(), arguments, resolver)
 	if err != nil {

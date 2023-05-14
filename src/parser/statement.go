@@ -62,6 +62,6 @@ func (p *Parser) parseExpressionStatement(precedingComments *ast.MultilineCommen
 
 		return parseImport(p.stream, keywordImport, 0, precedingComments)
 	default:
-		return checkAndParseAnnotationOrDefinition(p.stream, startIndentation, variableSymbol, annotationFunctionType, precedingComments)
+		return parseIdentifierAndDefinition(p.stream, startIndentation, variableSymbol, annotationFunctionType, precedingComments)
 	}
 }

@@ -13,27 +13,27 @@ import (
 )
 
 type FunctionValue struct {
-	parameters         []*FunctionParameter
-	expression         Expression
-	debugAssignedValue token.VariableSymbolToken
-	commentBlock       *MultilineComment
-	inclusive          token.SourceFileReference
-	functionType       Type
+	parameters           []*FunctionParameter
+	expression           Expression
+	debugAssignedValue   token.VariableSymbolToken
+	commentBlock         *MultilineComment
+	inclusive            token.SourceFileReference
+	declaredFunctionType Type
 }
 
 func NewFunctionValue(debugAssignedValue token.VariableSymbolToken, parameters []*FunctionParameter,
-	functionType Type, expression Expression, commentBlock *MultilineComment) *FunctionValue {
+	declaredFunctionType Type, expression Expression, commentBlock *MultilineComment) *FunctionValue {
 	inclusive := token.MakeInclusiveSourceFileReference(debugAssignedValue.FetchPositionLength(), expression.FetchPositionLength())
 
 	return &FunctionValue{
-		functionType:       functionType,
-		debugAssignedValue: debugAssignedValue, parameters: parameters,
+		declaredFunctionType: declaredFunctionType,
+		debugAssignedValue:   debugAssignedValue, parameters: parameters,
 		expression: expression, commentBlock: commentBlock, inclusive: inclusive,
 	}
 }
 
 func (i *FunctionValue) Type() Type {
-	return i.functionType
+	return i.declaredFunctionType
 }
 
 func (i *FunctionValue) Parameters() []*FunctionParameter {
@@ -68,7 +68,7 @@ func (i *FunctionValue) parametersString() string {
 }
 
 func (i *FunctionValue) String() string {
-	return fmt.Sprintf("[Fn %v (%s) = %v]", i.functionType, i.parametersString(), i.expression)
+	return fmt.Sprintf("[Fn %v (%s) = %v]", i.declaredFunctionType, i.parametersString(), i.expression)
 }
 
 func (i *FunctionValue) DebugString() string {

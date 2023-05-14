@@ -33,6 +33,21 @@ func IsAny(checkType dtype.Type) bool {
 	return primitive.PrimitiveName().Name() == "Any"
 }
 
+func DerefFunctionType(expectedFunctionType dtype.Type) *FunctionAtom {
+	switch info := expectedFunctionType.(type) {
+	case *FunctionAtom:
+		return info
+	case *FunctionTypeReference:
+		return info.FunctionAtom()
+	case *LocalTypeNameContext:
+		return DerefFunctionType(info.Next())
+	default:
+		panic(fmt.Errorf("unhandled %T", expectedFunctionType))
+	}
+
+	return nil
+}
+
 func FindNameOnlyContextWithUnalias(checkType dtype.Type) *LocalTypeNameContext {
 	unliased := Unalias(checkType)
 	localTypeNameContext, wasLocalTypeNameContext := unliased.(*LocalTypeNameContext)
