@@ -56,7 +56,8 @@ func (s *RecordAtom) HumanReadable() string {
 }
 
 func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
-	return s.record.FetchPositionLength()
+	inclusive := token.MakeInclusiveSourceFileReference(s.parsedOrderFields[0].name.FetchPositionLength(), s.parsedOrderFields[len(s.parsedOrderFields)-1].name.FetchPositionLength())
+	return inclusive
 }
 
 func TypeChain(p dtype.Type, tabs int) {

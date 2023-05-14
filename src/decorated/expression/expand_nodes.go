@@ -314,6 +314,10 @@ type ExpandedNode struct {
 	debugDocument *token.SourceFileDocument
 }
 
+func (n *ExpandedNode) String() string {
+	return fmt.Sprintf("[expand %v %v]", n.node, n.children)
+}
+
 func (n *ExpandedNode) AddChildNode(node TypeOrToken) {
 	newNode := NewExpandedNode(node, n.debugDocument)
 	n.addChild(newNode)
@@ -427,6 +431,7 @@ func expand(node Node, parentNode *ExpandedNode) {
 		panic("can not be nil")
 	}
 
+	log.Printf("expand %T (%v) parent: %T (%v)", node, node, parentNode, parentNode)
 	newParentNode := parentNode.NewGroupNode(node)
 	switch t := node.(type) {
 	case *ModuleReference:

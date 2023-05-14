@@ -531,7 +531,7 @@ Sprite : [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef
 `)
 }
 
-func xTestPipeRight(t *testing.T) {
+func TestPipeRight(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 first : (a: Int) -> Int =
@@ -1999,7 +1999,7 @@ Something : [Alias Something [RecordType [[Field $playerX [PrimitiveTypeRef [Nam
 `)
 }
 
-func xTestPipeRight2(t *testing.T) {
+func TestPipeRight2(t *testing.T) {
 	testDecorateWithoutDefault(t, `
 first : (Int) -> Int =
     2
@@ -2025,7 +2025,7 @@ tester : (b: String) -> Bool =
 `)
 }
 
-func xTestPipeRight2Fail(t *testing.T) {
+func TestPipeRight2Fail(t *testing.T) {
 	testDecorateWithoutDefaultFail(t, `
 first : (Int) -> Int =
     2
@@ -2043,10 +2043,5 @@ tester : (b: String) -> Bool =
     first (2 + 2)
         |> second b
         |> third
-`, `
-[ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Integer 2]]]
-[ModuleDef $second = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Integer 2]]]
-[ModuleDef $third = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [BoolOp [ParamRef [Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] GR [Integer 45]]]]
-[ModuleDef $tester = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $b : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] [FunctionRef [NamedDefinitionReference /first]] [(Arithmetic [Integer 2] PLUS [Integer 2])]] |> [Curry [FunctionRef [NamedDefinitionReference /second]] [[ParamRef [Param $b : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]]] |> [FunctionRef [NamedDefinitionReference /third]]]]
-`)
+`, &decorated.FunctionArgumentTypeMismatch{})
 }
