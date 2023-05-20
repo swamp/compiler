@@ -57,7 +57,9 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 
 	targetFunctionNamedValue.DefineExpression(decoratedExpression)
 
-	//log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
+	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
+	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
+
 	compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
 	if compatibleErr != nil {
 		return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(targetFunctionValue.AstFunctionValue(),

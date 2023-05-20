@@ -136,7 +136,6 @@ func NewCustomTypePrepare(astCustomType *ast.CustomType, arguments []dtype.Type,
 }
 
 func (s *CustomTypeAtom) FinalizeVariants(variants []*CustomTypeVariantAtom) {
-	log.Printf("finalizing %v %v", s.astCustomType.Identifier().Name(), s.astCustomType.Arguments())
 	nameToField := make(map[string]*CustomTypeVariantAtom)
 	for index, variant := range variants {
 		key := variant.Name().Name()

@@ -20,7 +20,7 @@ func DecorateRecordType(info *ast.Record, t decorated.TypeAddAndReferenceMaker) 
 		}
 
 		fieldName := dectype.NewRecordFieldName(field.VariableIdentifier())
-		convertedField := dectype.NewRecordField(fieldName, field, convertedFieldType)
+		convertedField := dectype.NewRecordField(fieldName, convertedFieldType)
 		convertedFields = append(convertedFields, convertedField)
 	}
 

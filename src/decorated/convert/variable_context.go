@@ -52,7 +52,6 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 		// log.Printf("was function value '%v'\n", nameWithModuleRef)
 		return functionReference, nil
 	case *decorated.FunctionParameterDefinition:
-		// log.Printf("was parameter definition '%v'\n", name)
 		return decorated.NewFunctionParameterReference(name, t), nil
 	case *decorated.LetVariable:
 		letVarReference := decorated.NewLetVariableReference(name, t)

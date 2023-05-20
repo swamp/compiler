@@ -7,6 +7,7 @@ package token
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 	"unicode"
@@ -94,6 +95,17 @@ func (d *SourceFileDocument) String() string {
 type SourceFileReference struct {
 	Range    Range
 	Document *SourceFileDocument
+}
+
+func (s SourceFileReference) Verify() bool {
+	r := s.Range
+
+	if r.Position().line == 0 && r.Position().column == 0 {
+		log.Printf("suspicious")
+		return false
+	}
+
+	return true
 }
 
 func NewInternalSourceFileReference() SourceFileReference {

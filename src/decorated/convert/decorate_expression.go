@@ -10,7 +10,6 @@ import (
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	"log"
 )
 
 func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
@@ -85,8 +84,6 @@ func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableCon
 		d.AddDecoratedError(exprErr)
 		return nil, exprErr
 	}
-
-	log.Printf(" expr: %T %v", expr, expr.FetchPositionLength().ToCompleteReferenceString())
 
 	if expr == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("expr is nil:%v", e))

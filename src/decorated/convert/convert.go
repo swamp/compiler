@@ -146,6 +146,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			case *dectype.CustomTypeAtom:
 				foundType = dectype.NewCustomTypeReference(foundType.NameReference(), newTypeT)
 			case *dectype.RecordAtom:
+				return newType, nil
 			default:
 				log.Printf("nameOnly what is this: %T", newType)
 			}

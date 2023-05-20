@@ -18,6 +18,9 @@ type NamedDefinitionTypeReference struct {
 }
 
 func NewNamedDefinitionTypeReference(optionalModuleReference modref.ModuleReferencer, ident ast.TypeReferenceScopedOrNormal) *NamedDefinitionTypeReference {
+	if !ident.FetchPositionLength().Verify() {
+		//panic(fmt.Errorf("stop, wrong type %T %v", ident, ident))
+	}
 	return &NamedDefinitionTypeReference{
 		optionalModuleReference: optionalModuleReference,
 		ident:                   ident,

@@ -56,7 +56,7 @@ func (s *RecordAtom) HumanReadable() string {
 }
 
 func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
-	inclusive := token.MakeInclusiveSourceFileReference(s.parsedOrderFields[0].name.FetchPositionLength(), s.parsedOrderFields[len(s.parsedOrderFields)-1].name.FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(s.parsedOrderFields[0].name.FetchPositionLength(), s.parsedOrderFields[len(s.parsedOrderFields)-1].fieldType.FetchPositionLength())
 	return inclusive
 }
 
@@ -197,6 +197,24 @@ func NewRecordType(info *ast.Record, fields []*RecordField) *RecordAtom {
 		name := field.Name()
 		if nameToField[name] != nil {
 			panic("we already have that struct name")
+		}
+		/*
+			_, wasPrimitive := field.Type().(*PrimitiveAtom)
+			if wasPrimitive {
+				panic("not allowed with primitive")
+			}
+
+		*/
+		if !field.Type().FetchPositionLength().Verify() {
+			log.Print("problem:")
+			for index2, field2 := range sortedFields {
+				if index == index2 {
+					log.Printf("* here-> %v %v", field2.name, field2.fieldType)
+				} else {
+					log.Printf("%v %v", field2.name, field2.fieldType)
+				}
+			}
+			panic(fmt.Errorf("stopping %T %v", field.Type(), field.Type()))
 		}
 		field.SetIndexBySorter(index)
 		nameToField[name] = field

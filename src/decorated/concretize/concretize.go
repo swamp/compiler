@@ -68,7 +68,7 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 		return newReference, nil
 	}
 
-	log.Printf("concrete: \n %v\n %v\n    %v\n<-  %v\n (%v %v)", reference.HumanReadable(), concrete.HumanReadable(), reference, concrete, reference.FetchPositionLength().ToStandardReferenceString(), concrete.FetchPositionLength().ToCompleteReferenceString())
+	//log.Printf("concrete: \n %v\n %v\n    %v\n<-  %v\n (%v %v)", reference.HumanReadable(), concrete.HumanReadable(), reference, concrete, reference.FetchPositionLength().ToStandardReferenceString(), concrete.FetchPositionLength().ToCompleteReferenceString())
 
 	switch t := reference.(type) {
 	case *dectype.Alias:
@@ -93,7 +93,7 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 				log.Printf("what is this %T", pointingToRef)
 			}
 		}
-		log.Printf("checking primitive %v <- %v", reference.HumanReadable(), concrete.HumanReadable())
+		//log.Printf("checking primitive %v <- %v", reference.HumanReadable(), concrete.HumanReadable())
 
 		ref, wasRef := concrete.(*dectype.PrimitiveTypeReference)
 		if !wasRef {
@@ -158,6 +158,8 @@ func ResolveTypeFromContext(parameterType dtype.Type, resolver *dectype.TypePara
 		return t, nil
 	case *dectype.CustomTypeAtom:
 		return CustomType(t, t.Arguments(), resolver)
+	case *dectype.PrimitiveTypeReference:
+		return t, nil
 	default:
 		next := t.Next()
 		if next != nil && next != t {
@@ -178,7 +180,7 @@ func ResolveTypeFromContext(parameterType dtype.Type, resolver *dectype.TypePara
 func ResolveSlices(references []dtype.Type, concretes []dtype.Type, resolver *dectype.TypeParameterContext) ([]dtype.Type, decshared.DecoratedError) {
 	var resolvedTypes []dtype.Type
 	if len(concretes) != len(references) {
-		return nil, decorated.NewInternalError(fmt.Errorf("must have equal number of arguments to concretize slices"))
+		return nil, decorated.NewInternalError(fmt.Errorf("must have equal number of arguments to concretize slices %v vs %v", concretes, references))
 	}
 
 	for index, parameterType := range references {
@@ -234,14 +236,11 @@ func ResolveFromContext(references []dtype.Type, resolver *dectype.TypeParameter
 
 func Primitive(reference *dectype.PrimitiveAtom, concrete_ *dectype.PrimitiveTypeReference, resolver *dectype.TypeParameterContext) (*dectype.PrimitiveAtom, decshared.DecoratedError) {
 	concrete, _ := concrete_.Next().(*dectype.PrimitiveAtom)
-	log.Printf("checking primitive %v <- parameters: %v", reference, concrete.ParameterTypes())
 
 	return PrimitiveArguments(reference, concrete.ParameterTypes(), resolver)
 }
 
 func PrimitiveArguments(reference *dectype.PrimitiveAtom, arguments []dtype.Type, resolver *dectype.TypeParameterContext) (*dectype.PrimitiveAtom, decshared.DecoratedError) {
-	log.Printf("checking primitiveArguments %v <- %v", reference, arguments)
-
 	convertedTypes, err := ResolveSlices(reference.ParameterTypes(), arguments, resolver)
 	if err != nil {
 		return nil, err
@@ -385,11 +384,13 @@ func Record(reference *dectype.RecordAtom, arguments []dtype.Type, resolver *dec
 
 	var newFields []*dectype.RecordField
 	for index, field := range reference.ParseOrderedFields() {
-		newField := dectype.NewRecordField(field.FieldName(), field.AstRecordTypeField(), convertedTypes[index])
+		newField := dectype.NewRecordField(field.FieldName(), convertedTypes[index])
 		newFields = append(newFields, newField)
 	}
 
 	newRecord := dectype.NewRecordType(reference.AstRecord(), newFields)
+
+	log.Printf("newRecord:%v", newRecord)
 
 	return newRecord, nil
 }
@@ -434,8 +435,6 @@ func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resol
 		}
 	}
 
-	log.Printf("functionType\n  %v\n  %v", reference.HumanReadable(), dectype.TypesToHumanReadable(arguments))
-
 	convertedTypes, err := ResolveSlices(reference.FunctionParameterTypes(), arguments, resolver)
 	if err != nil {
 		return nil, err
@@ -447,7 +446,6 @@ func FunctionType(reference *dectype.FunctionAtom, arguments []dtype.Type, resol
 }
 
 func FunctionTypeArg(reference *dectype.FunctionAtom, concrete *dectype.FunctionAtom, resolver *dectype.TypeParameterContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
-	log.Printf("<-\n  %v\n  %v", reference, concrete)
 	return FunctionType(reference, concrete.FunctionParameterTypes(), resolver)
 }
 
@@ -469,7 +467,7 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 	if localTypeNameContext == nil {
 		panic(fmt.Errorf("localTypeNameContext is nil"))
 	}
-	log.Printf("ConcreteArguments %v '%v'", localTypeNameContext, dectype.TypesToHumanReadable(concreteArguments))
+	//log.Printf("ConcreteArguments %v '%v'", localTypeNameContext, dectype.TypesToHumanReadable(concreteArguments))
 	resolveLocalTypeNames := dectype.NewTypeParameterContext()
 	resolveLocalTypeNames.AddExpectedDefs(localTypeNameContext.Names())
 
@@ -478,12 +476,10 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 
 	switch t := localTypeNameContext.Next().(type) {
 	case *dectype.CustomTypeAtom:
-		log.Printf("concretize CustomType %v %v", t.ArtifactTypeName(), concreteArguments)
 		resolvedType, err = CustomType(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {
 			return nil, err
 		}
-		log.Printf("resolved:%v", resolvedType.HumanReadable())
 	case *dectype.CustomTypeVariantAtom:
 		resolvedType, err = CustomTypeVariant(t, concreteArguments, resolveLocalTypeNames)
 		if err != nil {
@@ -515,9 +511,12 @@ func ConcreteArguments(localTypeNameContext *dectype.LocalTypeNameContext, concr
 		panic(fmt.Errorf("not handled concrete %T", localTypeNameContext.Next()))
 	}
 
-	if !resolveLocalTypeNames.IsDefined() {
-		return nil, decorated.NewInternalError(fmt.Errorf("not all local type names where resolved, sorry about that \nNOT DEFINED: %v\n %T %v", resolveLocalTypeNames.DebugAllNotDefined(), localTypeNameContext.Next(), localTypeNameContext))
-	}
+	/*
+		if !resolveLocalTypeNames.IsDefined() {
+			return nil, decorated.NewInternalError(fmt.Errorf("not all local type names where resolved, sorry about that \nNOT DEFINED: %v\n %T %v", resolveLocalTypeNames.DebugAllNotDefined(), localTypeNameContext.Next(), localTypeNameContext))
+		}
+
+	*/
 
 	/*
 

@@ -88,10 +88,12 @@ __externalvarfn toList : (Array a) -> List a
 __externalvarfn grab : (Int, Array a) -> a
 __externalvarfn length : (Array a) -> Int
 __externalvarfn get : (Int, Array a) -> Maybe a
--- __externalvarfn slice : Int -> Int -> Array a -> Array a
--- __externalvarfn repeat : Int -> a -> Array a
--- __externalvarfn set : Int -> a -> Array a -> Array a
+__externalvarfn slice : (Int, Int, Array a) -> Array a
 `
+
+//--
+//-- __externalvarfn repeat : Int -> a -> Array a
+//-- __externalvarfn set : Int -> a -> Array a -> Array a
 
 const maybeCode = `
 __externalvarexfn withDefault : (a, Maybe a) -> a
@@ -99,10 +101,10 @@ __externalvarexfn maybe : (b, (a -> b), Maybe a) -> b
 `
 
 const tupleCode = `
-__externalfn first : (a, b) -> a
-__externalfn second : (a, b) -> b
-__externalfn third : (a, b, c) -> c
-__externalfn forth : (a, b, c, d) -> d
+__externalfn first : ((a, b)) -> a
+__externalfn second : ((a, b)) -> b
+__externalfn third : ((a, b, c))) -> c
+__externalfn forth : ((a, b, c, d)) -> d
 `
 
 const debugCode = `
@@ -264,13 +266,14 @@ func addCores(globalPrimitiveModule *decorated.Module) decshared.DecoratedError 
 	err = decorated.AppendError(err, stringModuleErr)
 
 	/*
-		maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "Tuple", tupleCode); maybeModuleErr != nil {
-			return maybeModuleErr
-		}
 
+			tupleModuleErr := compileAndAddToModule(globalPrimitiveModule, "Tuple", tupleCode)
+			if parser.IsCompileError(tupleModuleErr) {
+				return tupleModuleErr
+			}
 		if maybeModuleErr := compileAndAddToModule(globalPrimitiveModule, "TypeRef", typeIdCode); maybeModuleErr != nil {
-			return maybeModuleErr
-		}
+				return maybeModuleErr
+			}
 	*/
 
 	return err

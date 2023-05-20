@@ -58,6 +58,10 @@ func NewPrimitiveTypeReference(named *NamedDefinitionTypeReference, primitiveTyp
 	if named == nil {
 		panic(fmt.Errorf("must have a named type reference"))
 	}
+
+	if !named.FetchPositionLength().Verify() {
+		panic("not allowed")
+	}
 	ref := &PrimitiveTypeReference{named: named, primitiveType: primitiveType}
 
 	primitiveType.AddReferee(ref)

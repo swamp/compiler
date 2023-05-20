@@ -7,6 +7,7 @@ package deccy
 
 import (
 	"github.com/swamp/compiler/src/parser"
+	parerr "github.com/swamp/compiler/src/parser/errors"
 	"log"
 	"reflect"
 	"strings"
@@ -100,8 +101,16 @@ func isErrorOfType(expectedError interface{}, testErr error) bool {
 			isSameErr = isSameErr || isErrorOfType(expectedError, testError)
 		}
 	} else {
-		log.Printf(" err: %v", testErr)
-		isSameErr = reflect.TypeOf(expectedError) == reflect.TypeOf(testErr)
+		parMultiErr, wasParMultiErr := testErr.(parerr.MultiError)
+		if wasParMultiErr {
+			errorSlice := parMultiErr.Errors()
+			for _, testError := range errorSlice {
+				isSameErr = isSameErr || isErrorOfType(expectedError, testError)
+			}
+		} else {
+			log.Printf("  realErr: %v %T", testErr, testErr)
+			isSameErr = reflect.TypeOf(expectedError) == reflect.TypeOf(testErr)
+		}
 	}
 
 	return isSameErr

@@ -90,11 +90,6 @@ func addSemanticTokenTypeAlias(f *dectype.Alias, builder *SemanticBuilder) error
 
 func addSemanticTokenRecordType(f *dectype.RecordAtom, builder *SemanticBuilder) error {
 	for _, paramType := range f.ParseOrderedFields() {
-		if paramType.AstRecordTypeField().Comment() != nil {
-			if err := encodeComment(builder, paramType.AstRecordTypeField().Comment().Token()); err != nil {
-				return err
-			}
-		}
 		if err := builder.EncodeSymbol(paramType.VariableIdentifier().FetchPositionLength().Range, "property", []string{"declaration"}, f); err != nil {
 			return err
 		}

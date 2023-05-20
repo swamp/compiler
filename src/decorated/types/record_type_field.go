@@ -44,21 +44,20 @@ type (
 )
 
 type RecordField struct {
-	index           int
-	memoryOffset    MemoryOffset
-	memorySize      MemorySize
-	name            *RecordFieldName
-	fieldType       dtype.Type
-	recordTypeField *ast.RecordTypeField
+	index        int
+	memoryOffset MemoryOffset
+	memorySize   MemorySize
+	name         *RecordFieldName
+	fieldType    dtype.Type
 }
 
-func NewRecordField(fieldName *RecordFieldName, recordTypeField *ast.RecordTypeField, fieldType dtype.Type) *RecordField {
+func NewRecordField(fieldName *RecordFieldName, fieldType dtype.Type) *RecordField {
 	_, wasPrimitive := fieldType.(*PrimitiveAtom)
 	if wasPrimitive {
 		//		panic(fmt.Errorf("use type reference, not primitive directly %v = %v %v %T", fieldName, recordTypeField, fieldType, fieldType))
 	}
 
-	return &RecordField{index: -1, name: fieldName, fieldType: fieldType, recordTypeField: recordTypeField}
+	return &RecordField{index: -1, name: fieldName, fieldType: fieldType}
 }
 
 func (s *RecordField) SetIndexBySorter(index int) {
@@ -86,10 +85,6 @@ func (s *RecordField) Name() string {
 
 func (s *RecordField) VariableIdentifier() *ast.VariableIdentifier {
 	return s.name.Name()
-}
-
-func (s *RecordField) AstRecordTypeField() *ast.RecordTypeField {
-	return s.recordTypeField
 }
 
 func (s *RecordField) FieldName() *RecordFieldName {

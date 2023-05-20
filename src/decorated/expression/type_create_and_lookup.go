@@ -51,7 +51,7 @@ func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.Typ
 }
 
 func (l *TypeCreateAndLookup) FindBuiltInType(s string, reference token.SourceFileReference) dectype.TypeReferenceScopedOrNormal {
-	identifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(s, token.NewInternalSourceFileReference(), 0))
+	identifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(s, reference, 0))
 	someReference, err := l.CreateSomeTypeReference(identifier)
 	if err != nil {
 		panic(err)

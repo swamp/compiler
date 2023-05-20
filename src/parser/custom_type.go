@@ -10,7 +10,6 @@ import (
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
-	"log"
 )
 
 func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments *ast.MultilineComment, keywordIndentation int) (ast.Expression, parerr.ParseError) {
@@ -125,7 +124,6 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 	if !typeParameterContext.IsEmpty() {
 		typeParameterContext.SetNextType(newCustomType)
 		typeToReturn = typeParameterContext
-		log.Printf("customtype with context:%v customType:%v", typeParameterContext, newCustomType)
 	}
 
 	return ast.NewCustomTypeNamedDefinition(typeToReturn), nil

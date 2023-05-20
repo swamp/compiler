@@ -353,7 +353,9 @@ func (n *ExpandedNode) addChild(expandedNode *ExpandedNode) {
 	//log.Printf("adding %T %v", expandedNode.node, nodeRange)
 
 	if !n.node.FetchPositionLength().Range.ContainsRange(nodeRange) {
-		panic(fmt.Errorf("can not add a child that is not within the range of the parent %v %v (%T and %T)", n.node.FetchPositionLength().Range, nodeRange, n.node, expandedNode.node))
+		err := fmt.Errorf("can not add a child that is not within the range of the parent %v %v (%T and %T)", n.node.FetchPositionLength().Range, nodeRange, n.node, expandedNode.node)
+		log.Print(err)
+		panic(err)
 	}
 
 	if len(n.children) > 0 && !nodeRange.IsAfter(n.children[len(n.children)-1].node.FetchPositionLength().Range) {
@@ -431,7 +433,7 @@ func expand(node Node, parentNode *ExpandedNode) {
 		panic("can not be nil")
 	}
 
-	log.Printf("expand %T (%v) parent: %T (%v)", node, node, parentNode, parentNode)
+	//	log.Printf("%v expand %T (%v) parent: %T (%v)", node.FetchPositionLength().ToCompleteReferenceString(), node, node, parentNode, parentNode)
 	newParentNode := parentNode.NewGroupNode(node)
 	switch t := node.(type) {
 	case *ModuleReference:
