@@ -7,6 +7,7 @@ package loader
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -19,6 +20,7 @@ func NewFileSystemDocumentProvider() *FileSystemDocumentProvider {
 }
 
 func (s *FileSystemDocumentProvider) ReadDocument(completeFilename LocalFileSystemPath) (string, error) {
+	log.Printf("read file '%s'", completeFilename)
 	octets, readFileErr := os.ReadFile(string(completeFilename))
 	if readFileErr != nil {
 		switch readFileErr {

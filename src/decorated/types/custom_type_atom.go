@@ -85,7 +85,7 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariantAtom) (MemorySi
 		maxAlign := MemoryAlign(1)
 		for index, field := range variant.parameterFields {
 			fieldType := variant.parameterFields[index].Type()
-			_, wasLocalType := fieldType.(*LocalTypeDefinition)
+			_, wasLocalType := fieldType.(*ResolvedLocalType)
 			if wasLocalType {
 				return 0, 0
 			}

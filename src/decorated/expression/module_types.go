@@ -109,7 +109,7 @@ func (t *ModuleTypes) AddCustomType(customType *dectype.CustomTypeAtom) TypeErro
 	return nil
 }
 
-func (t *ModuleTypes) AddCustomTypeWrappedInNameOnlyContext(customTypeWrappedInContext *dectype.LocalTypeNameContext) TypeError {
+func (t *ModuleTypes) AddCustomTypeWrappedInNameOnlyContext(customTypeWrappedInContext *dectype.LocalTypeNameOnlyContext) TypeError {
 	customType, _ := customTypeWrappedInContext.Next().(*dectype.CustomTypeAtom)
 	t.InternalAddType(customType.TypeIdentifier(), customTypeWrappedInContext)
 	t.addCustomTypeVariantConstructors(customType)

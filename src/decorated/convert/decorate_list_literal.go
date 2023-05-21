@@ -16,7 +16,7 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string, reference token.SourceFileReference) (*dectype.PrimitiveTypeReference, []decorated.Expression, decshared.DecoratedError) {
+func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string, reference token.SourceFileReference) (*dectype.ResolvedLocalTypeContext, []decorated.Expression, decshared.DecoratedError) {
 	var listExpressions []decorated.Expression
 	var detectedType dtype.Type
 
@@ -46,22 +46,17 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 		panic("container literal must have a container type defined to use literals")
 	}
 	unaliasListType := dectype.Unalias(listType)
-	localNameContext, wasCollectionType := unaliasListType.(*dectype.LocalTypeNameContextReference)
+	localNameContext, wasCollectionType := unaliasListType.(*dectype.LocalTypeNameOnlyContextReference)
 	if !wasCollectionType {
 		panic(fmt.Errorf("must have a List type defined to use [] list literals %T", listType))
 	}
 
-	concretizedLiteral, concreteErr := concretize.ConcreteArguments(localNameContext.LocalTypeNameContext(), []dtype.Type{detectedType})
+	concretizedLiteral, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localNameContext.LocalTypeNameContext(), []dtype.Type{detectedType})
 	if concreteErr != nil {
 		return nil, nil, concreteErr
 	}
 
-	primitiveAtom, _ := concretizedLiteral.(*dectype.PrimitiveAtom)
-	typeIdent := ast.NewTypeIdentifier(token.NewTypeSymbolToken(containerName, listType.FetchPositionLength(), 0))
-	typeRef := ast.NewTypeReference(typeIdent, nil)
-	decTypeRef := dectype.NewPrimitiveTypeReference(dectype.NewNamedDefinitionTypeReference(nil, typeRef), primitiveAtom)
-
-	return decTypeRef, listExpressions, nil
+	return concretizedLiteral, listExpressions, nil
 }
 
 func decorateListLiteral(d DecorateStream, list *ast.ListLiteral, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {

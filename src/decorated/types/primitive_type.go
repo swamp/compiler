@@ -13,9 +13,14 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func GetListType(p dtype.Type) (*PrimitiveAtom, error) {
-	unresolvedType := UnaliasWithResolveInvoker(p)
-	primitive, wasPrimitive := unresolvedType.(*PrimitiveAtom)
+func GetListType(checkType dtype.Type) (*PrimitiveAtom, error) {
+	atom := UnaliasWithResolveInvoker(checkType)
+
+	return GetListTypeFromAtom(atom)
+}
+
+func GetListTypeFromAtom(atom dtype.Atom) (*PrimitiveAtom, error) {
+	primitive, wasPrimitive := atom.(*PrimitiveAtom)
 	if !wasPrimitive || len(primitive.ParameterTypes()) != 1 {
 		return nil, fmt.Errorf("wasnt a list type")
 	}
@@ -25,7 +30,11 @@ func GetListType(p dtype.Type) (*PrimitiveAtom, error) {
 
 func IsAny(checkType dtype.Type) bool {
 	unliased := UnaliasWithResolveInvoker(checkType)
-	primitive, wasPrimitive := unliased.(*PrimitiveAtom)
+	return IsAnyAtom(unliased)
+}
+
+func IsAnyAtom(checkAtom dtype.Atom) bool {
+	primitive, wasPrimitive := checkAtom.(*PrimitiveAtom)
 	if !wasPrimitive {
 		return false
 	}
@@ -39,7 +48,7 @@ func DerefFunctionType(expectedFunctionType dtype.Type) *FunctionAtom {
 		return info
 	case *FunctionTypeReference:
 		return info.FunctionAtom()
-	case *LocalTypeNameContext:
+	case *LocalTypeNameOnlyContext:
 		return DerefFunctionType(info.Next())
 	default:
 		panic(fmt.Errorf("unhandled %T", expectedFunctionType))
@@ -48,11 +57,11 @@ func DerefFunctionType(expectedFunctionType dtype.Type) *FunctionAtom {
 	return nil
 }
 
-func FindNameOnlyContextWithUnalias(checkType dtype.Type) *LocalTypeNameContext {
+func FindNameOnlyContextWithUnalias(checkType dtype.Type) *LocalTypeNameOnlyContext {
 	unliased := Unalias(checkType)
-	localTypeNameContext, wasLocalTypeNameContext := unliased.(*LocalTypeNameContext)
+	localTypeNameContext, wasLocalTypeNameContext := unliased.(*LocalTypeNameOnlyContext)
 	if !wasLocalTypeNameContext {
-		localTypeNameContextRef, wasLocalTypeNameContextRef := unliased.(*LocalTypeNameContextReference)
+		localTypeNameContextRef, wasLocalTypeNameContextRef := unliased.(*LocalTypeNameOnlyContextReference)
 		if wasLocalTypeNameContextRef {
 			return localTypeNameContextRef.nameContext
 		}
@@ -89,8 +98,11 @@ func IsIntLike(typeToCheck dtype.Type) bool {
 }
 
 func IsListAny(checkType dtype.Type) bool {
-	unliased := UnaliasWithResolveInvoker(checkType)
-	listAtom, err := GetListType(unliased)
+	atom := UnaliasWithResolveInvoker(checkType)
+	return IsListAnyFromAtom(atom)
+}
+func IsListAnyFromAtom(checkAtom dtype.Atom) bool {
+	listAtom, err := GetListTypeFromAtom(checkAtom)
 	if err != nil {
 		return false
 	}
@@ -98,14 +110,14 @@ func IsListAny(checkType dtype.Type) bool {
 }
 
 func IsLocalType(checkType dtype.Type) bool {
-	unliased := UnaliasWithResolveInvoker(checkType)
-	_, wasLocalType := unliased.(*LocalTypeDefinitionReference)
+	unliased := Unalias(checkType)
+	_, wasLocalType := unliased.(*ResolvedLocalTypeReference)
 	return wasLocalType
 }
 
-func TryLocalTypeDef(checkType dtype.Type) (*LocalTypeDefinitionReference, bool) {
-	unliased := UnaliasWithResolveInvoker(checkType)
-	localDef, wasLocalType := unliased.(*LocalTypeDefinitionReference)
+func TryLocalTypeDef(checkType dtype.Type) (*ResolvedLocalTypeReference, bool) {
+	unliased := Unalias(checkType)
+	localDef, wasLocalType := unliased.(*ResolvedLocalTypeReference)
 	return localDef, wasLocalType
 }
 
@@ -138,7 +150,7 @@ func TryTypeIdRef(checkType dtype.Type) (*PrimitiveAtom, bool) {
 
 func ArgumentNeedsTypeIdInsertedBefore(p dtype.Type) bool {
 	unaliased := UnaliasWithResolveInvoker(p)
-	return IsAny(unaliased)
+	return IsAnyAtom(unaliased)
 }
 
 func IsAnyOrFunctionWithAnyMatching(p dtype.Type) bool {

@@ -524,10 +524,10 @@ type alias Sprite =
 someFunc : (a: Lister Sprite Int) -> Int =
     a.another
 `, `
-Lister : [Alias Lister [LocalTypeNameContext t, u = [RecordType [[Field $another [LocalTypeNameRef u] (0)] [Field $fake [LocalTypeNameRef t] (1)]]]]]
+Lister : [Alias Lister [LocalTypeNameOnlyContext t, u => [RecordType [[Field $another [LocalTypeNameRef u] (0)] [Field $fake [LocalTypeNameRef t] (1)]]]]]
 Sprite : [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]
 
-[ModuleDef $someFunc = [FunctionValue [FunctionType [[RecordType [[Field $another [ConcreteGenericRef [GenericParam u] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $fake [ConcreteGenericRef [GenericParam t] => [AliasRef [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]]] (1)]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $a : [RecordType [[Field $another [ConcreteGenericRef [GenericParam u] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $fake [ConcreteGenericRef [GenericParam t] => [AliasRef [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]]] (1)]]]]]) -> [lookups [ParamRef [Param $a : [RecordType [[Field $another [ConcreteGenericRef [GenericParam u] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $fake [ConcreteGenericRef [GenericParam t] => [AliasRef [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]]] (1)]]]]] [[lookup [Field $another [ConcreteGenericRef [GenericParam u] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)]]]]]]
+[ModuleDef $someFunc = [FunctionValue [FunctionType [[ResolvedContext t:[AliasRef [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]], u:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t, u => [RecordType [[Field $another [LocalTypeNameRef u] (0)] [Field $fake [LocalTypeNameRef t] (1)]]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $a : [ResolvedContext t:[AliasRef [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]], u:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t, u => [RecordType [[Field $another [LocalTypeNameRef u] (0)] [Field $fake [LocalTypeNameRef t] (1)]]]]]]]) -> [lookups [ParamRef [Param $a : [ResolvedContext t:[AliasRef [Alias Sprite [RecordType [[Field $x [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] (0)]]]]], u:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t, u => [RecordType [[Field $another [LocalTypeNameRef u] (0)] [Field $fake [LocalTypeNameRef t] (1)]]]]]]] [[lookup [Field $another [LocalTypeNameRef u] (0)]]]]]]
 `)
 }
 
@@ -960,7 +960,7 @@ type Perhaps a =
     None
     | Actual a
 `, `
-Perhaps : [LocalTypeNameContext a = [CustomType Perhaps [[LocalTypeNameRef a]] [[Variant $None] [Variant $Actual [[LocalTypeNameRef a]]]]]]
+Perhaps : [LocalTypeNameOnlyContext a => [CustomType Perhaps [[LocalTypeNameRef a]] [[Variant $None] [Variant $Actual [[LocalTypeNameRef a]]]]]]
 None : [Variant $None]
 Actual : [Variant $Actual [[LocalTypeNameRef a]]]
 `)
@@ -1352,9 +1352,9 @@ type alias Tinkering t =
 f : (tinkering: Tinkering Int) -> Int =
     tinkering.secret
 `, `
-Tinkering : [Alias Tinkering [LocalTypeNameContext t = [RecordType [[Field $secret [LocalTypeNameRef t] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]
+Tinkering : [Alias Tinkering [LocalTypeNameOnlyContext t => [RecordType [[Field $secret [LocalTypeNameRef t] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]
 
-[ModuleDef $f = [FunctionValue [FunctionType [[RecordType [[Field $secret [ConcreteGenericRef [GenericParam t] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $tinkering : [RecordType [[Field $secret [ConcreteGenericRef [GenericParam t] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]) -> [lookups [ParamRef [Param $tinkering : [RecordType [[Field $secret [ConcreteGenericRef [GenericParam t] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]] [[lookup [Field $secret [ConcreteGenericRef [GenericParam t] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)]]]]]]
+[ModuleDef $f = [FunctionValue [FunctionType [[ResolvedContext t:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t => [RecordType [[Field $secret [LocalTypeNameRef t] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $tinkering : [ResolvedContext t:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t => [RecordType [[Field $secret [LocalTypeNameRef t] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]]]) -> [lookups [ParamRef [Param $tinkering : [ResolvedContext t:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t => [RecordType [[Field $secret [LocalTypeNameRef t] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]]] [[lookup [Field $secret [LocalTypeNameRef t] (0)]]]]]]
 `)
 }
 
@@ -1470,9 +1470,9 @@ type alias MyList t =
 
 intConvert : (MyList Int) -> Bool
 `, `
-MyList : [Alias MyList [LocalTypeNameContext t = [RecordType [[Field $someType [LocalTypeNameRef t] (0)]]]]]
+MyList : [Alias MyList [LocalTypeNameOnlyContext t => [RecordType [[Field $someType [LocalTypeNameRef t] (0)]]]]]
 
-[ModuleDef $intConvert = [FunctionValue [FunctionType [[RecordType [[Field $someType [ConcreteGenericRef [GenericParam t] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [RecordType [[Field $someType [ConcreteGenericRef [GenericParam t] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
+[ModuleDef $intConvert = [FunctionValue [FunctionType [[ResolvedContext t:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t => [RecordType [[Field $someType [LocalTypeNameRef t] (0)]]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [ResolvedContext t:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t => [RecordType [[Field $someType [LocalTypeNameRef t] (0)]]]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
 `)
 }
 
@@ -1488,9 +1488,9 @@ type alias MyList t =
 intConvert : (MyList Int) -> Bool =
     true
 `, `
-MyList : [Alias MyList [LocalTypeNameContext t = [RecordType [[Field $someType [LocalTypeNameRef t] (0)]]]]]
+MyList : [Alias MyList [LocalTypeNameOnlyContext t => [RecordType [[Field $someType [LocalTypeNameRef t] (0)]]]]]
 
-[ModuleDef $intConvert = [FunctionValue [FunctionType [[RecordType [[Field $someType [ConcreteGenericRef [GenericParam t] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [RecordType [[Field $someType [ConcreteGenericRef [GenericParam t] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]] (0)]]]]]) -> [Bool true]]]
+[ModuleDef $intConvert = [FunctionValue [FunctionType [[ResolvedContext t:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t => [RecordType [[Field $someType [LocalTypeNameRef t] (0)]]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [ResolvedContext t:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContext t => [RecordType [[Field $someType [LocalTypeNameRef t] (0)]]]]]]]) -> [Bool true]]]
 `)
 }
 
@@ -1505,8 +1505,8 @@ simple : (List a) -> a =
 main : (Bool) -> Int =
     simple [ 1, 2, 3 ]
 `, `
-[ModuleDef $simple = [FunctionValue [LocalTypeNameContext a = [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]] [LocalTypeNameRef a]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $List]]]]]) -> [Integer 2]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[Primitive List<[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]>] [ConcreteGenericRef [GenericParam a] => [Primitive Any]]]] [FunctionRef [NamedDefinitionReference /simple]] [[ListLiteral [[Integer 1] [Integer 2] [Integer 3]]]]]]]
+[ModuleDef $simple = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]] [LocalTypeNameRef a]]]] ([[Param $_ : [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]) -> [Integer 2]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[Primitive List<[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]>] [Primitive Any]]] [FunctionRef [NamedDefinitionReference /simple]] [[ListLiteral [[Integer 1] [Integer 2] [Integer 3]]]]]]]
 `)
 }
 

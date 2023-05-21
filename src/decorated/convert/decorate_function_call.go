@@ -59,23 +59,32 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 	//encounteredFunctionCallType := dectype.NewFunctionAtom(nil, encounteredArgumentTypes)
 
 	originalFunctionValueType := functionValueExpression.Type()
-	unaliasedType := dectype.UnaliasWithResolveInvoker(originalFunctionValueType)
+	unaliasedType := dectype.Unalias(originalFunctionValueType)
 	functionValueExpressionFunctionType, wasFunction := unaliasedType.(*dectype.FunctionAtom)
 	if !wasFunction {
 		functionTypeReference, wasFunctionTypeReference := unaliasedType.(*dectype.FunctionTypeReference)
 		if !wasFunctionTypeReference {
-			localTypeContext, wasLocalTypeContext := unaliasedType.(*dectype.LocalTypeNameContext)
+			localTypeContext, wasLocalTypeContext := unaliasedType.(*dectype.LocalTypeNameOnlyContext)
 			if !wasLocalTypeContext {
 				log.Printf("this was not a function %T %v", functionValueExpression.Type(), functionValueExpression)
 				return nil, decorated.NewExpectedFunctionTypeForCall(functionValueExpression)
 			}
 
-			concreteFunctionType, concreteErr := concretize.ConcreteArguments(localTypeContext, encounteredArgumentTypes)
+			var concreteArguments []dtype.Type
+
+			concreteArguments = append([]dtype.Type(nil), encounteredArgumentTypes...)
+			concreteArguments = append(concreteArguments, dectype.NewAnyType())
+
+			resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localTypeContext, concreteArguments)
 			if concreteErr != nil {
 				return nil, concreteErr
 			}
 
-			functionValueExpressionFunctionType, _ = concreteFunctionType.(*dectype.FunctionAtom)
+			atom, resolveErr := resolvedContext.Resolve()
+			if resolveErr != nil {
+				return nil, decorated.NewInternalError(resolveErr)
+			}
+			functionValueExpressionFunctionType, _ = atom.(*dectype.FunctionAtom)
 
 		} else {
 			functionValueExpressionFunctionType = functionTypeReference.FunctionAtom()
@@ -93,6 +102,7 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 	expectedArgumentTypes := completeCalledFunctionType.FunctionParameterTypes()
 	for index, encounteredArgumentType := range encounteredArgumentTypes {
 		expectedArgumentType := expectedArgumentTypes[index]
+		log.Printf("compare argument %T (%v) vs %T (%v) %v", expectedArgumentType, expectedArgumentType.HumanReadable(), encounteredArgumentType, encounteredArgumentType.HumanReadable(), expectedArgumentType.FetchPositionLength().ToCompleteReferenceString())
 		compatibleErr := dectype.CompatibleTypes(expectedArgumentType, encounteredArgumentType)
 		if compatibleErr != nil {
 			return nil, decorated.NewFunctionArgumentTypeMismatch(call.FetchPositionLength(), nil, nil, expectedArgumentType, encounteredArgumentType, fmt.Errorf("%v %v", completeCalledFunctionType, compatibleErr))
@@ -131,7 +141,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 
 	var completeCallType *dectype.FunctionAtom
 
-	localName, wasLocal := functionValueExpression.Type().(*dectype.LocalTypeNameContext)
+	localName, wasLocal := functionValueExpression.Type().(*dectype.LocalTypeNameOnlyContext)
 	if wasLocal {
 		_, wasPointingToFunctionAtom := functionValueExpression.Type().Next().(*dectype.FunctionAtom)
 		if !wasPointingToFunctionAtom {
@@ -140,11 +150,20 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 				return nil, decorated.NewInternalError(fmt.Errorf("unknown function type %v", functionValueExpression.Type().Next()))
 			}
 		}
-		resultingCallType, concreteErr := concretize.ConcreteArguments(localName, decoratedEncounteredArgumentTypes)
+
+		var concreteArguments []dtype.Type
+		concreteArguments = append([]dtype.Type(nil), decoratedEncounteredArgumentTypes...)
+		concreteArguments = append(concreteArguments, dectype.NewAnyType())
+		resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localName, concreteArguments)
 		if concreteErr != nil {
 			return nil, concreteErr
 		}
-		completeCallType = resultingCallType.(*dectype.FunctionAtom)
+		resolvedAtom, resolveErr := resolvedContext.Resolve()
+		if resolveErr != nil {
+			return nil, decorated.NewInternalError(resolveErr)
+		}
+
+		completeCallType, _ = resolvedAtom.(*dectype.FunctionAtom)
 
 	} else {
 		completeCallType, _ = functionValueExpression.Type().(*dectype.FunctionAtom)

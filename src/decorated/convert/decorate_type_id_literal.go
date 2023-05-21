@@ -13,6 +13,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"log"
 )
 
 func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression, decshared.DecoratedError) {
@@ -31,10 +32,11 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 		return nil, decorated.NewInternalError(err)
 	}
 
-	constructedType, err2 := concretize.ConcreteArguments(contextForTypeRef, []dtype.Type{decoratedType})
+	constructedType, err2 := concretize.ConcretizeLocalTypeContextUsingArguments(contextForTypeRef, []dtype.Type{decoratedType})
 	if err2 != nil {
 		return nil, decorated.NewInternalError(err2)
 	}
 
+	log.Printf("constructed %v decorated %v", constructedType, decoratedType)
 	return decorated.NewTypeIdLiteral(typeId, constructedType, decoratedType), nil
 }

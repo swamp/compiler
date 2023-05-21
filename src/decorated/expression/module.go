@@ -26,10 +26,10 @@ type TypeAddAndReferenceMaker interface {
 	TypeReferenceMaker
 	AddTypeAlias(alias *dectype.Alias) TypeError
 	AddCustomType(customType *dectype.CustomTypeAtom) TypeError
-	AddCustomTypeWrappedInNameOnlyContext(localNameContext *dectype.LocalTypeNameContext) TypeError
+	AddCustomTypeWrappedInNameOnlyContext(localNameContext *dectype.LocalTypeNameOnlyContext) TypeError
 	FindBuiltInType(s string, reference token.SourceFileReference) dectype.TypeReferenceScopedOrNormal
 	SourceModule() *Module
-	MakeLocalNameContext(localNameContext *dectype.LocalTypeNameContext) TypeAddAndReferenceMaker
+	MakeLocalNameContext(localNameContext *dectype.LocalTypeNameOnlyContext) TypeAddAndReferenceMaker
 }
 
 type FullyQualifiedPackageVariableName struct {

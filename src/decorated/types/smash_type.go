@@ -20,8 +20,8 @@ func TypesIsTemplateHasLocalTypes(p []dtype.Type) bool {
 }
 
 func TypeIsTemplateHasLocalTypes(p dtype.Type) bool {
-	unalias := UnaliasWithResolveInvoker(p)
-	switch t := unalias.(type) {
+	atom := UnaliasWithResolveInvoker(p)
+	switch t := atom.(type) {
 	case *CustomTypeAtom:
 		for _, variant := range t.Variants() {
 			if TypesIsTemplateHasLocalTypes(variant.ParameterTypes()) {
@@ -36,8 +36,6 @@ func TypeIsTemplateHasLocalTypes(p dtype.Type) bool {
 		if TypesIsTemplateHasLocalTypes(t.FunctionParameterTypes()) && !IsAnyOrFunctionWithAnyMatching(t) {
 			return true
 		}
-	case *LocalTypeDefinition:
-		return true
 	}
 
 	return false
@@ -60,7 +58,7 @@ func UnReference(t dtype.Type) dtype.Type {
 		return UnReference(info.customTypeVariant)
 	case *FunctionTypeReference:
 		return UnReference(info.referencedType)
-	case *LocalTypeDefinition:
+	case *ResolvedLocalType:
 		return UnReference(info.referencedType)
 	}
 
@@ -77,17 +75,13 @@ func Unalias(t dtype.Type) dtype.Type {
 	return unref
 }
 
-func UnaliasWithResolveInvoker(t dtype.Type) dtype.Type {
+func UnaliasWithResolveInvoker(t dtype.Type) dtype.Atom {
 	unaliased := Unalias(t)
-	localTypeNameRef, _ := unaliased.(*LocalTypeNameReference)
-	if localTypeNameRef != nil {
-		return Unalias(localTypeNameRef.ReferencedType())
+
+	resolved, err := unaliased.Resolve()
+	if err != nil {
+		panic(err)
 	}
 
-	localConcreteTypeRef, _ := unaliased.(*LocalTypeDefinitionReference)
-	if localConcreteTypeRef != nil {
-		return UnaliasWithResolveInvoker(localConcreteTypeRef.ReferencedType())
-	}
-
-	return unaliased
+	return resolved
 }

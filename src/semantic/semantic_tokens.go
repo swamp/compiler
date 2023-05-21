@@ -145,7 +145,7 @@ func addSemanticTokenCustomType(f *dectype.CustomTypeAtom, builder *SemanticBuil
 	return nil
 }
 
-func addSemanticTokenGenericType(f *dectype.LocalTypeDefinition, builder *SemanticBuilder) error {
+func addSemanticTokenGenericType(f *dectype.ResolvedLocalType, builder *SemanticBuilder) error {
 	if err := builder.EncodeSymbol(f.FetchPositionLength().Range, "typeParameter", []string{"declaration"}, f); err != nil {
 		return err
 	}
@@ -905,7 +905,7 @@ func typeReferenceParamHelper(param dtype.Type, builder *SemanticBuilder) error 
 		return addSemanticToken(t, builder)
 	case *dectype.RecordAtom:
 		return addSemanticToken(t, builder)
-	case *dectype.LocalTypeDefinition:
+	case *dectype.ResolvedLocalType:
 		return addSemanticToken(t, builder)
 	case *dectype.TupleTypeAtom:
 		return addSemanticToken(t, builder)
@@ -1072,7 +1072,7 @@ func addSemanticToken(typeOrToken decorated.TypeOrToken, builder *SemanticBuilde
 		return addSemanticTokenTupleType(t, builder)
 	case *dectype.CustomTypeAtom:
 		return addSemanticTokenCustomType(t, builder)
-	case *dectype.LocalTypeDefinition:
+	case *dectype.ResolvedLocalType:
 		return addSemanticTokenGenericType(t, builder)
 	case *dectype.AnyMatchingTypes:
 		return addSemanticTokenAnyMatchingTypes(t, builder)

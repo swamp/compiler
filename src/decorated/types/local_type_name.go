@@ -12,47 +12,47 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-type LocalTypeNameDefinition struct {
+type LocalTypeName struct {
 	identifier    *dtype.LocalTypeName
 	wasReferenced bool
 }
 
-func (u *LocalTypeNameDefinition) String() string {
+func (u *LocalTypeName) String() string {
 	return fmt.Sprintf("[GenericParam %v]", u.identifier.Name())
 }
 
-func (u *LocalTypeNameDefinition) FetchPositionLength() token.SourceFileReference {
+func (u *LocalTypeName) FetchPositionLength() token.SourceFileReference {
 	return u.identifier.LocalType().FetchPositionLength()
 }
 
-func (u *LocalTypeNameDefinition) HumanReadable() string {
+func (u *LocalTypeName) HumanReadable() string {
 	return fmt.Sprintf("%v", u.identifier.Name())
 }
 
-func (u *LocalTypeNameDefinition) Identifier() *dtype.LocalTypeName {
+func (u *LocalTypeName) Identifier() *dtype.LocalTypeName {
 	return u.identifier
 }
 
-func (u *LocalTypeNameDefinition) Name() string {
+func (u *LocalTypeName) Name() string {
 	return u.identifier.Name()
 }
 
-func (u *LocalTypeNameDefinition) LocalTypeName() *dtype.LocalTypeName {
+func (u *LocalTypeName) LocalTypeName() *dtype.LocalTypeName {
 	return u.identifier
 }
 
-func (u *LocalTypeNameDefinition) IsEqual(_ dtype.Atom) error {
+func (u *LocalTypeName) IsEqual(_ dtype.Atom) error {
 	return nil
 }
 
-func (u *LocalTypeNameDefinition) WasReferenced() bool {
+func (u *LocalTypeName) WasReferenced() bool {
 	return u.wasReferenced
 }
 
-func (u *LocalTypeNameDefinition) MarkAsReferenced() {
+func (u *LocalTypeName) MarkAsReferenced() {
 	u.wasReferenced = true
 }
 
-func NewLocalTypeNameDefinition(identifier *dtype.LocalTypeName) *LocalTypeNameDefinition {
-	return &LocalTypeNameDefinition{identifier: identifier}
+func NewLocalTypeName(identifier *dtype.LocalTypeName) *LocalTypeName {
+	return &LocalTypeName{identifier: identifier}
 }

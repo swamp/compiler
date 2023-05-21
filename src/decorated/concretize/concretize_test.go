@@ -54,7 +54,7 @@ func MakeFakeList(localTypeName string) *dectype.PrimitiveAtom {
 	localType := ast.NewLocalTypeNameReference(localTypeVariable, astNameDef)
 
 	decLocalTypeName := dtype.NewLocalTypeName(localTypeVariable)
-	decDef := dectype.NewLocalTypeNameDefinition(decLocalTypeName)
+	decDef := dectype.NewLocalTypeName(decLocalTypeName)
 
 	decNameRef := dectype.NewLocalTypeNameReference(localType, decDef)
 	listType := dectype.NewPrimitiveType(listIdentifier, []dtype.Type{decNameRef})
@@ -111,14 +111,11 @@ func TestCustomTypeVariant(t *testing.T) {
 	integerType := MakeIntegerType()
 	listOfInt := MakeFakeListOf(integerType)
 
-	concreteArguments := []dtype.Type{listOfInt, integerType}
-
-	resolver := dectype.NewTypeParameterContext()
-	resolver.AddExpectedDef(argName)
+	concreteArguments := []dtype.Type{listOfInt}
 
 	decoratedTypeNames.SetType(reference)
 
-	concretizedVariant, concreteErr := concretize.ConcreteArguments(decoratedTypeNames, concreteArguments)
+	concretizedVariant, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(decoratedTypeNames, concreteArguments)
 	if concreteErr != nil {
 		t.Error(concreteErr)
 	}
@@ -165,16 +162,20 @@ func TestFunction(t *testing.T) {
 	listOfString := MakeFakeListOf(stringType)
 	concreteArguments := []dtype.Type{integerType, listOfString, stringType, dectype.NewAnyType()}
 
-	resolver := dectype.NewTypeParameterContext()
-	resolver.AddExpectedDefs([]*dtype.LocalTypeName{aArgName, bArgName})
-
 	decoratedTypeNames.SetType(functionWithLocalTypeNames)
 
-	concretizedVariant, concreteErr := concretize.ConcreteArguments(decoratedTypeNames, concreteArguments)
+	concretizedVariant, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(decoratedTypeNames, concreteArguments)
 	if concreteErr != nil {
 		t.Error(concreteErr)
 	}
 
+	resolved, resolveErr := concretizedVariant.Resolve()
+	if resolveErr != nil {
+		t.Fatalf("did not work %v", resolveErr)
+	}
+
 	log.Printf("functionWithLocalTypeNames variant: %v", functionWithLocalTypeNames)
 	log.Printf("concretized function: %v", concretizedVariant)
+	log.Printf("resolved %v", resolved)
+
 }

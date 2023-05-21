@@ -78,13 +78,27 @@ func TypeChain(p dtype.Type, tabs int) {
 	TypeChain(p.Next(), tabs+1)
 }
 
+/*
+	case *ResolvedLocalType:
+		return GetMemorySizeAndAlignmentInternal(t.Next())
+	case *ResolvedLocalTypeReference:
+		return GetMemorySizeAndAlignmentInternal(t.Next())
+	case *CustomTypeVariantReference:
+		return GetMemorySizeAndAlignmentInternal(t.Next())
+	case *LocalTypeNameOnlyContextReference:
+		return 0, 8
+	case *AliasReference:
+		return GetMemorySizeAndAlignmentInternal(t.Next())
+
+*/
+
 func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 	if p == nil {
 		panic(fmt.Errorf("nil is not allowed"))
 	}
-	unaliased := UnaliasWithResolveInvoker(p)
+	atom := UnaliasWithResolveInvoker(p)
 	//log.Printf("unaliased: %T %v", unaliased, unaliased)
-	switch t := unaliased.(type) {
+	switch t := atom.(type) {
 	case *RecordAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	case *PrimitiveAtom:
@@ -114,7 +128,7 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 			case "Any":
 				return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 			}
-			panic(fmt.Errorf("do not know primitive atom of '%s' %v %T", name, p, unaliased))
+			panic(fmt.Errorf("do not know primitive atom of '%s' %v %T", name, p, atom))
 		}
 	case *CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
@@ -126,21 +140,11 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 	case *TupleTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
-	case *LocalTypeDefinition:
-		return GetMemorySizeAndAlignmentInternal(t.Next())
-	case *LocalTypeDefinitionReference:
-		return GetMemorySizeAndAlignmentInternal(t.Next())
-	case *CustomTypeVariantReference:
-		return GetMemorySizeAndAlignmentInternal(t.Next())
-	case *LocalTypeNameContextReference:
-		return 0, 8
-	case *AliasReference:
-		return GetMemorySizeAndAlignmentInternal(t.Next())
-	case *LocalTypeNameContext:
-		log.Printf("LocalTypeNameContext: %v", t)
+	case *LocalTypeNameOnlyContext:
+		log.Printf("LocalTypeNameOnlyContext: %v", t)
 		return 0, 8
 	default:
-		panic(fmt.Errorf("calc: do not know memory size of %v %T %T", p, unaliased, p))
+		panic(fmt.Errorf("calc: do not know memory size of %v %T %T", p, atom, p))
 	}
 }
 
@@ -240,7 +244,7 @@ func (s *RecordAtom) NameFromSortedFields() string {
 		if index > 0 {
 			out += ":"
 		}
-		out += field.FieldName().Name().Name() + "_" + unaliasedType.String()
+		out += field.FieldName().Name().Name() + "_" + unaliasedType.AtomName()
 	}
 
 	return out

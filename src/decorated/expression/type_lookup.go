@@ -107,7 +107,7 @@ func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifi
 		reference = dectype.NewPrimitiveTypeReference(named, t)
 	case *dectype.CustomTypeAtom:
 		reference = dectype.NewCustomTypeReference(named, t)
-	case *dectype.LocalTypeNameContext:
+	case *dectype.LocalTypeNameOnlyContext:
 		reference = dectype.NewLocalTypeNameContextReference(named, t)
 		// TODO: FIX THIS
 		//panic(fmt.Errorf("what is this %v", named))

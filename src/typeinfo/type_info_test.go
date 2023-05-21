@@ -39,9 +39,9 @@ func MakeFakeAstTypeReferenceWithLocalTypeNames(name string, arguments []string)
 func test(t *testing.T) {
 	c := &Chunk{}
 
-	context := dectype.NewTypeParameterContext()
+	context := dectype.NewResolvedLocalTypeContext()
 
-	typeDef := dectype.NewLocalTypeDefinition(dtype.NewLocalTypeName(MakeFakeLocalTypeName("a")))
+	typeDef := dectype.NewResolvedLocalType(dtype.NewLocalTypeName(MakeFakeLocalTypeName("a")))
 
 	context.SetType(), dectype.NewPrimitiveType(MakeFakeTypeIdentifier("Int"), nil))
 

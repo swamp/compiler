@@ -547,7 +547,7 @@ func expand(node Node, parentNode *ExpandedNode) {
 		expandRecordLookups(t, newParentNode)
 	case *ExternalFunctionDeclarationExpression:
 
-	case *dectype.LocalTypeDefinition:
+	case *dectype.ResolvedLocalType:
 
 	case *dectype.AnyMatchingTypes:
 
@@ -566,7 +566,7 @@ func expand(node Node, parentNode *ExpandedNode) {
 	case *dectype.RecordFieldName:
 	case *dectype.AliasReference:
 		expandTypeReference(t, newParentNode)
-	case *dectype.LocalTypeNameContext:
+	case *dectype.LocalTypeNameOnlyContext:
 		expand(t.Next(), newParentNode)
 	case *dectype.LocalTypeNameReference:
 

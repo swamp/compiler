@@ -1209,7 +1209,7 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 	return nil, fmt.Errorf("chunk: consume: unknown primitive %v", primitive)
 }
 
-func (c *Chunk) consumeLocalType(localType *dectype.LocalTypeDefinition) (InfoType, error) {
+func (c *Chunk) consumeLocalType(localType *dectype.ResolvedLocalType) (InfoType, error) {
 	return &LocalType{
 		Type: Type{},
 		name: localType.Identifier().Name(),
@@ -1245,7 +1245,7 @@ func (c *Chunk) consumeAlias(alias *dectype.Alias) (InfoType, error) {
 	return proposedNewAlias, nil
 }
 
-func (c *Chunk) consumeTypeNameContext(localTypeNameContext *dectype.LocalTypeNameContext) (InfoType, error) {
+func (c *Chunk) consumeTypeNameContext(localTypeNameContext *dectype.LocalTypeNameOnlyContext) (InfoType, error) {
 	return nil, nil
 }
 
@@ -1298,16 +1298,16 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 	switch t := p.(type) {
 	case *dectype.Alias:
 		return c.consumeAlias(t)
-	case *dectype.LocalTypeNameContext:
+	case *dectype.LocalTypeNameOnlyContext:
 		return c.consumeTypeNameContext(t)
-	case *dectype.LocalTypeDefinitionReference:
+	case *dectype.ResolvedLocalTypeReference:
 		return c.Consume(t.Next())
 	case *dectype.FunctionTypeReference:
 		return c.Consume(t.Next())
 	case *dectype.CustomTypeVariantReference:
 		// intentionally ignore
 		return c.Consume(t.Next())
-	case *dectype.LocalTypeDefinition:
+	case *dectype.ResolvedLocalType:
 		// intentionally ignore
 		return c.Consume(t.Next())
 	case *dectype.PrimitiveTypeReference:

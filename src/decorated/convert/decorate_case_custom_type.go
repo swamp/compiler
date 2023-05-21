@@ -11,6 +11,7 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
+	"log"
 )
 
 func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomType, context *VariableContext) (*decorated.CaseCustomType, decshared.DecoratedError) {
@@ -63,9 +64,11 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 					consequenceField, foundVariant)
 			}
 
+			log.Printf("type for found variant: %T %v", customType, customType)
 			for index, argumentType := range foundVariant.ParameterTypes() {
 				ident := consequenceField.Arguments()[index]
 				param := decorated.NewCaseConsequenceParameterForCustomType(ident, argumentType)
+				log.Printf("param: %T %v", argumentType, argumentType)
 				fakeNamedExpression := decorated.NewNamedDecoratedExpression(ident.Name(), nil,
 					param)
 				consequenceVariableContext.Add(ident, fakeNamedExpression)

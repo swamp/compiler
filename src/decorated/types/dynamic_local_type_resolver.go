@@ -12,23 +12,23 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
-type TypeParameterContextDynamic struct {
+type DynamicLocalTypeResolver struct {
 	argumentNames     []*dtype.LocalTypeName
 	resolvedArguments []dtype.Type
 }
 
-func (t *TypeParameterContextDynamic) DeclareString() string {
+func (t *DynamicLocalTypeResolver) DeclareString() string {
 	if len(t.resolvedArguments) == 0 {
 		return ""
 	}
 	return fmt.Sprintf("%v", t.resolvedArguments)
 }
 
-func (t *TypeParameterContextDynamic) String() string {
+func (t *DynamicLocalTypeResolver) String() string {
 	return fmt.Sprintf("[typeparamcontext %v (%v)]", t.resolvedArguments, t.argumentNames)
 }
 
-func (t *TypeParameterContextDynamic) DebugString() string {
+func (t *DynamicLocalTypeResolver) DebugString() string {
 	s := ""
 	for index, name := range t.ArgumentNames() {
 		argumentType := t.ArgumentTypes()[index]
@@ -42,23 +42,47 @@ func (t *TypeParameterContextDynamic) DebugString() string {
 	return s
 }
 
-func (t *TypeParameterContextDynamic) ArgumentNamesCount() int {
+func (t *DynamicLocalTypeResolver) IsDefined() bool {
+	for _, def := range t.resolvedArguments {
+		if def == nil {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (t *DynamicLocalTypeResolver) DebugAllNotDefined() string {
+	s := ""
+	for index, def := range t.resolvedArguments {
+		if def == nil {
+			if len(s) != 0 {
+				s += "\n"
+			}
+			s += t.argumentNames[index].String()
+		}
+	}
+
+	return s
+}
+
+func (t *DynamicLocalTypeResolver) ArgumentNamesCount() int {
 	return len(t.argumentNames)
 }
 
-func (t *TypeParameterContextDynamic) ArgumentNames() []*dtype.LocalTypeName {
+func (t *DynamicLocalTypeResolver) ArgumentNames() []*dtype.LocalTypeName {
 	return t.argumentNames
 }
 
-func (t *TypeParameterContextDynamic) ArgumentTypes() []dtype.Type {
+func (t *DynamicLocalTypeResolver) ArgumentTypes() []dtype.Type {
 	return t.resolvedArguments
 }
 
-func NewTypeParameterContextDynamic(names []*dtype.LocalTypeName) *TypeParameterContextDynamic {
-	return &TypeParameterContextDynamic{argumentNames: names, resolvedArguments: make([]dtype.Type, len(names))}
+func NewDynamicLocalTypeResolver(names []*dtype.LocalTypeName) *DynamicLocalTypeResolver {
+	return &DynamicLocalTypeResolver{argumentNames: names, resolvedArguments: make([]dtype.Type, len(names))}
 }
 
-func (t *TypeParameterContextDynamic) FillOutTheRestWithAny() {
+func (t *DynamicLocalTypeResolver) FillOutTheRestWithAny() {
 	for index, x := range t.resolvedArguments {
 		if x == nil {
 			t.resolvedArguments[index] = NewAnyType()
@@ -66,7 +90,9 @@ func (t *TypeParameterContextDynamic) FillOutTheRestWithAny() {
 	}
 }
 
-func (t *TypeParameterContextDynamic) LookupTypeFromName(name string) dtype.Type {
+/*
+
+func (t *DynamicLocalTypeResolver) LookupTypeFromName(name string) dtype.Type {
 	if len(t.argumentNames) == 0 {
 		panic("strange, you can not lookup if it is empty")
 	}
@@ -83,7 +109,7 @@ func (t *TypeParameterContextDynamic) LookupTypeFromName(name string) dtype.Type
 	return nil
 }
 
-func (t *TypeParameterContextDynamic) LookupType(name string) (dtype.Type, error) {
+func (t *DynamicLocalTypeResolver) LookupType(name string) (dtype.Type, error) {
 	foundType := t.LookupTypeFromName(name)
 	if foundType == nil {
 		log.Printf("couldn't find '%v'\n%v", name, t.DebugString())
@@ -93,7 +119,9 @@ func (t *TypeParameterContextDynamic) LookupType(name string) (dtype.Type, error
 	return foundType, nil
 }
 
-func (t *TypeParameterContextDynamic) SpecialSet(name string, resolved dtype.Type) error {
+*/
+
+func (t *DynamicLocalTypeResolver) SpecialSet(name string, resolved dtype.Type) error {
 	for index, foundParam := range t.argumentNames {
 		if foundParam.Name() == name {
 			existing := t.resolvedArguments[index]
@@ -114,10 +142,14 @@ func (t *TypeParameterContextDynamic) SpecialSet(name string, resolved dtype.Typ
 	return fmt.Errorf("couldn't find %v", name)
 }
 
-func (t *TypeParameterContextDynamic) Verify() error {
+func (t *DynamicLocalTypeResolver) SetType(defRef *LocalTypeNameReference, definedType dtype.Type) error {
+	return t.SpecialSet(defRef.referencedType.Name(), definedType)
+}
+
+func (t *DynamicLocalTypeResolver) Verify() error {
 	for index, x := range t.resolvedArguments {
 		if x == nil {
-			return fmt.Errorf("TypeParameterContextDynamic:Verify. Argument name %v has not been resolved",
+			return fmt.Errorf("DynamicLocalTypeResolver:Verify. Argument name %v has not been resolved",
 				t.argumentNames[index])
 		}
 	}
@@ -125,6 +157,8 @@ func (t *TypeParameterContextDynamic) Verify() error {
 	return nil
 }
 
-func (t *TypeParameterContextDynamic) LookupTypeFromArgument(param *dtype.LocalTypeName) dtype.Type {
+/*
+func (t *DynamicLocalTypeResolver) LookupTypeFromArgument(param *dtype.LocalTypeName) dtype.Type {
 	return t.LookupTypeFromName(param.Name())
 }
+*/

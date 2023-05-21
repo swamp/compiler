@@ -86,13 +86,13 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 
 	unaliasExpectedType := Unalias(expectedType)
 
-	expectedLocalTypeNameOnlyContext, wasLocalTypeNameContext := unaliasExpectedType.(*LocalTypeNameContext)
+	expectedLocalTypeNameOnlyContext, wasLocalTypeNameContext := unaliasExpectedType.(*LocalTypeNameOnlyContext)
 	if wasLocalTypeNameContext {
 		return CompatibleTypes(expectedLocalTypeNameOnlyContext.Next(), actualType)
 	}
 
 	unaliasActualType := Unalias(actualType)
-	actualLocalTypeNameOnlyContext, wasActualLocalTypeNameContext := unaliasActualType.(*LocalTypeNameContext)
+	actualLocalTypeNameOnlyContext, wasActualLocalTypeNameContext := unaliasActualType.(*LocalTypeNameOnlyContext)
 	if wasActualLocalTypeNameContext {
 		return CompatibleTypes(expectedType, actualLocalTypeNameOnlyContext.Next())
 	}
@@ -130,10 +130,6 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 
 func ResolveToRecordType(expectedRecord dtype.Type) (*RecordAtom, error) {
 	atom := UnaliasWithResolveInvoker(expectedRecord)
-	nameOnlyContext, wasLocalNameOnlyContext := atom.(*LocalTypeNameContext)
-	if wasLocalNameOnlyContext {
-		atom = nameOnlyContext.Next()
-	}
 
 	recordAtom, wasRecord := atom.(*RecordAtom)
 	if !wasRecord {

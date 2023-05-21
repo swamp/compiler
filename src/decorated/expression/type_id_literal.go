@@ -33,7 +33,7 @@ func (i *TypeIdLiteral) ContainedType() dectype.TypeReferenceScopedOrNormal {
 }
 
 func (i *TypeIdLiteral) String() string {
-	return fmt.Sprintf("[TypeIdLiteral %v]", i.typeId)
+	return fmt.Sprintf("[TypeIdLiteral %v]", i.constructedTypeIdType)
 }
 
 func (i *TypeIdLiteral) HumanReadable() string {

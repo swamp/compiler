@@ -83,7 +83,7 @@ func classNameFromType(typeToConvert dtype.Type) string {
 		return "primitivetype"
 	case *dectype.PrimitiveTypeReference:
 		return classNameFromType(t.Next())
-	case *dectype.LocalTypeDefinition:
+	case *dectype.ResolvedLocalType:
 		return "localtype"
 	case *dectype.UnmanagedType:
 		return "unmanagedtype"

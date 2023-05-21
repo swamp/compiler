@@ -51,7 +51,7 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomT
 		//foundLocal := false
 		for index, x := range arguments {
 			originalType := customTypeVariant.ParameterTypes()[index]
-			_, wasLocal := originalType.(*dectype.LocalTypeDefinition)
+			_, wasLocal := originalType.(*dectype.ResolvedLocalType)
 			if wasLocal {
 				//		foundLocal = true
 			}
@@ -61,7 +61,7 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomT
 	}
 	/*
 
-		genericContext := customTypeVariantReference.CustomTypeVariant().TypeParameterContext()
+		genericContext := customTypeVariantReference.CustomTypeVariant().ResolvedLocalTypeContext()
 		if genericContext.HasDefinitions() {
 			concretizedCustomTypeVariant := concretize.ConcretizeCustomTypeVariant(customTypeVariantReference, arguments)
 			invokerType, typeErr := dectype.NewInvokerType(customTypeVariantReference, types)

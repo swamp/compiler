@@ -289,12 +289,12 @@ func addPrimitive(types *decorated.ModuleTypes, atom *dectype.PrimitiveAtom) {
 	types.InternalAddPrimitive(atom.PrimitiveName(), atom)
 }
 
-func addLocalTypeNameContextPrimitive(types *decorated.ModuleTypes, context *dectype.LocalTypeNameContext) {
+func addLocalTypeNameContextPrimitive(types *decorated.ModuleTypes, context *dectype.LocalTypeNameOnlyContext) {
 	primitiveAtom, _ := context.Next().(*dectype.PrimitiveAtom)
 	types.InternalAddType(primitiveAtom.PrimitiveName(), context)
 }
 
-func MakeLocalTypeNameContext(name *ast.TypeIdentifier) *dectype.LocalTypeNameContext {
+func MakeLocalTypeNameContext(name *ast.TypeIdentifier) *dectype.LocalTypeNameOnlyContext {
 	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", token.NewInternalSourceFileReference(), 0))
 	localTypeName := ast.NewLocalTypeName(localTypeVariable)
 	typeParameter := ast.NewLocalTypeNameDefinition(localTypeName)

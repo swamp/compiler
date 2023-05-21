@@ -13,7 +13,6 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
 func AstLocalTypeNamesToTypeArgumentName(typeParameters []*ast.LocalTypeName) []*dtype.LocalTypeName {
@@ -135,25 +134,15 @@ func ConvertFromAstToDecorated(astType ast.Type,
 
 		nameOnlyContext := dectype.FindNameOnlyContextWithUnalias(foundType)
 		if nameOnlyContext != nil {
-			newType, concreteErr := concretize.ConcreteArguments(nameOnlyContext, types)
+			newType, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(nameOnlyContext, types)
 			if concreteErr != nil {
 				return nil, concreteErr
 			}
-			switch newTypeT := newType.(type) {
-			case *dectype.PrimitiveAtom:
-				foundType = dectype.NewPrimitiveTypeReference(foundType.NameReference(), newTypeT)
-				break
-			case *dectype.CustomTypeAtom:
-				foundType = dectype.NewCustomTypeReference(foundType.NameReference(), newTypeT)
-			case *dectype.RecordAtom:
-				return newType, nil
-			default:
-				log.Printf("nameOnly what is this: %T", newType)
-			}
+			return newType, nil
 		}
 		return foundType, nil
-	//case *ast.LocalTypeNameDefinition:
-	//	return dectype.NewLocalTypeNameDefinition(info, dectype.NewAnyType()), nil
+	//case *ast.LocalTypeName:
+	//	return dectype.NewLocalTypeName(info, dectype.NewAnyType()), nil
 	case *ast.AnyMatchingType:
 		return dectype.NewAnyMatchingTypes(info), nil
 	case *ast.UnmanagedType:

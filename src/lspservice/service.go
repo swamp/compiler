@@ -171,9 +171,9 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 					documentation = t.LetVariable().Comment().Value()
 				}
 			case *decorated.RecordTypeFieldReference:
-				if t.RecordTypeField().AstRecordTypeField().Comment() != nil {
-					documentation = t.RecordTypeField().AstRecordTypeField().Comment().Value()
-				}
+				//TODO: if t.RecordTypeField().AstRecordTypeField().Comment() != nil {
+				//	documentation = t.RecordTypeField().AstRecordTypeField().Comment().Value()
+				//}
 			case *decorated.CustomTypeVariantConstructor:
 				if t.CustomTypeVariant().AstCustomTypeVariant().Comment() != nil {
 					documentation = t.CustomTypeVariant().AstCustomTypeVariant().Comment().Value()

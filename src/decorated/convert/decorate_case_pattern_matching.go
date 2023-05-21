@@ -22,7 +22,7 @@ func decorateCasePatternMatching(d DecorateStream, caseExpression *ast.CaseForPa
 		return nil, decoratedTestErr
 	}
 
-	pureTestType := dectype.UnaliasWithResolveInvoker(decoratedTest.Type())
+	pureTestType := dectype.Unalias(decoratedTest.Type())
 	testType := pureTestType
 
 	var decoratedConsequences []*decorated.CaseConsequenceForPatternMatching

@@ -136,7 +136,7 @@ func colorPrimitive(primitive *dectype.PrimitiveAtom, indentation int, inside bo
 	colorer.PrimitiveType(fakeSymbol)
 }
 
-func colorLocalType(primitive *dectype.LocalTypeDefinition, indentation int, inside bool, colorer coloring.Colorer) {
+func colorLocalType(primitive *dectype.ResolvedLocalType, indentation int, inside bool, colorer coloring.Colorer) {
 	colorer.LocalType(primitive.Identifier().Identifier().LocalType().Identifier().Symbol())
 }
 
@@ -167,7 +167,7 @@ func ColorType(dType dtype.Type, indentation int, inside bool, colorer coloring.
 	switch t := dType.(type) {
 	case *dectype.Alias:
 		colorAlias(t, colorer)
-	case *dectype.LocalTypeDefinition:
+	case *dectype.ResolvedLocalType:
 		colorLocalType(t, indentation, inside, colorer)
 	case *dectype.FunctionTypeReference:
 		colorFunctionType(t.FunctionAtom(), indentation, inside, colorer)

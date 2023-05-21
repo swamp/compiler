@@ -13,20 +13,20 @@ import (
 	"strings"
 )
 
-type LocalTypeNameContext struct {
-	resolvedArguments             map[string]*LocalTypeNameDefinition
-	definitions                   []*LocalTypeNameDefinition
+type LocalTypeNameOnlyContext struct {
+	resolvedArguments             map[string]*LocalTypeName
+	definitions                   []*LocalTypeName
 	typeThatIsReferencingTheNames dtype.Type
 }
 
-func (t *LocalTypeNameContext) DeclareString() string {
+func (t *LocalTypeNameOnlyContext) DeclareString() string {
 	if len(t.resolvedArguments) == 0 {
 		return ""
 	}
 	return fmt.Sprintf("%v", t.resolvedArguments)
 }
 
-func (t *LocalTypeNameContext) Names() []*dtype.LocalTypeName {
+func (t *LocalTypeNameOnlyContext) Names() []*dtype.LocalTypeName {
 	var x []*dtype.LocalTypeName
 
 	for _, f := range t.definitions {
@@ -36,11 +36,11 @@ func (t *LocalTypeNameContext) Names() []*dtype.LocalTypeName {
 	return x
 }
 
-func (t *LocalTypeNameContext) Definitions() []*LocalTypeNameDefinition {
+func (t *LocalTypeNameOnlyContext) Definitions() []*LocalTypeName {
 	return t.definitions
 }
 
-func (t *LocalTypeNameContext) NamesString() string {
+func (t *LocalTypeNameOnlyContext) NamesString() string {
 	var x []string
 
 	for _, f := range t.definitions {
@@ -50,15 +50,15 @@ func (t *LocalTypeNameContext) NamesString() string {
 	return strings.Join(x, ", ")
 }
 
-func (t *LocalTypeNameContext) String() string {
-	return fmt.Sprintf("[LocalTypeNameContext %v = %v]", t.NamesString(), t.typeThatIsReferencingTheNames)
+func (t *LocalTypeNameOnlyContext) String() string {
+	return fmt.Sprintf("[LocalTypeNameOnlyContext %v => %v]", t.NamesString(), t.typeThatIsReferencingTheNames)
 }
 
-func (t *LocalTypeNameContext) Next() dtype.Type {
+func (t *LocalTypeNameOnlyContext) Next() dtype.Type {
 	return t.typeThatIsReferencingTheNames
 }
 
-func (t *LocalTypeNameContext) DebugString() string {
+func (t *LocalTypeNameOnlyContext) DebugString() string {
 	s := ""
 	for name, argumentType := range t.resolvedArguments {
 		s += fmt.Sprintf("%v = %v", name, argumentType)
@@ -66,13 +66,13 @@ func (t *LocalTypeNameContext) DebugString() string {
 	return s
 }
 
-func NewLocalTypeNameContext() *LocalTypeNameContext {
-	t := &LocalTypeNameContext{resolvedArguments: make(map[string]*LocalTypeNameDefinition),
+func NewLocalTypeNameContext() *LocalTypeNameOnlyContext {
+	t := &LocalTypeNameOnlyContext{resolvedArguments: make(map[string]*LocalTypeName),
 		typeThatIsReferencingTheNames: nil}
 
 	/*
 		for _, name := range names {
-			newLocalTypeDef := NewLocalTypeDefinition(name, NewAnyType())
+			newLocalTypeDef := NewResolvedLocalType(name, NewAnyType())
 			t.resolvedArguments[name.Name()] = newLocalTypeDef
 			t.definitions = append(t.definitions, newLocalTypeDef)
 		}
@@ -81,51 +81,51 @@ func NewLocalTypeNameContext() *LocalTypeNameContext {
 	return t
 }
 
-func (t *LocalTypeNameContext) AtomName() string {
+func (t *LocalTypeNameOnlyContext) AtomName() string {
 	return "NameOnlyContext"
 }
 
-func (t *LocalTypeNameContext) IsEqual(other dtype.Atom) error {
+func (t *LocalTypeNameOnlyContext) IsEqual(other dtype.Atom) error {
 	return nil
 }
 
-func (t *LocalTypeNameContext) HumanReadable() string {
+func (t *LocalTypeNameOnlyContext) HumanReadable() string {
 	return fmt.Sprintf("local type name context")
 }
 
-func (t *LocalTypeNameContext) Resolve() (dtype.Atom, error) {
+func (t *LocalTypeNameOnlyContext) Resolve() (dtype.Atom, error) {
 	return t, nil //fmt.Errorf("can not be resolved since it is a type name context %T", t)
 }
 
-func (t *LocalTypeNameContext) ParameterCount() int {
+func (t *LocalTypeNameOnlyContext) ParameterCount() int {
 	return 0
 }
 
-func (t *LocalTypeNameContext) FetchPositionLength() token.SourceFileReference {
+func (t *LocalTypeNameOnlyContext) FetchPositionLength() token.SourceFileReference {
 	return t.Next().FetchPositionLength()
 }
 
-func (t *LocalTypeNameContext) WasReferenced() bool {
+func (t *LocalTypeNameOnlyContext) WasReferenced() bool {
 	return true
 }
 
-func (t *LocalTypeNameContext) SetType(d dtype.Type) {
+func (t *LocalTypeNameOnlyContext) SetType(d dtype.Type) {
 	t.typeThatIsReferencingTheNames = d
 }
 
-func (t *LocalTypeNameContext) HasDefinitions() bool {
+func (t *LocalTypeNameOnlyContext) HasDefinitions() bool {
 	return len(t.definitions) > 0
 }
 
-func (t *LocalTypeNameContext) AddDef(identifier *dtype.LocalTypeName) *LocalTypeNameDefinition {
-	nameDef := NewLocalTypeNameDefinition(identifier)
+func (t *LocalTypeNameOnlyContext) AddDef(identifier *dtype.LocalTypeName) *LocalTypeName {
+	nameDef := NewLocalTypeName(identifier)
 	t.resolvedArguments[identifier.Name()] = nameDef
 	t.definitions = append(t.definitions, nameDef)
 
 	return nameDef
 }
 
-func (t *LocalTypeNameContext) ReferenceNameOnly(identifier *ast.LocalTypeNameReference) (*LocalTypeNameReference, error) {
+func (t *LocalTypeNameOnlyContext) ReferenceNameOnly(identifier *ast.LocalTypeNameReference) (*LocalTypeNameReference, error) {
 	found := t.resolvedArguments[identifier.Name()]
 	if found == nil {
 		return nil, fmt.Errorf("could not find %v", identifier)

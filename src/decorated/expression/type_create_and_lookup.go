@@ -17,16 +17,16 @@ import (
 
 type TypeCreateAndLookup struct {
 	lookup           *TypeLookup
-	localTypeLookup  *dectype.TypeParameterContext
-	localNameContext *dectype.LocalTypeNameContext
+	localTypeLookup  *dectype.ResolvedLocalTypeContext
+	localNameContext *dectype.LocalTypeNameOnlyContext
 	localTypes       *ModuleTypes
 }
 
-func NewTypeCreateAndLookup(lookup *TypeLookup, localTypes *ModuleTypes, localTypeContext *dectype.TypeParameterContext) *TypeCreateAndLookup {
+func NewTypeCreateAndLookup(lookup *TypeLookup, localTypes *ModuleTypes, localTypeContext *dectype.ResolvedLocalTypeContext) *TypeCreateAndLookup {
 	return &TypeCreateAndLookup{localTypes: localTypes, lookup: lookup, localTypeLookup: localTypeContext}
 }
 
-func (l *TypeCreateAndLookup) MakeLocalNameContext(localNameContext *dectype.LocalTypeNameContext) TypeAddAndReferenceMaker {
+func (l *TypeCreateAndLookup) MakeLocalNameContext(localNameContext *dectype.LocalTypeNameOnlyContext) TypeAddAndReferenceMaker {
 	if localNameContext == nil {
 		panic(fmt.Errorf("can not set to nil local name context"))
 	}
@@ -42,7 +42,7 @@ func (l *TypeCreateAndLookup) AddCustomType(customType *dectype.CustomTypeAtom) 
 	return l.localTypes.AddCustomType(customType)
 }
 
-func (l *TypeCreateAndLookup) AddCustomTypeWrappedInNameOnlyContext(customTypeWrappedInContext *dectype.LocalTypeNameContext) TypeError {
+func (l *TypeCreateAndLookup) AddCustomTypeWrappedInNameOnlyContext(customTypeWrappedInContext *dectype.LocalTypeNameOnlyContext) TypeError {
 	return l.localTypes.AddCustomTypeWrappedInNameOnlyContext(customTypeWrappedInContext)
 }
 

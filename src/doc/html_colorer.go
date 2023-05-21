@@ -154,7 +154,7 @@ func (c *HtmlColorer) StringLiteral(s token.StringToken) {
 	spanWrite(c.writer, "string", s.Raw())
 }
 
-func (c *HtmlColorer) LocalTypeName(s *dectype.LocalTypeDefinition) {
+func (c *HtmlColorer) LocalTypeName(s *dectype.ResolvedLocalType) {
 	spanWrite(c.writer, "localtype", s.Identifier().Name())
 }
 

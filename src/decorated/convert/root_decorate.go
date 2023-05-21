@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/parser"
@@ -63,7 +64,7 @@ func ConvertWrappedOrNormalCustomTypeStatement(customType *ast.CustomType, typeR
 	return resultType, nil
 }
 
-func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *ast.CustomType, localNameContext *dectype.LocalTypeNameContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *ast.CustomType, localNameContext *dectype.LocalTypeNameOnlyContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	subRepo := g.typeRepo.MakeLocalNameContext(localNameContext)
 	customType, convertErr := ConvertWrappedOrNormalCustomTypeStatement(customTypeStatement, subRepo, nil)
 	g.localComments = nil
@@ -224,6 +225,7 @@ func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *
 }
 
 func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {
+	log.Printf("convert statement %T", statement)
 	switch v := statement.(type) {
 	case *ast.Alias:
 		return g.handleAliasStatement(v)
