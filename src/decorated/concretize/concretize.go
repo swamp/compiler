@@ -102,6 +102,8 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 		return FillContextFromFunction(t.FunctionAtom(), concrete.(*dectype.FunctionTypeReference).FunctionAtom().FunctionParameterTypes(), resolveLocalTypeNames)
 	case *dectype.FunctionAtom:
 		return FillContextFromFunction(t, concrete.(*dectype.FunctionAtom).FunctionParameterTypes(), resolveLocalTypeNames)
+	case *dectype.ResolvedLocalTypeContext:
+		break
 	default:
 		log.Printf("concrete: what is this %T", reference)
 	}
@@ -188,32 +190,34 @@ func FillContextFromFunction(reference *dectype.FunctionAtom, encounteredArgumen
 	return err
 }
 
-func handleFunction(functionAtom *dectype.FunctionAtom, localTypeNameContext *dectype.LocalTypeNameOnlyContext, concreteArguments []dtype.Type) (*dectype.ResolvedLocalTypeContext, decshared.DecoratedError) {
-	resolver := dectype.NewDynamicLocalTypeResolver(localTypeNameContext.Names())
+func handleFunction(functionAtom *dectype.FunctionAtom, localTypeNameContextRef *dectype.LocalTypeNameOnlyContextReference, concreteArguments []dtype.Type) (*dectype.ResolvedLocalTypeContext, decshared.DecoratedError) {
+	resolver := dectype.NewDynamicLocalTypeResolver(localTypeNameContextRef.LocalTypeNameContext().Names())
 	err := FillContextFromFunction(functionAtom, concreteArguments, resolver)
 	if err != nil {
 		return nil, err
 	}
 	if resolver.IsDefined() {
-		resolved, resolvedErr := dectype.NewResolvedLocalTypeContext(localTypeNameContext, resolver.ArgumentTypes())
+		resolved, resolvedErr := dectype.NewResolvedLocalTypeContext(localTypeNameContextRef, resolver.ArgumentTypes())
 		if resolvedErr != nil {
 			return nil, decorated.NewInternalError(resolvedErr)
 		}
 		return resolved, nil
 	} else {
-		return nil, decorated.NewInternalError(fmt.Errorf("waws not filled in"))
+		return nil, decorated.NewInternalError(fmt.Errorf("dynamic was not filled in %v", resolver.DebugAllNotDefined()))
 	}
 }
 
-func ConcretizeLocalTypeContextUsingArguments(localTypeNameContext *dectype.LocalTypeNameOnlyContext, concreteArguments []dtype.Type) (*dectype.ResolvedLocalTypeContext, decshared.DecoratedError) {
+func ConcretizeLocalTypeContextUsingArguments(localTypeNameContext *dectype.LocalTypeNameOnlyContextReference, concreteArguments []dtype.Type) (*dectype.ResolvedLocalTypeContext, decshared.DecoratedError) {
 	if localTypeNameContext == nil {
 		panic(fmt.Errorf("localTypeNameContext is nil"))
 	}
-	switch t := localTypeNameContext.Next().(type) {
+	switch t := localTypeNameContext.Next().Next().(type) {
 	case *dectype.FunctionAtom:
 		return handleFunction(t, localTypeNameContext, concreteArguments)
 	case *dectype.FunctionTypeReference:
 		return handleFunction(t.FunctionAtom(), localTypeNameContext, concreteArguments)
+	case *dectype.CustomTypeAtom:
+		break
 	case *dectype.RecordAtom:
 		break
 	case *dectype.PrimitiveAtom:

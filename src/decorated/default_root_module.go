@@ -280,7 +280,7 @@ func addCores(globalPrimitiveModule *decorated.Module) decshared.DecoratedError 
 }
 
 func createTypeIdentifier(name string) *ast.TypeIdentifier {
-	symbol := token.NewTypeSymbolToken(name, token.NewInternalSourceFileReference(), 0)
+	symbol := token.NewTypeSymbolToken(name, token.NewInternalSourceFileReferenceRow(1), 0)
 
 	return ast.NewTypeIdentifier(symbol)
 }
@@ -295,7 +295,9 @@ func addLocalTypeNameContextPrimitive(types *decorated.ModuleTypes, context *dec
 }
 
 func MakeLocalTypeNameContext(name *ast.TypeIdentifier) *dectype.LocalTypeNameOnlyContext {
-	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", token.NewInternalSourceFileReference(), 0))
+	fakePosition := token.NewInternalSourceFileReferenceRow(1)
+
+	localTypeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken("a", fakePosition, 0))
 	localTypeName := ast.NewLocalTypeName(localTypeVariable)
 	typeParameter := ast.NewLocalTypeNameDefinition(localTypeName)
 	localType := ast.NewLocalTypeNameReference(localTypeName, typeParameter)
@@ -343,15 +345,15 @@ func kickstartPrimitives() *decorated.Module {
 	addPrimitive(primitiveModuleLocalTypes, blobType)
 	addPrimitive(primitiveModuleLocalTypes, unmanagedType)
 
-	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReference(), 0))
+	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReferenceRow(1), 0))
 	listIdentifierNameContext := MakeLocalTypeNameContext(listIdentifier)
 	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, listIdentifierNameContext)
 
-	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.NewInternalSourceFileReference(), 0))
+	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.NewInternalSourceFileReferenceRow(1), 0))
 	arrayTypeNameContext := MakeLocalTypeNameContext(arrayIdentifier)
 	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, arrayTypeNameContext)
 
-	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.NewInternalSourceFileReference(), 0))
+	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.NewInternalSourceFileReferenceRow(1), 0))
 	typeRefTypeNameContext := MakeLocalTypeNameContext(typeRefIdentifier)
 	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, typeRefTypeNameContext)
 

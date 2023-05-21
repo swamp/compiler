@@ -101,7 +101,7 @@ func (s SourceFileReference) Verify() bool {
 	r := s.Range
 
 	if r.Position().line == 0 && r.Position().column == 0 {
-		log.Printf("suspicious")
+		log.Printf("suspicious source file reference")
 		return false
 	}
 
@@ -111,6 +111,13 @@ func (s SourceFileReference) Verify() bool {
 func NewInternalSourceFileReference() SourceFileReference {
 	return SourceFileReference{
 		Range:    MakeRange(NewPositionTopLeft(), NewPositionTopLeft()),
+		Document: NewInternalSourceFileDocument(),
+	}
+}
+
+func NewInternalSourceFileReferenceRow(row int) SourceFileReference {
+	return SourceFileReference{
+		Range:    NewPositionLength(MakePosition(row, 0, 0), 1),
 		Document: NewInternalSourceFileDocument(),
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
+	"log"
 )
 
 type ResolvedLocalType struct {
@@ -30,7 +31,7 @@ func (u *ResolvedLocalType) AddReference(ref *ResolvedLocalTypeReference) {
 }
 
 func (u *ResolvedLocalType) FetchPositionLength() token.SourceFileReference {
-	return u.identifier.identifier.LocalType().FetchPositionLength()
+	return u.referencedType.FetchPositionLength()
 }
 
 func (u *ResolvedLocalType) HumanReadable() string {
@@ -99,6 +100,13 @@ func (u *ResolvedLocalType) SetDefinition(referencedType dtype.Type) error {
 */
 
 func NewResolvedLocalType(identifier *LocalTypeName, referencedType dtype.Type) *ResolvedLocalType {
+	if !identifier.identifier.LocalType().FetchPositionLength().Verify() {
+		panic(fmt.Errorf("wrong identifier"))
+	}
+	if identifier.identifier.LocalType().FetchPositionLength().Range.Position().Line() == 1 && identifier.identifier.LocalType().FetchPositionLength().Range.Position().Column() == 0 {
+		log.Printf("found")
+	}
+	log.Printf("NewResolvedLocalType %T %v %v", referencedType, referencedType.FetchPositionLength().ToCompleteReferenceString(), referencedType)
 	x := &ResolvedLocalType{identifier: identifier, referencedType: referencedType}
 	return x
 }

@@ -132,9 +132,9 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			return nil, sliceErr
 		}
 
-		nameOnlyContext := dectype.FindNameOnlyContextWithUnalias(foundType)
-		if nameOnlyContext != nil {
-			newType, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(nameOnlyContext, types)
+		nameOnlyContextRef, _ := foundType.(*dectype.LocalTypeNameOnlyContextReference)
+		if nameOnlyContextRef != nil {
+			newType, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(nameOnlyContextRef, types)
 			if concreteErr != nil {
 				return nil, concreteErr
 			}

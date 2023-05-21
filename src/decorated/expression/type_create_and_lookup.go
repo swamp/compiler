@@ -52,6 +52,9 @@ func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.Typ
 
 func (l *TypeCreateAndLookup) FindBuiltInType(s string, reference token.SourceFileReference) dectype.TypeReferenceScopedOrNormal {
 	identifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(s, reference, 0))
+	if !reference.Verify() {
+		panic(fmt.Errorf("illegal source file reference"))
+	}
 	someReference, err := l.CreateSomeTypeReference(identifier)
 	if err != nil {
 		panic(err)

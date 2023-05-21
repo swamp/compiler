@@ -15,9 +15,9 @@ import (
 )
 
 type ResolvedLocalTypeContext struct {
-	resolvedArguments             map[string]*ResolvedLocalType
-	definitions                   []*ResolvedLocalType
-	contextThatWantsResolvedTypes *LocalTypeNameOnlyContext
+	resolvedArguments                map[string]*ResolvedLocalType
+	definitions                      []*ResolvedLocalType
+	contextRefThatWantsResolvedTypes *LocalTypeNameOnlyContextReference
 }
 
 func (t *ResolvedLocalTypeContext) DeclareString() string {
@@ -28,7 +28,7 @@ func (t *ResolvedLocalTypeContext) DeclareString() string {
 }
 
 func (t *ResolvedLocalTypeContext) String() string {
-	return fmt.Sprintf("[ResolvedContext %v => %v]", t.DebugString(), t.contextThatWantsResolvedTypes)
+	return fmt.Sprintf("[ResolvedContext %v => %v]", t.DebugString(), t.contextRefThatWantsResolvedTypes)
 }
 
 func (t *ResolvedLocalTypeContext) DebugString() string {
@@ -44,7 +44,7 @@ func (t *ResolvedLocalTypeContext) DebugString() string {
 }
 
 func (t *ResolvedLocalTypeContext) Resolve() (dtype.Atom, error) {
-	resolvedType, resolveErr := ReplaceLocalNameIfNeeded(t.contextThatWantsResolvedTypes.Next(), t)
+	resolvedType, resolveErr := ReplaceLocalNameIfNeeded(t.contextRefThatWantsResolvedTypes.nameContext.Next(), t)
 	if resolveErr != nil {
 		return nil, resolveErr
 	}
@@ -57,7 +57,7 @@ func (t *ResolvedLocalTypeContext) HumanReadable() string {
 }
 
 func (t *ResolvedLocalTypeContext) Next() dtype.Type {
-	return t.contextThatWantsResolvedTypes
+	return t.contextRefThatWantsResolvedTypes
 }
 
 func (t *ResolvedLocalTypeContext) ParameterCount() int {
@@ -69,18 +69,18 @@ func (t *ResolvedLocalTypeContext) WasReferenced() bool {
 }
 
 func (t *ResolvedLocalTypeContext) FetchPositionLength() token.SourceFileReference {
-	return t.contextThatWantsResolvedTypes.FetchPositionLength()
+	return t.contextRefThatWantsResolvedTypes.FetchPositionLength()
 }
 
-func NewResolvedLocalTypeContext(contextThatWantsResolvedTypes *LocalTypeNameOnlyContext, types []dtype.Type) (*ResolvedLocalTypeContext, error) {
-	t := &ResolvedLocalTypeContext{resolvedArguments: make(map[string]*ResolvedLocalType), contextThatWantsResolvedTypes: contextThatWantsResolvedTypes}
+func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeNameOnlyContextReference, types []dtype.Type) (*ResolvedLocalTypeContext, error) {
+	t := &ResolvedLocalTypeContext{resolvedArguments: make(map[string]*ResolvedLocalType), contextRefThatWantsResolvedTypes: contextRefThatWantsResolvedTypes}
 
-	if len(contextThatWantsResolvedTypes.Definitions()) != len(types) {
+	if len(contextRefThatWantsResolvedTypes.nameContext.Definitions()) != len(types) {
 		return nil, fmt.Errorf("must have same number of types as names")
 	}
 
 	for index, resolvedType := range types {
-		foundName := contextThatWantsResolvedTypes.Definitions()[index]
+		foundName := contextRefThatWantsResolvedTypes.nameContext.Definitions()[index]
 		newLocalTypeDef := NewResolvedLocalType(foundName, resolvedType)
 		t.resolvedArguments[foundName.Name()] = newLocalTypeDef
 		t.definitions = append(t.definitions, newLocalTypeDef)
@@ -161,6 +161,7 @@ func (t *ResolvedLocalTypeContext) LookupTypeAstRef(astReference *ast.LocalTypeN
 	if !found {
 		return nil, NewCouldNotFindLocalTypeName(astReference, fmt.Errorf("could not find %v", astReference.Name()))
 	}
+	log.Printf("looked up definition %T %v", definition, definition.FetchPositionLength().ToCompleteReferenceString())
 
 	decoratedNameReference := NewLocalTypeNameReference(astReference, definition.identifier)
 	return NewLocalTypeDefinitionReference(decoratedNameReference, definition), nil

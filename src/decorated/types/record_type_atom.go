@@ -56,7 +56,12 @@ func (s *RecordAtom) HumanReadable() string {
 }
 
 func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
-	inclusive := token.MakeInclusiveSourceFileReference(s.parsedOrderFields[0].name.FetchPositionLength(), s.parsedOrderFields[len(s.parsedOrderFields)-1].fieldType.FetchPositionLength())
+	if len(s.parsedOrderFields) == 0 {
+		panic(fmt.Errorf("not allowed to have zero record"))
+	}
+	lastType := s.parsedOrderFields[len(s.parsedOrderFields)-1].fieldType
+	log.Printf("last: %v %T", lastType.FetchPositionLength().ToCompleteReferenceString(), lastType)
+	inclusive := token.MakeInclusiveSourceFileReference(s.parsedOrderFields[0].name.FetchPositionLength(), lastType.FetchPositionLength())
 	return inclusive
 }
 

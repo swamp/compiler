@@ -110,6 +110,9 @@ func (t *LocalTypeNameOnlyContext) WasReferenced() bool {
 }
 
 func (t *LocalTypeNameOnlyContext) SetType(d dtype.Type) {
+	if !d.FetchPositionLength().Verify() {
+		panic(fmt.Errorf("suspicious sub type %T", d))
+	}
 	t.typeThatIsReferencingTheNames = d
 }
 
@@ -120,6 +123,9 @@ func (t *LocalTypeNameOnlyContext) HasDefinitions() bool {
 func (t *LocalTypeNameOnlyContext) AddDef(identifier *dtype.LocalTypeName) *LocalTypeName {
 	nameDef := NewLocalTypeName(identifier)
 	t.resolvedArguments[identifier.Name()] = nameDef
+	if !nameDef.FetchPositionLength().Verify() {
+		panic(fmt.Errorf("wrong position length"))
+	}
 	t.definitions = append(t.definitions, nameDef)
 
 	return nameDef

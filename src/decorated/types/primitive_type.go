@@ -194,6 +194,9 @@ func NewPrimitiveType(name *ast.TypeIdentifier, parameterTypes []dtype.Type) *Pr
 		}
 	}
 	inclusive := name.FetchPositionLength()
+	if !inclusive.Verify() {
+		panic(fmt.Errorf("name is wrong"))
+	}
 	if len(parameterTypes) > 0 {
 		inclusive = token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), parameterTypes[len(parameterTypes)-1].FetchPositionLength())
 	}

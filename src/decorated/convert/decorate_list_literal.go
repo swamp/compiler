@@ -51,7 +51,7 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 		panic(fmt.Errorf("must have a List type defined to use [] list literals %T", listType))
 	}
 
-	concretizedLiteral, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localNameContext.LocalTypeNameContext(), []dtype.Type{detectedType})
+	concretizedLiteral, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localNameContext, []dtype.Type{detectedType})
 	if concreteErr != nil {
 		return nil, nil, concreteErr
 	}

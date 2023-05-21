@@ -568,8 +568,12 @@ func expand(node Node, parentNode *ExpandedNode) {
 		expandTypeReference(t, newParentNode)
 	case *dectype.LocalTypeNameOnlyContext:
 		expand(t.Next(), newParentNode)
+	case *dectype.ResolvedLocalTypeContext:
+		expand(t.Next(), newParentNode)
 	case *dectype.LocalTypeNameReference:
-
+		break
+	case *dectype.LocalTypeNameOnlyContextReference:
+		break
 	case *dectype.CustomTypeReference:
 		expandTypeReference(t, newParentNode)
 	case *dectype.PrimitiveTypeReference:

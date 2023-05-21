@@ -22,7 +22,7 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 		panic("internal error. TypeRef is an unknown type")
 	}
 
-	contextForTypeRef := dectype.FindNameOnlyContextWithUnalias(typeRefType)
+	contextForTypeRef, _ := typeRefType.(*dectype.LocalTypeNameOnlyContextReference)
 	if contextForTypeRef == nil {
 		panic(fmt.Errorf("internal error, TypeRef must have name only context"))
 	}

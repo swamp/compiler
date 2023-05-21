@@ -64,18 +64,20 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 	if !wasFunction {
 		functionTypeReference, wasFunctionTypeReference := unaliasedType.(*dectype.FunctionTypeReference)
 		if !wasFunctionTypeReference {
-			localTypeContext, wasLocalTypeContext := unaliasedType.(*dectype.LocalTypeNameOnlyContext)
+			localTypeContext, wasLocalTypeContext := originalFunctionValueType.(*dectype.LocalTypeNameOnlyContext)
 			if !wasLocalTypeContext {
 				log.Printf("this was not a function %T %v", functionValueExpression.Type(), functionValueExpression)
 				return nil, decorated.NewExpectedFunctionTypeForCall(functionValueExpression)
 			}
+
+			localTypeContextRef := dectype.NewLocalTypeNameContextReference(nil, localTypeContext)
 
 			var concreteArguments []dtype.Type
 
 			concreteArguments = append([]dtype.Type(nil), encounteredArgumentTypes...)
 			concreteArguments = append(concreteArguments, dectype.NewAnyType())
 
-			resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localTypeContext, concreteArguments)
+			resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localTypeContextRef, concreteArguments)
 			if concreteErr != nil {
 				return nil, concreteErr
 			}
@@ -141,7 +143,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 
 	var completeCallType *dectype.FunctionAtom
 
-	localName, wasLocal := functionValueExpression.Type().(*dectype.LocalTypeNameOnlyContext)
+	localNameOnlyContext, wasLocal := functionValueExpression.Type().(*dectype.LocalTypeNameOnlyContext)
 	if wasLocal {
 		_, wasPointingToFunctionAtom := functionValueExpression.Type().Next().(*dectype.FunctionAtom)
 		if !wasPointingToFunctionAtom {
@@ -154,7 +156,9 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		var concreteArguments []dtype.Type
 		concreteArguments = append([]dtype.Type(nil), decoratedEncounteredArgumentTypes...)
 		concreteArguments = append(concreteArguments, dectype.NewAnyType())
-		resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localName, concreteArguments)
+
+		localNameOnlyContextRef := dectype.NewLocalTypeNameContextReference(nil, localNameOnlyContext)
+		resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localNameOnlyContextRef, concreteArguments)
 		if concreteErr != nil {
 			return nil, concreteErr
 		}
