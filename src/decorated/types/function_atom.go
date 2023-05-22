@@ -21,7 +21,7 @@ type FunctionTypeLike interface {
 }
 
 type FunctionAtom struct {
-	parameterTypes  []dtype.Type
+	parameterTypes  []dtype.Type `debug:"true"`
 	astFunctionType *ast.FunctionType
 }
 

@@ -29,9 +29,9 @@ func CallIsExternal(fn Expression) (*ast.FunctionDeclarationExpression, bool) {
 }
 
 type FunctionCall struct {
-	functionValueExpression Expression
-	arguments               []Expression
-	smashedFunctionType     *dectype.FunctionAtom
+	functionValueExpression Expression            `debug:"true"`
+	arguments               []Expression          `debug:"true"`
+	smashedFunctionType     *dectype.FunctionAtom `debug:"true"`
 	astFunctionCall         *ast.FunctionCall
 	inclusive               token.SourceFileReference
 }

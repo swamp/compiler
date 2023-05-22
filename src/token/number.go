@@ -12,7 +12,7 @@ import (
 // NumberToken :
 type NumberToken struct {
 	SourceFileReference
-	number  int32
+	number  int32 `debug:"true"`
 	raw     string
 	isFixed bool
 }

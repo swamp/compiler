@@ -25,8 +25,16 @@ func generateArray(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		}
 		variables[index] = exprVar.Pos
 	}
-	primitiveReference, _ := array.Type().(*dectype.PrimitiveTypeReference)
-	firstPrimitiveType := primitiveReference.PrimitiveAtom().ParameterTypes()[0]
+	resolvedTypeContext, _ := array.Type().(*dectype.ResolvedLocalTypeContext)
+	if resolvedTypeContext == nil {
+		panic(fmt.Errorf("this is not a primitive type reference %T", array.Type()))
+	}
+	resolveAtom, err := resolvedTypeContext.Resolve()
+	if err != nil {
+		return err
+	}
+	primitiveAtom, _ := resolveAtom.(*dectype.PrimitiveAtom)
+	firstPrimitiveType := primitiveAtom.ParameterTypes()[0]
 	itemSize, itemAlign := dectype.GetMemorySizeAndAlignment(firstPrimitiveType)
 
 	filePosition := genContext.toFilePosition(array.FetchPositionLength())

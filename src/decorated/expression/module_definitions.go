@@ -7,7 +7,10 @@ package decorated
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"reflect"
+	"strings"
 
 	"github.com/swamp/compiler/src/ast"
 )
@@ -98,13 +101,73 @@ func (t *ModuleDefinitions) DebugOutput() {
 	fmt.Println(t.DebugString())
 }
 
-func (t *ModuleDefinitions) ShortString() string {
-	s := ""
+func writeStructField(field reflect.StructField, writer io.Writer) {
+	fmt.Fprintf(writer, ".%v", field.Name)
+}
 
-	for _, expression := range t.orderedDefinitions {
-		s += fmt.Sprintf("%s\n", expression.String())
+func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
+	if reflectValue.Kind() == reflect.Interface {
+		log.Printf("type %s", reflectValue)
+		reflectValue = reflectValue.Elem()
 	}
-	return s
+	for reflectValue.Kind() == reflect.Pointer {
+		reflectValue = reflectValue.Elem()
+	}
+
+	tabs := strings.Repeat("..", tab)
+
+	switch reflectValue.Kind() {
+	case reflect.Struct:
+		fields := reflect.VisibleFields(reflectValue.Type())
+		fieldWrittenCount := 0
+		for _, field := range fields {
+			foundDebug := field.Tag.Get("debug")
+			if foundDebug == "" {
+				log.Printf("missing tag on %s %s", reflectValue.Type().Name(), field.Name)
+				continue
+			}
+			reflectField := reflectValue.FieldByIndex(field.Index)
+			if fieldWrittenCount == 0 {
+				fmt.Fprintf(writer, "(%s)", reflectValue.Type().Name())
+			}
+			if fieldWrittenCount > 0 {
+				fmt.Fprintf(writer, "\n%s", tabs)
+			}
+			writeStructField(field, writer)
+			fieldWrittenCount++
+			tree(reflectField, tab+1, writer)
+		}
+		if fieldWrittenCount == 0 {
+			panic(fmt.Errorf("not allowed '%s'", reflectValue.Type().Name()))
+		}
+	case reflect.Slice:
+		for i := 0; i < reflectValue.Len(); i++ {
+			if i >= 0 {
+				fmt.Fprintf(writer, "\n%s", tabs)
+			}
+			item := reflectValue.Index(i)
+			fmt.Fprintf(writer, "%d: ", i)
+			tree(item, tab+1, writer)
+		}
+	case reflect.String:
+		fmt.Fprintf(writer, " = '%s'", reflectValue.String())
+	case reflect.Int:
+	case reflect.Int32:
+		fmt.Fprintf(writer, " = %d", reflectValue.Int())
+	default:
+		fmt.Fprintf(writer, "unknown %d", reflectValue.Kind())
+	}
+}
+
+func (t *ModuleDefinitions) ShortString() string {
+	var builder strings.Builder
+	for _, expression := range t.orderedDefinitions {
+		v := expression.Expression()
+		subType := reflect.ValueOf(v)
+		reflectExpression := subType.Elem()
+		tree(reflectExpression, 0, &builder)
+	}
+	return builder.String()
 }
 
 func (t *ModuleDefinitions) String() string {

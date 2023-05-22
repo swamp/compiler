@@ -14,8 +14,8 @@ import (
 )
 
 type ListLiteral struct {
-	t           dtype.Type
-	expressions []Expression
+	t           dtype.Type   `debug:"true"`
+	expressions []Expression `debug:"true"`
 	astLiteral  *ast.ListLiteral
 }
 

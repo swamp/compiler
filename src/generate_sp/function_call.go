@@ -57,7 +57,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 
 	genContext.context.stackMemory.AlignUpForMax()
 
-	invokedReturnType := dectype.UnaliasWithResolveInvoker(functionAtom.ReturnType())
+	invokedReturnType := dectype.Unalias(functionAtom.ReturnType())
 	returnValue, returnValueAlign := allocMemoryForTypeEx(genContext.context.stackMemory, invokedReturnType, "returnValue")
 	if uint(returnValue.Size) == 0 {
 		panic(fmt.Errorf("how can it have zero size in return? %v", returnValue))

@@ -111,8 +111,18 @@ func IsListAnyFromAtom(checkAtom dtype.Atom) bool {
 
 func IsLocalType(checkType dtype.Type) bool {
 	unliased := Unalias(checkType)
-	_, wasLocalType := unliased.(*ResolvedLocalTypeReference)
+	_, wasLocalType := unliased.(*LocalTypeNameReference)
 	return wasLocalType
+}
+
+func IsSomeLocalType(checkTypes []dtype.Type) bool {
+	for _, checkType := range checkTypes {
+		if IsLocalType(checkType) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func TryLocalTypeDef(checkType dtype.Type) (*ResolvedLocalTypeReference, bool) {
@@ -181,8 +191,8 @@ func IsAtomAny(checkType dtype.Atom) bool {
 }
 
 type PrimitiveAtom struct {
-	name           *ast.TypeIdentifier
-	parameterTypes []dtype.Type
+	name           *ast.TypeIdentifier `debug:"true"`
+	parameterTypes []dtype.Type        `debug:"true"`
 	references     []*PrimitiveTypeReference
 	inclusive      token.SourceFileReference
 }

@@ -25,11 +25,16 @@ func generateList(code *assembler_sp.Code, target assembler_sp.TargetStackPosRan
 		}
 		variables[index] = exprVar.Pos
 	}
-	primitiveReferenec, _ := list.Type().(*dectype.PrimitiveTypeReference)
-	if primitiveReferenec == nil {
+	resolvedTypeContext, _ := list.Type().(*dectype.ResolvedLocalTypeContext)
+	if resolvedTypeContext == nil {
 		panic(fmt.Errorf("this is not a primitive type reference %T", list.Type()))
 	}
-	firstPrimitiveType := primitiveReferenec.PrimitiveAtom().ParameterTypes()[0]
+	resolveAtom, err := resolvedTypeContext.Resolve()
+	if err != nil {
+		return err
+	}
+	primitiveAtom, _ := resolveAtom.(*dectype.PrimitiveAtom)
+	firstPrimitiveType := primitiveAtom.ParameterTypes()[0]
 	itemSize, itemAlign := dectype.GetMemorySizeAndAlignment(firstPrimitiveType)
 	filePosition := genContext.toFilePosition(list.FetchPositionLength())
 	code.ListLiteral(target.Pos, variables, assembler_sp.StackRange(itemSize), opcode_sp_type.MemoryAlign(itemAlign), filePosition)

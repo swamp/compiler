@@ -17,18 +17,23 @@ func expectTypeSymbol(t *testing.T, tokenizer *tokenize.Tokenizer, expectedStrin
 	if hopefullySymbolTokenErr != nil {
 		t.Error(hopefullySymbolTokenErr)
 	}
-	_, ok := hopefullySymbolToken.(token.TypeSymbolToken)
+	typeSymbol, ok := hopefullySymbolToken.(token.TypeSymbolToken)
 	if !ok {
 		t.Errorf("Wrong type. Expected TypeSymbol but was %v", hopefullySymbolToken)
+	}
+
+	if expectedString != typeSymbol.Raw() {
+		t.Errorf("must be same %v", typeSymbol.Raw())
 	}
 }
 
 func expectVariableSymbol(t *testing.T, tokenizer *tokenize.Tokenizer, expectedString string) {
-	// tokenizer.SkipAnyWhitespace()
-
-	_, hopefullySymbolTokenErr := tokenizer.ParseVariableSymbol()
+	variable, hopefullySymbolTokenErr := tokenizer.ParseVariableSymbol()
 	if hopefullySymbolTokenErr != nil {
 		t.Error(hopefullySymbolTokenErr)
+	}
+	if expectedString != variable.Raw() {
+		t.Errorf("must be same %v", variable.Raw())
 	}
 }
 
@@ -37,17 +42,19 @@ func expectOperator(t *testing.T, tokenizer *tokenize.Tokenizer, expectedString 
 	if hopefullyOperatorTokenErr != nil {
 		t.Error(hopefullyOperatorTokenErr)
 	}
-	_, ok := hopefullyOperatorToken.(token.OperatorToken)
+	operatorToken, ok := hopefullyOperatorToken.(token.OperatorToken)
 	if !ok {
-		t.Errorf("Wrong type. Expected operator but was %v", hopefullyOperatorToken)
+		t.Errorf("Wrong type. Expected operator but was %v %T", hopefullyOperatorToken, hopefullyOperatorToken)
+	}
+	if expectedString != operatorToken.Raw() {
+		t.Errorf("must be same %v", operatorToken.Raw())
 	}
 }
 
 func TestType(t *testing.T) {
 	tokenizer, tokenErr := Setup(
 		`
-hello:Int->String
-
+hello:Int:String
 `)
 	if tokenErr != nil {
 		t.Fatal(tokenErr)
@@ -55,6 +62,6 @@ hello:Int->String
 	expectVariableSymbol(t, tokenizer, "hello")
 	expectOperator(t, tokenizer, ":")
 	expectTypeSymbol(t, tokenizer, "Int")
-	expectOperator(t, tokenizer, "->")
+	expectOperator(t, tokenizer, ":")
 	expectTypeSymbol(t, tokenizer, "String")
 }

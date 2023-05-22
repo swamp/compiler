@@ -19,7 +19,7 @@ const (
 // VariableSymbolToken :
 type VariableSymbolToken struct {
 	SourceFileReference
-	raw         string
+	raw         string `debug:"true"`
 	Indentation int
 }
 

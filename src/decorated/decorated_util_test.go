@@ -66,6 +66,7 @@ func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
 
 		t.Fatal(decorateErr)
 	}
+	log.Println(decorationString)
 	ast = strings.TrimSpace(ast)
 	decorationString = strings.TrimSpace(decorationString)
 	if ast != decorationString {

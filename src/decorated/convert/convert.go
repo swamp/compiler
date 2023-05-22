@@ -132,14 +132,26 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			return nil, sliceErr
 		}
 
-		nameOnlyContextRef, _ := foundType.(*dectype.LocalTypeNameOnlyContextReference)
-		if nameOnlyContextRef != nil {
-			newType, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(nameOnlyContextRef, types)
-			if concreteErr != nil {
-				return nil, concreteErr
+		unalias := dectype.Unalias(foundType)
+		nameOnlyContextRef, _ := unalias.(*dectype.LocalTypeNameOnlyContextReference)
+
+		if nameOnlyContextRef == nil {
+			nameOnlyContext, _ := unalias.(*dectype.LocalTypeNameOnlyContext)
+			if nameOnlyContext != nil {
+				nameOnlyContextRef = dectype.NewLocalTypeNameContextReference(nil, nameOnlyContext)
 			}
-			return newType, nil
 		}
+
+		if !dectype.IsSomeLocalType(types) {
+			if nameOnlyContextRef != nil {
+				newType, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(nameOnlyContextRef, types)
+				if concreteErr != nil {
+					return nil, concreteErr
+				}
+				return newType, nil
+			}
+		}
+
 		return foundType, nil
 	//case *ast.LocalTypeName:
 	//	return dectype.NewLocalTypeName(info, dectype.NewAnyType()), nil

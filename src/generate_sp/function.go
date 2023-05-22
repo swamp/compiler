@@ -21,7 +21,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 
 	//functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 	functionType := f.Type().(*dectype.FunctionAtom)
-	unaliasedReturnType := dectype.UnaliasWithResolveInvoker(functionType.ReturnType())
+	unaliasedReturnType := dectype.Unalias(functionType.ReturnType())
 	returnValueSourcePointer, allocateVariableErr := allocateForType(funcContext.stackMemory, "__return", unaliasedReturnType)
 	if allocateVariableErr != nil {
 		return nil, allocateVariableErr

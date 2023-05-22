@@ -12,7 +12,7 @@ import (
 )
 
 type IntegerLiteral struct {
-	Token token.NumberToken
+	Token token.NumberToken `debug:"true"`
 	value int32
 }
 

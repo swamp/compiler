@@ -14,7 +14,7 @@ import (
 
 type NamedDefinitionTypeReference struct {
 	optionalModuleReference modref.ModuleReferencer
-	ident                   ast.TypeReferenceScopedOrNormal
+	ident                   ast.TypeReferenceScopedOrNormal `debug:"true"`
 }
 
 func NewNamedDefinitionTypeReference(optionalModuleReference modref.ModuleReferencer, ident ast.TypeReferenceScopedOrNormal) *NamedDefinitionTypeReference {

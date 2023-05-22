@@ -15,7 +15,7 @@ import (
 
 type LocalTypeNameReference struct {
 	identifier     *ast.LocalTypeNameReference
-	referencedType *LocalTypeName
+	referencedType *LocalTypeName `debug:"true"`
 }
 
 func (u *LocalTypeNameReference) String() string {

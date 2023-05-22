@@ -16,7 +16,7 @@ type ScopedOrNormalVariableIdentifier interface {
 }
 
 type VariableIdentifier struct {
-	symbol token.VariableSymbolToken
+	symbol token.VariableSymbolToken `debug:"true"`
 }
 
 func NewVariableIdentifier(symbol token.VariableSymbolToken) *VariableIdentifier {

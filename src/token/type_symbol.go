@@ -10,7 +10,7 @@ import "fmt"
 // VariableSymbolToken :
 type TypeSymbolToken struct {
 	SourceFileReference
-	raw         string
+	raw         string `debug:"true"`
 	Indentation int
 }
 

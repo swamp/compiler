@@ -33,7 +33,7 @@ func generateCurry(code *assembler_sp.Code, target assembler_sp.TargetStackPosRa
 		return lookupErr
 	}
 
-	invokedReturnType := dectype.UnaliasWithResolveInvoker(call.FunctionAtom().ReturnType())
+	invokedReturnType := dectype.Unalias(call.FunctionAtom().ReturnType())
 
 	genContext.context.stackMemory.AlignUpForMax()
 

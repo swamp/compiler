@@ -17,7 +17,7 @@ type TypeIdentifierNormalOrScoped interface {
 }
 
 type TypeIdentifier struct {
-	symbolToken token.TypeSymbolToken
+	symbolToken token.TypeSymbolToken `debug:"true"`
 }
 
 func NewTypeIdentifier(symbolToken token.TypeSymbolToken) *TypeIdentifier {

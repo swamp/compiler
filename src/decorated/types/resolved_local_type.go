@@ -13,8 +13,8 @@ import (
 )
 
 type ResolvedLocalType struct {
-	identifier     *LocalTypeName
-	referencedType dtype.Type
+	identifier     *LocalTypeName `debug:"true"`
+	referencedType dtype.Type     `debug:"true"`
 	wasReferenced  bool
 	references     []*ResolvedLocalTypeReference
 }

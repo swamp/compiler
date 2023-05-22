@@ -14,8 +14,8 @@ import (
 )
 
 type FunctionReference struct {
-	definitionReference     *NamedDefinitionReference
-	referencedFunctionValue *FunctionValue
+	definitionReference     *NamedDefinitionReference `debug:"true"`
+	referencedFunctionValue *FunctionValue            `debug:"true"`
 }
 
 func (g *FunctionReference) Type() dtype.Type {

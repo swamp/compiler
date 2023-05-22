@@ -62,10 +62,6 @@ func (g *AliasReference) MarkAsReferenced() {
 	g.wasReferenced = true
 }
 
-func (g *AliasReference) ParameterCount() int {
-	return g.reference.ParameterCount()
-}
-
 func (g *AliasReference) FetchPositionLength() token.SourceFileReference {
 	return g.ident.FetchPositionLength()
 }

@@ -92,6 +92,11 @@ case *dectype.LocalTypeNameOnlyContext:
 		return newReference, nil
 	}
 */
+
+func FillContextFromPrimitive(primitiveAtom *dectype.PrimitiveAtom, concretes []dtype.Type, resolveLocalTypeNames *dectype.DynamicLocalTypeResolver) decshared.DecoratedError {
+	return FillLocalTypesFromSlice(primitiveAtom.ParameterTypes(), concretes, resolveLocalTypeNames)
+}
+
 func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLocalTypeNames *dectype.DynamicLocalTypeResolver) decshared.DecoratedError {
 
 	//log.Printf("concrete: \n %v\n %v\n    %v\n<-  %v\n (%v %v)", reference.HumanReadable(), concrete.HumanReadable(), reference, concrete, reference.FetchPositionLength().ToStandardReferenceString(), concrete.FetchPositionLength().ToCompleteReferenceString())
@@ -104,6 +109,33 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type, resolveLoca
 		return FillContextFromFunction(t, concrete.(*dectype.FunctionAtom).FunctionParameterTypes(), resolveLocalTypeNames)
 	case *dectype.ResolvedLocalTypeContext:
 		break
+	case *dectype.PrimitiveTypeReference:
+		concreteAtom, _ := concrete.(*dectype.PrimitiveAtom)
+		if concreteAtom == nil {
+			ref, _ := concrete.(*dectype.PrimitiveTypeReference)
+			if ref != nil {
+				concreteAtom = ref.PrimitiveAtom()
+			}
+		}
+		return FillContextFromPrimitive(t.PrimitiveAtom(), concreteAtom.ParameterTypes(), resolveLocalTypeNames)
+
+	case *dectype.LocalTypeNameReference:
+		if !dectype.IsLocalType(concrete) {
+			resolveLocalTypeNames.SetType(t, concrete)
+		}
+	case *dectype.LocalTypeNameOnlyContextReference:
+		typeId, wasTypeId := dectype.TryTypeIdRef(t.Next().Next())
+		if wasTypeId {
+			log.Printf("concrete: IsTypeIdRef detected %T", concrete)
+			firstShouldAlwaysBeTypeName, _ := typeId.ParameterTypes()[0].(*dectype.LocalTypeNameReference)
+			if firstShouldAlwaysBeTypeName == nil {
+				panic("internal error")
+			}
+			resolveLocalTypeNames.SetType(firstShouldAlwaysBeTypeName, concrete)
+			return nil
+		} else {
+			log.Printf("concrete: what is this %T", reference)
+		}
 	default:
 		log.Printf("concrete: what is this %T", reference)
 	}
@@ -117,9 +149,20 @@ func FillLocalTypesFromSlice(references []dtype.Type, concretes []dtype.Type, re
 	}
 
 	for index, parameterType := range references {
+		checkType := parameterType
+		concrete := concretes[index]
+		log.Printf("info slice %d, compare %T vs %T\n%v\n%v", index, checkType, concrete, checkType, concrete)
+	}
+
+	for index, parameterType := range references {
 		resolvedType := parameterType
 		argument := concretes[index]
+		if dectype.IsLocalType(argument) {
+			log.Printf("slice %d, skipping local type %v", index, argument)
+			continue
+		}
 
+		log.Printf("slice %d %T %v", index, parameterType, parameterType)
 		var lookupErr decshared.DecoratedError
 		lookupErr = ConcreteTypeIfNeeded(parameterType, argument, resolver)
 		if lookupErr != nil {
@@ -190,21 +233,36 @@ func FillContextFromFunction(reference *dectype.FunctionAtom, encounteredArgumen
 	return err
 }
 
+func createResolvedFromDynamic(localTypeNameContextRef *dectype.LocalTypeNameOnlyContextReference, dynamic *dectype.DynamicLocalTypeResolver) (*dectype.ResolvedLocalTypeContext, decshared.DecoratedError) {
+	if dynamic.IsDefined() {
+		resolved, resolvedErr := dectype.NewResolvedLocalTypeContext(localTypeNameContextRef, dynamic.ArgumentTypes())
+		if resolvedErr != nil {
+			return nil, decorated.NewInternalError(resolvedErr)
+		}
+		return resolved, nil
+	}
+
+	return nil, decorated.NewInternalError(fmt.Errorf("dynamic was not filled in %v %T", dynamic.DebugAllNotDefined(), localTypeNameContextRef.Next()))
+}
+
 func handleFunction(functionAtom *dectype.FunctionAtom, localTypeNameContextRef *dectype.LocalTypeNameOnlyContextReference, concreteArguments []dtype.Type) (*dectype.ResolvedLocalTypeContext, decshared.DecoratedError) {
 	resolver := dectype.NewDynamicLocalTypeResolver(localTypeNameContextRef.LocalTypeNameContext().Names())
 	err := FillContextFromFunction(functionAtom, concreteArguments, resolver)
 	if err != nil {
 		return nil, err
 	}
-	if resolver.IsDefined() {
-		resolved, resolvedErr := dectype.NewResolvedLocalTypeContext(localTypeNameContextRef, resolver.ArgumentTypes())
-		if resolvedErr != nil {
-			return nil, decorated.NewInternalError(resolvedErr)
-		}
-		return resolved, nil
-	} else {
-		return nil, decorated.NewInternalError(fmt.Errorf("dynamic was not filled in %v", resolver.DebugAllNotDefined()))
+
+	return createResolvedFromDynamic(localTypeNameContextRef, resolver)
+}
+
+func handlePrimitive(primitiveAtom *dectype.PrimitiveAtom, localTypeNameContextRef *dectype.LocalTypeNameOnlyContextReference, concreteArguments []dtype.Type) (*dectype.ResolvedLocalTypeContext, decshared.DecoratedError) {
+	resolver := dectype.NewDynamicLocalTypeResolver(localTypeNameContextRef.LocalTypeNameContext().Names())
+	err := FillLocalTypesFromSlice(primitiveAtom.ParameterTypes(), concreteArguments, resolver)
+	if err != nil {
+		return nil, err
 	}
+
+	return createResolvedFromDynamic(localTypeNameContextRef, resolver)
 }
 
 func ConcretizeLocalTypeContextUsingArguments(localTypeNameContext *dectype.LocalTypeNameOnlyContextReference, concreteArguments []dtype.Type) (*dectype.ResolvedLocalTypeContext, decshared.DecoratedError) {
@@ -221,9 +279,9 @@ func ConcretizeLocalTypeContextUsingArguments(localTypeNameContext *dectype.Loca
 	case *dectype.RecordAtom:
 		break
 	case *dectype.PrimitiveAtom:
-		break
+		//return handlePrimitive(t, localTypeNameContext, concreteArguments)
 	default:
-		return nil, decorated.NewInternalError(fmt.Errorf("not sure whaat this is %T", t))
+		return nil, decorated.NewInternalError(fmt.Errorf("not sure what this is %T", t))
 	}
 	resolvedContext, err := dectype.NewResolvedLocalTypeContext(localTypeNameContext, concreteArguments)
 	if err != nil {

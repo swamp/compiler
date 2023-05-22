@@ -15,7 +15,7 @@ import (
 
 type PrimitiveTypeReference struct {
 	named         *NamedDefinitionTypeReference
-	primitiveType *PrimitiveAtom
+	primitiveType *PrimitiveAtom `debug:"true"`
 }
 
 func (g *PrimitiveTypeReference) Type() dtype.Type {

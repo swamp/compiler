@@ -6,6 +6,7 @@
 package generate_sp
 
 import (
+	"fmt"
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/opcodes/instruction_sp"
@@ -50,7 +51,7 @@ func generateTypeIdLiteral(code *assembler_sp.Code, target assembler_sp.TargetSt
 
 func generateIntLiteral(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, integer *decorated.IntegerLiteral, genContext *generateContext) error {
 	if target.Size != assembler_sp.StackRange(opcode_sp_type.SizeofSwampInt) {
-		panic("wrong size")
+		panic(fmt.Errorf("wrong size %d", target.Size))
 	}
 
 	filePosition := genContext.toFilePosition(integer.FetchPositionLength())

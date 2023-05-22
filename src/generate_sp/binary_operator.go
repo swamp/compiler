@@ -91,7 +91,7 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 	if foundPrimitive == nil {
 		foundCustomType, _ := unaliasedTypeLeft.(*dectype.CustomTypeAtom)
 		if foundCustomType == nil {
-			panic(fmt.Errorf("not implemented binary operator boolean %v", unaliasedTypeLeft.HumanReadable()))
+			panic(fmt.Errorf("not implemented binary operator boolean %v", unaliasedTypeLeft.AtomName()))
 		} else {
 			// unaliasedTypeRight := dectype.UnaliasWithResolveInvoker(operator.Right().Type())
 			opcodeBinaryOperator := booleanToBinaryEnumOperatorType(operator.OperatorType())

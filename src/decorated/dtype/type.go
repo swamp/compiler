@@ -14,7 +14,6 @@ type Type interface {
 	String() string
 	Resolve() (Atom, error)
 	Next() Type
-	ParameterCount() int
 	FetchPositionLength() token.SourceFileReference
 	WasReferenced() bool
 }

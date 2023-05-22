@@ -878,7 +878,7 @@ func (c *Chunk) consumeFunction(fn *dectype.FunctionAtom) (*FunctionType, error)
 			return nil, err
 		}
 		if consumeType == nil {
-			return nil, fmt.Errorf("this should not be needed")
+			return nil, fmt.Errorf("this should not be needed %T", paramType)
 		}
 		types = append(types, consumeType)
 	}
@@ -951,7 +951,7 @@ func (c *Chunk) consumeArray(genericTypes []dtype.Type) (InfoType, error) {
 		return nil, err
 	}
 
-	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(itemType)
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignment(itemType)
 
 	proposedNewArray := &ArrayType{
 		Type:      Type{},
@@ -985,7 +985,7 @@ func (c *Chunk) consumeList(genericTypes []dtype.Type) (InfoType, error) {
 		return nil, nil
 	}
 
-	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignmentInternal(itemType)
+	memorySize, memoryAlign := dectype.GetMemorySizeAndAlignment(itemType)
 	if !dectype.IsLocalType(itemType) && memorySize == 0 {
 		panic(fmt.Errorf("can not have zero item size"))
 	}
@@ -1246,7 +1246,13 @@ func (c *Chunk) consumeAlias(alias *dectype.Alias) (InfoType, error) {
 }
 
 func (c *Chunk) consumeTypeNameContext(localTypeNameContext *dectype.LocalTypeNameOnlyContext) (InfoType, error) {
-	return nil, nil
+	// TODO: PROPER IMPLEMENTATION
+	return c.ConsumeType(localTypeNameContext.Next())
+}
+
+func (c *Chunk) consumeResolveLocalTypeContext(localTypeNameContext *dectype.ResolvedLocalTypeContext) (InfoType, error) {
+	// TODO: PROPER IMPLEMENTATION
+	return c.ConsumeType(localTypeNameContext.Next())
 }
 
 func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
@@ -1300,6 +1306,10 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 		return c.consumeAlias(t)
 	case *dectype.LocalTypeNameOnlyContext:
 		return c.consumeTypeNameContext(t)
+	case *dectype.LocalTypeNameOnlyContextReference:
+		return c.consumeTypeNameContext(t.LocalTypeNameContext())
+	case *dectype.ResolvedLocalTypeContext:
+		return c.consumeResolveLocalTypeContext(t)
 	case *dectype.ResolvedLocalTypeReference:
 		return c.Consume(t.Next())
 	case *dectype.FunctionTypeReference:
@@ -1315,6 +1325,8 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 	case *dectype.AliasReference:
 		return c.Consume(t.Next())
 	case *dectype.CustomTypeReference:
+		return c.Consume(t.Next())
+	case *dectype.LocalTypeNameReference:
 		return c.Consume(t.Next())
 
 	}

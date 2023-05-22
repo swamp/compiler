@@ -127,9 +127,9 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariantAtom) (MemorySi
 	return maxVariantSize, maxVariantAlign
 }
 
-func NewCustomTypePrepare(astCustomType *ast.CustomType, arguments []dtype.Type, artifactTypeName ArtifactFullyQualifiedTypeName) *CustomTypeAtom {
+func NewCustomTypePrepare(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName) *CustomTypeAtom {
 	s := &CustomTypeAtom{
-		astCustomType: astCustomType, arguments: arguments, artifactTypeName: artifactTypeName,
+		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
 	}
 
 	return s

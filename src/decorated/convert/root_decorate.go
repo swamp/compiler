@@ -225,7 +225,7 @@ func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *
 }
 
 func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {
-	log.Printf("convert statement %T", statement)
+	log.Printf("convert statement %T %v", statement, statement)
 	switch v := statement.(type) {
 	case *ast.Alias:
 		return g.handleAliasStatement(v)

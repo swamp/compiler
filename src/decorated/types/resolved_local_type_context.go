@@ -16,8 +16,8 @@ import (
 
 type ResolvedLocalTypeContext struct {
 	resolvedArguments                map[string]*ResolvedLocalType
-	definitions                      []*ResolvedLocalType
-	contextRefThatWantsResolvedTypes *LocalTypeNameOnlyContextReference
+	definitions                      []*ResolvedLocalType               `debug:"true"`
+	contextRefThatWantsResolvedTypes *LocalTypeNameOnlyContextReference `debug:"true"`
 }
 
 func (t *ResolvedLocalTypeContext) DeclareString() string {
@@ -80,6 +80,9 @@ func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeName
 	}
 
 	for index, resolvedType := range types {
+		if IsLocalType(resolvedType) {
+			panic(fmt.Errorf("must have concrete types in a resolved type context %T", resolvedType))
+		}
 		foundName := contextRefThatWantsResolvedTypes.nameContext.Definitions()[index]
 		newLocalTypeDef := NewResolvedLocalType(foundName, resolvedType)
 		t.resolvedArguments[foundName.Name()] = newLocalTypeDef

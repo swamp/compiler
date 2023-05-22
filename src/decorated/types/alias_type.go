@@ -50,10 +50,6 @@ func (u *Alias) ArtifactTypeName() ArtifactFullyQualifiedTypeName {
 	return u.artifactTypeName
 }
 
-func (u *Alias) ParameterCount() int {
-	return u.referencedType.ParameterCount()
-}
-
 func (u *Alias) Resolve() (dtype.Atom, error) {
 	return u.referencedType.Resolve()
 }

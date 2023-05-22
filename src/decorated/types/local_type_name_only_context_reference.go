@@ -14,8 +14,8 @@ import (
 )
 
 type LocalTypeNameOnlyContextReference struct {
-	named       *NamedDefinitionTypeReference
-	nameContext *LocalTypeNameOnlyContext
+	named       *NamedDefinitionTypeReference `debug:"true"`
+	nameContext *LocalTypeNameOnlyContext     `debug:"true"`
 }
 
 func (g *LocalTypeNameOnlyContextReference) Type() dtype.Type {
@@ -23,7 +23,7 @@ func (g *LocalTypeNameOnlyContextReference) Type() dtype.Type {
 }
 
 func (g *LocalTypeNameOnlyContextReference) String() string {
-	return fmt.Sprintf("[LocalTypeNameOnlyContextReference %v]", g.named)
+	return fmt.Sprintf("[LocalTypeNameOnlyContextReference %v %v]", g.named, g.nameContext)
 }
 
 func (g *LocalTypeNameOnlyContextReference) Next() dtype.Type {

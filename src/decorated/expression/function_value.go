@@ -11,11 +11,12 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
+	"log"
 )
 
 type FunctionParameterDefinition struct {
 	functionParameter *ast.FunctionParameter
-	generatedType     dtype.Type
+	generatedType     dtype.Type `debug:"true"`
 	references        []*FunctionParameterReference
 }
 
@@ -59,19 +60,22 @@ func (a *FunctionParameterDefinition) References() []*FunctionParameterReference
 }
 
 type FunctionValue struct {
-	forcedFunctionType    dtype.Type
-	decoratedExpression   Expression
-	parameters            []*FunctionParameterDefinition
+	forcedFunctionType    dtype.Type                     `debug:"true"`
+	decoratedExpression   Expression                     `debug:"true"`
+	parameters            []*FunctionParameterDefinition `debug:"true"`
 	commentBlock          *ast.MultilineComment
 	astFunction           *ast.FunctionValue
 	sourceFileReference   token.SourceFileReference
 	references            []*FunctionReference
-	convertedFunctionType *dectype.FunctionAtom
+	convertedFunctionType *dectype.FunctionAtom `debug:"true"`
 }
 
 func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType dtype.Type, parameters []*FunctionParameterDefinition, convertedFunctionType *dectype.FunctionAtom, commentBlock *ast.MultilineComment) *FunctionValue {
 	if len(parameters) != (convertedFunctionType.ParameterCount() - 1) {
 		panic(fmt.Errorf("not great. different number of parameters %d vs %v", len(parameters), convertedFunctionType))
+	}
+	for _, param := range parameters {
+		log.Printf("param %v %T", param.Parameter().Name(), param.Type().Next())
 	}
 	if forcedFunctionType == nil {
 		panic("must provide forced function type")

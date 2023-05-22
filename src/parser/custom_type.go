@@ -7,7 +7,6 @@ package parser
 
 import (
 	"github.com/swamp/compiler/src/ast"
-	decorated "github.com/swamp/compiler/src/decorated/expression"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
 )
@@ -107,16 +106,7 @@ func parseCustomType(p ParseStream, keywordType token.Keyword, precedingComments
 		index++
 	}
 
-	var localTypeNameReferences []ast.Type
-	for _, localTypeName := range typeParameterContext.LocalTypeNames() {
-		x, err := typeParameterContext.GetOrCreateReferenceFromName(localTypeName)
-		if err != nil {
-			return nil, decorated.NewInternalError(err)
-		}
-		localTypeNameReferences = append(localTypeNameReferences, x)
-	}
-
-	newCustomType := ast.NewCustomType(keywordType, nameOfType, localTypeNameReferences, fields, precedingComments)
+	newCustomType := ast.NewCustomType(keywordType, nameOfType, fields, precedingComments)
 
 	var typeToReturn ast.Type
 

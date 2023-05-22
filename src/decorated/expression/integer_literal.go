@@ -15,8 +15,8 @@ import (
 )
 
 type IntegerLiteral struct {
-	integer           *ast.IntegerLiteral
-	globalIntegerType *dectype.PrimitiveTypeReference
+	integer           *ast.IntegerLiteral             `debug:"true"`
+	globalIntegerType *dectype.PrimitiveTypeReference `debug:"true"`
 }
 
 func NewIntegerLiteral(integer *ast.IntegerLiteral, globalIntegerType *dectype.PrimitiveTypeReference) *IntegerLiteral {

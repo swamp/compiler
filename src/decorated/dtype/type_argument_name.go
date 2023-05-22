@@ -12,7 +12,7 @@ import (
 )
 
 type LocalTypeName struct {
-	name *ast.LocalTypeName
+	name *ast.LocalTypeName `debug:"true"`
 }
 
 func NewLocalTypeName(name *ast.LocalTypeName) *LocalTypeName {

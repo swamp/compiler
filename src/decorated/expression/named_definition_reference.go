@@ -13,7 +13,7 @@ import (
 
 type NamedDefinitionReference struct {
 	optionalModuleReference *ModuleReference
-	ident                   ast.ScopedOrNormalVariableIdentifier
+	ident                   ast.ScopedOrNormalVariableIdentifier `debug:"true"`
 }
 
 func NewNamedDefinitionReference(optionalModuleReference *ModuleReference, ident ast.ScopedOrNormalVariableIdentifier) *NamedDefinitionReference {

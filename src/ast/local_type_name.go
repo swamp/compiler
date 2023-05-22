@@ -6,7 +6,7 @@ import (
 )
 
 type LocalTypeName struct {
-	ident *VariableIdentifier
+	ident *VariableIdentifier `debug:"true"`
 }
 
 func (l *LocalTypeName) Name() string {

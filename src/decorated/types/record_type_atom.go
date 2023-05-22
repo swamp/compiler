@@ -97,11 +97,10 @@ func TypeChain(p dtype.Type, tabs int) {
 
 */
 
-func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
-	if p == nil {
+func GetMemorySizeAndAlignmentInternal(atom dtype.Atom) (MemorySize, MemoryAlign) {
+	if atom == nil {
 		panic(fmt.Errorf("nil is not allowed"))
 	}
-	atom := UnaliasWithResolveInvoker(p)
 	//log.Printf("unaliased: %T %v", unaliased, unaliased)
 	switch t := atom.(type) {
 	case *RecordAtom:
@@ -133,7 +132,7 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 			case "Any":
 				return MemorySize(opcode_sp_type.Sizeof64BitPointer), MemoryAlign(opcode_sp_type.Alignof64BitPointer)
 			}
-			panic(fmt.Errorf("do not know primitive atom of '%s' %v %T", name, p, atom))
+			panic(fmt.Errorf("do not know primitive atom of '%s' %v %T", name, atom, atom))
 		}
 	case *CustomTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
@@ -149,12 +148,16 @@ func GetMemorySizeAndAlignmentInternal(p dtype.Type) (MemorySize, MemoryAlign) {
 		log.Printf("LocalTypeNameOnlyContext: %v", t)
 		return 0, 8
 	default:
-		panic(fmt.Errorf("calc: do not know memory size of %v %T %T", p, atom, p))
+		panic(fmt.Errorf("calc: do not know memory size of %v %T", atom, atom))
 	}
 }
 
 func GetMemorySizeAndAlignment(p dtype.Type) (MemorySize, MemoryAlign) {
-	memorySize, memoryAlign := GetMemorySizeAndAlignmentInternal(p)
+	atom, resolveErr := p.Resolve()
+	if resolveErr != nil {
+		panic(resolveErr)
+	}
+	memorySize, memoryAlign := GetMemorySizeAndAlignmentInternal(atom)
 	if memoryAlign == 0 {
 		panic(fmt.Errorf("unsupported Type %T %v", p, p))
 	}

@@ -13,7 +13,7 @@ import (
 )
 
 type LocalTypeName struct {
-	identifier    *dtype.LocalTypeName
+	identifier    *dtype.LocalTypeName `debug:"true"`
 	wasReferenced bool
 }
 

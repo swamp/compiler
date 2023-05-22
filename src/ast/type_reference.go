@@ -18,8 +18,8 @@ type TypeReferenceScopedOrNormal interface {
 }
 
 type TypeReference struct {
-	ident     *TypeIdentifier
-	arguments []Type
+	ident     *TypeIdentifier `debug:"true"`
+	arguments []Type          `debug:"true"`
 }
 
 func (i *TypeReference) String() string {
