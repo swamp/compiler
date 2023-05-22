@@ -15,8 +15,8 @@ import (
 )
 
 type RecordConstructorFromRecord struct {
-	recordType           *dectype.RecordAtom
-	record               *RecordLiteral
+	recordType           *dectype.RecordAtom `debug:"true"`
+	record               *RecordLiteral      `debug:"true"`
 	recordAliasReference *dectype.AliasReference
 	astConstructorCall   *ast.ConstructorCall
 }

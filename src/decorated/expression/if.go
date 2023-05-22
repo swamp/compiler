@@ -14,9 +14,9 @@ import (
 )
 
 type If struct {
-	condition   Expression
-	consequence Expression
-	alternative Expression
+	condition   Expression `debug:"true"`
+	consequence Expression `debug:"true"`
+	alternative Expression `debug:"true"`
 	astIf       *ast.IfExpression
 }
 

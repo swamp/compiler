@@ -8,7 +8,7 @@ package token
 // TypeId :
 type TypeId struct {
 	SourceFileReference
-	raw         string
+	raw         string `debug:"true"`
 	Indentation int
 }
 

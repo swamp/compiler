@@ -14,7 +14,7 @@ import (
 )
 
 type BooleanLiteral struct {
-	boolean           *ast.BooleanLiteral
+	boolean           *ast.BooleanLiteral `debug:"true"`
 	globalBooleanType dtype.Type
 }
 

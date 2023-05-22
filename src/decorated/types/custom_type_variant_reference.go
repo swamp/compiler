@@ -15,7 +15,7 @@ import (
 
 type CustomTypeVariantReference struct {
 	named             *NamedDefinitionTypeReference
-	customTypeVariant *CustomTypeVariantAtom
+	customTypeVariant *CustomTypeVariantAtom `debug:"true"`
 }
 
 func (g *CustomTypeVariantReference) Type() dtype.Type {

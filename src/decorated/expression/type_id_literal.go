@@ -15,8 +15,8 @@ import (
 )
 
 type TypeIdLiteral struct {
-	typeId                *ast.TypeId
-	constructedTypeIdType dtype.Type
+	typeId                *ast.TypeId `debug:"true"`
+	constructedTypeIdType dtype.Type  `debug:"true"`
 	containedType         dectype.TypeReferenceScopedOrNormal
 }
 

@@ -29,9 +29,9 @@ const (
 )
 
 type ArithmeticOperator struct {
-	BinaryOperator
-	operatorType ArithmeticOperatorType
-	infix        *ast.BinaryOperator
+	BinaryOperator `debug:"true"`
+	operatorType   ArithmeticOperatorType
+	infix          *ast.BinaryOperator
 }
 
 func NewArithmeticOperator(infix *ast.BinaryOperator, left Expression, right Expression, operatorType ArithmeticOperatorType) (*ArithmeticOperator, decshared.DecoratedError) {

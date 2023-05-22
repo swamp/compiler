@@ -20,7 +20,7 @@ import (
 
 type RecordAtom struct {
 	nameToField       map[string]*RecordField
-	parsedOrderFields []*RecordField
+	parsedOrderFields []*RecordField `debug:"true"`
 	sortedFields      []*RecordField
 	record            *ast.Record
 	memorySize        MemorySize

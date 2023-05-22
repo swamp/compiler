@@ -25,7 +25,7 @@ func HasAnyMatchingTypes(types []dtype.Type) (bool, int) {
 }
 
 type AnyMatchingTypes struct {
-	astAnyMatchingType *ast.AnyMatchingType
+	astAnyMatchingType *ast.AnyMatchingType `debug:"true"`
 }
 
 func (u *AnyMatchingTypes) String() string {

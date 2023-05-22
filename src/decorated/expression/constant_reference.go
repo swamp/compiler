@@ -15,7 +15,7 @@ import (
 
 type ConstantReference struct {
 	definitionReference *NamedDefinitionReference
-	referencedConstant  *Constant
+	referencedConstant  *Constant `debug:"true"`
 }
 
 func (g *ConstantReference) Type() dtype.Type {

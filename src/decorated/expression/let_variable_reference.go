@@ -15,7 +15,7 @@ import (
 
 type LetVariableReference struct {
 	ident      ast.ScopedOrNormalVariableIdentifier
-	assignment *LetVariable
+	assignment *LetVariable `debug:"true"`
 }
 
 func (g *LetVariableReference) Type() dtype.Type {

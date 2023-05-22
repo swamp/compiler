@@ -14,7 +14,7 @@ import (
 )
 
 type AliasReference struct {
-	referencedType      *dectype.AliasReference
+	referencedType      *dectype.AliasReference `debug:"true"`
 	definitionReference *dectype.NamedDefinitionTypeReference
 }
 

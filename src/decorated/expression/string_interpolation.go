@@ -15,7 +15,7 @@ import (
 
 type StringInterpolation struct {
 	str                 *ast.StringInterpolation
-	expression          Expression
+	expression          Expression `debug:"true"`
 	includedExpressions []Expression
 }
 

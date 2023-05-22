@@ -14,8 +14,8 @@ import (
 )
 
 type LetVariable struct {
-	name         *ast.VariableIdentifier
-	variableType dtype.Type
+	name         *ast.VariableIdentifier `debug:"true"`
+	variableType dtype.Type              `debug:"true"`
 	references   []*LetVariableReference
 	comment      *ast.MultilineComment
 }
@@ -69,8 +69,8 @@ func (l *LetVariable) FetchPositionLength() token.SourceFileReference {
 }
 
 type LetAssignment struct {
-	expression       Expression
-	letVariables     []*LetVariable
+	expression       Expression     `debug:"true"`
+	letVariables     []*LetVariable `debug:"true"`
 	astLetAssignment ast.LetAssignment
 	inclusive        token.SourceFileReference
 }
@@ -105,8 +105,8 @@ func (l *LetAssignment) FetchPositionLength() token.SourceFileReference {
 }
 
 type Let struct {
-	assignments []*LetAssignment
-	consequence Expression
+	assignments []*LetAssignment `debug:"true"`
+	consequence Expression       `debug:"true"`
 	inclusive   token.SourceFileReference
 	astLet      *ast.Let
 }

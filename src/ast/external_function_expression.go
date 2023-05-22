@@ -12,7 +12,7 @@ import (
 )
 
 type ExternalFunctionExpression struct {
-	posLen token.SourceFileReference
+	posLen token.SourceFileReference `debug:"true"`
 }
 
 func NewExternalFunctionExpression(posLen token.SourceFileReference) *ExternalFunctionExpression {

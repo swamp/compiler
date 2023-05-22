@@ -18,17 +18,17 @@ import (
 	"github.com/swamp/compiler/src/decorated/decshared"
 )
 
-func testDecorateInternal(code string, useCores bool, errorsAsWarnings bool) (string, decshared.DecoratedError) {
+func testDecorateInternal(code string, useCores bool, errorsAsWarnings bool) (string, string, decshared.DecoratedError) {
 	code = strings.TrimSpace(code)
 	module, compileErr := CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
 	if parser.IsCompileError(compileErr) {
-		return "", compileErr
+		return "", "", compileErr
 	}
-	return module.ShortString(), nil
+	return module.ShortString(), module.TreeString(), nil
 }
 
 func testDecorate(t *testing.T, code string, ast string) {
-	decorationString, decorateErr := testDecorateInternal(code, true, false)
+	decorationString, extraString, decorateErr := testDecorateInternal(code, true, false)
 	if decorateErr != nil {
 		log.Printf("problem %v\n", decorateErr)
 
@@ -53,14 +53,15 @@ func testDecorate(t *testing.T, code string, ast string) {
 				break
 			}
 		}
-		t.Errorf("Mismatch strings received \n%v\n but expected\n%v", decorationString, ast)
+		t.Errorf("Mismatch strings received \n%v\n but expected\n%v\n%v", decorationString, ast, extraString)
+
 	}
 
 	t.Logf("passed")
 }
 
 func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
-	decorationString, decorateErr := testDecorateInternal(code, false, false)
+	decorationString, extraString, decorateErr := testDecorateInternal(code, false, false)
 	if decorateErr != nil {
 		log.Printf("problem %v\n", decorateErr)
 
@@ -86,7 +87,8 @@ func testDecorateWithoutDefault(t *testing.T, code string, ast string) {
 				break
 			}
 		}
-		t.Errorf("Mismatch strings received \n%v\n but expected\n%v", decorationString, ast)
+		t.Errorf("Mismatch strings received \n%v\n but expected\n%v\n%v", decorationString, ast, extraString)
+
 	} else {
 		log.Printf("passed")
 	}
@@ -119,7 +121,7 @@ func isErrorOfType(expectedError interface{}, testErr error) bool {
 
 func testDecorateFailHelper(t *testing.T, code string, expectedError interface{}, useCores bool) {
 	const errorsAsWarnings = true
-	_, testErr := testDecorateInternal(code, useCores, errorsAsWarnings)
+	_, _, testErr := testDecorateInternal(code, useCores, errorsAsWarnings)
 	if testErr == nil {
 		t.Errorf("it was supposed to fail, but didn't")
 		return

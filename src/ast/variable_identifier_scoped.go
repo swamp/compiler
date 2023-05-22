@@ -10,7 +10,7 @@ import (
 )
 
 type VariableIdentifierScoped struct {
-	symbol          *VariableIdentifier
+	symbol          *VariableIdentifier `debug:"true"`
 	moduleReference *ModuleReference
 	inclusive       token.SourceFileReference
 }

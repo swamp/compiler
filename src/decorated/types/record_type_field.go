@@ -14,7 +14,7 @@ import (
 )
 
 type RecordFieldName struct {
-	name *ast.VariableIdentifier
+	name *ast.VariableIdentifier `debug:"true"`
 }
 
 func NewRecordFieldName(identifier *ast.VariableIdentifier) *RecordFieldName {
@@ -47,8 +47,8 @@ type RecordField struct {
 	index        int
 	memoryOffset MemoryOffset
 	memorySize   MemorySize
-	name         *RecordFieldName
-	fieldType    dtype.Type
+	name         *RecordFieldName `debug:"true"`
+	fieldType    dtype.Type       `debug:"true"`
 }
 
 func NewRecordField(fieldName *RecordFieldName, fieldType dtype.Type) *RecordField {

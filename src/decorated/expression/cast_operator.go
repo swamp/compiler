@@ -14,8 +14,8 @@ import (
 )
 
 type CastOperator struct {
-	expression Expression
-	castToType *AliasReference
+	expression Expression      `debug:"true"`
+	castToType *AliasReference `debug:"true"`
 	infix      *ast.BinaryOperator
 	inclusive  token.SourceFileReference
 }

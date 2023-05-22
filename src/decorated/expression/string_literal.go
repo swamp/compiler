@@ -15,7 +15,7 @@ import (
 )
 
 type StringLiteral struct {
-	str              *ast.StringLiteral
+	str              *ast.StringLiteral `debug:"true"`
 	globalStringType *dectype.PrimitiveTypeReference
 }
 

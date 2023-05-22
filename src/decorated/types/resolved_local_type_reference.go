@@ -13,7 +13,7 @@ import (
 
 type ResolvedLocalTypeReference struct {
 	identifier     *LocalTypeNameReference
-	typeDefinition *ResolvedLocalType
+	typeDefinition *ResolvedLocalType `debug:"true"`
 }
 
 func (u *ResolvedLocalTypeReference) String() string {

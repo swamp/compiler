@@ -17,7 +17,7 @@ type CustomTypeVariantField struct {
 	index         uint
 	memoryOffset  MemoryOffset
 	memorySize    MemorySize
-	parameterType dtype.Type
+	parameterType dtype.Type `debug:"true"`
 }
 
 func NewCustomTypeVariantField(index uint, fieldType dtype.Type) *CustomTypeVariantField {
@@ -58,8 +58,8 @@ func CustomTypeGVariantFieldsToStringSuffix(types []*CustomTypeVariantField) str
 
 type CustomTypeVariantAtom struct {
 	index                int
-	astCustomTypeVariant *ast.CustomTypeVariant
-	parameterFields      []*CustomTypeVariantField
+	astCustomTypeVariant *ast.CustomTypeVariant    `debug:"true"`
+	parameterFields      []*CustomTypeVariantField `debug:"true"`
 	parent               dtype.Type
 	inCustomType         *CustomTypeAtom
 	references           []*CustomTypeVariantReference

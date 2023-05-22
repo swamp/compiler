@@ -13,8 +13,8 @@ import (
 )
 
 type CustomTypeVariantConstructor struct {
-	arguments                  []Expression
-	customTypeVariantReference *dectype.CustomTypeVariantReference
+	arguments                  []Expression                        `debug:"true"`
+	customTypeVariantReference *dectype.CustomTypeVariantReference `debug:"true"`
 	returnType                 dtype.Type
 	inclusive                  token.SourceFileReference
 }

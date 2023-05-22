@@ -24,7 +24,7 @@ func (a ByAssignmentName) Less(i, j int) bool {
 }
 
 type RecordLiteralField struct {
-	fieldName    *ast.VariableIdentifier
+	fieldName    *ast.VariableIdentifier `debug:"true"`
 	inAssignment *RecordLiteralAssignment
 }
 
@@ -61,9 +61,9 @@ func (n *RecordLiteralField) Type() dtype.Type {
 }
 
 type RecordLiteralAssignment struct {
-	expression Expression
+	expression Expression `debug:"true"`
 	index      int
-	fieldName  *RecordLiteralField
+	fieldName  *RecordLiteralField `debug:"true"`
 }
 
 func NewRecordLiteralAssignment(index int, fieldName *RecordLiteralField, expression Expression) *RecordLiteralAssignment {
@@ -91,7 +91,7 @@ func (a *RecordLiteralAssignment) Expression() Expression {
 
 type RecordLiteral struct {
 	t                       *dectype.RecordAtom
-	sortedAssignments       []*RecordLiteralAssignment
+	sortedAssignments       []*RecordLiteralAssignment `debug:"true"`
 	parseOrderedAssignments []*RecordLiteralAssignment
 	recordTemplate          Expression
 	inclusive               token.SourceFileReference

@@ -25,10 +25,10 @@ type ModuleDef interface {
 }
 
 type ModuleDefinition struct {
-	localIdentifier *ast.VariableIdentifier
+	localIdentifier *ast.VariableIdentifier `debug:"true"`
 	createdIn       *ModuleDefinitions
 	createdBy       *ImportedModule
-	expr            Expression
+	expr            Expression `debug:"true"`
 	wasReferenced   bool
 }
 

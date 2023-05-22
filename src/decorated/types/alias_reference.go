@@ -14,7 +14,7 @@ import (
 
 type AliasReference struct {
 	ident         *NamedDefinitionTypeReference
-	reference     *Alias
+	reference     *Alias `debug:"true"`
 	wasReferenced bool
 }
 

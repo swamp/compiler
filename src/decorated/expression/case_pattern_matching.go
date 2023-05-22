@@ -16,8 +16,8 @@ import (
 )
 
 type CaseConsequenceForPatternMatching struct {
-	literal        Expression
-	expression     Expression
+	literal        Expression `debug:"true"`
+	expression     Expression `debug:"true"`
 	astConsequence *ast.CaseConsequencePatternMatching
 	internalIndex  int
 }
@@ -59,9 +59,9 @@ func caseConsequencePatternMatchingArrayToStringEx(expressions []*CaseConsequenc
 }
 
 type CaseForPatternMatching struct {
-	test        Expression
-	cases       []*CaseConsequenceForPatternMatching
-	defaultCase Expression
+	test        Expression                           `debug:"true"`
+	cases       []*CaseConsequenceForPatternMatching `debug:"true"`
+	defaultCase Expression                           `debug:"true"`
 	astCase     *ast.CaseForPatternMatching
 }
 

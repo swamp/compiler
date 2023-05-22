@@ -12,7 +12,7 @@ import (
 )
 
 type CustomTypeVariant struct {
-	typeIdentifier *TypeIdentifier
+	typeIdentifier *TypeIdentifier `debug:"true"`
 	typeParameters *LocalTypeNameDefinitionContext
 	userTypes      []Type
 	parent         *CustomType

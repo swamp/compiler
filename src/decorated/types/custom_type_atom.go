@@ -16,10 +16,10 @@ import (
 
 type CustomTypeAtom struct {
 	nameToField      map[string]*CustomTypeVariantAtom
-	variants         []*CustomTypeVariantAtom
+	variants         []*CustomTypeVariantAtom `debug:"true"`
 	astCustomType    *ast.CustomType
 	arguments        []dtype.Type
-	artifactTypeName ArtifactFullyQualifiedTypeName
+	artifactTypeName ArtifactFullyQualifiedTypeName `debug:"true"`
 	references       []*CustomTypeReference
 	memorySize       MemorySize
 	memoryAlign      MemoryAlign

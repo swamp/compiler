@@ -14,7 +14,7 @@ import (
 
 type TypeId struct {
 	typeRef     TypeIdentifierNormalOrScoped
-	typeIdToken token.TypeId
+	typeIdToken token.TypeId `debug:"true"`
 	inclusive   token.SourceFileReference
 }
 

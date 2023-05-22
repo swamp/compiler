@@ -12,7 +12,7 @@ import (
 )
 
 type StringLiteral struct {
-	Token token.StringToken
+	Token token.StringToken `debug:"true"`
 }
 
 func (i *StringLiteral) String() string {

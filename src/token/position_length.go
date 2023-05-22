@@ -291,8 +291,8 @@ func RangeFromSingleSameLineRange(singleRange SameLineRange) Range {
 }
 
 type Range struct {
-	start Position
-	end   Position
+	start Position `debug:"true"`
+	end   Position `debug:"true"`
 }
 
 func MakeRange(start Position, end Position) Range {

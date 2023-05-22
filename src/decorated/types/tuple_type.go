@@ -44,7 +44,7 @@ func calculateTupleFieldOffsetsAndRecordMemorySizeAndAlign(fields []*TupleTypeFi
 
 type TupleTypeAtom struct {
 	parameterFields []*TupleTypeField
-	parameterTypes  []dtype.Type
+	parameterTypes  []dtype.Type `debug:"true"`
 	astTupleType    *ast.TupleType
 	memorySize      MemorySize
 	memoryAlign     MemoryAlign

@@ -12,7 +12,7 @@ import (
 )
 
 type BooleanLiteral struct {
-	booleanToken token.BooleanToken
+	booleanToken token.BooleanToken `debug:"true"`
 }
 
 func NewBooleanLiteral(booleanToken token.BooleanToken) *BooleanLiteral {

@@ -16,7 +16,7 @@ import (
 type Constant struct {
 	astConstant       *ast.ConstantDefinition
 	identifier        ast.ScopedOrNormalVariableIdentifier
-	expression        Expression
+	expression        Expression `debug:"true"`
 	references        []*ConstantReference
 	localCommentBlock *ast.MultilineComment
 	inclusive         token.SourceFileReference

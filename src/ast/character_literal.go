@@ -13,7 +13,7 @@ import (
 
 type CharacterLiteral struct {
 	Token token.CharacterToken
-	value rune
+	value rune `debug:"true"`
 }
 
 func (i *CharacterLiteral) String() string {

@@ -16,7 +16,7 @@ import (
 
 type ExternalFunctionDeclarationExpression struct {
 	astFunctionDeclaration *ast.FunctionDeclarationExpression
-	functionType           dtype.Type
+	functionType           dtype.Type `debug:"true"`
 }
 
 func NewExternalFunctionDeclarationExpression(astFunctionDeclaration *ast.FunctionDeclarationExpression) *ExternalFunctionDeclarationExpression {

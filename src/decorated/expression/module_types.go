@@ -7,12 +7,13 @@ package decorated
 
 import (
 	"fmt"
-
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
+	"io"
 )
 
 type ModuleTypes struct {
@@ -140,6 +141,15 @@ func (t *ModuleTypes) DebugString() string {
 	s := ""
 	for _, v := range t.allNamedTypes {
 		s += fmt.Sprintf("%v : %v\n", v.name, v.realType)
+	}
+	return s
+}
+
+func (t *ModuleTypes) TreeString(writer io.Writer) string {
+	s := ""
+	for _, v := range t.allNamedTypes {
+		fmt.Fprintf(writer, "%v :\n")
+		debug.Tree(v.realType, writer)
 	}
 	return s
 }

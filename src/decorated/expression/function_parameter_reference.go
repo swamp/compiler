@@ -15,7 +15,7 @@ import (
 
 type FunctionParameterReference struct {
 	ident               ast.ScopedOrNormalVariableIdentifier
-	referencedParameter *FunctionParameterDefinition
+	referencedParameter *FunctionParameterDefinition `debug:"true"`
 }
 
 func (g *FunctionParameterReference) Type() dtype.Type {

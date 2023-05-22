@@ -15,8 +15,8 @@ import (
 
 type CurryFunction struct {
 	functionValueExpression Expression
-	curryFunctionType       *dectype.FunctionAtom
-	argumentsToSave         []Expression
+	curryFunctionType       *dectype.FunctionAtom `debug:"true"`
+	argumentsToSave         []Expression          `debug:"true"`
 	astFunctionCall         *ast.FunctionCall
 	originalFunctionType    *dectype.FunctionAtom
 }

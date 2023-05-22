@@ -8,6 +8,7 @@ package decorated
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -262,6 +263,13 @@ func (m *Module) ShortString() string {
 	s := m.localTypes.DebugString()
 	s += "\n" + m.localDefinitions.ShortString()
 	return s
+}
+
+func (m *Module) TreeString() string {
+	var builder strings.Builder
+	m.localTypes.TreeString(&builder)
+	m.localDefinitions.TreeString(&builder)
+	return builder.String()
 }
 
 func (m *Module) String() string {

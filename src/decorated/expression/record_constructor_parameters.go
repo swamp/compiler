@@ -15,7 +15,7 @@ import (
 )
 
 type RecordConstructorFromParameters struct {
-	arguments                      []*RecordLiteralAssignment
+	arguments                      []*RecordLiteralAssignment `debug:"true"`
 	parseOrderArguments            []Expression
 	recordAliasReference           *dectype.AliasReference
 	recordType                     *dectype.RecordAtom

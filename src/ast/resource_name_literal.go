@@ -13,7 +13,7 @@ import (
 
 type ResourceNameLiteral struct {
 	Token token.ResourceName
-	value string
+	value string `debug:"true"`
 }
 
 func (i *ResourceNameLiteral) String() string {

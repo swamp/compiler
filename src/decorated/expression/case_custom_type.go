@@ -18,7 +18,7 @@ import (
 
 type CaseConsequenceParameterForCustomType struct {
 	name          *ast.VariableIdentifier
-	parameterType dtype.Type
+	parameterType dtype.Type `debug:"true"`
 	references    []*CaseConsequenceParameterReference
 }
 
@@ -56,7 +56,7 @@ func NewCaseConsequenceParameterForCustomType(name *ast.VariableIdentifier, para
 
 type CaseConsequenceForCustomType struct {
 	variantName    *dectype.CustomTypeVariantReference
-	parameters     []*CaseConsequenceParameterForCustomType
+	parameters     []*CaseConsequenceParameterForCustomType `debug:"true"`
 	expression     Expression
 	internalIndex  int
 	astConsequence *ast.CaseConsequenceForCustomType
@@ -107,8 +107,8 @@ func caseConsequenceArrayToStringEx(expressions []*CaseConsequenceForCustomType,
 }
 
 type CaseCustomType struct {
-	test           Expression
-	cases          []*CaseConsequenceForCustomType
+	test           Expression                      `debug:"true"`
+	cases          []*CaseConsequenceForCustomType `debug:"true"`
 	defaultCase    Expression
 	caseExpression *ast.CaseForCustomType
 }

@@ -12,7 +12,7 @@ import (
 // Keyword :
 type BooleanToken struct {
 	SourceFileReference
-	value bool
+	value bool `debug:"true"`
 	raw   string
 }
 

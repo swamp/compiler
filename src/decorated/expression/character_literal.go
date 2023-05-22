@@ -14,7 +14,7 @@ import (
 )
 
 type CharacterLiteral struct {
-	str                 *ast.CharacterLiteral
+	str                 *ast.CharacterLiteral `debug:"true"`
 	globalCharacterType dtype.Type
 }
 

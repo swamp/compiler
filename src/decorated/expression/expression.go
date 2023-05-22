@@ -21,7 +21,7 @@ type Expression interface {
 }
 
 type ExpressionNode struct {
-	decoratedType dtype.Type
+	decoratedType dtype.Type `debug:"true"`
 }
 
 func (d ExpressionNode) Type() dtype.Type {

@@ -12,7 +12,7 @@ import (
 )
 
 type AnyMatchingType struct {
-	operatorToken token.OperatorToken
+	operatorToken token.OperatorToken `debug:"true"`
 }
 
 func (i *AnyMatchingType) String() string {

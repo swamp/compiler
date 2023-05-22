@@ -12,9 +12,9 @@ import (
 )
 
 type BinaryOperator struct {
-	ExpressionNode
-	left  Expression
-	right Expression
+	ExpressionNode `debug:"true"`
+	left           Expression `debug:"true"`
+	right          Expression `debug:"true"`
 }
 
 func (b *BinaryOperator) Left() Expression {

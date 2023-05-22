@@ -11,7 +11,7 @@ import "fmt"
 type OperatorToken struct {
 	SourceFileReference
 	operatorType Type
-	raw          string
+	raw          string `debug:"true"`
 	debugString  string
 }
 

@@ -15,8 +15,8 @@ import (
 
 type Alias struct {
 	name             *ast.Alias
-	referencedType   dtype.Type
-	artifactTypeName ArtifactFullyQualifiedTypeName
+	referencedType   dtype.Type                     `debug:"true"`
+	artifactTypeName ArtifactFullyQualifiedTypeName `debug:"true"`
 	references       []*AliasReference
 	inclusive        token.SourceFileReference
 	wasReferenced    bool

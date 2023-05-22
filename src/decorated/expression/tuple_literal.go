@@ -16,7 +16,7 @@ import (
 
 type TupleLiteral struct {
 	tupleType   *dectype.TupleTypeAtom
-	expressions []Expression
+	expressions []Expression `debug:"true"`
 	astLiteral  *ast.TupleLiteral
 }
 

@@ -13,7 +13,7 @@ import (
 // StringToken :
 type StringToken struct {
 	SourceFileReference
-	text        string
+	text        string `debug:"true"`
 	raw         string
 	stringLines []SameLineRange
 }

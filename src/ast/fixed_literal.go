@@ -13,7 +13,7 @@ import (
 
 type FixedLiteral struct {
 	Token token.NumberToken
-	value int32
+	value int32 `debug:"true"`
 }
 
 func (i *FixedLiteral) String() string {

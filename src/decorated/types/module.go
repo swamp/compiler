@@ -15,7 +15,7 @@ import (
 // ModuleName is similar to a ModuleReference, however path can be nil
 type ModuleName struct {
 	path          *ast.ModuleReference
-	precalculated string
+	precalculated string `debug:"true"`
 }
 
 func MakeModuleNameFromParts(parts []*ast.ModuleNamePart) ModuleName {
@@ -105,7 +105,7 @@ type ArtifactFullyQualifiedModuleName struct {
 }
 
 type ArtifactFullyQualifiedTypeName struct {
-	ModuleName
+	ModuleName `debug:"true"`
 }
 
 func MakeArtifactFullyQualifiedModuleName(path *ast.ModuleReference) ArtifactFullyQualifiedModuleName {

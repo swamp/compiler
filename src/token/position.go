@@ -8,8 +8,8 @@ package token
 import "fmt"
 
 type Position struct {
-	line                            int
-	column                          int
+	line                            int `debug:"true"`
+	column                          int `debug:"true"`
 	originalOctetOffsetInSourceFile int
 }
 

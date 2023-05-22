@@ -15,7 +15,7 @@ import (
 )
 
 type FixedLiteral struct {
-	integer         *ast.FixedLiteral
+	integer         *ast.FixedLiteral `debug:"true"`
 	globalFixedType *dectype.PrimitiveTypeReference
 }
 

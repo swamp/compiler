@@ -16,7 +16,7 @@ import (
 )
 
 type GuardItemDefault struct {
-	consequence   Expression
+	consequence   Expression `debug:"true"`
 	internalIndex int
 	guardDefault  *ast.GuardDefault
 }
@@ -42,8 +42,8 @@ func (c *GuardItemDefault) AstGuardDefault() *ast.GuardDefault {
 }
 
 type GuardItem struct {
-	condition     Expression
-	consequence   Expression
+	condition     Expression `debug:"true"`
+	consequence   Expression `debug:"true"`
 	internalIndex int
 	astGuardItem  ast.GuardItem
 }
@@ -85,8 +85,8 @@ func guardConsequenceArrayToStringEx(expressions []*GuardItem, ch string) string
 }
 
 type Guard struct {
-	items        []*GuardItem
-	defaultGuard *GuardItemDefault
+	items        []*GuardItem      `debug:"true"`
+	defaultGuard *GuardItemDefault `debug:"true"`
 	astGuard     *ast.GuardExpression
 }
 

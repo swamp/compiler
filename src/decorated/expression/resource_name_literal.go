@@ -15,7 +15,7 @@ import (
 )
 
 type ResourceNameLiteral struct {
-	resourceName    *ast.ResourceNameLiteral
+	resourceName    *ast.ResourceNameLiteral `debug:"true"`
 	globalFixedType *dectype.PrimitiveTypeReference
 }
 
