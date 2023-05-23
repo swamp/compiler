@@ -45,7 +45,7 @@ func (t *ResolvedLocalTypeContext) DebugString() string {
 }
 
 func (t *ResolvedLocalTypeContext) Resolve() (dtype.Atom, error) {
-	resolvedType, resolveErr := ReplaceLocalNameIfNeeded(t.contextRefThatWantsResolvedTypes.nameContext.Next(), t)
+	resolvedType, resolveErr := Collapse(t.contextRefThatWantsResolvedTypes.nameContext.Next(), t)
 	if resolveErr != nil {
 		return nil, resolveErr
 	}
@@ -105,12 +105,12 @@ func (t *ResolvedLocalTypeContext) Definitions() []*ResolvedLocalType {
 
 /*
 	func (t *ResolvedLocalTypeContext) SetTypes(types []dtype.Type) error {
-		if len(types) != len(t.definitions) {
-			return fmt.Errorf("wrong number of definitions")
+		if len(types) != len(t.localTypeNames) {
+			return fmt.Errorf("wrong number of localTypeNames")
 		}
 
 		for index, typeToSet := range types {
-			def := t.definitions[index]
+			def := t.localTypeNames[index]
 			_, wasPrimitive := typeToSet.(*PrimitiveAtom)
 			if wasPrimitive {
 				panic(fmt.Errorf("should not have primitive atoms, I want type references"))
@@ -133,8 +133,8 @@ func (t *ResolvedLocalTypeContext) Debug() {
 func (t *ResolvedLocalTypeContext) AddExpectedDef(name *dtype.LocalTypeName) {
 	nameDef := NewLocalTypeName(name)
 	def := NewResolvedLocalType(nameDef)
-	t.resolvedArguments[name.Name()] = def
-	t.definitions = append(t.definitions, def)
+	t.localTypeNamesMap[name.Name()] = def
+	t.localTypeNames = append(t.localTypeNames, def)
 }
 
 func (t *ResolvedLocalTypeContext) AddExpectedDefs(names []*dtype.LocalTypeName) {
@@ -157,7 +157,7 @@ func (t *ResolvedLocalTypeContext) LookupType(definition *ResolvedLocalTypeRefer
 
 /*
 func (t *ResolvedLocalTypeContext) ResolveTypeRef(defRef *ResolvedLocalTypeReference) (*ResolvedLocalTypeReference, error) {
-	definition, found := t.resolvedArguments[defRef.Identifier().Name()]
+	definition, found := t.localTypeNamesMap[defRef.Identifier().Name()]
 	if !found {
 		return nil, fmt.Errorf("could not find %v", defRef.Identifier().Name())
 	}

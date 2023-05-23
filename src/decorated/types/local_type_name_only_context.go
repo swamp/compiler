@@ -15,22 +15,22 @@ import (
 )
 
 type LocalTypeNameOnlyContext struct {
-	resolvedArguments             map[string]*LocalTypeName
-	definitions                   []*LocalTypeName
+	localTypeNamesMap             map[string]*LocalTypeName
+	localTypeNames                []*LocalTypeName
 	typeThatIsReferencingTheNames dtype.Type `debug:"true"`
 }
 
 func (t *LocalTypeNameOnlyContext) DeclareString() string {
-	if len(t.resolvedArguments) == 0 {
+	if len(t.localTypeNamesMap) == 0 {
 		return ""
 	}
-	return fmt.Sprintf("%v", t.resolvedArguments)
+	return fmt.Sprintf("%v", t.localTypeNamesMap)
 }
 
 func (t *LocalTypeNameOnlyContext) Names() []*dtype.LocalTypeName {
 	var x []*dtype.LocalTypeName
 
-	for _, f := range t.definitions {
+	for _, f := range t.localTypeNames {
 		x = append(x, f.identifier)
 	}
 
@@ -38,13 +38,13 @@ func (t *LocalTypeNameOnlyContext) Names() []*dtype.LocalTypeName {
 }
 
 func (t *LocalTypeNameOnlyContext) Definitions() []*LocalTypeName {
-	return t.definitions
+	return t.localTypeNames
 }
 
 func (t *LocalTypeNameOnlyContext) NamesString() string {
 	var x []string
 
-	for _, f := range t.definitions {
+	for _, f := range t.localTypeNames {
 		x = append(x, f.identifier.Name())
 	}
 
@@ -61,7 +61,7 @@ func (t *LocalTypeNameOnlyContext) Next() dtype.Type {
 
 func (t *LocalTypeNameOnlyContext) DebugString() string {
 	s := ""
-	for name, argumentType := range t.resolvedArguments {
+	for name, argumentType := range t.localTypeNamesMap {
 		s += fmt.Sprintf("%v = %v", name, argumentType)
 	}
 	return s
@@ -69,15 +69,15 @@ func (t *LocalTypeNameOnlyContext) DebugString() string {
 
 func NewLocalTypeNameContext() *LocalTypeNameOnlyContext {
 	t := &LocalTypeNameOnlyContext{
-		resolvedArguments:             make(map[string]*LocalTypeName),
+		localTypeNamesMap:             make(map[string]*LocalTypeName),
 		typeThatIsReferencingTheNames: nil,
 	}
 
 	/*
 		for _, name := range names {
 			newLocalTypeDef := NewResolvedLocalType(name, NewAnyType())
-			t.resolvedArguments[name.Name()] = newLocalTypeDef
-			t.definitions = append(t.definitions, newLocalTypeDef)
+			t.localTypeNamesMap[name.Name()] = newLocalTypeDef
+			t.localTypeNames = append(t.localTypeNames, newLocalTypeDef)
 		}
 
 	*/
@@ -120,16 +120,16 @@ func (t *LocalTypeNameOnlyContext) SetType(d dtype.Type) {
 }
 
 func (t *LocalTypeNameOnlyContext) HasDefinitions() bool {
-	return len(t.definitions) > 0
+	return len(t.localTypeNames) > 0
 }
 
 func (t *LocalTypeNameOnlyContext) AddDef(identifier *dtype.LocalTypeName) *LocalTypeName {
 	nameDef := NewLocalTypeName(identifier)
-	t.resolvedArguments[identifier.Name()] = nameDef
+	t.localTypeNamesMap[identifier.Name()] = nameDef
 	if !nameDef.FetchPositionLength().Verify() {
 		panic(fmt.Errorf("wrong position length"))
 	}
-	t.definitions = append(t.definitions, nameDef)
+	t.localTypeNames = append(t.localTypeNames, nameDef)
 
 	return nameDef
 }
@@ -137,7 +137,7 @@ func (t *LocalTypeNameOnlyContext) AddDef(identifier *dtype.LocalTypeName) *Loca
 func (t *LocalTypeNameOnlyContext) ReferenceNameOnly(identifier *ast.LocalTypeNameReference) (
 	*LocalTypeNameReference, error,
 ) {
-	found := t.resolvedArguments[identifier.Name()]
+	found := t.localTypeNamesMap[identifier.Name()]
 	if found == nil {
 		return nil, fmt.Errorf("could not find %v", identifier)
 	}

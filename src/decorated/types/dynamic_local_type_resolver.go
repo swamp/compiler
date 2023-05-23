@@ -98,7 +98,7 @@ func (t *DynamicLocalTypeResolver) LookupTypeFromName(name string) dtype.Type {
 	}
 	for index, foundParam := range t.argumentNames {
 		if foundParam.Name() == name {
-			existing := t.resolvedArguments[index]
+			existing := t.localTypeNamesMap[index]
 			if existing == nil {
 				panic(fmt.Errorf("how can existing be nil '%v' %v", name, foundParam))
 			}

@@ -28,7 +28,9 @@ func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, contex
 	return decoratedExpression, nil
 }
 
-func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.FunctionCall, functionValueExpressionFunctionType *dectype.FunctionAtom, encounteredCallParametersType *dectype.FunctionAtom, context *VariableContext) (
+func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.FunctionCall,
+	functionValueExpressionFunctionType *dectype.FunctionAtom, encounteredCallParametersType *dectype.FunctionAtom,
+	context *VariableContext) (
 	*dectype.FunctionAtom, decshared.DecoratedError,
 ) {
 
@@ -62,7 +64,9 @@ func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.Fu
 	return completeCalledFunctionType, nil
 }
 
-func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, functionValueExpression decorated.Expression, decoratedEncounteredArgumentExpressions []decorated.Expression, completeCalledFunctionType *dectype.FunctionAtom, context *VariableContext) (
+func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall,
+	functionValueExpression decorated.Expression, decoratedEncounteredArgumentExpressions []decorated.Expression,
+	completeCalledFunctionType *dectype.FunctionAtom, context *VariableContext) (
 	decorated.Expression, decshared.DecoratedError,
 ) {
 	var encounteredArgumentTypes []dtype.Type
@@ -108,10 +112,14 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 		}
 	}
 
-	//completeCalledFunctionType, determineErr := determineEncounteredFunctionTypeAndArguments(d, call, functionValueExpressionFunctionType, encounteredFunctionCallType, context)
-	//if determineErr != nil {
-	//	return nil, determineErr
-	//}
+	/*
+		completeCalledFunctionType, determineErr := determineEncounteredFunctionTypeAndArguments(d, call,
+			functionValueExpressionFunctionType, encounteredFunctionCallType, context)
+		if determineErr != nil {
+			return nil, determineErr
+		}
+
+	*/
 
 	/* Extra check here. Is it neccessary?
 	 */

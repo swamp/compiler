@@ -16,13 +16,15 @@ import (
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
 	f *decorated.FunctionValue, funcContext *Context,
-	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) (*Function, error) {
+	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache,
+	verboseFlag verbosity.Verbosity) (*Function, error) {
 	code := assembler_sp.NewCode()
 
 	//functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 	functionType := f.Type().(*dectype.FunctionAtom)
 	unaliasedReturnType := dectype.Unalias(functionType.ReturnType())
-	returnValueSourcePointer, allocateVariableErr := allocateForType(funcContext.stackMemory, "__return", unaliasedReturnType)
+	returnValueSourcePointer, allocateVariableErr := allocateForType(funcContext.stackMemory, "__return",
+		unaliasedReturnType)
 	if allocateVariableErr != nil {
 		return nil, allocateVariableErr
 	}
@@ -33,7 +35,8 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		if lookupErr != nil {
 			return nil, lookupErr
 		}
-		if _, err := allocateVariable(code, funcContext.scopeVariables, funcContext.stackMemory, parameter, parameter.Type(), assembler_sp.TypeID(parameterTypeID)); err != nil {
+		if _, err := allocateVariable(code, funcContext.scopeVariables, funcContext.stackMemory, parameter,
+			parameter.Type(), assembler_sp.TypeID(parameterTypeID)); err != nil {
 			return nil, err
 		}
 	}
@@ -66,7 +69,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		//code.PrintOut()
 	}
 
-	parameterTypes, _ := f.ForcedFunctionType().ParameterAndReturn()
+	parameterTypes, _ := f.DeclaredFunctionTypeAtom2().ParameterAndReturn()
 	parameterCount := uint(len(parameterTypes))
 
 	signature, lookupErr := lookup.Lookup(f.Type())

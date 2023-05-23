@@ -32,13 +32,13 @@ func CallIsExternal(fn Expression) (*ast.FunctionDeclarationExpression, bool) {
 type FunctionCall struct {
 	functionValueExpression Expression            `debug:"true"`
 	arguments               []Expression          `debug:"true"`
-	smashedFunctionType     *dectype.FunctionAtom `debug:"true"`
+	concretizedFunctionType *dectype.FunctionAtom `debug:"true"`
 	astFunctionCall         *ast.FunctionCall
 	inclusive               token.SourceFileReference
 }
 
 func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression,
-	smashedFunctionType *dectype.FunctionAtom, arguments []Expression) *FunctionCall {
+	concretizedFunctionType *dectype.FunctionAtom, arguments []Expression) *FunctionCall {
 	//log.Printf("handling %v arguments: %v", astFunctionCall.String(), len(arguments))
 
 	inclusive := astFunctionCall.FetchPositionLength()
@@ -50,7 +50,7 @@ func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression 
 
 	return &FunctionCall{
 		astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, arguments: arguments,
-		smashedFunctionType: smashedFunctionType, inclusive: inclusive,
+		concretizedFunctionType: concretizedFunctionType, inclusive: inclusive,
 	}
 }
 
@@ -67,16 +67,16 @@ func (c *FunctionCall) Arguments() []Expression {
 }
 
 func (c *FunctionCall) Type() dtype.Type {
-	return c.smashedFunctionType.ReturnType()
+	return c.concretizedFunctionType.ReturnType()
 }
 
-func (c *FunctionCall) SmashedFunctionType() *dectype.FunctionAtom {
-	return c.smashedFunctionType
+func (c *FunctionCall) ConcretizedFunctionType() *dectype.FunctionAtom {
+	return c.concretizedFunctionType
 }
 
 func (c *FunctionCall) String() string {
 	return fmt.Sprintf(
-		"[FnCall %v %v %v]", c.smashedFunctionType, c.functionValueExpression, c.arguments,
+		"[FnCall %v %v %v]", c.concretizedFunctionType, c.functionValueExpression, c.arguments,
 	) // c.functionValueExpression, c.arguments)
 }
 

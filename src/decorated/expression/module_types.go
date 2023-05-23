@@ -149,8 +149,8 @@ func (t *ModuleTypes) DebugString() string {
 func (t *ModuleTypes) TreeString(writer io.Writer) string {
 	s := ""
 	for _, v := range t.allNamedTypes {
-		fmt.Fprintf(writer, "%v :\n")
-		debug.Tree(v.realType, writer)
+		fmt.Fprintf(writer, "\n\n%v :", v.name)
+		debug.Tree(v.realType.Next(), writer)
 	}
 	return s
 }

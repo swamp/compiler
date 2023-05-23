@@ -116,7 +116,8 @@ func (t *ModuleDefinitions) ShortString() string {
 
 func (t *ModuleDefinitions) TreeString(writer io.Writer) {
 	for _, definition := range t.orderedDefinitions {
-		debug.Tree(definition, writer)
+		fmt.Fprintf(writer, "\n\ndef: %s", definition.localIdentifier.Name())
+		debug.Tree(definition.expr, writer)
 	}
 }
 

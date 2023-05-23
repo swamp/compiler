@@ -62,37 +62,39 @@ func (a *FunctionParameterDefinition) References() []*FunctionParameterReference
 }
 
 type FunctionValue struct {
-	forcedFunctionType    dtype.Type                     `debug:"true"`
-	decoratedExpression   Expression                     `debug:"true"`
-	parameters            []*FunctionParameterDefinition `debug:"true"`
-	commentBlock          *ast.MultilineComment
-	astFunction           *ast.FunctionValue
-	sourceFileReference   token.SourceFileReference
-	references            []*FunctionReference
-	convertedFunctionType *dectype.FunctionAtom `debug:"true"`
+	declaredFunctionType     dtype.Type                     `debug:"true"`
+	decoratedExpression      Expression                     `debug:"true"`
+	parameters               []*FunctionParameterDefinition `debug:"true"`
+	commentBlock             *ast.MultilineComment
+	astFunction              *ast.FunctionValue
+	sourceFileReference      token.SourceFileReference
+	references               []*FunctionReference
+	declaredFunctionTypeAtom *dectype.FunctionAtom
 }
 
-func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType dtype.Type,
-	parameters []*FunctionParameterDefinition, convertedFunctionType *dectype.FunctionAtom,
+func NewPrepareFunctionValue(astFunction *ast.FunctionValue, declaredFunctionType dtype.Type,
+	parameters []*FunctionParameterDefinition, declaredFunctionTypeAtom *dectype.FunctionAtom,
 	commentBlock *ast.MultilineComment) *FunctionValue {
-	if len(parameters) != (convertedFunctionType.ParameterCount() - 1) {
-		panic(fmt.Errorf("not great. different number of parameters %d vs %v", len(parameters), convertedFunctionType))
+	if len(parameters) != (declaredFunctionTypeAtom.ParameterCount() - 1) {
+		panic(fmt.Errorf("not great. different number of parameters %d vs %v", len(parameters),
+			declaredFunctionTypeAtom))
 	}
 	for _, param := range parameters {
 		log.Printf("param %v %T", param.Parameter().Name(), param.Type().Next())
 	}
-	if forcedFunctionType == nil {
+	if declaredFunctionType == nil {
 		panic("must provide forced function type")
 	}
 	return &FunctionValue{
-		astFunction: astFunction, forcedFunctionType: forcedFunctionType, convertedFunctionType: convertedFunctionType,
-		parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock,
+		astFunction: astFunction, declaredFunctionType: declaredFunctionType,
+		declaredFunctionTypeAtom: declaredFunctionTypeAtom,
+		parameters:               parameters, decoratedExpression: nil, commentBlock: commentBlock,
 		sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference,
 	}
 }
 
-func (f *FunctionValue) ConvertedFunctionType() *dectype.FunctionAtom {
-	return f.convertedFunctionType
+func (f *FunctionValue) DeclaredFunctionTypeAtom() *dectype.FunctionAtom {
+	return f.declaredFunctionTypeAtom
 }
 
 func (f *FunctionValue) DefineExpression(decoratedExpression Expression) {
@@ -119,12 +121,12 @@ func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
 	return f.parameters
 }
 
-func (f *FunctionValue) ForcedFunctionType() *dectype.FunctionAtom {
-	return dectype.DerefFunctionType(f.forcedFunctionType)
+func (f *FunctionValue) DeclaredFunctionTypeAtom2() *dectype.FunctionAtom {
+	return dectype.DerefFunctionType(f.declaredFunctionType)
 }
 
 func (f *FunctionValue) String() string {
-	return fmt.Sprintf("[FunctionValue %v (%v) -> %v]", f.forcedFunctionType, f.parameters, f.decoratedExpression)
+	return fmt.Sprintf("[FunctionValue %v (%v) -> %v]", f.declaredFunctionType, f.parameters, f.decoratedExpression)
 }
 
 func (f *FunctionValue) HumanReadable() string {
@@ -132,15 +134,15 @@ func (f *FunctionValue) HumanReadable() string {
 }
 
 func (f *FunctionValue) Type() dtype.Type {
-	return f.forcedFunctionType
+	return f.declaredFunctionType
 }
 
 func (f *FunctionValue) Next() dtype.Type {
-	return f.forcedFunctionType
+	return f.declaredFunctionType
 }
 
 func (f *FunctionValue) Resolve() (dtype.Atom, error) {
-	return f.forcedFunctionType.Resolve()
+	return f.declaredFunctionType.Resolve()
 }
 
 func (f *FunctionValue) Expression() Expression {

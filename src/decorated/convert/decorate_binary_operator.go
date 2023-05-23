@@ -129,7 +129,8 @@ func parsePipeLeftExpression(p ParseStream, operatorToken token.OperatorToken, s
 
 */
 
-func defToFunctionReference(def *decorated.NamedDecoratedExpression, ident ast.ScopedOrNormalVariableIdentifier) *decorated.FunctionReference {
+func defToFunctionReference(def *decorated.NamedDecoratedExpression,
+	ident ast.ScopedOrNormalVariableIdentifier) *decorated.FunctionReference {
 	lookupExpression := def.Expression()
 	functionValue, _ := lookupExpression.(*decorated.FunctionValue)
 
@@ -214,7 +215,7 @@ func resolveToFunctionAtom(leftDecorated decorated.Expression) *dectype.Function
 			}
 		}
 	} else {
-		leftSmashedFunctionType = leftFunctionCall.SmashedFunctionType()
+		leftSmashedFunctionType = leftFunctionCall.ConcretizedFunctionType()
 	}
 
 	return leftSmashedFunctionType
@@ -251,7 +252,7 @@ func resolveToFunctionAtom(leftDecorated decorated.Expression) *dectype.Function
 
 	functionCall := fullRightFunctionCall.(*decorated.FunctionCall)
 
-	halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionCall, functionCall.SmashedFunctionType(), arguments)
+	halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionCall, functionCall.ConcretizedFunctionType(), arguments)
 */
 
 func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (
@@ -292,7 +293,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		allTypes = append(allTypes, originalReturn)
 	case *decorated.FunctionReference:
 		originalRightFunctionAtom = t.FunctionValue().Type().(*dectype.FunctionAtom)
-		rightFunctionAtom = t.FunctionValue().ConvertedFunctionType()
+		rightFunctionAtom = t.FunctionValue().DeclaredFunctionTypeAtom()
 		rightParameterTypes, originalRightReturn := originalRightFunctionAtom.ParameterAndReturn()
 		allTypes = append(allTypes, rightParameterTypes[:len(rightParameterTypes)-1]...)
 		allTypes = append(allTypes, leftSideReturns)
@@ -351,7 +352,7 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 		allTypes = append(allTypes, originalReturn)
 	case *decorated.FunctionReference:
 		originalLeftFunctionAtom = t.FunctionValue().Type().(*dectype.FunctionAtom)
-		leftFunctionAtom = t.FunctionValue().ConvertedFunctionType()
+		leftFunctionAtom = t.FunctionValue().DeclaredFunctionTypeAtom()
 		leftParameterTypes, originalLeftReturn := originalLeftFunctionAtom.ParameterAndReturn()
 		allTypes = append(allTypes, leftParameterTypes[:len(leftParameterTypes)-1]...)
 		allTypes = append(allTypes, rightSideReturns)

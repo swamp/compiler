@@ -17,7 +17,8 @@ import (
 	opcode_sp_type "github.com/swamp/opcodes/type"
 )
 
-func preparePackageConstants(compiledPackage *loader.Package, packageConstants *assembler_sp.PackageConstants, typeInformationChunk typeinfo.TypeLookup) decshared.DecoratedError {
+func preparePackageConstants(compiledPackage *loader.Package, packageConstants *assembler_sp.PackageConstants,
+	typeInformationChunk typeinfo.TypeLookup) decshared.DecoratedError {
 	for _, module := range compiledPackage.AllModules() {
 		for _, named := range module.LocalDefinitions().Definitions() {
 			unknownExpression := named.Expression()
@@ -27,7 +28,7 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 				isExternal := maybeFunction.IsSomeKindOfExternal()
 				if isExternal {
 					var paramPosRanges []assembler_sp.SourceStackPosRange
-					hasLocalTypes := dectype.TypeIsTemplateHasLocalTypes(maybeFunction.ForcedFunctionType())
+					hasLocalTypes := dectype.TypeIsTemplateHasLocalTypes(maybeFunction.DeclaredFunctionTypeAtom2())
 					// parameterCount := len(maybeFunction.Parameters())
 					pos := dectype.MemoryOffset(0)
 					if hasLocalTypes {
@@ -36,12 +37,13 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 							Size: assembler_sp.SourceStackRange(0),
 						}
 						paramPosRanges = make([]assembler_sp.SourceStackPosRange, len(maybeFunction.Parameters()))
-						if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
+						if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(),
+							returnPosRange, paramPosRanges); err != nil {
 							return decorated.NewInternalError(err)
 						}
 						continue
 					}
-					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.DeclaredFunctionTypeAtom2().ReturnType())
 					returnPosRange := assembler_sp.SourceStackPosRange{
 						Pos:  assembler_sp.SourceStackPos(pos),
 						Size: assembler_sp.SourceStackRange(returnSize),
@@ -49,7 +51,7 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 
 					pos += dectype.MemoryOffset(returnSize)
 
-					parameterTypes, _ := maybeFunction.ForcedFunctionType().ParameterAndReturn()
+					parameterTypes, _ := maybeFunction.DeclaredFunctionTypeAtom2().ParameterAndReturn()
 
 					for _, param := range parameterTypes {
 						unaliased := dectype.Unalias(param)
@@ -75,15 +77,16 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 						pos += dectype.MemoryOffset(size)
 					}
 
-					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(), returnPosRange, paramPosRanges); err != nil {
+					if _, err := packageConstants.AllocatePrepareExternalFunctionConstant(fullyQualifiedName.String(),
+						returnPosRange, paramPosRanges); err != nil {
 						return decorated.NewInternalError(err)
 					}
 				} else {
-					// parameterTypes, _ := maybeFunction.ForcedFunctionType().ParameterAndReturn()
-					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.ForcedFunctionType().ReturnType())
+					// parameterTypes, _ := maybeFunction.DeclaredFunctionTypeAtom2().ParameterAndReturn()
+					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.DeclaredFunctionTypeAtom2().ReturnType())
 					parameterCount := uint(len(maybeFunction.Parameters())) // parameterTypes
 
-					functionTypeIndex, lookupErr := typeInformationChunk.Lookup(maybeFunction.ForcedFunctionType())
+					functionTypeIndex, lookupErr := typeInformationChunk.Lookup(maybeFunction.DeclaredFunctionTypeAtom2())
 					if lookupErr != nil {
 						return decorated.NewInternalError(lookupErr)
 					}
@@ -95,7 +98,9 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 						pos += dectype.MemoryOffset(paramSize)
 					}
 					parameterOctetSize := dectype.MemorySize(pos)
-					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(), opcode_sp_type.MemorySize(returnSize), opcode_sp_type.MemoryAlign(returnAlign), parameterCount, opcode_sp_type.MemorySize(parameterOctetSize), uint(functionTypeIndex)); err != nil {
+					if _, err := packageConstants.AllocatePrepareFunctionConstant(fullyQualifiedName.String(),
+						opcode_sp_type.MemorySize(returnSize), opcode_sp_type.MemoryAlign(returnAlign), parameterCount,
+						opcode_sp_type.MemorySize(parameterOctetSize), uint(functionTypeIndex)); err != nil {
 						return decorated.NewInternalError(err)
 					}
 

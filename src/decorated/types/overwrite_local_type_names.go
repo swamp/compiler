@@ -1,6 +1,8 @@
 package dectype
 
 import (
+	"fmt"
+
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
@@ -9,40 +11,136 @@ type LookupTypeName interface {
 	LookupTypeRef(decReference *LocalTypeNameReference) (*ResolvedLocalTypeReference, decshared.DecoratedError)
 }
 
-func replaceLocalNamesInFunctionIfNeeded(atom *FunctionAtom, lookup LookupTypeName) (*FunctionAtom, error) {
+func replaceLocalNamesInFunctionIfNeeded(atom *FunctionAtom, lookup LookupTypeName) (*FunctionAtom, bool, error) {
 	newTypes, wasReplaced, err := replaceLocalNameInSliceIfNeeded(atom.FunctionParameterTypes(), lookup)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if !wasReplaced {
-		return atom, nil
+		return atom, false, nil
 	}
 
-	return NewFunctionAtom(atom.astFunctionType, newTypes), nil
+	return NewFunctionAtom(atom.astFunctionType, newTypes), true, nil
 }
 
-func replaceLocalNamesInPrimitiveIfNeeded(atom *PrimitiveAtom, lookup LookupTypeName) (*PrimitiveAtom, error) {
+func replaceLocalNamesInTupleTypeIfNeeded(atom *TupleTypeAtom, lookup LookupTypeName) (*TupleTypeAtom, bool, error) {
 	newTypes, wasReplaced, err := replaceLocalNameInSliceIfNeeded(atom.ParameterTypes(), lookup)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if !wasReplaced {
-		return atom, nil
+		return atom, false, nil
 	}
 
-	return NewPrimitiveType(atom.PrimitiveName(), newTypes), nil
+	return NewTupleTypeAtom(atom.astTupleType, newTypes), true, nil
 }
 
-func ReplaceLocalNameIfNeeded(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type, error) {
+func replaceLocalNamesInCustomTypeIfNeeded(customType *CustomTypeAtom, lookup LookupTypeName) (*CustomTypeAtom, bool,
+	error) {
+	var newVariants []*CustomTypeVariantAtom
+
+	newCustomType := NewCustomTypePrepare(customType.astCustomType, customType.artifactTypeName)
+
+	someVariantWasReplaced := false
+	for _, variant := range customType.variants {
+		newTypes, wasReplaced, err := replaceLocalNameInSliceIfNeeded(variant.ParameterTypes(), lookup)
+		if err != nil {
+			return nil, false, err
+		}
+
+		if !wasReplaced {
+			newVariants = append(newVariants, variant)
+			continue
+		}
+
+		someVariantWasReplaced = true
+		newVariant := NewCustomTypeVariant(variant.index, newCustomType, variant.astCustomTypeVariant, newTypes)
+		newVariants = append(newVariants, newVariant)
+	}
+
+	if !someVariantWasReplaced {
+		return customType, someVariantWasReplaced, nil
+	}
+
+	newCustomType.FinalizeVariants(newVariants)
+
+	return newCustomType, someVariantWasReplaced, nil
+}
+
+func replaceLocalNamesInRecordAtomIfNeeded(recordType *RecordAtom, lookup LookupTypeName) (*RecordAtom, bool, error) {
+	var newRecordFields []*RecordField
+
+	//newCustomType := NewCustomTypePrepare(recordType.astCustomType, recordType.artifactTypeName)
+
+	someFieldWasReplaced := false
+	for _, recordField := range recordType.sortedFields {
+		newType, wasReplaced, err := internalCollapse(recordField.Type(), lookup)
+		if err != nil {
+			return nil, false, err
+		}
+
+		if !wasReplaced {
+			newRecordFields = append(newRecordFields, recordField)
+			continue
+		}
+
+		someFieldWasReplaced = true
+		newVariant := NewRecordField(recordField.FieldName(), newType)
+		newRecordFields = append(newRecordFields, newVariant)
+	}
+
+	if !someFieldWasReplaced {
+		return recordType, false, nil
+	}
+
+	newRecord := NewRecordType(recordType.AstRecord(), newRecordFields)
+
+	return newRecord, true, nil
+}
+
+func replaceLocalNamesInPrimitiveIfNeeded(atom *PrimitiveAtom, lookup LookupTypeName) (*PrimitiveAtom, bool, error) {
+	newTypes, wasReplaced, err := replaceLocalNameInSliceIfNeeded(atom.ParameterTypes(), lookup)
+	if err != nil {
+		return nil, false, err
+	}
+	if !wasReplaced {
+		return atom, false, nil
+	}
+
+	return NewPrimitiveType(atom.PrimitiveName(), newTypes), wasReplaced, nil
+}
+
+func Collapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type, error) {
+	newType, _, err := internalCollapse(typeToCheck, lookup)
+
+	return newType, err
+}
+
+func internalCollapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type, bool, error) {
 	switch t := typeToCheck.(type) {
 	case *LocalTypeNameReference:
-		return lookup.LookupTypeRef(t)
+		newType, err := lookup.LookupTypeRef(t)
+		return newType, true, err
 	case *FunctionAtom:
 		return replaceLocalNamesInFunctionIfNeeded(t, lookup)
+	case *TupleTypeAtom:
+		return replaceLocalNamesInTupleTypeIfNeeded(t, lookup)
+	case *CustomTypeAtom:
+		return replaceLocalNamesInCustomTypeIfNeeded(t, lookup)
+	case *RecordAtom:
+		return replaceLocalNamesInRecordAtomIfNeeded(t, lookup)
+	case *PrimitiveTypeReference:
+		return replaceLocalNamesInPrimitiveIfNeeded(t.primitiveType, lookup)
 	case *PrimitiveAtom:
 		return replaceLocalNamesInPrimitiveIfNeeded(t, lookup)
+	case *LocalTypeNameOnlyContextReference:
+		return internalCollapse(t.Next(), lookup)
+	//return replaceLocalNameInNameOnlyContext(t, lookup)
+	case *LocalTypeNameOnlyContext:
+		return internalCollapse(t.Next(), lookup)
 	default:
-		return typeToCheck, nil
+		panic(fmt.Errorf("collapse not implemented for %T", typeToCheck))
+		return typeToCheck, false, nil
 	}
 }
 
@@ -50,7 +148,7 @@ func replaceLocalNameInSliceIfNeeded(types []dtype.Type, lookup LookupTypeName) 
 	someOneWasReplaced := false
 	var newTypes []dtype.Type
 	for _, x := range types {
-		replaced, err := ReplaceLocalNameIfNeeded(x, lookup)
+		replaced, err := Collapse(x, lookup)
 		if err != nil {
 			return nil, true, err
 		}

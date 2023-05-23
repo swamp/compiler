@@ -24,11 +24,12 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 
 func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, isLeafNode bool,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	functionAtom := dectype.UnaliasWithResolveInvoker(call.SmashedFunctionType()).(*dectype.FunctionAtom)
+	functionAtom := dectype.UnaliasWithResolveInvoker(call.ConcretizedFunctionType()).(*dectype.FunctionAtom)
 	maybeOriginalFunctionType := dectype.UnaliasWithResolveInvoker(call.FunctionExpression().Type())
 	originalFunctionType, _ := maybeOriginalFunctionType.(*dectype.FunctionAtom)
 	if dectype.TypeIsTemplateHasLocalTypes(functionAtom) {
-		panic(fmt.Errorf("we can not call functions that has local types %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), functionAtom))
+		panic(fmt.Errorf("we can not call functions that has local types %v %v",
+			call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), functionAtom))
 	}
 
 	fn := call.FunctionExpression()
@@ -58,7 +59,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 	genContext.context.stackMemory.AlignUpForMax()
 
 	invokedReturnType := dectype.Unalias(functionAtom.ReturnType())
-	returnValue, returnValueAlign := allocMemoryForTypeEx(genContext.context.stackMemory, invokedReturnType, "returnValue")
+	returnValue, returnValueAlign := allocMemoryForTypeEx(genContext.context.stackMemory, invokedReturnType,
+		"returnValue")
 	if uint(returnValue.Size) == 0 {
 		panic(fmt.Errorf("how can it have zero size in return? %v", returnValue))
 	}
@@ -68,7 +70,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 
 	expectedParameters, _ := originalFunctionType.ParameterAndReturn()
 	if len(expectedParameters) < len(call.Arguments()) {
-		panic(fmt.Errorf("wrong parameters %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))
+		panic(fmt.Errorf("wrong parameters %v %v",
+			call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))
 	}
 
 	for index, arg := range call.Arguments() {
@@ -76,11 +79,13 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 		functionArgTypeUnalias := dectype.Unalias(functionArgType)
 		needsTypeId := dectype.ArgumentNeedsTypeIdInsertedBefore(functionArgTypeUnalias)
 		if needsTypeId {
-			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampInt), uint32(opcode_sp_type.AlignOfSwampInt), "typeid")
+			anySourcePosGen := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampInt),
+				uint32(opcode_sp_type.AlignOfSwampInt), "typeid")
 			arguments = append(arguments, anySourcePosGen)
 			argumentsAlign = append(argumentsAlign, dectype.MemoryAlign(opcode_sp_type.AlignOfSwampInt))
 		}
-		argPosRange, align := allocMemoryForTypeEx(genContext.context.stackMemory, arg.Type(), fmt.Sprintf("arg %d", index))
+		argPosRange, align := allocMemoryForTypeEx(genContext.context.stackMemory, arg.Type(),
+			fmt.Sprintf("arg %d", index))
 
 		arguments = append(arguments, argPosRange)
 		argumentsAlign = append(argumentsAlign, align)
@@ -156,7 +161,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 		}
 	} else {
 		if callSelf {
-			returnSize, _ := dectype.GetMemorySizeAndAlignment(insideFunction.ForcedFunctionType().ReturnType())
+			returnSize, _ := dectype.GetMemorySizeAndAlignment(insideFunction.DeclaredFunctionTypeAtom2().ReturnType())
 			pos := dectype.MemoryOffset(returnSize)
 			pos = align(pos, argumentsAlign[0])
 			firstArgumentStackPosition := assembler_sp.TargetStackPos(pos)
@@ -182,7 +187,8 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 	return targetToSourceStackPosRange(returnValue), nil
 }
 
-func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, call *decorated.FunctionCall,
+func generateFunctionCall(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
+	call *decorated.FunctionCall,
 	leafNode bool, genContext *generateContext) error {
 	posRange, err := handleFunctionCall(code, call, leafNode, genContext)
 	if err != nil {

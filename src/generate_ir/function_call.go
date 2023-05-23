@@ -31,7 +31,7 @@ func generateFunctionCall(call *decorated.FunctionCall,
 
 func handleFunctionCall(call *decorated.FunctionCall, isLeafNode bool,
 	genContext *generateContext) (value.Value, error) {
-	functionAtom := dectype.UnaliasWithResolveInvoker(call.SmashedFunctionType()).(*dectype.FunctionAtom)
+	functionAtom := dectype.UnaliasWithResolveInvoker(call.ConcretizedFunctionType()).(*dectype.FunctionAtom)
 	maybeOriginalFunctionType := dectype.UnaliasWithResolveInvoker(call.FunctionExpression().Type())
 	originalFunctionType, _ := maybeOriginalFunctionType.(*dectype.FunctionAtom)
 	if dectype.TypeIsTemplateHasLocalTypes(functionAtom) {
@@ -149,7 +149,7 @@ func handleFunctionCall(call *decorated.FunctionCall, isLeafNode bool,
 	} else {
 		if callSelf {
 			/*
-				returnSize, _ := dectype.GetMemorySizeAndAlignment(insideFunction.ForcedFunctionType().ReturnType())
+				returnSize, _ := dectype.GetMemorySizeAndAlignment(insideFunction.DeclaredFunctionTypeAtom2().ReturnType())
 				pos := dectype.MemoryOffset(returnSize)
 				pos = align(pos, argumentsAlign[0])
 				firstArgumentStackPosition := assembler_sp.TargetStackPos(pos)

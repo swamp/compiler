@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"reflect"
 	"strings"
 )
@@ -64,6 +65,10 @@ func writeAllSingleFieldStructs(fieldValue reflect.Value, structField reflect.St
 		fmt.Fprintf(writer, ".")
 	}
 	fmt.Fprintf(writer, "%s", structField.Name)
+	if structField.Name == "decoratedExpression" {
+		log.Printf("hej")
+	}
+
 	foundFieldValue, foundSingleField, fieldWasFound, _ := checkIfStructContainSingleVisibleField(fieldValue)
 	if fieldWasFound {
 		if localDepth == 0 {
@@ -89,6 +94,7 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 	case reflect.Struct:
 		fields := reflect.VisibleFields(reflectValue.Type())
 		fieldWrittenCount := 0
+		filteredOut := false
 		for _, field := range fields {
 			foundDebug := field.Tag.Get("debug")
 			if foundDebug == "" {
@@ -96,6 +102,10 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 				continue
 			}
 
+			if len(field.Index) > 1 {
+				//				filteredOut = true
+				//				continue
+			}
 			reflectFieldValue := reflectValue.FieldByIndex(field.Index)
 
 			var localWriter bytes.Buffer
@@ -103,6 +113,7 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 				reflectFieldValue, field, 0, &localWriter,
 			)
 			if !shouldUseThisFieldAfterAll {
+				filteredOut = true
 				continue
 			}
 
@@ -116,7 +127,7 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 			tree(subReflectFieldValue, tab+1, writer)
 		}
 
-		if fieldWrittenCount == 0 {
+		if fieldWrittenCount == 0 && !filteredOut {
 			panic(fmt.Errorf("not allowed '%s'", reflectValue.Type().String()))
 		}
 
@@ -130,9 +141,12 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 
 	case reflect.String:
 		fmt.Fprintf(writer, " = '%s'", reflectValue.String())
+
 	case reflect.Int:
 	case reflect.Int32:
 		fmt.Fprintf(writer, " = %d", reflectValue.Int())
+	case reflect.Bool:
+		fmt.Fprintf(writer, " = %v", reflectValue.Bool())
 	default:
 		fmt.Fprintf(writer, "unknown %d", reflectValue.Kind())
 	}
@@ -140,6 +154,5 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 
 func Tree(expr interface{}, writer io.Writer) {
 	subType := reflect.ValueOf(expr)
-	reflectExpression := subType.Elem()
-	tree(reflectExpression, 0, writer)
+	tree(subType, 0, writer)
 }

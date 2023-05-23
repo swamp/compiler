@@ -25,7 +25,8 @@ func CheckForNoLint(commentBlock token.Comment) string {
 }
 */
 
-func createVariableContextFromParameters(context *VariableContext, parameters []*decorated.FunctionParameterDefinition) *VariableContext {
+func createVariableContextFromParameters(context *VariableContext,
+	parameters []*decorated.FunctionParameterDefinition) *VariableContext {
 	newVariableContext := context.MakeVariableContext()
 
 	for _, parameter := range parameters {
@@ -41,7 +42,8 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 	return newVariableContext
 }
 
-func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNamedValue *decorated.NamedFunctionValue, context *VariableContext) decshared.DecoratedError {
+func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNamedValue *decorated.NamedFunctionValue,
+	context *VariableContext) decshared.DecoratedError {
 	var decoratedExpression decorated.Expression
 	targetFunctionValue := targetFunctionNamedValue.Value()
 	subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
@@ -62,11 +64,11 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 
 	targetFunctionNamedValue.DefineExpression(decoratedExpression)
 
-	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
-	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
+	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.DeclaredFunctionTypeAtom2().ReturnType(), decoratedExpressionType)
+	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.DeclaredFunctionTypeAtom2().ReturnType(), decoratedExpressionType)
 
 	compatibleErr := dectype.CompatibleTypes(
-		targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType,
+		targetFunctionValue.DeclaredFunctionTypeAtom2().ReturnType(), decoratedExpressionType,
 	)
 	if compatibleErr != nil {
 		return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(

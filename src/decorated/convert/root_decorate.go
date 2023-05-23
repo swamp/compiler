@@ -30,8 +30,10 @@ type RootStatementHandler struct {
 	parentModuletype  decorated.ModuleType
 }
 
-func NewRootStatementHandler(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker, parentModuletype decorated.ModuleType, debugName string) *RootStatementHandler {
-	g := &RootStatementHandler{verboseFlag: verbosity.None, decorateStream: dectorateStream, typeRepo: typeRepo, parentModuletype: parentModuletype}
+func NewRootStatementHandler(dectorateStream DecorateStream, typeRepo decorated.TypeAddAndReferenceMaker,
+	parentModuletype decorated.ModuleType, debugName string) *RootStatementHandler {
+	g := &RootStatementHandler{verboseFlag: verbosity.None, decorateStream: dectorateStream, typeRepo: typeRepo,
+		parentModuletype: parentModuletype}
 	return g
 }
 
@@ -56,7 +58,8 @@ func (g *RootStatementHandler) findTypeFromAstType(constantType ast.Type) (dtype
 	return t, nil
 }
 
-func ConvertWrappedOrNormalCustomTypeStatement(customType *ast.CustomType, typeRepo decorated.TypeAddAndReferenceMaker, localComments []ast.LocalComment) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+func ConvertWrappedOrNormalCustomTypeStatement(customType *ast.CustomType, typeRepo decorated.TypeAddAndReferenceMaker,
+	localComments []ast.LocalComment) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	resultType, tErr := DecorateCustomType(customType, typeRepo)
 	if tErr != nil {
 		return nil, tErr
@@ -64,7 +67,8 @@ func ConvertWrappedOrNormalCustomTypeStatement(customType *ast.CustomType, typeR
 	return resultType, nil
 }
 
-func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *ast.CustomType, localNameContext *dectype.LocalTypeNameOnlyContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *ast.CustomType,
+	localNameContext *dectype.LocalTypeNameOnlyContext) (*dectype.CustomTypeAtom, decshared.DecoratedError) {
 	subRepo := g.typeRepo.MakeLocalNameContext(localNameContext)
 	customType, convertErr := ConvertWrappedOrNormalCustomTypeStatement(customTypeStatement, subRepo, nil)
 	g.localComments = nil
@@ -75,7 +79,8 @@ func (g *RootStatementHandler) handleCustomTypeStatement(customTypeStatement *as
 	return customType, nil
 }
 
-func (g *RootStatementHandler) handleImport(d DecorateStream, importAst *ast.Import) (*decorated.ImportStatement, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleImport(d DecorateStream, importAst *ast.Import) (*decorated.ImportStatement,
+	decshared.DecoratedError) {
 	alias := dectype.MakeSingleModuleName(nil)
 	if importAst.Alias() != nil {
 		alias = dectype.MakeSingleModuleName(importAst.Alias())
@@ -84,20 +89,23 @@ func (g *RootStatementHandler) handleImport(d DecorateStream, importAst *ast.Imp
 	return d.ImportModule(g.parentModuletype, importAst, packageRelative, alias, importAst.ExposeAll(), g.verboseFlag)
 }
 
-func (g *RootStatementHandler) handleSinglelineComment(d DecorateStream, singleLineComment *ast.SingleLineComment) (*decorated.SingleLineComment, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleSinglelineComment(d DecorateStream,
+	singleLineComment *ast.SingleLineComment) (*decorated.SingleLineComment, decshared.DecoratedError) {
 	decoratedComment := decorated.NewSingleLineComment(singleLineComment)
 	g.localComments = append(g.localComments, decoratedComment)
 	return decoratedComment, nil
 }
 
-func (g *RootStatementHandler) handleMultilineComment(d DecorateStream, multilineComment *ast.MultilineComment) (*decorated.MultilineComment, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleMultilineComment(d DecorateStream,
+	multilineComment *ast.MultilineComment) (*decorated.MultilineComment, decshared.DecoratedError) {
 	decoratedComment := decorated.NewMultilineComment(multilineComment)
 	g.localComments = append(g.localComments, decoratedComment)
 	g.localCommentBlock = multilineComment
 	return decoratedComment, nil
 }
 
-func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream, constant *ast.ConstantDefinition) (*decorated.Constant, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream,
+	constant *ast.ConstantDefinition) (*decorated.Constant, decshared.DecoratedError) {
 	name := constant.Identifier()
 	variableContext := d.NewVariableContext()
 	namedConstant, decoratedExpressionErr := decorateConstant(d, name, constant, variableContext, constant.Comment())
@@ -110,7 +118,9 @@ func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream, consta
 	return namedConstant, nil
 }
 
-func createParameterDefinitions(referenceMaker decorated.TypeAddAndReferenceMaker, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) ([]*decorated.FunctionParameterDefinition, decshared.DecoratedError) {
+func createParameterDefinitions(referenceMaker decorated.TypeAddAndReferenceMaker,
+	forcedFunctionType *dectype.FunctionAtom,
+	functionValue *ast.FunctionValue) ([]*decorated.FunctionParameterDefinition, decshared.DecoratedError) {
 	var parameters []*decorated.FunctionParameterDefinition
 	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
 	identifiers := functionValue.Parameters()
@@ -127,10 +137,11 @@ func createParameterDefinitions(referenceMaker decorated.TypeAddAndReferenceMake
 	return parameters, nil
 }
 
-func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream, assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
+func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream,
+	assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 
 	/*
-		forcedFunctionTypeLike := targetFunctionValue.ForcedFunctionType()
+		forcedFunctionTypeLike := targetFunctionValue.DeclaredFunctionTypeAtom2()
 
 		potentialFunc := targetFunctionValue.AstFunctionValue()
 
@@ -146,27 +157,29 @@ func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream, assign
 
 	*/
 
-	foundFunctionTypeLike, convertedTypeErr := g.findTypeFromAstType(assignment.FunctionValue().Type())
+	declaredFunctionTypeLike, convertedTypeErr := g.findTypeFromAstType(assignment.FunctionValue().Type())
 	if convertedTypeErr != nil {
 		return nil, decorated.NewUnknownAnnotationTypeReference(assignment.Identifier(), convertedTypeErr)
 	}
-	if foundFunctionTypeLike == nil {
+	if declaredFunctionTypeLike == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 	}
 
 	name := assignment.Identifier()
 
-	forcedFunctionType := dectype.DerefFunctionType(foundFunctionTypeLike)
-	if forcedFunctionType == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("expected function type %T", forcedFunctionType))
+	declaredFunctionTypeAtom := dectype.DerefFunctionType(declaredFunctionTypeLike)
+	if declaredFunctionTypeAtom == nil {
+		return nil, decorated.NewInternalError(fmt.Errorf("expected function type %T", declaredFunctionTypeAtom))
 	}
 
-	parameters, parametersErr := createParameterDefinitions(d.TypeReferenceMaker(), forcedFunctionType, assignment.FunctionValue())
+	parameters, parametersErr := createParameterDefinitions(d.TypeReferenceMaker(), declaredFunctionTypeAtom,
+		assignment.FunctionValue())
 	if parametersErr != nil {
 		return nil, parametersErr
 	}
 
-	preparedFunctionValue := decorated.NewPrepareFunctionValue(assignment.FunctionValue(), foundFunctionTypeLike, parameters, forcedFunctionType, g.localCommentBlock)
+	preparedFunctionValue := decorated.NewPrepareFunctionValue(assignment.FunctionValue(), declaredFunctionTypeLike,
+		parameters, declaredFunctionTypeAtom, g.localCommentBlock)
 
 	d.AddDefinition(name, preparedFunctionValue)
 
@@ -175,7 +188,8 @@ func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream, assign
 	return namedFunctionValue, nil
 }
 
-func (g *RootStatementHandler) defineNamedFunctionValue(d DecorateStream, target *decorated.NamedFunctionValue) decshared.DecoratedError {
+func (g *RootStatementHandler) defineNamedFunctionValue(d DecorateStream,
+	target *decorated.NamedFunctionValue) decshared.DecoratedError {
 	variableContext := d.NewVariableContext()
 
 	decoratedExpressionErr := DefineExpressionInPreparedFunctionValue(d, target, variableContext)
@@ -186,7 +200,8 @@ func (g *RootStatementHandler) defineNamedFunctionValue(d DecorateStream, target
 	return nil
 }
 
-func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *ast.CustomTypeNamedDefinition) (decorated.Statement, decshared.DecoratedError) {
+func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *ast.CustomTypeNamedDefinition) (decorated.Statement,
+	decshared.DecoratedError) {
 	astContext, wasAstContext := customTypeStatement.CustomType().(*ast.LocalTypeNameDefinitionContext)
 
 	context := dectype.NewLocalTypeNameContext()
@@ -224,7 +239,8 @@ func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *
 	return decorated.NewNamedCustomType(astCustomType.Identifier(), typeToUse), nil
 }
 
-func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement, decshared.DecoratedError) {
+func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement,
+	decshared.DecoratedError) {
 	log.Printf("convert statement %T %v", statement, statement)
 	switch v := statement.(type) {
 	case *ast.Alias:
@@ -250,7 +266,8 @@ func (g *RootStatementHandler) compileFunctionExpression(preparedFunctionNamedVa
 	return g.defineNamedFunctionValue(g.decorateStream, preparedFunctionNamedValue)
 }
 
-func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
+func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]decorated.TypeOrToken,
+	decshared.DecoratedError) {
 	var rootNodes []decorated.TypeOrToken
 
 	var errors decshared.DecoratedError
@@ -284,6 +301,7 @@ func (g *RootStatementHandler) convertStatements(program *ast.SourceFile) ([]dec
 	return rootNodes, errors
 }
 
-func (g *RootStatementHandler) HandleStatements(program *ast.SourceFile) ([]decorated.TypeOrToken, decshared.DecoratedError) {
+func (g *RootStatementHandler) HandleStatements(program *ast.SourceFile) ([]decorated.TypeOrToken,
+	decshared.DecoratedError) {
 	return g.convertStatements(program)
 }

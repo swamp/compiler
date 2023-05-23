@@ -45,7 +45,7 @@ func expandFunctionValue(fn *FunctionValue, list *ExpandedNode) {
 	//	expand(parameter, list)
 	//}
 
-	//expand(fn.ForcedFunctionType().ReturnType(), list)
+	//expand(fn.DeclaredFunctionTypeAtom2().ReturnType(), list)
 	expand(fn.Expression(), list)
 
 }
