@@ -52,10 +52,6 @@ func (u *AnyMatchingTypes) IsEqual(_ dtype.Atom) error {
 	return nil
 }
 
-func (u *AnyMatchingTypes) ParameterCount() int {
-	return 0
-}
-
 func (u *AnyMatchingTypes) Resolve() (dtype.Atom, error) {
 	return u, nil
 }

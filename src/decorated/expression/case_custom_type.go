@@ -50,7 +50,8 @@ func (c *CaseConsequenceParameterForCustomType) AddReferee(ref *CaseConsequenceP
 	c.references = append(c.references, ref)
 }
 
-func NewCaseConsequenceParameterForCustomType(name *ast.VariableIdentifier, parameterType dtype.Type) *CaseConsequenceParameterForCustomType {
+func NewCaseConsequenceParameterForCustomType(name *ast.VariableIdentifier,
+	parameterType dtype.Type) *CaseConsequenceParameterForCustomType {
 	return &CaseConsequenceParameterForCustomType{name: name, parameterType: parameterType}
 }
 
@@ -62,7 +63,8 @@ type CaseConsequenceForCustomType struct {
 	astConsequence *ast.CaseConsequenceForCustomType
 }
 
-func NewCaseConsequenceForCustomType(internalIndex int, variantName *dectype.CustomTypeVariantReference, parameters []*CaseConsequenceParameterForCustomType,
+func NewCaseConsequenceForCustomType(internalIndex int, variantName *dectype.CustomTypeVariantReference,
+	parameters []*CaseConsequenceParameterForCustomType,
 	expression Expression, astConsequence *ast.CaseConsequenceForCustomType) *CaseConsequenceForCustomType {
 	return &CaseConsequenceForCustomType{
 		internalIndex: internalIndex, variantName: variantName, parameters: parameters,
@@ -113,7 +115,8 @@ type CaseCustomType struct {
 	caseExpression *ast.CaseForCustomType
 }
 
-func NewCaseCustomType(caseExpression *ast.CaseForCustomType, test Expression, cases []*CaseConsequenceForCustomType, defaultCase Expression) (*CaseCustomType, decshared.DecoratedError) {
+func NewCaseCustomType(caseExpression *ast.CaseForCustomType, test Expression, cases []*CaseConsequenceForCustomType,
+	defaultCase Expression) (*CaseCustomType, decshared.DecoratedError) {
 	return &CaseCustomType{caseExpression: caseExpression, test: test, cases: cases, defaultCase: defaultCase}, nil
 }
 

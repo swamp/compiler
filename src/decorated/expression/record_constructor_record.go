@@ -21,8 +21,11 @@ type RecordConstructorFromRecord struct {
 	astConstructorCall   *ast.ConstructorCall
 }
 
-func NewRecordConstructorFromRecord(astConstructorCall *ast.ConstructorCall, recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, record *RecordLiteral) *RecordConstructorFromRecord {
-	return &RecordConstructorFromRecord{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, record: record, recordType: recordType}
+func NewRecordConstructorFromRecord(astConstructorCall *ast.ConstructorCall,
+	recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom,
+	record *RecordLiteral) *RecordConstructorFromRecord {
+	return &RecordConstructorFromRecord{astConstructorCall: astConstructorCall,
+		recordAliasReference: recordAliasReference, record: record, recordType: recordType}
 }
 
 func (c *RecordConstructorFromRecord) Type() dtype.Type {

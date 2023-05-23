@@ -60,7 +60,8 @@ func NewModuleImports() *ModuleImports {
 	return &ModuleImports{modules: make(map[string]*ImportedModule)}
 }
 
-func (m *ModuleImports) ImportModule(moduleName *ast.ModuleReference, module *Module, importStatementInModule *ImportStatement) *ImportedModule {
+func (m *ModuleImports) ImportModule(moduleName *ast.ModuleReference, module *Module,
+	importStatementInModule *ImportStatement) *ImportedModule {
 	importedModule := &ImportedModule{
 		moduleName: moduleName, referencedModule: module,
 		importStatementInModule: importStatementInModule,

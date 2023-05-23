@@ -21,7 +21,8 @@ type CastOperator struct {
 }
 
 func NewCastOperator(expression Expression, castToType *AliasReference, infix *ast.BinaryOperator) *CastOperator {
-	inclusive := token.MakeInclusiveSourceFileReference(expression.FetchPositionLength(), castToType.FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(expression.FetchPositionLength(),
+		castToType.FetchPositionLength())
 	return &CastOperator{expression: expression, castToType: castToType, infix: infix, inclusive: inclusive}
 }
 

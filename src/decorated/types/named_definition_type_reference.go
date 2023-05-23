@@ -18,7 +18,8 @@ type NamedDefinitionTypeReference struct {
 	ident                   ast.TypeReferenceScopedOrNormal `debug:"true"`
 }
 
-func NewNamedDefinitionTypeReference(optionalModuleReference modref.ModuleReferencer, ident ast.TypeReferenceScopedOrNormal) *NamedDefinitionTypeReference {
+func NewNamedDefinitionTypeReference(optionalModuleReference modref.ModuleReferencer,
+	ident ast.TypeReferenceScopedOrNormal) *NamedDefinitionTypeReference {
 	if !ident.FetchPositionLength().Verify() {
 		//panic(fmt.Errorf("stop, wrong type %T %v", ident, ident))
 	}
@@ -55,7 +56,8 @@ func (r *NamedDefinitionTypeReference) FetchPositionLength() token.SourceFileRef
 	return r.ident.FetchPositionLength()
 }
 
-func MakeFakeNamedDefinitionTypeReference(sourceFileRef token.SourceFileReference, primitiveName string) *NamedDefinitionTypeReference {
+func MakeFakeNamedDefinitionTypeReference(sourceFileRef token.SourceFileReference,
+	primitiveName string) *NamedDefinitionTypeReference {
 	typeIdent := ast.NewTypeIdentifier(token.NewTypeSymbolToken(primitiveName, sourceFileRef, 0))
 	typeRef := ast.NewTypeReference(typeIdent, nil)
 	return NewNamedDefinitionTypeReference(nil, typeRef)

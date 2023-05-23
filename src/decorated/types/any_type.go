@@ -11,5 +11,6 @@ import (
 )
 
 func NewAnyType() *PrimitiveAtom {
-	return NewPrimitiveType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any", token.NewInternalSourceFileReferenceRow(1), 0)), nil)
+	return NewPrimitiveType(ast.NewTypeIdentifier(token.NewTypeSymbolToken("Any",
+		token.NewInternalSourceFileReferenceRow(1), 0)), nil)
 }

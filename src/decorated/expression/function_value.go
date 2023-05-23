@@ -21,7 +21,8 @@ type FunctionParameterDefinition struct {
 	references        []*FunctionParameterReference
 }
 
-func NewFunctionParameterDefinition(identifier *ast.FunctionParameter, convertedType dtype.Type) *FunctionParameterDefinition {
+func NewFunctionParameterDefinition(identifier *ast.FunctionParameter,
+	convertedType dtype.Type) *FunctionParameterDefinition {
 	if identifier == nil {
 		panic(fmt.Errorf("functionParameter must be set"))
 	}
@@ -71,7 +72,9 @@ type FunctionValue struct {
 	convertedFunctionType *dectype.FunctionAtom `debug:"true"`
 }
 
-func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType dtype.Type, parameters []*FunctionParameterDefinition, convertedFunctionType *dectype.FunctionAtom, commentBlock *ast.MultilineComment) *FunctionValue {
+func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType dtype.Type,
+	parameters []*FunctionParameterDefinition, convertedFunctionType *dectype.FunctionAtom,
+	commentBlock *ast.MultilineComment) *FunctionValue {
 	if len(parameters) != (convertedFunctionType.ParameterCount() - 1) {
 		panic(fmt.Errorf("not great. different number of parameters %d vs %v", len(parameters), convertedFunctionType))
 	}

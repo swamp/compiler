@@ -58,7 +58,8 @@ func NewNamedFunctionValue(identifier *ast.VariableIdentifier, value *FunctionVa
 
 func (n *NamedFunctionValue) DefineExpression(decoratedExpression Expression) {
 	n.value.DefineExpression(decoratedExpression)
-	n.inclusive = token.MakeInclusiveSourceFileReference(n.identifier.FetchPositionLength(), n.value.FetchPositionLength())
+	n.inclusive = token.MakeInclusiveSourceFileReference(n.identifier.FetchPositionLength(),
+		n.value.FetchPositionLength())
 }
 
 func (n *NamedFunctionValue) String() string {

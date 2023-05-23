@@ -25,13 +25,17 @@ type RecordConstructorFromParameters struct {
 }
 
 // typeIdentifier ast.TypeReferenceScopedOrNormal
-func NewRecordConstructorFromParameters(astConstructorCall *ast.ConstructorCall, recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment, parseOrderArguments []Expression) *RecordConstructorFromParameters {
+func NewRecordConstructorFromParameters(astConstructorCall *ast.ConstructorCall,
+	recordAliasReference *dectype.AliasReference, recordType *dectype.RecordAtom, arguments []*RecordLiteralAssignment,
+	parseOrderArguments []Expression) *RecordConstructorFromParameters {
 	if recordAliasReference == nil {
 		panic("can not be nil")
 	}
 
-	inclusive := token.MakeInclusiveSourceFileReference(astConstructorCall.FetchPositionLength(), parseOrderArguments[len(parseOrderArguments)-1].FetchPositionLength())
-	return &RecordConstructorFromParameters{astConstructorCall: astConstructorCall, recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments,
+	inclusive := token.MakeInclusiveSourceFileReference(astConstructorCall.FetchPositionLength(),
+		parseOrderArguments[len(parseOrderArguments)-1].FetchPositionLength())
+	return &RecordConstructorFromParameters{astConstructorCall: astConstructorCall,
+		recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments,
 		resultingTypeAfterConstruction: recordAliasReference, recordType: recordType, inclusive: inclusive}
 }
 

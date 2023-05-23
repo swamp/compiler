@@ -19,7 +19,8 @@ type FunctionTypeReference struct {
 	astFunctionType *ast.FunctionType
 }
 
-func NewFunctionTypeReference(astFunctionType *ast.FunctionType, referencedType *FunctionAtom, named *NamedDefinitionTypeReference) *FunctionTypeReference {
+func NewFunctionTypeReference(astFunctionType *ast.FunctionType, referencedType *FunctionAtom,
+	named *NamedDefinitionTypeReference) *FunctionTypeReference {
 	return &FunctionTypeReference{
 		referencedType:  referencedType,
 		astFunctionType: astFunctionType,

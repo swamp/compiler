@@ -54,7 +54,8 @@ func (g *LocalTypeNameOnlyContextReference) Resolve() (dtype.Atom, error) {
 	return g.nameContext.Resolve()
 }
 
-func NewLocalTypeNameContextReference(named *NamedDefinitionTypeReference, context *LocalTypeNameOnlyContext) *LocalTypeNameOnlyContextReference {
+func NewLocalTypeNameContextReference(named *NamedDefinitionTypeReference,
+	context *LocalTypeNameOnlyContext) *LocalTypeNameOnlyContextReference {
 	ref := &LocalTypeNameOnlyContextReference{named: named, nameContext: context}
 
 	// TODO: context.AddReferee(ref)

@@ -64,7 +64,9 @@ func (d *ModuleDefinitions) FindDefinitionExpression(identifier *ast.VariableIde
 	return expressionDef
 }
 
-func (d *ModuleDefinitions) AddDecoratedExpression(identifier *ast.VariableIdentifier, importModule *ImportedModule, expr Expression) error {
+func (d *ModuleDefinitions) AddDecoratedExpression(
+	identifier *ast.VariableIdentifier, importModule *ImportedModule, expr Expression,
+) error {
 	existingDeclare := d.FindDefinitionExpression(identifier)
 	if existingDeclare != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingDeclare)
@@ -77,7 +79,9 @@ func (d *ModuleDefinitions) AddDecoratedExpression(identifier *ast.VariableIdent
 	return nil
 }
 
-func (d *ModuleDefinitions) AddEmptyExternalDefinition(identifier *ast.VariableIdentifier, importModule *ImportedModule) error {
+func (d *ModuleDefinitions) AddEmptyExternalDefinition(
+	identifier *ast.VariableIdentifier, importModule *ImportedModule,
+) error {
 	existingDeclare := d.FindDefinitionExpression(identifier)
 	if existingDeclare != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingDeclare)

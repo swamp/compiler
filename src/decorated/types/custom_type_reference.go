@@ -46,10 +46,6 @@ func (g *CustomTypeReference) NameReference() *NamedDefinitionTypeReference {
 	return g.named
 }
 
-func (g *CustomTypeReference) ParameterCount() int {
-	return g.customType.ParameterCount()
-}
-
 func (g *CustomTypeReference) Resolve() (dtype.Atom, error) {
 	return g.customType.Resolve()
 }

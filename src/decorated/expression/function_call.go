@@ -37,7 +37,8 @@ type FunctionCall struct {
 	inclusive               token.SourceFileReference
 }
 
-func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression, smashedFunctionType *dectype.FunctionAtom, arguments []Expression) *FunctionCall {
+func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression Expression,
+	smashedFunctionType *dectype.FunctionAtom, arguments []Expression) *FunctionCall {
 	//log.Printf("handling %v arguments: %v", astFunctionCall.String(), len(arguments))
 
 	inclusive := astFunctionCall.FetchPositionLength()

@@ -48,8 +48,10 @@ type GuardItem struct {
 	astGuardItem  ast.GuardItem
 }
 
-func NewGuardItem(astGuardItem ast.GuardItem, internalIndex int, condition Expression, consequence Expression) *GuardItem {
-	return &GuardItem{astGuardItem: astGuardItem, internalIndex: internalIndex, condition: condition, consequence: consequence}
+func NewGuardItem(astGuardItem ast.GuardItem, internalIndex int, condition Expression,
+	consequence Expression) *GuardItem {
+	return &GuardItem{astGuardItem: astGuardItem, internalIndex: internalIndex, condition: condition,
+		consequence: consequence}
 }
 
 func (c *GuardItem) Expression() Expression {
@@ -90,7 +92,8 @@ type Guard struct {
 	astGuard     *ast.GuardExpression
 }
 
-func NewGuard(astGuard *ast.GuardExpression, items []*GuardItem, defaultGuard *GuardItemDefault) (*Guard, decshared.DecoratedError) {
+func NewGuard(astGuard *ast.GuardExpression, items []*GuardItem, defaultGuard *GuardItemDefault) (*Guard,
+	decshared.DecoratedError) {
 	return &Guard{astGuard: astGuard, items: items, defaultGuard: defaultGuard}, nil
 }
 

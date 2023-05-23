@@ -22,9 +22,12 @@ type Constant struct {
 	inclusive         token.SourceFileReference
 }
 
-func NewConstant(identifier ast.ScopedOrNormalVariableIdentifier, astConstant *ast.ConstantDefinition, expression Expression, localCommentBlock *ast.MultilineComment) *Constant {
-	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), expression.FetchPositionLength())
-	return &Constant{astConstant: astConstant, identifier: identifier, expression: expression, localCommentBlock: localCommentBlock, inclusive: inclusive}
+func NewConstant(identifier ast.ScopedOrNormalVariableIdentifier, astConstant *ast.ConstantDefinition,
+	expression Expression, localCommentBlock *ast.MultilineComment) *Constant {
+	inclusive := token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(),
+		expression.FetchPositionLength())
+	return &Constant{astConstant: astConstant, identifier: identifier, expression: expression,
+		localCommentBlock: localCommentBlock, inclusive: inclusive}
 }
 
 func (c *Constant) String() string {

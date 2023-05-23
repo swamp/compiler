@@ -19,7 +19,8 @@ type ModuleReference struct {
 }
 
 func NewModuleReference(identifier *ast.ModuleReference, module *Module) *ModuleReference {
-	inclusive := token.MakeInclusiveSourceFileReference(identifier.First().FetchPositionLength(), identifier.Last().FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(identifier.First().FetchPositionLength(),
+		identifier.Last().FetchPositionLength())
 	ref := &ModuleReference{module: module, identifier: identifier, inclusive: inclusive}
 
 	module.AddReference(ref)

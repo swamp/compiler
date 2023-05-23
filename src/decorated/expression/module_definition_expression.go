@@ -32,7 +32,8 @@ type ModuleDefinition struct {
 	wasReferenced   bool
 }
 
-func NewModuleDefinition(createdIn *ModuleDefinitions, createdBy *ImportedModule, identifier *ast.VariableIdentifier, expr Expression) *ModuleDefinition {
+func NewModuleDefinition(createdIn *ModuleDefinitions, createdBy *ImportedModule, identifier *ast.VariableIdentifier,
+	expr Expression) *ModuleDefinition {
 	return &ModuleDefinition{
 		createdIn: createdIn, createdBy: createdBy, localIdentifier: identifier, expr: expr,
 	}

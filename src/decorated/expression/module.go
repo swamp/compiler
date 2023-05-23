@@ -18,8 +18,10 @@ import (
 )
 
 type TypeReferenceMaker interface {
-	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError)
-	CreateLocalTypeNameOnlyReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeNameReference, decshared.DecoratedError)
+	CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal,
+		decshared.DecoratedError)
+	CreateLocalTypeNameOnlyReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeNameReference,
+		decshared.DecoratedError)
 	LookupLocalTypeName(some *ast.LocalTypeName) (dtype.Type, decshared.DecoratedError)
 }
 
@@ -38,7 +40,8 @@ type FullyQualifiedPackageVariableName struct {
 	identifier *ast.VariableIdentifier
 }
 
-func NewFullyQualifiedVariableName(module *Module, identifier *ast.VariableIdentifier) *FullyQualifiedPackageVariableName {
+func NewFullyQualifiedVariableName(module *Module,
+	identifier *ast.VariableIdentifier) *FullyQualifiedPackageVariableName {
 	if module == nil {
 		panic(fmt.Sprintf("must have module in %v", identifier))
 	}
@@ -103,7 +106,8 @@ type Module struct {
 	moduleType               ModuleType
 }
 
-func NewModule(moduleType ModuleType, fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName, sourceFileUri *token.SourceFileDocument) *Module {
+func NewModule(moduleType ModuleType, fullyQualifiedModuleName dectype.ArtifactFullyQualifiedModuleName,
+	sourceFileUri *token.SourceFileDocument) *Module {
 	m := &Module{
 		fullyQualifiedModuleName: fullyQualifiedModuleName,
 		sourceFileUri:            sourceFileUri,

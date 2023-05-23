@@ -45,8 +45,10 @@ func (g *RecordTypeFieldReference) AstIdentifier() *ast.VariableIdentifier {
 	return g.ident
 }
 
-func NewRecordFieldReference(ident *ast.VariableIdentifier, unresolvedRecordType dtype.Type, recordType *dectype.RecordAtom, recordTypeField *dectype.RecordField) *RecordTypeFieldReference {
-	ref := &RecordTypeFieldReference{ident: ident, recordType: recordType, recordTypeField: recordTypeField, unresolvedRecordType: unresolvedRecordType}
+func NewRecordFieldReference(ident *ast.VariableIdentifier, unresolvedRecordType dtype.Type,
+	recordType *dectype.RecordAtom, recordTypeField *dectype.RecordField) *RecordTypeFieldReference {
+	ref := &RecordTypeFieldReference{ident: ident, recordType: recordType, recordTypeField: recordTypeField,
+		unresolvedRecordType: unresolvedRecordType}
 
 	return ref
 }

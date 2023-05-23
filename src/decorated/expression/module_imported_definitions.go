@@ -52,10 +52,12 @@ func (d *ModuleImportedDefinitions) AddDefinitions(definitions []*ImportedDefini
 	return nil
 }
 
-func (d *ModuleImportedDefinitions) AddDefinitionsWithModulePrefix(definitions []*ImportedDefinition, relative dectype.PackageRelativeModuleName) error {
+func (d *ModuleImportedDefinitions) AddDefinitionsWithModulePrefix(definitions []*ImportedDefinition,
+	relative dectype.PackageRelativeModuleName) error {
 	for _, def := range definitions {
 		completeName := relative.JoinLocalName(def.Identifier())
-		addErr := d.AddDefinition(ast.NewVariableIdentifier(token.NewVariableSymbolToken(completeName, token.SourceFileReference{}, 0)), def)
+		addErr := d.AddDefinition(ast.NewVariableIdentifier(token.NewVariableSymbolToken(completeName,
+			token.SourceFileReference{}, 0)), def)
 		if addErr != nil {
 			return addErr
 		}
@@ -74,7 +76,8 @@ func (d *ModuleImportedDefinitions) FindDefinition(identifier *ast.VariableIdent
 	return def
 }
 
-func (d *ModuleImportedDefinitions) AddDefinition(identifier *ast.VariableIdentifier, definition *ImportedDefinition) error {
+func (d *ModuleImportedDefinitions) AddDefinition(identifier *ast.VariableIdentifier,
+	definition *ImportedDefinition) error {
 	existingDeclare := d.FindDefinition(identifier)
 	if existingDeclare != nil {
 		return fmt.Errorf("sorry, '%v' already declared", existingDeclare)

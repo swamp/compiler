@@ -22,8 +22,10 @@ type CaseConsequenceForPatternMatching struct {
 	internalIndex  int
 }
 
-func NewCaseConsequencePatternMatching(astConsequence *ast.CaseConsequencePatternMatching, internalIndex int, literal Expression, expression Expression) *CaseConsequenceForPatternMatching {
-	return &CaseConsequenceForPatternMatching{internalIndex: internalIndex, astConsequence: astConsequence, literal: literal, expression: expression}
+func NewCaseConsequencePatternMatching(astConsequence *ast.CaseConsequencePatternMatching, internalIndex int,
+	literal Expression, expression Expression) *CaseConsequenceForPatternMatching {
+	return &CaseConsequenceForPatternMatching{internalIndex: internalIndex, astConsequence: astConsequence,
+		literal: literal, expression: expression}
 }
 
 func (c *CaseConsequenceForPatternMatching) Expression() Expression {
@@ -65,7 +67,9 @@ type CaseForPatternMatching struct {
 	astCase     *ast.CaseForPatternMatching
 }
 
-func NewCaseForPatternMatching(astCase *ast.CaseForPatternMatching, test Expression, cases []*CaseConsequenceForPatternMatching, defaultCase Expression) (*CaseForPatternMatching, decshared.DecoratedError) {
+func NewCaseForPatternMatching(astCase *ast.CaseForPatternMatching, test Expression,
+	cases []*CaseConsequenceForPatternMatching, defaultCase Expression) (*CaseForPatternMatching,
+	decshared.DecoratedError) {
 	return &CaseForPatternMatching{astCase: astCase, test: test, cases: cases, defaultCase: defaultCase}, nil
 }
 

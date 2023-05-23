@@ -127,7 +127,8 @@ func calculateTotalSizeAndAlignment(variants []*CustomTypeVariantAtom) (MemorySi
 	return maxVariantSize, maxVariantAlign
 }
 
-func NewCustomTypePrepare(astCustomType *ast.CustomType, artifactTypeName ArtifactFullyQualifiedTypeName) *CustomTypeAtom {
+func NewCustomTypePrepare(astCustomType *ast.CustomType,
+	artifactTypeName ArtifactFullyQualifiedTypeName) *CustomTypeAtom {
 	s := &CustomTypeAtom{
 		astCustomType: astCustomType, artifactTypeName: artifactTypeName,
 	}
@@ -169,10 +170,6 @@ func (s *CustomTypeAtom) HasVariant(variantToLookFor *CustomTypeVariantAtom) boo
 		}
 	}
 	return false
-}
-
-func (s *CustomTypeAtom) ParameterCount() int {
-	return 0
 }
 
 func (s *CustomTypeAtom) Resolve() (dtype.Atom, error) {
@@ -220,7 +217,8 @@ func compareCustomType(u *CustomTypeAtom, other *CustomTypeAtom) error {
 
 		for index, resolveType := range types {
 			if err := CompatibleTypes(resolveType.parameterType, otherTypes[index].parameterType); err != nil {
-				return fmt.Errorf("wrong in custom type '%s' variant: '%s' parameter:\n%v\nvs\n%v\n%w", u.Name(), variant.Name().Name(), resolveType, otherTypes[index], err)
+				return fmt.Errorf("wrong in custom type '%s' variant: '%s' parameter:\n%v\nvs\n%v\n%w", u.Name(),
+					variant.Name().Name(), resolveType, otherTypes[index], err)
 			}
 		}
 	}

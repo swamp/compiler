@@ -71,7 +71,9 @@ func (e *ExposedTypes) AddTypesFromModule(allTypes []NamedType, module *Module) 
 	}
 }
 
-func (e *ExposedTypes) AddTypesWithModulePrefix(allTypes map[string]dtype.Type, prefix dectype.PackageRelativeModuleName) {
+func (e *ExposedTypes) AddTypesWithModulePrefix(
+	allTypes map[string]dtype.Type, prefix dectype.PackageRelativeModuleName,
+) {
 	for name, t := range allTypes {
 		fakeVariable := ast.NewVariableIdentifier(token.NewVariableSymbolToken(name, token.SourceFileReference{}, 0))
 		fullyQualifiedName := prefix.JoinLocalName(fakeVariable)
@@ -79,7 +81,9 @@ func (e *ExposedTypes) AddTypesWithModulePrefix(allTypes map[string]dtype.Type, 
 	}
 }
 
-func (t *ExposedTypes) AddBuiltInTypes(name *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment) TypeError {
+func (t *ExposedTypes) AddBuiltInTypes(
+	name *ast.TypeIdentifier, referencedType dtype.Type, localComments []ast.LocalComment,
+) TypeError {
 	t.internalAddType(name.Name(), referencedType, nil)
 
 	return nil

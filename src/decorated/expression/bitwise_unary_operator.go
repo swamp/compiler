@@ -25,7 +25,8 @@ type BitwiseUnaryOperator struct {
 	unary        *ast.UnaryExpression
 }
 
-func NewBitwiseUnaryOperator(unary *ast.UnaryExpression, left Expression, operatorType BitwiseUnaryOperatorType) (*BitwiseUnaryOperator, decshared.DecoratedError) {
+func NewBitwiseUnaryOperator(unary *ast.UnaryExpression, left Expression,
+	operatorType BitwiseUnaryOperatorType) (*BitwiseUnaryOperator, decshared.DecoratedError) {
 	a := &BitwiseUnaryOperator{operatorType: operatorType}
 	a.unary = unary
 	a.UnaryOperator.left = left

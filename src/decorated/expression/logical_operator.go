@@ -37,7 +37,8 @@ type LogicalOperator struct {
 	operatorType LogicalOperatorType
 }
 
-func NewLogicalOperator(left Expression, right Expression, operatorType LogicalOperatorType, booleanType dtype.Type) (*LogicalOperator, decshared.DecoratedError) {
+func NewLogicalOperator(left Expression, right Expression, operatorType LogicalOperatorType,
+	booleanType dtype.Type) (*LogicalOperator, decshared.DecoratedError) {
 	a := &LogicalOperator{operatorType: operatorType}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right
@@ -66,7 +67,8 @@ func (l *LogicalOperator) OperatorType() LogicalOperatorType {
 }
 
 func (l *LogicalOperator) String() string {
-	return fmt.Sprintf("[Logical %v %v %v]", l.BinaryOperator.left, LogicalOperatorToString(l.operatorType), l.BinaryOperator.right)
+	return fmt.Sprintf("[Logical %v %v %v]", l.BinaryOperator.left, LogicalOperatorToString(l.operatorType),
+		l.BinaryOperator.right)
 }
 
 func (l *LogicalOperator) FetchPositionLength() token.SourceFileReference {

@@ -22,7 +22,8 @@ type CurryFunction struct {
 	originalFunctionType    *dectype.FunctionAtom
 }
 
-func NewCurryFunction(astFunctionCall *ast.FunctionCall, curryFunctionType *dectype.FunctionAtom, functionValueExpression Expression, argumentsToSave []Expression) *CurryFunction {
+func NewCurryFunction(astFunctionCall *ast.FunctionCall, curryFunctionType *dectype.FunctionAtom,
+	functionValueExpression Expression, argumentsToSave []Expression) *CurryFunction {
 	originalFunctionType, _ := dectype.UnaliasWithResolveInvoker(functionValueExpression.Type()).(*dectype.FunctionAtom)
 
 	return &CurryFunction{

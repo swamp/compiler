@@ -52,7 +52,8 @@ func NewFunctionReference(definitionReference *NamedDefinitionReference,
 		panic("cant be nil")
 	}
 
-	ref := &FunctionReference{definitionReference: definitionReference, referencedFunctionValue: referencedFunctionValue}
+	ref := &FunctionReference{definitionReference: definitionReference,
+		referencedFunctionValue: referencedFunctionValue}
 
 	referencedFunctionValue.AddReferee(ref)
 

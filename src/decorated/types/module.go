@@ -206,7 +206,8 @@ func MakePackageRelativeModuleName(path *ast.ModuleReference) PackageRelativeMod
 	return PackageRelativeModuleName{MakeModuleName(path)}
 }
 
-func MakePackageRelativeModuleNameFromString(name string, document *token.SourceFileDocument) PackageRelativeModuleName {
+func MakePackageRelativeModuleNameFromString(name string,
+	document *token.SourceFileDocument) PackageRelativeModuleName {
 	return PackageRelativeModuleName{MakeModuleNameFromString(name, document)}
 }
 

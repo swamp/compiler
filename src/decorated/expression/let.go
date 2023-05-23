@@ -75,9 +75,12 @@ type LetAssignment struct {
 	inclusive        token.SourceFileReference
 }
 
-func NewLetAssignment(astLetAssignment ast.LetAssignment, letVariables []*LetVariable, expression Expression) *LetAssignment {
-	inclusive := token.MakeInclusiveSourceFileReference(letVariables[0].FetchPositionLength(), expression.FetchPositionLength())
-	return &LetAssignment{letVariables: letVariables, expression: expression, astLetAssignment: astLetAssignment, inclusive: inclusive}
+func NewLetAssignment(astLetAssignment ast.LetAssignment, letVariables []*LetVariable,
+	expression Expression) *LetAssignment {
+	inclusive := token.MakeInclusiveSourceFileReference(letVariables[0].FetchPositionLength(),
+		expression.FetchPositionLength())
+	return &LetAssignment{letVariables: letVariables, expression: expression, astLetAssignment: astLetAssignment,
+		inclusive: inclusive}
 }
 
 func (l *LetAssignment) String() string {

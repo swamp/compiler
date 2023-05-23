@@ -324,7 +324,8 @@ func (n *ExpandedNode) AddChildNode(node TypeOrToken) {
 }
 
 func (n *ExpandedNode) debugLog(indent int) {
-	log.Printf("%s %v %T ('%v')", strings.Repeat("..", indent), n.node.FetchPositionLength().Range, n.node, n.node.FetchPositionLength().ToStartAndEndReferenceString())
+	log.Printf("%s %v %T ('%v')", strings.Repeat("..", indent), n.node.FetchPositionLength().Range, n.node,
+		n.node.FetchPositionLength().ToStartAndEndReferenceString())
 	for _, childNode := range n.children {
 		childNode.debugLog(indent + 1)
 	}
@@ -353,7 +354,8 @@ func (n *ExpandedNode) addChild(expandedNode *ExpandedNode) {
 	//log.Printf("adding %T %v", expandedNode.node, nodeRange)
 
 	if !n.node.FetchPositionLength().Range.ContainsRange(nodeRange) {
-		err := fmt.Errorf("can not add a child that is not within the range of the parent %v %v (%T and %T)", n.node.FetchPositionLength().Range, nodeRange, n.node, expandedNode.node)
+		err := fmt.Errorf("can not add a child that is not within the range of the parent %v %v (%T and %T)",
+			n.node.FetchPositionLength().Range, nodeRange, n.node, expandedNode.node)
 		log.Print(err)
 		panic(err)
 	}
@@ -366,7 +368,8 @@ func (n *ExpandedNode) addChild(expandedNode *ExpandedNode) {
 			existingRange := existingNode.node.FetchPositionLength().Range
 			log.Printf("  expandedNode: %v (%T)", existingRange, existingNode.node)
 		}
-		log.Printf("--> added incorrect expandedNode: %v (%T) %v", expandedNode.node.FetchPositionLength().Range, expandedNode.node, expandedNode.node.FetchPositionLength().ToCompleteReferenceString())
+		log.Printf("--> added incorrect expandedNode: %v (%T) %v", expandedNode.node.FetchPositionLength().Range,
+			expandedNode.node, expandedNode.node.FetchPositionLength().ToCompleteReferenceString())
 		panic(fmt.Errorf("not in order"))
 	}
 

@@ -18,7 +18,8 @@ type ConsOperator struct {
 	BinaryOperator
 }
 
-func NewConsOperator(leftItem Expression, rightList Expression, refMaker TypeAddAndReferenceMaker) (*ConsOperator, decshared.DecoratedError) {
+func NewConsOperator(leftItem Expression, rightList Expression, refMaker TypeAddAndReferenceMaker) (*ConsOperator,
+	decshared.DecoratedError) {
 	a := &ConsOperator{}
 	a.BinaryOperator.left = leftItem
 	a.BinaryOperator.right = rightList

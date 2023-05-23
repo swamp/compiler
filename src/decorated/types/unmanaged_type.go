@@ -43,7 +43,8 @@ func (u *UnmanagedType) IsEqualUnmanaged(other *UnmanagedType) error {
 		return nil
 	}
 
-	return fmt.Errorf("not equal unmanaged %v vs %v", other.identifier.NativeLanguageTypeName(), u.identifier.NativeLanguageTypeName())
+	return fmt.Errorf("not equal unmanaged %v vs %v", other.identifier.NativeLanguageTypeName(),
+		u.identifier.NativeLanguageTypeName())
 }
 
 func (u *UnmanagedType) IsEqual(other_ dtype.Atom) error {
@@ -61,10 +62,6 @@ func (u *UnmanagedType) IsEqual(other_ dtype.Atom) error {
 	}
 
 	return nil
-}
-
-func (u *UnmanagedType) ParameterCount() int {
-	return 0
 }
 
 func (u *UnmanagedType) Resolve() (dtype.Atom, error) {

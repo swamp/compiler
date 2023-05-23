@@ -49,10 +49,6 @@ func (u *ResolvedLocalTypeReference) ReferencedType() dtype.Type {
 	return u.typeDefinition
 }
 
-func (u *ResolvedLocalTypeReference) ParameterCount() int {
-	return 0
-}
-
 func (u *ResolvedLocalTypeReference) Next() dtype.Type {
 	return u.typeDefinition
 }
@@ -61,7 +57,8 @@ func (u *ResolvedLocalTypeReference) WasReferenced() bool {
 	return false
 }
 
-func NewLocalTypeDefinitionReference(identifier *LocalTypeNameReference, referencedDefinition *ResolvedLocalType) *ResolvedLocalTypeReference {
+func NewLocalTypeDefinitionReference(identifier *LocalTypeNameReference,
+	referencedDefinition *ResolvedLocalType) *ResolvedLocalTypeReference {
 	x := &ResolvedLocalTypeReference{identifier: identifier, typeDefinition: referencedDefinition}
 	referencedDefinition.AddReference(x)
 

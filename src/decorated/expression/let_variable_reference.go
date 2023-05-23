@@ -34,7 +34,8 @@ func (g *LetVariableReference) LetVariable() *LetVariable {
 	return g.assignment
 }
 
-func NewLetVariableReference(ident ast.ScopedOrNormalVariableIdentifier, assignment *LetVariable) *LetVariableReference {
+func NewLetVariableReference(ident ast.ScopedOrNormalVariableIdentifier,
+	assignment *LetVariable) *LetVariableReference {
 	if assignment == nil {
 		panic("cant be nil")
 	}

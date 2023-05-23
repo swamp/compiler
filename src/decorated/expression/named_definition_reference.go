@@ -17,7 +17,8 @@ type NamedDefinitionReference struct {
 	ident                   ast.ScopedOrNormalVariableIdentifier `debug:"true"`
 }
 
-func NewNamedDefinitionReference(optionalModuleReference *ModuleReference, ident ast.ScopedOrNormalVariableIdentifier) *NamedDefinitionReference {
+func NewNamedDefinitionReference(optionalModuleReference *ModuleReference,
+	ident ast.ScopedOrNormalVariableIdentifier) *NamedDefinitionReference {
 	return &NamedDefinitionReference{
 		optionalModuleReference: optionalModuleReference,
 		ident:                   ident,

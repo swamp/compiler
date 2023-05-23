@@ -29,7 +29,8 @@ func NewTypeLookup(moduleImports *ModuleImports, localTypes *ModuleTypes, import
 	}
 }
 
-func (l *TypeLookup) FindType(typeIdentifier *ast.TypeIdentifier) (dtype.Type, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError) {
+func (l *TypeLookup) FindType(typeIdentifier *ast.TypeIdentifier) (dtype.Type, *dectype.NamedDefinitionTypeReference,
+	decshared.DecoratedError) {
 	ref := ast.NewTypeReference(typeIdentifier, nil)
 	namedTypeRef := dectype.NewNamedDefinitionTypeReference(nil, ref)
 
@@ -50,7 +51,8 @@ func (l *TypeLookup) FindType(typeIdentifier *ast.TypeIdentifier) (dtype.Type, *
 	return foundLocalType, namedTypeRef, nil
 }
 
-func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (dtype.Type, *dectype.NamedDefinitionTypeReference, decshared.DecoratedError) {
+func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (dtype.Type,
+	*dectype.NamedDefinitionTypeReference, decshared.DecoratedError) {
 	moduleFound := l.moduleImports.FindModule(typeIdentifier.ModuleReference())
 	if moduleFound == nil {
 		return nil, nil, NewUnknownModule(typeIdentifier.ModuleReference())
@@ -71,7 +73,8 @@ func (l *TypeLookup) FindTypeScoped(typeIdentifier *ast.TypeIdentifierScoped) (d
 	return foundExposedType.referencedType, namedTypeRef, nil
 }
 
-func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
+func (l *TypeLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal,
+	decshared.DecoratedError) {
 	var lookedUpType dtype.Type
 	var named *dectype.NamedDefinitionTypeReference
 

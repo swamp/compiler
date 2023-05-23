@@ -40,12 +40,14 @@ type UnMatchingBinaryOperatorTypes struct {
 	operator *ast.BinaryOperator
 }
 
-func NewUnMatchingBinaryOperatorTypes(operator *ast.BinaryOperator, typeA dtype.Type, typeB dtype.Type) *UnMatchingBinaryOperatorTypes {
+func NewUnMatchingBinaryOperatorTypes(operator *ast.BinaryOperator, typeA dtype.Type,
+	typeB dtype.Type) *UnMatchingBinaryOperatorTypes {
 	return &UnMatchingBinaryOperatorTypes{operator: operator, typeA: typeA, typeB: typeB}
 }
 
 func (e *UnMatchingBinaryOperatorTypes) Error() string {
-	return fmt.Sprintf("%v: binary operator \n%v resolves to %v\n and \n %v resolves to %v", e.FetchPositionLength(), e.operator.Left(), e.typeA.HumanReadable(), e.operator.Right(), e.typeB.HumanReadable())
+	return fmt.Sprintf("%v: binary operator \n%v resolves to %v\n and \n %v resolves to %v", e.FetchPositionLength(),
+		e.operator.Left(), e.typeA.HumanReadable(), e.operator.Right(), e.typeB.HumanReadable())
 }
 
 func (e *UnMatchingBinaryOperatorTypes) FetchPositionLength() token.SourceFileReference {
@@ -58,7 +60,8 @@ type UnMatchingArithmeticOperatorTypes struct {
 	operator *ast.BinaryOperator
 }
 
-func NewUnMatchingArithmeticOperatorTypes(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnMatchingArithmeticOperatorTypes {
+func NewUnMatchingArithmeticOperatorTypes(operator *ast.BinaryOperator, typeA Expression,
+	typeB Expression) *UnMatchingArithmeticOperatorTypes {
 	return &UnMatchingArithmeticOperatorTypes{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -76,7 +79,8 @@ type UnExpectedListTypeForCons struct {
 	operator *ast.BinaryOperator
 }
 
-func NewUnExpectedListTypeForCons(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnExpectedListTypeForCons {
+func NewUnExpectedListTypeForCons(operator *ast.BinaryOperator, typeA Expression,
+	typeB Expression) *UnExpectedListTypeForCons {
 	return &UnExpectedListTypeForCons{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -93,12 +97,14 @@ type RecordDestructuringWasNotRecordExpression struct {
 	recordType *dectype.RecordAtom
 }
 
-func NewRecordDestructuringWasNotRecordExpression(decoratedExpression Expression, recordType *dectype.RecordAtom) *RecordDestructuringWasNotRecordExpression {
+func NewRecordDestructuringWasNotRecordExpression(decoratedExpression Expression,
+	recordType *dectype.RecordAtom) *RecordDestructuringWasNotRecordExpression {
 	return &RecordDestructuringWasNotRecordExpression{expression: decoratedExpression, recordType: recordType}
 }
 
 func (e *RecordDestructuringWasNotRecordExpression) Error() string {
-	return fmt.Sprintf("destructuring record was requested, but expression is not a record %v %v", e.recordType, e.expression)
+	return fmt.Sprintf("destructuring record was requested, but expression is not a record %v %v", e.recordType,
+		e.expression)
 }
 
 func (e *RecordDestructuringWasNotRecordExpression) FetchPositionLength() token.SourceFileReference {
@@ -111,8 +117,10 @@ type RecordDestructuringFieldNotFound struct {
 	fieldIdentifier *ast.VariableIdentifier
 }
 
-func NewRecordDestructuringFieldNotFound(decoratedExpression Expression, recordType *dectype.RecordAtom, fieldIdentifier *ast.VariableIdentifier) *RecordDestructuringFieldNotFound {
-	return &RecordDestructuringFieldNotFound{expression: decoratedExpression, recordType: recordType, fieldIdentifier: fieldIdentifier}
+func NewRecordDestructuringFieldNotFound(decoratedExpression Expression, recordType *dectype.RecordAtom,
+	fieldIdentifier *ast.VariableIdentifier) *RecordDestructuringFieldNotFound {
+	return &RecordDestructuringFieldNotFound{expression: decoratedExpression, recordType: recordType,
+		fieldIdentifier: fieldIdentifier}
 }
 
 func (e *RecordDestructuringFieldNotFound) Error() string {
@@ -129,12 +137,15 @@ type TupleDestructuringWrongNumberOfIdentifiers struct {
 	fieldIdentifiers []*ast.VariableIdentifier
 }
 
-func NewTupleDestructuringWrongNumberOfIdentifiers(decoratedExpression Expression, tupleType *dectype.TupleTypeAtom, fieldIdentifiers []*ast.VariableIdentifier) *TupleDestructuringWrongNumberOfIdentifiers {
-	return &TupleDestructuringWrongNumberOfIdentifiers{expression: decoratedExpression, tupleType: tupleType, fieldIdentifiers: fieldIdentifiers}
+func NewTupleDestructuringWrongNumberOfIdentifiers(decoratedExpression Expression, tupleType *dectype.TupleTypeAtom,
+	fieldIdentifiers []*ast.VariableIdentifier) *TupleDestructuringWrongNumberOfIdentifiers {
+	return &TupleDestructuringWrongNumberOfIdentifiers{expression: decoratedExpression, tupleType: tupleType,
+		fieldIdentifiers: fieldIdentifiers}
 }
 
 func (e *TupleDestructuringWrongNumberOfIdentifiers) Error() string {
-	return fmt.Sprintf("destructuring tuple, wrong number of identifiers %v vs %v", len(e.fieldIdentifiers), len(e.tupleType.Fields()))
+	return fmt.Sprintf("destructuring tuple, wrong number of identifiers %v vs %v", len(e.fieldIdentifiers),
+		len(e.tupleType.Fields()))
 }
 
 func (e *TupleDestructuringWrongNumberOfIdentifiers) FetchPositionLength() token.SourceFileReference {
@@ -163,7 +174,8 @@ type UnmatchingBitwiseOperatorTypes struct {
 	operator *ast.BinaryOperator
 }
 
-func NewUnmatchingBitwiseOperatorTypes(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnmatchingBitwiseOperatorTypes {
+func NewUnmatchingBitwiseOperatorTypes(operator *ast.BinaryOperator, typeA Expression,
+	typeB Expression) *UnmatchingBitwiseOperatorTypes {
 	return &UnmatchingBitwiseOperatorTypes{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -181,7 +193,8 @@ type UnMatchingBooleanOperatorTypes struct {
 	operator *ast.BinaryOperator
 }
 
-func NewUnMatchingBooleanOperatorTypes(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *UnMatchingBooleanOperatorTypes {
+func NewUnMatchingBooleanOperatorTypes(operator *ast.BinaryOperator, typeA Expression,
+	typeB Expression) *UnMatchingBooleanOperatorTypes {
 	return &UnMatchingBooleanOperatorTypes{operator: operator, typeA: typeA, typeB: typeB}
 }
 
@@ -238,7 +251,8 @@ func NewUnusedParameter(parameter *FunctionParameterDefinition, function *Functi
 }
 
 func (e *UnusedParameter) Error() string {
-	return fmt.Sprintf("unused parameter  %v in %v", e.parameter.Parameter().Identifier().Name(), e.parameter.FetchPositionLength().ToCompleteReferenceString())
+	return fmt.Sprintf("unused parameter  %v in %v", e.parameter.Parameter().Identifier().Name(),
+		e.parameter.FetchPositionLength().ToCompleteReferenceString())
 }
 
 func (e *UnusedParameter) FetchPositionLength() token.SourceFileReference {
@@ -254,7 +268,8 @@ func NewUnusedLetVariable(name *LetVariable) *UnusedLetVariable {
 }
 
 func (e *UnusedLetVariable) Error() string {
-	return fmt.Sprintf("unused let variable %v b%v", e.letVariable, e.letVariable.FetchPositionLength().ToCompleteReferenceString())
+	return fmt.Sprintf("unused let variable %v b%v", e.letVariable,
+		e.letVariable.FetchPositionLength().ToCompleteReferenceString())
 }
 
 func (e *UnusedLetVariable) FetchPositionLength() token.SourceFileReference {
@@ -267,12 +282,14 @@ type LogicalOperatorLeftMustBeBoolean struct {
 	booleanType dtype.Type
 }
 
-func NewLogicalOperatorLeftMustBeBoolean(operator *LogicalOperator, typeA Expression, booleanType dtype.Type) *LogicalOperatorLeftMustBeBoolean {
+func NewLogicalOperatorLeftMustBeBoolean(operator *LogicalOperator, typeA Expression,
+	booleanType dtype.Type) *LogicalOperatorLeftMustBeBoolean {
 	return &LogicalOperatorLeftMustBeBoolean{operator: operator, typeA: typeA, booleanType: booleanType}
 }
 
 func (e *LogicalOperatorLeftMustBeBoolean) Error() string {
-	return fmt.Sprintf("logical operator %v  must have left boolean %v  %v  %v  %p vs %p ", e.operator, e.typeA, e.typeA.Type(), e.booleanType, e.typeA.Type(), e.booleanType)
+	return fmt.Sprintf("logical operator %v  must have left boolean %v  %v  %v  %p vs %p ", e.operator, e.typeA,
+		e.typeA.Type(), e.booleanType, e.typeA.Type(), e.booleanType)
 }
 
 func (e *LogicalOperatorLeftMustBeBoolean) FetchPositionLength() token.SourceFileReference {
@@ -285,12 +302,14 @@ type LogicalOperatorsMustBeBoolean struct {
 	operator *ast.BinaryOperator
 }
 
-func NewLogicalOperatorsMustBeBoolean(operator *ast.BinaryOperator, typeA Expression, typeB Expression) *LogicalOperatorsMustBeBoolean {
+func NewLogicalOperatorsMustBeBoolean(operator *ast.BinaryOperator, typeA Expression,
+	typeB Expression) *LogicalOperatorsMustBeBoolean {
 	return &LogicalOperatorsMustBeBoolean{operator: operator, typeA: typeA, typeB: typeB}
 }
 
 func (e *LogicalOperatorsMustBeBoolean) Error() string {
-	return fmt.Sprintf("logical operator %v  must have booleans %v vs %v. %v vs %v", e.operator, e.typeA, e.typeB, e.typeA.Type(), e.typeB.Type())
+	return fmt.Sprintf("logical operator %v  must have booleans %v vs %v. %v vs %v", e.operator, e.typeA, e.typeB,
+		e.typeA.Type(), e.typeB.Type())
 }
 
 func (e *LogicalOperatorsMustBeBoolean) FetchPositionLength() token.SourceFileReference {
@@ -302,7 +321,8 @@ type LogicalOperatorRightMustBeBoolean struct {
 	operator *LogicalOperator
 }
 
-func NewLogicalOperatorRightMustBeBoolean(operator *LogicalOperator, typeA Expression, booleanType dtype.Type) *LogicalOperatorRightMustBeBoolean {
+func NewLogicalOperatorRightMustBeBoolean(operator *LogicalOperator, typeA Expression,
+	booleanType dtype.Type) *LogicalOperatorRightMustBeBoolean {
 	return &LogicalOperatorRightMustBeBoolean{operator: operator, typeA: typeA}
 }
 
@@ -335,7 +355,8 @@ type CaseCouldNotFindCustomVariantType struct {
 	consequence    *ast.CaseConsequenceForCustomType
 }
 
-func NewCaseCouldNotFindCustomVariantType(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType) *CaseCouldNotFindCustomVariantType {
+func NewCaseCouldNotFindCustomVariantType(caseExpression *ast.CaseForCustomType,
+	consequence *ast.CaseConsequenceForCustomType) *CaseCouldNotFindCustomVariantType {
 	return &CaseCouldNotFindCustomVariantType{consequence: consequence, caseExpression: caseExpression}
 }
 
@@ -362,7 +383,8 @@ type UnMatchingTypesExpression struct {
 	err        error
 }
 
-func NewUnMatchingTypes(expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *UnMatchingTypesExpression {
+func NewUnMatchingTypes(expression ast.Expression, expectedType dtype.Type, hasType dtype.Type,
+	err error) *UnMatchingTypesExpression {
 	if expectedType == nil || hasType == nil {
 		panic("unmatching types. types are nil! not allowed")
 	}
@@ -376,7 +398,8 @@ func NewUnMatchingTypes(expression ast.Expression, expectedType dtype.Type, hasT
 func (e *UnMatchingTypesExpression) Error() string {
 	expectedAtom, _ := e.ExpectedType.Resolve()
 	hasAtom, _ := e.HasType.Resolve()
-	return fmt.Sprintf("unmatching types %v\nvs\n%v\n %v\n%v", expectedAtom.AtomName(), hasAtom.AtomName(), e.UnMatchingTypesError.Error(), e.err)
+	return fmt.Sprintf("unmatching types %v\nvs\n%v\n %v\n%v", expectedAtom.AtomName(), hasAtom.AtomName(),
+		e.UnMatchingTypesError.Error(), e.err)
 }
 
 func (e *UnMatchingTypesExpression) FetchPositionLength() token.SourceFileReference {
@@ -390,7 +413,8 @@ type UnMatchingFunctionReturnTypesInFunctionValue struct {
 	err        error
 }
 
-func NewUnMatchingFunctionReturnTypesInFunctionValue(fn *ast.FunctionValue, expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *UnMatchingFunctionReturnTypesInFunctionValue {
+func NewUnMatchingFunctionReturnTypesInFunctionValue(fn *ast.FunctionValue, expression ast.Expression,
+	expectedType dtype.Type, hasType dtype.Type, err error) *UnMatchingFunctionReturnTypesInFunctionValue {
 	return &UnMatchingFunctionReturnTypesInFunctionValue{
 		fn: fn, expression: expression,
 		UnMatchingTypesExpression: UnMatchingTypesExpression{
@@ -401,7 +425,8 @@ func NewUnMatchingFunctionReturnTypesInFunctionValue(fn *ast.FunctionValue, expr
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) Error() string {
-	return fmt.Sprintf("unmatching function return types %v and %v\n%v", e.HasType.HumanReadable(), e.ExpectedType.HumanReadable(), e.err)
+	return fmt.Sprintf("unmatching function return types %v and %v\n%v", e.HasType.HumanReadable(),
+		e.ExpectedType.HumanReadable(), e.err)
 }
 
 func (e *UnMatchingFunctionReturnTypesInFunctionValue) FetchPositionLength() token.SourceFileReference {
@@ -416,7 +441,8 @@ type FunctionArgumentTypeMismatch struct {
 	symbolToken       token.SourceFileReference
 }
 
-func NewFunctionArgumentTypeMismatch(symbolToken token.SourceFileReference, decoratedArgument Expression, expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *FunctionArgumentTypeMismatch {
+func NewFunctionArgumentTypeMismatch(symbolToken token.SourceFileReference, decoratedArgument Expression,
+	expression ast.Expression, expectedType dtype.Type, hasType dtype.Type, err error) *FunctionArgumentTypeMismatch {
 	return &FunctionArgumentTypeMismatch{
 		symbolToken: symbolToken, decoratedArgument: decoratedArgument,
 		expression:           expression,
@@ -425,7 +451,8 @@ func NewFunctionArgumentTypeMismatch(symbolToken token.SourceFileReference, deco
 }
 
 func (e *FunctionArgumentTypeMismatch) Error() string {
-	return fmt.Sprintf("function argument type mismatch\n\n%v\n\n in expression %v\n%v\n%v\n", e.UnMatchingTypesError.Error(), e.expression, e.decoratedArgument, e.err)
+	return fmt.Sprintf("function argument type mismatch\n\n%v\n\n in expression %v\n%v\n%v\n",
+		e.UnMatchingTypesError.Error(), e.expression, e.decoratedArgument, e.err)
 }
 
 func (e *FunctionArgumentTypeMismatch) FetchPositionLength() token.SourceFileReference {
@@ -439,7 +466,8 @@ type RecordLiteralFieldTypeMismatch struct {
 	err        error
 }
 
-func NewRecordLiteralFieldTypeMismatch(assignment *ast.RecordLiteralFieldAssignment, field *dectype.RecordField, encounteredType dtype.Type, err error) *RecordLiteralFieldTypeMismatch {
+func NewRecordLiteralFieldTypeMismatch(assignment *ast.RecordLiteralFieldAssignment, field *dectype.RecordField,
+	encounteredType dtype.Type, err error) *RecordLiteralFieldTypeMismatch {
 	return &RecordLiteralFieldTypeMismatch{
 		field: field, assignment: assignment,
 		UnMatchingTypesError: UnMatchingTypesError{ExpectedType: field.Type(), HasType: encounteredType}, err: err,
@@ -459,7 +487,8 @@ type NewRecordLiteralFieldNotInType struct {
 	assignment *ast.RecordLiteralFieldAssignment
 }
 
-func NewNewRecordLiteralFieldNotInType(assignment *ast.RecordLiteralFieldAssignment, recordType *dectype.RecordAtom) *NewRecordLiteralFieldNotInType {
+func NewNewRecordLiteralFieldNotInType(assignment *ast.RecordLiteralFieldAssignment,
+	recordType *dectype.RecordAtom) *NewRecordLiteralFieldNotInType {
 	return &NewRecordLiteralFieldNotInType{recordType: recordType, assignment: assignment}
 }
 
@@ -478,12 +507,14 @@ type ConstructorArgumentTypeMismatch struct {
 	err          error
 }
 
-func NewConstructorArgumentTypeMismatch(call *ast.ConstructorCall, expectedType dtype.Type, hasType dtype.Type, err error) *ConstructorArgumentTypeMismatch {
+func NewConstructorArgumentTypeMismatch(call *ast.ConstructorCall, expectedType dtype.Type, hasType dtype.Type,
+	err error) *ConstructorArgumentTypeMismatch {
 	return &ConstructorArgumentTypeMismatch{call: call, expectedType: expectedType, hasType: hasType, err: err}
 }
 
 func (e *ConstructorArgumentTypeMismatch) Error() string {
-	return fmt.Sprintf("expected constructor argument %v but has %v in expression %v\n\n%v but received %v\n%v\n", e.expectedType, e.hasType, e.call, e.expectedType, e.hasType, e.err)
+	return fmt.Sprintf("expected constructor argument %v but has %v in expression %v\n\n%v but received %v\n%v\n",
+		e.expectedType, e.hasType, e.call, e.expectedType, e.hasType, e.err)
 }
 
 func (e *ConstructorArgumentTypeMismatch) FetchPositionLength() token.SourceFileReference {
@@ -517,13 +548,15 @@ type WrongTypeForRecordConstructorField struct {
 func NewWrongTypeForRecordConstructorField(recordField *dectype.RecordField, expectedExpression Expression,
 	call *ast.ConstructorCall, err error) *WrongTypeForRecordConstructorField {
 	return &WrongTypeForRecordConstructorField{
-		UnMatchingTypesError: UnMatchingTypesError{ExpectedType: expectedExpression.Type(), HasType: recordField.Type()},
-		call:                 call, recordField: recordField, expectedExpression: expectedExpression, err: err,
+		UnMatchingTypesError: UnMatchingTypesError{ExpectedType: expectedExpression.Type(),
+			HasType: recordField.Type()},
+		call: call, recordField: recordField, expectedExpression: expectedExpression, err: err,
 	}
 }
 
 func (e *WrongTypeForRecordConstructorField) Error() string {
-	return fmt.Sprintf("wrong type for constructor field %v\nexpected\n%v\nvs\n%v", e.recordField.Name(), e.UnMatchingTypesError.ExpectedType.HumanReadable(), e.UnMatchingTypesError.HasType.HumanReadable())
+	return fmt.Sprintf("wrong type for constructor field %v\nexpected\n%v\nvs\n%v", e.recordField.Name(),
+		e.UnMatchingTypesError.ExpectedType.HumanReadable(), e.UnMatchingTypesError.HasType.HumanReadable())
 }
 
 func (e *WrongTypeForRecordConstructorField) FetchPositionLength() token.SourceFileReference {
@@ -535,7 +568,8 @@ type WrongNumberOfFieldsInConstructor struct {
 	record *dectype.RecordAtom
 }
 
-func NewWrongNumberOfFieldsInConstructor(record *dectype.RecordAtom, call *ast.ConstructorCall) *WrongNumberOfFieldsInConstructor {
+func NewWrongNumberOfFieldsInConstructor(record *dectype.RecordAtom,
+	call *ast.ConstructorCall) *WrongNumberOfFieldsInConstructor {
 	return &WrongNumberOfFieldsInConstructor{
 		call:   call,
 		record: record,
@@ -555,7 +589,8 @@ type UnhandledCustomTypeVariants struct {
 	caseExpression    *ast.CaseForCustomType
 }
 
-func NewUnhandledCustomTypeVariants(caseExpression *ast.CaseForCustomType, unhandledVariants []*dectype.CustomTypeVariantAtom) *UnhandledCustomTypeVariants {
+func NewUnhandledCustomTypeVariants(caseExpression *ast.CaseForCustomType,
+	unhandledVariants []*dectype.CustomTypeVariantAtom) *UnhandledCustomTypeVariants {
 	return &UnhandledCustomTypeVariants{unhandledVariants: unhandledVariants, caseExpression: caseExpression}
 }
 
@@ -573,8 +608,11 @@ type AlreadyHandledCustomTypeVariant struct {
 	consequence      *ast.CaseConsequenceForCustomType
 }
 
-func NewAlreadyHandledCustomTypeVariant(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType, unhandledVariant *dectype.CustomTypeVariantAtom) *AlreadyHandledCustomTypeVariant {
-	return &AlreadyHandledCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression, consequence: consequence}
+func NewAlreadyHandledCustomTypeVariant(caseExpression *ast.CaseForCustomType,
+	consequence *ast.CaseConsequenceForCustomType,
+	unhandledVariant *dectype.CustomTypeVariantAtom) *AlreadyHandledCustomTypeVariant {
+	return &AlreadyHandledCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression,
+		consequence: consequence}
 }
 
 func (e *AlreadyHandledCustomTypeVariant) Error() string {
@@ -611,7 +649,8 @@ func NewExpectedFunctionTypeForCall(encountered Expression) *ExpectedFunctionTyp
 }
 
 func (e *ExpectedFunctionTypeForCall) Error() string {
-	return fmt.Sprintf("this must be a function type that you are calling, but was something completely else %v", e.encountered)
+	return fmt.Sprintf("this must be a function type that you are calling, but was something completely else %v",
+		e.encountered)
 }
 
 func (e *ExpectedFunctionTypeForCall) FetchPositionLength() token.SourceFileReference {
@@ -625,12 +664,14 @@ type FunctionCallTypeMismatch struct {
 	err         error
 }
 
-func NewFunctionCallTypeMismatch(err error, call *ast.FunctionCall, expected *dectype.FunctionAtom, encountered *dectype.FunctionAtom) *FunctionCallTypeMismatch {
+func NewFunctionCallTypeMismatch(err error, call *ast.FunctionCall, expected *dectype.FunctionAtom,
+	encountered *dectype.FunctionAtom) *FunctionCallTypeMismatch {
 	return &FunctionCallTypeMismatch{err: err, call: call, expected: expected, encountered: encountered}
 }
 
 func (e *FunctionCallTypeMismatch) Error() string {
-	return fmt.Sprintf("mismatch function type expected %v\n %v vs encountered: %v\n%v\n", e.err, e.expected.HumanReadable(), e.encountered.HumanReadable(), e.call)
+	return fmt.Sprintf("mismatch function type expected %v\n %v vs encountered: %v\n%v\n", e.err,
+		e.expected.HumanReadable(), e.encountered.HumanReadable(), e.call)
 }
 
 func (e *FunctionCallTypeMismatch) FetchPositionLength() token.SourceFileReference {
@@ -644,12 +685,14 @@ type CouldNotSmashFunctions struct {
 	err         error
 }
 
-func NewCouldNotSmashFunctions(call *ast.FunctionCall, expected *dectype.FunctionAtom, encountered *dectype.FunctionAtom, err error) *CouldNotSmashFunctions {
+func NewCouldNotSmashFunctions(call *ast.FunctionCall, expected *dectype.FunctionAtom,
+	encountered *dectype.FunctionAtom, err error) *CouldNotSmashFunctions {
 	return &CouldNotSmashFunctions{call: call, expected: expected, encountered: encountered, err: err}
 }
 
 func (e *CouldNotSmashFunctions) Error() string {
-	return fmt.Sprintf("could not smash function types \n%v\n and\n%v\n%v\n%v", e.expected.HumanReadable(), e.encountered.HumanReadable(), e.call, e.err)
+	return fmt.Sprintf("could not smash function types \n%v\n and\n%v\n%v\n%v", e.expected.HumanReadable(),
+		e.encountered.HumanReadable(), e.call, e.err)
 }
 
 func (e *CouldNotSmashFunctions) FetchPositionLength() token.SourceFileReference {
@@ -668,20 +711,25 @@ type ExtraFunctionArguments struct {
 	posLength   token.SourceFileReference
 }
 
-func NewExtraFunctionArguments(posLength token.SourceFileReference, expected []dtype.Type, encountered []dtype.Type) *ExtraFunctionArguments {
+func NewExtraFunctionArguments(posLength token.SourceFileReference, expected []dtype.Type,
+	encountered []dtype.Type) *ExtraFunctionArguments {
 	return &ExtraFunctionArguments{posLength: posLength, expected: expected, encountered: encountered}
 }
 
 func (e *ExtraFunctionArguments) Error() string {
-	return fmt.Sprintf("you can not define more arguments than what is expected of you. function:\n%v\nEncountered:\n%v\n", e.expected, e.encountered)
+	return fmt.Sprintf("you can not define more arguments than what is expected of you. function:\n%v\nEncountered:\n%v\n",
+		e.expected, e.encountered)
 }
 
 func (e *ExtraFunctionArguments) FetchPositionLength() token.SourceFileReference {
 	return e.posLength
 }
 
-func NewCaseWrongParameterCountInCustomTypeVariant(caseExpression *ast.CaseForCustomType, consequence *ast.CaseConsequenceForCustomType, unhandledVariant *dectype.CustomTypeVariantAtom) *CaseWrongParameterCountInCustomTypeVariant {
-	return &CaseWrongParameterCountInCustomTypeVariant{unhandledVariant: unhandledVariant, caseExpression: caseExpression, consequence: consequence}
+func NewCaseWrongParameterCountInCustomTypeVariant(caseExpression *ast.CaseForCustomType,
+	consequence *ast.CaseConsequenceForCustomType,
+	unhandledVariant *dectype.CustomTypeVariantAtom) *CaseWrongParameterCountInCustomTypeVariant {
+	return &CaseWrongParameterCountInCustomTypeVariant{unhandledVariant: unhandledVariant,
+		caseExpression: caseExpression, consequence: consequence}
 }
 
 func (e *CaseWrongParameterCountInCustomTypeVariant) Error() string {
@@ -697,7 +745,8 @@ type YouCanOnlySetFieldInRecordOnce struct {
 	fieldName  *ast.VariableIdentifier
 }
 
-func NewYouCanOnlySetFieldInRecordOnce(recordType *dectype.RecordAtom, fieldName *ast.VariableIdentifier) *YouCanOnlySetFieldInRecordOnce {
+func NewYouCanOnlySetFieldInRecordOnce(recordType *dectype.RecordAtom,
+	fieldName *ast.VariableIdentifier) *YouCanOnlySetFieldInRecordOnce {
 	return &YouCanOnlySetFieldInRecordOnce{recordType: recordType, fieldName: fieldName}
 }
 
@@ -737,7 +786,8 @@ func (e *WrongNumberOfArgumentsInFunctionValue) EncounteredArgumentTypes() []dty
 }
 
 func (e *WrongNumberOfArgumentsInFunctionValue) Error() string {
-	return fmt.Sprintf("wrong number of arguments in functionvalue %v (%v)", e.encounteredFunction, e.FetchPositionLength())
+	return fmt.Sprintf("wrong number of arguments in functionvalue %v (%v)", e.encounteredFunction,
+		e.FetchPositionLength())
 }
 
 func (e *WrongNumberOfArgumentsInFunctionValue) FetchPositionLength() token.SourceFileReference {
@@ -749,7 +799,8 @@ type IfTestMustHaveBooleanType struct {
 	ifExpression     *ast.IfExpression
 }
 
-func NewIfTestMustHaveBooleanType(ifExpression *ast.IfExpression, ifTestExpression Expression) *IfTestMustHaveBooleanType {
+func NewIfTestMustHaveBooleanType(ifExpression *ast.IfExpression,
+	ifTestExpression Expression) *IfTestMustHaveBooleanType {
 	return &IfTestMustHaveBooleanType{ifExpression: ifExpression, ifTestExpression: ifTestExpression}
 }
 
@@ -768,7 +819,8 @@ type IfConsequenceAndAlternativeMustHaveSameType struct {
 	compatibleErr error
 }
 
-func NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression *ast.IfExpression, consequence Expression, alternative Expression, compatibleErr error) *IfConsequenceAndAlternativeMustHaveSameType {
+func NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression *ast.IfExpression, consequence Expression,
+	alternative Expression, compatibleErr error) *IfConsequenceAndAlternativeMustHaveSameType {
 	if consequence == nil {
 		panic("consequence can not be nil")
 	}
@@ -778,11 +830,13 @@ func NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression *ast.IfExpressi
 	if compatibleErr == nil {
 		panic("compatibleErr can not be nil")
 	}
-	return &IfConsequenceAndAlternativeMustHaveSameType{ifExpression: ifExpression, consequence: consequence, alternative: alternative, compatibleErr: compatibleErr}
+	return &IfConsequenceAndAlternativeMustHaveSameType{ifExpression: ifExpression, consequence: consequence,
+		alternative: alternative, compatibleErr: compatibleErr}
 }
 
 func (e *IfConsequenceAndAlternativeMustHaveSameType) Error() string {
-	return fmt.Sprintf("if: consequence and alternative must have same type %v\nvs\n%v\n(%v)\n", e.consequence.Type().HumanReadable(), e.alternative.Type().HumanReadable(), e.compatibleErr)
+	return fmt.Sprintf("if: consequence and alternative must have same type %v\nvs\n%v\n(%v)\n",
+		e.consequence.Type().HumanReadable(), e.alternative.Type().HumanReadable(), e.compatibleErr)
 }
 
 func (e *IfConsequenceAndAlternativeMustHaveSameType) FetchPositionLength() token.SourceFileReference {
@@ -796,7 +850,8 @@ type GuardConsequenceAndAlternativeMustHaveSameType struct {
 	compatibleErr   error
 }
 
-func NewGuardConsequenceAndAlternativeMustHaveSameType(guardExpression *ast.GuardExpression, first Expression, alternative Expression, compatibleErr error) *GuardConsequenceAndAlternativeMustHaveSameType {
+func NewGuardConsequenceAndAlternativeMustHaveSameType(guardExpression *ast.GuardExpression, first Expression,
+	alternative Expression, compatibleErr error) *GuardConsequenceAndAlternativeMustHaveSameType {
 	if first == nil {
 		panic("first can not be nil")
 	}
@@ -806,11 +861,13 @@ func NewGuardConsequenceAndAlternativeMustHaveSameType(guardExpression *ast.Guar
 	if compatibleErr == nil {
 		panic("compatibleErr can not be nil")
 	}
-	return &GuardConsequenceAndAlternativeMustHaveSameType{guardExpression: guardExpression, first: first, alternative: alternative, compatibleErr: compatibleErr}
+	return &GuardConsequenceAndAlternativeMustHaveSameType{guardExpression: guardExpression, first: first,
+		alternative: alternative, compatibleErr: compatibleErr}
 }
 
 func (e *GuardConsequenceAndAlternativeMustHaveSameType) Error() string {
-	return fmt.Sprintf("guard: consequence first and alternative must have same type\n%v\nvs\n%v\n(%v)\n", e.first.Type().HumanReadable(), e.alternative.Type().HumanReadable(), e.compatibleErr)
+	return fmt.Sprintf("guard: consequence first and alternative must have same type\n%v\nvs\n%v\n(%v)\n",
+		e.first.Type().HumanReadable(), e.alternative.Type().HumanReadable(), e.compatibleErr)
 }
 
 func (e *GuardConsequenceAndAlternativeMustHaveSameType) FetchPositionLength() token.SourceFileReference {
@@ -825,8 +882,10 @@ type EveryItemInThelistMustHaveTheSameType struct {
 	compatibleErr    error
 }
 
-func NewEveryItemInThelistMustHaveTheSameType(list *ast.ListLiteral, faultyExpression ast.Expression, expectedType dtype.Type, actualType dtype.Type, compatibleErr error) *EveryItemInThelistMustHaveTheSameType {
-	return &EveryItemInThelistMustHaveTheSameType{list: list, faultyExpression: faultyExpression, ExpectedType: expectedType, ActualType: actualType, compatibleErr: compatibleErr}
+func NewEveryItemInThelistMustHaveTheSameType(list *ast.ListLiteral, faultyExpression ast.Expression,
+	expectedType dtype.Type, actualType dtype.Type, compatibleErr error) *EveryItemInThelistMustHaveTheSameType {
+	return &EveryItemInThelistMustHaveTheSameType{list: list, faultyExpression: faultyExpression,
+		ExpectedType: expectedType, ActualType: actualType, compatibleErr: compatibleErr}
 }
 
 func (e *EveryItemInThelistMustHaveTheSameType) Error() string {
@@ -893,7 +952,8 @@ type CouldNotFindFieldInLookup struct {
 	typeToLookupIn dtype.Type
 }
 
-func NewCouldNotFindFieldInLookup(lookups *ast.Lookups, variable *ast.VariableIdentifier, typeToLookupIn dtype.Type) *CouldNotFindFieldInLookup {
+func NewCouldNotFindFieldInLookup(lookups *ast.Lookups, variable *ast.VariableIdentifier,
+	typeToLookupIn dtype.Type) *CouldNotFindFieldInLookup {
 	return &CouldNotFindFieldInLookup{lookups: lookups, variable: variable, typeToLookupIn: typeToLookupIn}
 }
 
@@ -931,7 +991,8 @@ func NewUnknownModule(moduleRef *ast.ModuleReference) *UnknownModule {
 }
 
 func (e *UnknownModule) Error() string {
-	return fmt.Sprintf("unknown module reference '%v' %v", e.moduleRef, e.FetchPositionLength().ToCompleteReferenceString())
+	return fmt.Sprintf("unknown module reference '%v' %v", e.moduleRef,
+		e.FetchPositionLength().ToCompleteReferenceString())
 }
 
 func (e *UnknownModule) FetchPositionLength() token.SourceFileReference {
@@ -953,7 +1014,8 @@ func NewModuleNotFoundInDocumentProvider(relativeModuleName dectype.PackageRelat
 }
 
 func (e *ModuleNotFoundInDocumentProvider) Error() string {
-	return fmt.Sprintf("couldn't find module '%v' '%v' %v\n%v\n", e.relativeModuleName, e.localFileSystemPath, e.FetchPositionLength().ToCompleteReferenceString(), e.err)
+	return fmt.Sprintf("couldn't find module '%v' '%v' %v\n%v\n", e.relativeModuleName, e.localFileSystemPath,
+		e.FetchPositionLength().ToCompleteReferenceString(), e.err)
 }
 
 func (e *ModuleNotFoundInDocumentProvider) FetchPositionLength() token.SourceFileReference {
@@ -969,12 +1031,16 @@ type CircularDependencyDetected struct {
 	packageRelativeModuleName dectype.PackageRelativeModuleName
 }
 
-func NewCircularDependencyDetected(packageRelativeModuleName dectype.PackageRelativeModuleName, loadedModules []dectype.PackageRelativeModuleName, lastModule dectype.ArtifactFullyQualifiedModuleName) *CircularDependencyDetected {
-	return &CircularDependencyDetected{packageRelativeModuleName: packageRelativeModuleName, loadedModules: loadedModules, lastModule: lastModule}
+func NewCircularDependencyDetected(packageRelativeModuleName dectype.PackageRelativeModuleName,
+	loadedModules []dectype.PackageRelativeModuleName,
+	lastModule dectype.ArtifactFullyQualifiedModuleName) *CircularDependencyDetected {
+	return &CircularDependencyDetected{packageRelativeModuleName: packageRelativeModuleName,
+		loadedModules: loadedModules, lastModule: lastModule}
 }
 
 func (e *CircularDependencyDetected) Error() string {
-	return fmt.Sprintf("Circular dependency %v %v %v", e.loadedModules, e.lastModule, e.packageRelativeModuleName.ModuleName.Path().FetchPositionLength().ToCompleteReferenceString())
+	return fmt.Sprintf("Circular dependency %v %v %v", e.loadedModules, e.lastModule,
+		e.packageRelativeModuleName.ModuleName.Path().FetchPositionLength().ToCompleteReferenceString())
 }
 
 func (e *CircularDependencyDetected) FetchPositionLength() token.SourceFileReference {
@@ -990,7 +1056,8 @@ func NewUnknownExposedType(typeIdentifier *ast.TypeIdentifier) *UnknownExposedTy
 }
 
 func (e *UnknownExposedType) Error() string {
-	return fmt.Sprintf("unknown exposed type reference '%v' %v", e.typeIdentifier, e.FetchPositionLength().ToCompleteReferenceString())
+	return fmt.Sprintf("unknown exposed type reference '%v' %v", e.typeIdentifier,
+		e.FetchPositionLength().ToCompleteReferenceString())
 }
 
 func (e *UnknownExposedType) FetchPositionLength() token.SourceFileReference {
@@ -1006,7 +1073,8 @@ func NewUnknownImportedType(typeIdentifier *ast.TypeIdentifier) *UnknownImported
 }
 
 func (e *UnknownImportedType) Error() string {
-	return fmt.Sprintf("unknown imported type reference '%v' %v", e.typeIdentifier, e.FetchPositionLength().ToCompleteReferenceString())
+	return fmt.Sprintf("unknown imported type reference '%v' %v", e.typeIdentifier,
+		e.FetchPositionLength().ToCompleteReferenceString())
 }
 
 func (e *UnknownImportedType) FetchPositionLength() token.SourceFileReference {
@@ -1035,12 +1103,15 @@ type TooFewIdentifiersForFunctionType struct {
 	annotationIdentifiers []*ast.FunctionParameter
 }
 
-func NewTooFewIdentifiersForFunctionType(annotationIdentifiers []*ast.FunctionParameter, forcedFunctionType dtype.Type, functionValue *ast.FunctionValue) *TooFewIdentifiersForFunctionType {
-	return &TooFewIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers, forcedFunctionType: forcedFunctionType, functionValue: functionValue}
+func NewTooFewIdentifiersForFunctionType(annotationIdentifiers []*ast.FunctionParameter, forcedFunctionType dtype.Type,
+	functionValue *ast.FunctionValue) *TooFewIdentifiersForFunctionType {
+	return &TooFewIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers,
+		forcedFunctionType: forcedFunctionType, functionValue: functionValue}
 }
 
 func (e *TooFewIdentifiersForFunctionType) Error() string {
-	return fmt.Sprintf("too few identifiers for function %v %v", e.annotationIdentifiers, e.functionValue.DebugFunctionIdentifier())
+	return fmt.Sprintf("too few identifiers for function %v %v", e.annotationIdentifiers,
+		e.functionValue.DebugFunctionIdentifier())
 }
 
 func (e *TooFewIdentifiersForFunctionType) FetchPositionLength() token.SourceFileReference {
@@ -1053,12 +1124,15 @@ type TooManyIdentifiersForFunctionType struct {
 	annotationIdentifiers []*ast.FunctionParameter
 }
 
-func NewTooManyIdentifiersForFunctionType(annotationIdentifiers []*ast.FunctionParameter, forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooManyIdentifiersForFunctionType {
-	return &TooManyIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers, forcedFunctionType: forcedFunctionType, functionValue: functionValue}
+func NewTooManyIdentifiersForFunctionType(annotationIdentifiers []*ast.FunctionParameter,
+	forcedFunctionType *dectype.FunctionAtom, functionValue *ast.FunctionValue) *TooManyIdentifiersForFunctionType {
+	return &TooManyIdentifiersForFunctionType{annotationIdentifiers: annotationIdentifiers,
+		forcedFunctionType: forcedFunctionType, functionValue: functionValue}
 }
 
 func (e *TooManyIdentifiersForFunctionType) Error() string {
-	return fmt.Sprintf("too many identifiers for function %v %v", e.annotationIdentifiers, e.functionValue.DebugFunctionIdentifier())
+	return fmt.Sprintf("too many identifiers for function %v %v", e.annotationIdentifiers,
+		e.functionValue.DebugFunctionIdentifier())
 }
 
 func (e *TooManyIdentifiersForFunctionType) FetchPositionLength() token.SourceFileReference {
@@ -1161,7 +1235,8 @@ type UnknownAnnotationTypeReference struct {
 	err                  TypeError
 }
 
-func NewUnknownAnnotationTypeReference(annotationIdentifier *ast.VariableIdentifier, err TypeError) *UnknownAnnotationTypeReference {
+func NewUnknownAnnotationTypeReference(annotationIdentifier *ast.VariableIdentifier,
+	err TypeError) *UnknownAnnotationTypeReference {
 	return &UnknownAnnotationTypeReference{err: err, annotationIdentifier: annotationIdentifier}
 }
 

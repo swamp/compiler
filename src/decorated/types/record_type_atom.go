@@ -61,7 +61,8 @@ func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
 	}
 	lastType := s.parsedOrderFields[len(s.parsedOrderFields)-1].fieldType
 	log.Printf("last: %v %T", lastType.FetchPositionLength().ToCompleteReferenceString(), lastType)
-	inclusive := token.MakeInclusiveSourceFileReference(s.parsedOrderFields[0].name.FetchPositionLength(), lastType.FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(s.parsedOrderFields[0].name.FetchPositionLength(),
+		lastType.FetchPositionLength())
 	return inclusive
 }
 
@@ -303,7 +304,8 @@ func (u *RecordAtom) IsEqual(other_ dtype.Atom) error {
 		otherField := otherFields[index]
 
 		if otherField.Name() != field.Name() {
-			return fmt.Errorf("field names differ '%v' <-> '%v'\n %v\n %v", otherField.name.Name(), field.name.Name(), otherField, field)
+			return fmt.Errorf("field names differ '%v' <-> '%v'\n %v\n %v", otherField.name.Name(), field.name.Name(),
+				otherField, field)
 		}
 		otherFieldType, otherFieldTypeErr := otherField.Type().Resolve()
 		if otherFieldTypeErr != nil {

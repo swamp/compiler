@@ -93,7 +93,8 @@ func WriteUnmanagedType(unmanaged *dectype.UnmanagedType, colorer coloring.Decor
 func WritePrimitiveType(primitive *dectype.PrimitiveAtom, colorer coloring.DecoratedColorer, indentation int) {
 }
 
-func WritePrimitiveTypeReference(primitiveReference *dectype.PrimitiveTypeReference, colorer coloring.DecoratedColorer, indentation int) {
+func WritePrimitiveTypeReference(primitiveReference *dectype.PrimitiveTypeReference, colorer coloring.DecoratedColorer,
+	indentation int) {
 	colorer.PrimitiveTypeName(primitiveReference.PrimitiveAtom().PrimitiveName())
 }
 
@@ -110,7 +111,8 @@ func WriteFunctionType(functionType *dectype.FunctionAtom, colorer coloring.Deco
 	colorer.OperatorString(")")
 }
 
-func WriteFunctionTypeReference(functionTypeReference *dectype.FunctionTypeReference, colorer coloring.DecoratedColorer, indentation int) {
+func WriteFunctionTypeReference(functionTypeReference *dectype.FunctionTypeReference, colorer coloring.DecoratedColorer,
+	indentation int) {
 	WriteFunctionType(functionTypeReference.FunctionAtom(), colorer, indentation)
 }
 
@@ -133,7 +135,8 @@ func WriteAnyMatchingType(localType *dectype.AnyMatchingTypes, colorer coloring.
 	colorer.OperatorString("*")
 }
 
-func WriteCustomTypeReference(customTypeReference *dectype.CustomTypeReference, colorer coloring.DecoratedColorer, indentation int) {
+func WriteCustomTypeReference(customTypeReference *dectype.CustomTypeReference, colorer coloring.DecoratedColorer,
+	indentation int) {
 	colorer.CustomTypeName(customTypeReference)
 }
 

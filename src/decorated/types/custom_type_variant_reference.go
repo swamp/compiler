@@ -54,7 +54,8 @@ func (g *CustomTypeVariantReference) Resolve() (dtype.Atom, error) {
 	return g.customTypeVariant.Resolve()
 }
 
-func NewCustomTypeVariantReference(named *NamedDefinitionTypeReference, customTypeVariant *CustomTypeVariantAtom) *CustomTypeVariantReference {
+func NewCustomTypeVariantReference(named *NamedDefinitionTypeReference,
+	customTypeVariant *CustomTypeVariantAtom) *CustomTypeVariantReference {
 	ref := &CustomTypeVariantReference{named: named, customTypeVariant: customTypeVariant}
 
 	customTypeVariant.AddReferee(ref)

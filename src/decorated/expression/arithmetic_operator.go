@@ -34,7 +34,8 @@ type ArithmeticOperator struct {
 	infix          *ast.BinaryOperator
 }
 
-func NewArithmeticOperator(infix *ast.BinaryOperator, left Expression, right Expression, operatorType ArithmeticOperatorType) (*ArithmeticOperator, decshared.DecoratedError) {
+func NewArithmeticOperator(infix *ast.BinaryOperator, left Expression, right Expression,
+	operatorType ArithmeticOperatorType) (*ArithmeticOperator, decshared.DecoratedError) {
 	a := &ArithmeticOperator{operatorType: operatorType, infix: infix}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right

@@ -20,7 +20,8 @@ type ResourceNameLiteral struct {
 	globalFixedType *dectype.PrimitiveTypeReference
 }
 
-func NewResourceNameLiteral(resourceName *ast.ResourceNameLiteral, globalFixedType *dectype.PrimitiveTypeReference) *ResourceNameLiteral {
+func NewResourceNameLiteral(resourceName *ast.ResourceNameLiteral,
+	globalFixedType *dectype.PrimitiveTypeReference) *ResourceNameLiteral {
 	return &ResourceNameLiteral{resourceName: resourceName, globalFixedType: globalFixedType}
 }
 

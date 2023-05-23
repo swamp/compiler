@@ -18,7 +18,8 @@ type AliasReference struct {
 	definitionReference *dectype.NamedDefinitionTypeReference
 }
 
-func NewAliasReference(definitionReference *dectype.NamedDefinitionTypeReference, referencedType *dectype.AliasReference) *AliasReference {
+func NewAliasReference(definitionReference *dectype.NamedDefinitionTypeReference,
+	referencedType *dectype.AliasReference) *AliasReference {
 	return &AliasReference{definitionReference: definitionReference, referencedType: referencedType}
 }
 

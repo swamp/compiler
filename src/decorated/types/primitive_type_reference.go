@@ -54,7 +54,8 @@ func (g *PrimitiveTypeReference) Resolve() (dtype.Atom, error) {
 	return g.primitiveType.Resolve()
 }
 
-func NewPrimitiveTypeReference(named *NamedDefinitionTypeReference, primitiveType *PrimitiveAtom) *PrimitiveTypeReference {
+func NewPrimitiveTypeReference(named *NamedDefinitionTypeReference,
+	primitiveType *PrimitiveAtom) *PrimitiveTypeReference {
 	if named == nil {
 		panic(fmt.Errorf("must have a named type reference"))
 	}

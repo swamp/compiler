@@ -73,7 +73,8 @@ func (t *ResolvedLocalTypeContext) FetchPositionLength() token.SourceFileReferen
 	return t.contextRefThatWantsResolvedTypes.FetchPositionLength()
 }
 
-func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeNameOnlyContextReference, types []dtype.Type) (
+func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeNameOnlyContextReference,
+	types []dtype.Type) (
 	*ResolvedLocalTypeContext, error,
 ) {
 	t := &ResolvedLocalTypeContext{

@@ -57,7 +57,8 @@ type RecordLookups struct {
 }
 
 func NewRecordLookups(expressionToRecord Expression, lookupFields []LookupField) *RecordLookups {
-	inclusive := token.MakeInclusiveSourceFileReference(expressionToRecord.FetchPositionLength(), lookupFields[len(lookupFields)-1].FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(expressionToRecord.FetchPositionLength(),
+		lookupFields[len(lookupFields)-1].FetchPositionLength())
 
 	l := &RecordLookups{expressionToRecord: expressionToRecord, lookupFields: lookupFields, inclusive: inclusive}
 	count := len(lookupFields)

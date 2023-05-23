@@ -84,7 +84,8 @@ func NewAliasType(name *ast.Alias, artifactTypeName ArtifactFullyQualifiedTypeNa
 		panic("must have complete alias name")
 	}
 
-	inclusive := token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), referencedType.FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(name.FetchPositionLength(),
+		referencedType.FetchPositionLength())
 
 	return &Alias{name: name, artifactTypeName: artifactTypeName, referencedType: referencedType, inclusive: inclusive}
 }

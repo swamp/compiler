@@ -17,9 +17,14 @@ type ModuleDefinitionsCombine struct {
 	importedModules     *ModuleImports
 }
 
-func NewModuleDefinitionsCombine(internalDefinitions *ModuleDefinitions,
-	importDefinitions *ModuleImportedDefinitions, importedModules *ModuleImports) *ModuleDefinitionsCombine {
-	return &ModuleDefinitionsCombine{internalDefinitions: internalDefinitions, importDefinitions: importDefinitions, importedModules: importedModules}
+func NewModuleDefinitionsCombine(
+	internalDefinitions *ModuleDefinitions,
+	importDefinitions *ModuleImportedDefinitions, importedModules *ModuleImports,
+) *ModuleDefinitionsCombine {
+	return &ModuleDefinitionsCombine{
+		internalDefinitions: internalDefinitions, importDefinitions: importDefinitions,
+		importedModules: importedModules,
+	}
 }
 
 func (d *ModuleDefinitionsCombine) FindDefinitionExpression(identifier *ast.VariableIdentifier) ModuleDef {
@@ -45,7 +50,9 @@ func (d *ModuleDefinitionsCombine) FindScopedDefinitionExpression(identifier *as
 	// log.Printf("looking for module '%v'\n", functionParameter.ModuleReference())
 	foundModule := d.importedModules.FindModule(identifier.ModuleReference())
 	if foundModule == nil {
-		log.Printf("ModuleDefinitionsCombine: couldn't find module %v %v", identifier.ModuleReference(), d.importedModules)
+		log.Printf(
+			"ModuleDefinitionsCombine: couldn't find module %v %v", identifier.ModuleReference(), d.importedModules,
+		)
 		return nil
 	}
 	// log.Printf("Found referenced module '%v'\n", functionParameter.ModuleReference())

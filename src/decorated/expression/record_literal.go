@@ -66,7 +66,8 @@ type RecordLiteralAssignment struct {
 	fieldName  *RecordLiteralField `debug:"true"`
 }
 
-func NewRecordLiteralAssignment(index int, fieldName *RecordLiteralField, expression Expression) *RecordLiteralAssignment {
+func NewRecordLiteralAssignment(index int, fieldName *RecordLiteralField,
+	expression Expression) *RecordLiteralAssignment {
 	assignment := &RecordLiteralAssignment{index: index, fieldName: fieldName, expression: expression}
 	fieldName.SetInAssignment(assignment)
 
@@ -117,7 +118,8 @@ func NewRecordLiteral(t *dectype.RecordAtom, recordTemplate Expression,
 		first = recordTemplate.FetchPositionLength()
 	}
 
-	inclusive := token.MakeInclusiveSourceFileReference(first, parseOrderedAssignments[len(parseOrderedAssignments)-1].expression.FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(first,
+		parseOrderedAssignments[len(parseOrderedAssignments)-1].expression.FetchPositionLength())
 
 	return &RecordLiteral{
 		t: t, recordTemplate: recordTemplate,

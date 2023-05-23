@@ -22,7 +22,8 @@ type TypeCreateAndLookup struct {
 	localTypes       *ModuleTypes
 }
 
-func NewTypeCreateAndLookup(lookup *TypeLookup, localTypes *ModuleTypes, localTypeContext *dectype.ResolvedLocalTypeContext) *TypeCreateAndLookup {
+func NewTypeCreateAndLookup(lookup *TypeLookup, localTypes *ModuleTypes,
+	localTypeContext *dectype.ResolvedLocalTypeContext) *TypeCreateAndLookup {
 	return &TypeCreateAndLookup{localTypes: localTypes, lookup: lookup, localTypeLookup: localTypeContext}
 }
 
@@ -31,7 +32,8 @@ func (l *TypeCreateAndLookup) MakeLocalNameContext(localNameContext *dectype.Loc
 		panic(fmt.Errorf("can not set to nil local name context"))
 	}
 
-	return &TypeCreateAndLookup{localTypes: l.localTypes, lookup: l.lookup, localTypeLookup: l.localTypeLookup, localNameContext: localNameContext}
+	return &TypeCreateAndLookup{localTypes: l.localTypes, lookup: l.lookup, localTypeLookup: l.localTypeLookup,
+		localNameContext: localNameContext}
 }
 
 func (l *TypeCreateAndLookup) AddTypeAlias(alias *dectype.Alias) TypeError {
@@ -46,11 +48,13 @@ func (l *TypeCreateAndLookup) AddCustomTypeWrappedInNameOnlyContext(customTypeWr
 	return l.localTypes.AddCustomTypeWrappedInNameOnlyContext(customTypeWrappedInContext)
 }
 
-func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal, decshared.DecoratedError) {
+func (l *TypeCreateAndLookup) CreateSomeTypeReference(someTypeIdentifier ast.TypeIdentifierNormalOrScoped) (dectype.TypeReferenceScopedOrNormal,
+	decshared.DecoratedError) {
 	return l.lookup.CreateSomeTypeReference(someTypeIdentifier)
 }
 
-func (l *TypeCreateAndLookup) FindBuiltInType(s string, reference token.SourceFileReference) dectype.TypeReferenceScopedOrNormal {
+func (l *TypeCreateAndLookup) FindBuiltInType(s string,
+	reference token.SourceFileReference) dectype.TypeReferenceScopedOrNormal {
 	identifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken(s, reference, 0))
 	if !reference.Verify() {
 		panic(fmt.Errorf("illegal source file reference"))
@@ -63,7 +67,8 @@ func (l *TypeCreateAndLookup) FindBuiltInType(s string, reference token.SourceFi
 	return someReference
 }
 
-func (l *TypeCreateAndLookup) CreateLocalTypeNameOnlyReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeNameReference, decshared.DecoratedError) {
+func (l *TypeCreateAndLookup) CreateLocalTypeNameOnlyReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeNameReference,
+	decshared.DecoratedError) {
 	if l.localNameContext == nil {
 		panic(fmt.Errorf("no localNameContext set"))
 	}

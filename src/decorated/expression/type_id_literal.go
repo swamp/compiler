@@ -21,7 +21,8 @@ type TypeIdLiteral struct {
 	containedType         dectype.TypeReferenceScopedOrNormal
 }
 
-func NewTypeIdLiteral(typeId *ast.TypeId, constructedTypeIdType dtype.Type, containedType dectype.TypeReferenceScopedOrNormal) *TypeIdLiteral {
+func NewTypeIdLiteral(typeId *ast.TypeId, constructedTypeIdType dtype.Type,
+	containedType dectype.TypeReferenceScopedOrNormal) *TypeIdLiteral {
 	return &TypeIdLiteral{typeId: typeId, constructedTypeIdType: constructedTypeIdType, containedType: containedType}
 }
 

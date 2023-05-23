@@ -51,7 +51,8 @@ func checkIfStructContainSingleVisibleField(reflectValue reflect.Value) (
 	return found, foundField, true, true
 }
 
-func writeAllSingleFieldStructs(fieldValue reflect.Value, structField reflect.StructField, localDepth int, writer io.Writer) (
+func writeAllSingleFieldStructs(fieldValue reflect.Value, structField reflect.StructField, localDepth int,
+	writer io.Writer) (
 	reflect.Value, bool,
 ) {
 	if fieldValue.Kind() == reflect.Slice {

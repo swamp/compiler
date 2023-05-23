@@ -30,7 +30,8 @@ type BitwiseOperator struct {
 	operatorType BitwiseOperatorType
 }
 
-func NewBitwiseOperator(infix *ast.BinaryOperator, left Expression, right Expression, operatorType BitwiseOperatorType) (*BitwiseOperator, decshared.DecoratedError) {
+func NewBitwiseOperator(infix *ast.BinaryOperator, left Expression, right Expression,
+	operatorType BitwiseOperatorType) (*BitwiseOperator, decshared.DecoratedError) {
 	a := &BitwiseOperator{operatorType: operatorType}
 	a.BinaryOperator.left = left
 	a.BinaryOperator.right = right

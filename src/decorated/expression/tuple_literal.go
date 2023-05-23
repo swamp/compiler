@@ -20,7 +20,8 @@ type TupleLiteral struct {
 	astLiteral  *ast.TupleLiteral
 }
 
-func NewTupleLiteral(astLiteral *ast.TupleLiteral, tupleType *dectype.TupleTypeAtom, expressions []Expression) *TupleLiteral {
+func NewTupleLiteral(astLiteral *ast.TupleLiteral, tupleType *dectype.TupleTypeAtom,
+	expressions []Expression) *TupleLiteral {
 	return &TupleLiteral{expressions: expressions, tupleType: tupleType, astLiteral: astLiteral}
 }
 

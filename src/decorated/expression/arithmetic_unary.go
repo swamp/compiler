@@ -25,7 +25,8 @@ type ArithmeticUnaryOperator struct {
 	unary        *ast.UnaryExpression
 }
 
-func NewArithmeticUnaryOperator(unary *ast.UnaryExpression, left Expression, operatorType ArithmeticUnaryOperatorType) (*ArithmeticUnaryOperator, decshared.DecoratedError) {
+func NewArithmeticUnaryOperator(unary *ast.UnaryExpression, left Expression,
+	operatorType ArithmeticUnaryOperatorType) (*ArithmeticUnaryOperator, decshared.DecoratedError) {
 	a := &ArithmeticUnaryOperator{operatorType: operatorType, unary: unary}
 	a.UnaryOperator.left = left
 	a.UnaryOperator.ExpressionNode.decoratedType = left.Type()

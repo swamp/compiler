@@ -18,7 +18,8 @@ type ImportedDefinition struct {
 	wasReferenced        bool
 }
 
-func NewImportedDefinition(createdBy *ImportedModule, identifier *ast.VariableIdentifier, referencedDefinition ModuleDef) *ImportedDefinition {
+func NewImportedDefinition(createdBy *ImportedModule, identifier *ast.VariableIdentifier,
+	referencedDefinition ModuleDef) *ImportedDefinition {
 	if referencedDefinition == nil {
 		panic("not allowed")
 	}

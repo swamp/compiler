@@ -58,6 +58,7 @@ func (u *LocalTypeNameReference) WasReferenced() bool {
 	return false
 }
 
-func NewLocalTypeNameReference(identifier *ast.LocalTypeNameReference, referencedType *LocalTypeName) *LocalTypeNameReference {
+func NewLocalTypeNameReference(identifier *ast.LocalTypeNameReference,
+	referencedType *LocalTypeName) *LocalTypeNameReference {
 	return &LocalTypeNameReference{identifier: identifier, referencedType: referencedType}
 }

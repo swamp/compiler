@@ -67,7 +67,8 @@ type CustomTypeVariantAtom struct {
 	debugMemoryAlign     MemoryAlign
 }
 
-func NewCustomTypeVariant(index int, inCustomType *CustomTypeAtom, astCustomTypeVariant *ast.CustomTypeVariant, parameterTypes []dtype.Type) *CustomTypeVariantAtom {
+func NewCustomTypeVariant(index int, inCustomType *CustomTypeAtom, astCustomTypeVariant *ast.CustomTypeVariant,
+	parameterTypes []dtype.Type) *CustomTypeVariantAtom {
 	if inCustomType == nil {
 		//		panic("must have valid in custom type")
 	}
@@ -188,7 +189,8 @@ func (s *CustomTypeVariantAtom) IsEqual(other_ dtype.Atom) error {
 	}
 
 	if s.astCustomTypeVariant.Name() != other.astCustomTypeVariant.Name() {
-		return fmt.Errorf("custom type must have same name %s vs %s", s.astCustomTypeVariant.Name(), other.astCustomTypeVariant.Name())
+		return fmt.Errorf("custom type must have same name %s vs %s", s.astCustomTypeVariant.Name(),
+			other.astCustomTypeVariant.Name())
 	}
 
 	if s.ParameterCount() != other.ParameterCount() {
@@ -219,7 +221,8 @@ func (s *CustomTypeVariantAtom) ParameterCount() int {
 }
 
 func (s *CustomTypeVariantAtom) String() string {
-	return fmt.Sprintf("[Variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(), CustomTypeGVariantFieldsToStringSuffix(s.parameterFields))
+	return fmt.Sprintf("[Variant %v%v]", s.astCustomTypeVariant.TypeIdentifier(),
+		CustomTypeGVariantFieldsToStringSuffix(s.parameterFields))
 }
 
 func (s *CustomTypeVariantAtom) MemorySize() MemorySize {

@@ -38,8 +38,10 @@ func (g *FunctionParameterReference) ParameterRef() *FunctionParameterDefinition
 	return g.referencedParameter
 }
 
-func NewFunctionParameterReference(ident ast.ScopedOrNormalVariableIdentifier,
-	referencedParameter *FunctionParameterDefinition) *FunctionParameterReference {
+func NewFunctionParameterReference(
+	ident ast.ScopedOrNormalVariableIdentifier,
+	referencedParameter *FunctionParameterDefinition,
+) *FunctionParameterReference {
 	if referencedParameter == nil {
 		panic("cant be nil")
 	}

@@ -19,7 +19,8 @@ type StringInterpolation struct {
 	includedExpressions []Expression
 }
 
-func NewStringInterpolation(str *ast.StringInterpolation, expression Expression, includedExpressions []Expression) *StringInterpolation {
+func NewStringInterpolation(str *ast.StringInterpolation, expression Expression,
+	includedExpressions []Expression) *StringInterpolation {
 	return &StringInterpolation{str: str, expression: expression, includedExpressions: includedExpressions}
 }
 
