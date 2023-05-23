@@ -1385,7 +1385,7 @@ Tinkering : [Alias Tinkering [LocalTypeNameOnlyContext t => [RecordType [[Field 
 }
 
 // can not add a child that is not within the range of the parent [[2:5](23) to [3:5](167) (145)]  [[1:1](0) to [1:1](0) (1)]  (*dectype.RecordAtom and *dectype.PrimitiveAtom)
-func xTestRecordList(t *testing.T) {
+func TestRecordList(t *testing.T) {
 	testDecorateWithoutDefault(t, //-- just a comment
 		`
 type alias Enemy =
@@ -2048,7 +2048,7 @@ tester : (b: String) -> Bool =
 `)
 }
 
-func xTestPipeRight2Fail(t *testing.T) {
+func TestPipeRight2Fail(t *testing.T) {
 	testDecorateWithoutDefaultFail(t, `
 first : (Int) -> Int =
     2
