@@ -7,12 +7,15 @@ package decorator
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 )
 
-func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func internalDecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	if e == nil {
 		panic(fmt.Sprintf("expression is nil %v", context))
 	}
@@ -74,11 +77,14 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 		return decorated.NewExternalFunctionDeclarationExpression(v), nil
 	default:
 		return nil, decorated.NewInternalError(
-			fmt.Errorf("don't know how to decorate %v %T %v", e, e, e.FetchPositionLength()))
+			fmt.Errorf("don't know how to decorate %v %T %v", e, e, e.FetchPositionLength()),
+		)
 	}
 }
 
-func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	expr, exprErr := internalDecorateExpression(d, e, context)
 	if exprErr != nil {
 		d.AddDecoratedError(exprErr)

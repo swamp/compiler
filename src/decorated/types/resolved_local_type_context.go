@@ -7,11 +7,12 @@ package dectype
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
-	"log"
 )
 
 type ResolvedLocalTypeContext struct {
@@ -72,8 +73,13 @@ func (t *ResolvedLocalTypeContext) FetchPositionLength() token.SourceFileReferen
 	return t.contextRefThatWantsResolvedTypes.FetchPositionLength()
 }
 
-func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeNameOnlyContextReference, types []dtype.Type) (*ResolvedLocalTypeContext, error) {
-	t := &ResolvedLocalTypeContext{resolvedArguments: make(map[string]*ResolvedLocalType), contextRefThatWantsResolvedTypes: contextRefThatWantsResolvedTypes}
+func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeNameOnlyContextReference, types []dtype.Type) (
+	*ResolvedLocalTypeContext, error,
+) {
+	t := &ResolvedLocalTypeContext{
+		resolvedArguments:                make(map[string]*ResolvedLocalType),
+		contextRefThatWantsResolvedTypes: contextRefThatWantsResolvedTypes,
+	}
 
 	if len(contextRefThatWantsResolvedTypes.nameContext.Definitions()) != len(types) {
 		return nil, fmt.Errorf("must have same number of types as names")
@@ -159,7 +165,9 @@ func (t *ResolvedLocalTypeContext) ResolveTypeRef(defRef *ResolvedLocalTypeRefer
 }
 */
 
-func (t *ResolvedLocalTypeContext) LookupTypeAstRef(astReference *ast.LocalTypeNameReference) (*ResolvedLocalTypeReference, decshared.DecoratedError) {
+func (t *ResolvedLocalTypeContext) LookupTypeAstRef(astReference *ast.LocalTypeNameReference) (
+	*ResolvedLocalTypeReference, decshared.DecoratedError,
+) {
 	definition, found := t.resolvedArguments[astReference.Name()]
 	if !found {
 		return nil, NewCouldNotFindLocalTypeName(astReference, fmt.Errorf("could not find %v", astReference.Name()))
@@ -170,7 +178,9 @@ func (t *ResolvedLocalTypeContext) LookupTypeAstRef(astReference *ast.LocalTypeN
 	return NewLocalTypeDefinitionReference(decoratedNameReference, definition), nil
 }
 
-func (t *ResolvedLocalTypeContext) LookupTypeRef(decReference *LocalTypeNameReference) (*ResolvedLocalTypeReference, decshared.DecoratedError) {
+func (t *ResolvedLocalTypeContext) LookupTypeRef(decReference *LocalTypeNameReference) (
+	*ResolvedLocalTypeReference, decshared.DecoratedError,
+) {
 	return t.LookupTypeAstRef(decReference.identifier)
 }
 
@@ -185,7 +195,9 @@ func (t *ResolvedLocalTypeContext) LookupTypeName(astReference *ast.LocalTypeNam
 func (t *ResolvedLocalTypeContext) Verify() error {
 	for _, x := range t.resolvedArguments {
 		if !x.WasReferenced() {
-			return fmt.Errorf("ResolvedLocalTypeContext:Verify. Argument name %v has not been resolved", t.resolvedArguments)
+			return fmt.Errorf(
+				"ResolvedLocalTypeContext:Verify. Argument name %v has not been resolved", t.resolvedArguments,
+			)
 		}
 	}
 

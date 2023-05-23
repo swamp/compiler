@@ -7,13 +7,14 @@ package decorator
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
 func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression, decshared.DecoratedError) {
@@ -32,7 +33,9 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 		return nil, decorated.NewInternalError(err)
 	}
 
-	constructedType, err2 := concretize.ConcretizeLocalTypeContextUsingArguments(contextForTypeRef, []dtype.Type{decoratedType})
+	constructedType, err2 := concretize.ConcretizeLocalTypeContextUsingArguments(
+		contextForTypeRef, []dtype.Type{decoratedType},
+	)
 	if err2 != nil {
 		return nil, decorated.NewInternalError(err2)
 	}

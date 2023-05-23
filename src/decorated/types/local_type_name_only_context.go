@@ -7,16 +7,17 @@ package dectype
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
-	"strings"
 )
 
 type LocalTypeNameOnlyContext struct {
 	resolvedArguments             map[string]*LocalTypeName
-	definitions                   []*LocalTypeName `debug:"true"`
-	typeThatIsReferencingTheNames dtype.Type       `debug:"true"`
+	definitions                   []*LocalTypeName
+	typeThatIsReferencingTheNames dtype.Type `debug:"true"`
 }
 
 func (t *LocalTypeNameOnlyContext) DeclareString() string {
@@ -67,8 +68,10 @@ func (t *LocalTypeNameOnlyContext) DebugString() string {
 }
 
 func NewLocalTypeNameContext() *LocalTypeNameOnlyContext {
-	t := &LocalTypeNameOnlyContext{resolvedArguments: make(map[string]*LocalTypeName),
-		typeThatIsReferencingTheNames: nil}
+	t := &LocalTypeNameOnlyContext{
+		resolvedArguments:             make(map[string]*LocalTypeName),
+		typeThatIsReferencingTheNames: nil,
+	}
 
 	/*
 		for _, name := range names {
@@ -131,7 +134,9 @@ func (t *LocalTypeNameOnlyContext) AddDef(identifier *dtype.LocalTypeName) *Loca
 	return nameDef
 }
 
-func (t *LocalTypeNameOnlyContext) ReferenceNameOnly(identifier *ast.LocalTypeNameReference) (*LocalTypeNameReference, error) {
+func (t *LocalTypeNameOnlyContext) ReferenceNameOnly(identifier *ast.LocalTypeNameReference) (
+	*LocalTypeNameReference, error,
+) {
 	found := t.resolvedArguments[identifier.Name()]
 	if found == nil {
 		return nil, fmt.Errorf("could not find %v", identifier)

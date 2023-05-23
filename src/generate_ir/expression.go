@@ -7,12 +7,15 @@ package generate_ir
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/llir/llvm/ir/value"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	"log"
 )
 
-func generateExpressionHelper(expr decorated.Expression, isLeafNode bool, genContext *generateContext) (value.Value, error) {
+func generateExpressionHelper(expr decorated.Expression, isLeafNode bool, genContext *generateContext) (
+	value.Value, error,
+) {
 	switch e := expr.(type) {
 	case *decorated.Let:
 		return generateLet(e, genContext)

@@ -7,11 +7,12 @@ package parser
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
 	"github.com/swamp/compiler/src/tokenize"
-	"reflect"
 )
 
 func parseRecordTypeFields(p ParseStream, expectedIndentation int,
@@ -40,7 +41,9 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 			return nil, parerr.NewOneSpaceAfterRecordTypeColon(spaceErr)
 		}
 
-		userType, userTypeErr := parseTypeReference(p, expectedIndentation, parameterIdentifierContext, precedingComments)
+		userType, userTypeErr := parseTypeReference(
+			p, expectedIndentation, parameterIdentifierContext, precedingComments,
+		)
 		if userTypeErr != nil {
 			return nil, userTypeErr
 		}
@@ -49,7 +52,9 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 		var wasErr parerr.ParseError
 		var wasComma bool
 
-		if wasComma, report, wasErr = p.eatCommaSeparatorOrTermination(expectedIndentation, tokenize.OwnLine); wasErr != nil {
+		if wasComma, report, wasErr = p.eatCommaSeparatorOrTermination(
+			expectedIndentation, tokenize.OwnLine,
+		); wasErr != nil {
 			return nil, wasErr
 		}
 		field := ast.NewRecordTypeField(index, symbolToken, userType, precedingComments)
@@ -70,7 +75,9 @@ func parseRecordTypeFields(p ParseStream, expectedIndentation int,
 }
 
 func parseRecordType(p ParseStream, startCurly token.ParenToken, keywordIndentation int,
-	precedingComments *ast.MultilineComment, context ast.LocalTypeNameDefinitionContextDynamic) (ast.Type, parerr.ParseError) {
+	precedingComments *ast.MultilineComment, context ast.LocalTypeNameDefinitionContextDynamic) (
+	ast.Type, parerr.ParseError,
+) {
 	if _, err := p.eatOneSpace("after record type left curly"); err != nil {
 		return nil, err
 	}

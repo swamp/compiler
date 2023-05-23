@@ -7,6 +7,8 @@ package generate_ir
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/types"
 	"github.com/swamp/assembler/lib/assembler_sp"
@@ -16,7 +18,6 @@ import (
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
 	"github.com/swamp/compiler/src/verbosity"
-	"log"
 )
 
 type IrFunctions struct {
@@ -207,7 +208,9 @@ func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo, functionPa
 }
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
-	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, irFunctions *IrFunctions, verboseFlag verbosity.Verbosity) (*ir.Func, error) {
+	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, irFunctions *IrFunctions, verboseFlag verbosity.Verbosity) (
+	*ir.Func, error,
+) {
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 	irReturnType := makeIrType(irModule, repo, functionType.ReturnType())
 	//unaliasedReturnType := dectype.UnaliasWithResolveInvoker()

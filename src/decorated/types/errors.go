@@ -2,6 +2,7 @@ package dectype
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/token"
 )

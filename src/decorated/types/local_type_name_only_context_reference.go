@@ -14,8 +14,8 @@ import (
 )
 
 type LocalTypeNameOnlyContextReference struct {
-	named       *NamedDefinitionTypeReference `debug:"true"`
-	nameContext *LocalTypeNameOnlyContext     `debug:"true"`
+	named       *NamedDefinitionTypeReference
+	nameContext *LocalTypeNameOnlyContext `debug:"true"`
 }
 
 func (g *LocalTypeNameOnlyContextReference) Type() dtype.Type {

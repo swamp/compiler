@@ -7,12 +7,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/alecthomas/kong"
-	"github.com/swamp/compiler/src/decorated/decshared"
-	"github.com/swamp/compiler/src/parser"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/alecthomas/kong"
+	"github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/parser"
 
 	"github.com/fatih/color"
 	"github.com/piot/lsp-server/lspserv"
@@ -28,13 +29,17 @@ import (
 
 var Version string
 
-func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, assembler bool, target swampcompiler.Target, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
+func buildCommandLine(fileOrDirectory string, outputDirectory string, enforceStyle bool, assembler bool, target swampcompiler.Target, verbosity verbosity.Verbosity) (
+	[]*loader.Package, error,
+) {
 	filenameToCompile := fileOrDirectory
 
 	return swampcompiler.BuildMain(filenameToCompile, outputDirectory, enforceStyle, assembler, target, verbosity)
 }
 
-func buildCommandLineNoOutput(fileOrDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) ([]*loader.Package, error) {
+func buildCommandLineNoOutput(fileOrDirectory string, enforceStyle bool, verbosity verbosity.Verbosity) (
+	[]*loader.Package, error,
+) {
 	filenameToCompile := fileOrDirectory
 
 	return swampcompiler.BuildMainOnlyCompile(filenameToCompile, enforceStyle, verbosity)
@@ -134,7 +139,9 @@ func (c *BuildCmd) Run() error {
 		target = swampcompiler.LlvmIr
 	}
 
-	compiledPackages, err := buildCommandLine(c.Path, c.Output, !c.DisableStyle, c.Assembler, target, verbosity.Verbosity(c.Verbosity))
+	compiledPackages, err := buildCommandLine(
+		c.Path, c.Output, !c.DisableStyle, c.Assembler, target, verbosity.Verbosity(c.Verbosity),
+	)
 	if err != nil {
 		return err
 	}

@@ -1,11 +1,12 @@
 package typeinfo
 
 import (
+	"testing"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
-	"testing"
 )
 
 func MakeFakeSourceFileReference() token.SourceFileReference {

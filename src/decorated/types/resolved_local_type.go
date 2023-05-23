@@ -7,9 +7,10 @@ package dectype
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
-	"log"
 )
 
 type ResolvedLocalType struct {
@@ -106,7 +107,10 @@ func NewResolvedLocalType(identifier *LocalTypeName, referencedType dtype.Type) 
 	if identifier.identifier.LocalType().FetchPositionLength().Range.Position().Line() == 1 && identifier.identifier.LocalType().FetchPositionLength().Range.Position().Column() == 0 {
 		log.Printf("found")
 	}
-	log.Printf("NewResolvedLocalType %T %v %v", referencedType, referencedType.FetchPositionLength().ToCompleteReferenceString(), referencedType)
+	log.Printf(
+		"NewResolvedLocalType %T %v %v", referencedType,
+		referencedType.FetchPositionLength().ToCompleteReferenceString(), referencedType,
+	)
 	x := &ResolvedLocalType{identifier: identifier, referencedType: referencedType}
 	return x
 }

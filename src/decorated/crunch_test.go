@@ -6,9 +6,10 @@
 package deccy
 
 import (
-	"github.com/swamp/compiler/src/parser"
 	"log"
 	"testing"
+
+	"github.com/swamp/compiler/src/parser"
 
 	"github.com/swamp/compiler/src/verbosity"
 )

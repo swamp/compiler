@@ -7,16 +7,19 @@ package decorator
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
-func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	decoratedExpression, functionErr := DecorateExpression(d, call.FunctionExpression(), context)
 	if functionErr != nil {
 		return nil, functionErr
@@ -25,11 +28,15 @@ func getFunctionValueExpression(d DecorateStream, call *ast.FunctionCall, contex
 	return decoratedExpression, nil
 }
 
-func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.FunctionCall, functionValueExpressionFunctionType *dectype.FunctionAtom, encounteredCallParametersType *dectype.FunctionAtom, context *VariableContext) (*dectype.FunctionAtom, decshared.DecoratedError) {
+func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.FunctionCall, functionValueExpressionFunctionType *dectype.FunctionAtom, encounteredCallParametersType *dectype.FunctionAtom, context *VariableContext) (
+	*dectype.FunctionAtom, decshared.DecoratedError,
+) {
 
 	/* Smash is not enough, we need to add extra parameter types? */
 	var completeCalledFunctionParameterTypes []dtype.Type
-	completeCalledFunctionParameterTypes = append(completeCalledFunctionParameterTypes, encounteredCallParametersType.FunctionParameterTypes()...)
+	completeCalledFunctionParameterTypes = append(
+		completeCalledFunctionParameterTypes, encounteredCallParametersType.FunctionParameterTypes()...,
+	)
 	extraParameters := functionValueExpressionFunctionType.FunctionParameterTypes()[len(encounteredCallParametersType.FunctionParameterTypes()):]
 
 	completeCalledFunctionParameterTypes = append(completeCalledFunctionParameterTypes, extraParameters...)
@@ -38,20 +45,26 @@ func determineEncounteredFunctionTypeAndArguments(d DecorateStream, call *ast.Fu
 
 	functionCompatibleErr := dectype.CompatibleTypes(functionValueExpressionFunctionType, completeCalledFunctionType)
 	if functionCompatibleErr != nil {
-		return nil, decorated.NewFunctionCallTypeMismatch(functionCompatibleErr, call, functionValueExpressionFunctionType, completeCalledFunctionType)
+		return nil, decorated.NewFunctionCallTypeMismatch(
+			functionCompatibleErr, call, functionValueExpressionFunctionType, completeCalledFunctionType,
+		)
 	}
 
 	resolvedFunctionArguments, _ := completeCalledFunctionType.ParameterAndReturn()
 
 	errorPosLength := call.FunctionExpression().FetchPositionLength()
 	if encounteredCallParametersType.ParameterCount() > len(completeCalledFunctionParameterTypes) {
-		return nil, decorated.NewExtraFunctionArguments(errorPosLength, resolvedFunctionArguments, encounteredCallParametersType.FunctionParameterTypes())
+		return nil, decorated.NewExtraFunctionArguments(
+			errorPosLength, resolvedFunctionArguments, encounteredCallParametersType.FunctionParameterTypes(),
+		)
 	}
 
 	return completeCalledFunctionType, nil
 }
 
-func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, functionValueExpression decorated.Expression, decoratedEncounteredArgumentExpressions []decorated.Expression, completeCalledFunctionType *dectype.FunctionAtom, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, functionValueExpression decorated.Expression, decoratedEncounteredArgumentExpressions []decorated.Expression, completeCalledFunctionType *dectype.FunctionAtom, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	var encounteredArgumentTypes []dtype.Type
 	for _, encounteredArgumentExpression := range decoratedEncounteredArgumentExpressions {
 		encounteredArgumentTypes = append(encounteredArgumentTypes, encounteredArgumentExpression.Type())
@@ -77,7 +90,9 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 			concreteArguments = append([]dtype.Type(nil), encounteredArgumentTypes...)
 			concreteArguments = append(concreteArguments, dectype.NewAnyType())
 
-			resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localTypeContextRef, concreteArguments)
+			resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
+				localTypeContextRef, concreteArguments,
+			)
 			if concreteErr != nil {
 				return nil, concreteErr
 			}
@@ -119,13 +134,19 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall, func
 		curryFunctionTypes := allFunctionTypes[providedArgumentCount:]
 		curryFunctionType := dectype.NewFunctionAtom(nil, curryFunctionTypes)
 
-		return decorated.NewCurryFunction(call, curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions), nil
+		return decorated.NewCurryFunction(
+			call, curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions,
+		), nil
 	}
 
-	return decorated.NewFunctionCall(call, functionValueExpression, completeCalledFunctionType, decoratedEncounteredArgumentExpressions), nil
+	return decorated.NewFunctionCall(
+		call, functionValueExpression, completeCalledFunctionType, decoratedEncounteredArgumentExpressions,
+	), nil
 }
 
-func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	functionValueExpression, functionReferenceErr := getFunctionValueExpression(d, call, context)
 	if functionReferenceErr != nil {
 		return nil, functionReferenceErr
@@ -150,7 +171,11 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		if !wasPointingToFunctionAtom {
 			_, wasPointingToFunctionAtomRef := functionValueExpression.Type().Next().(*dectype.FunctionTypeReference)
 			if !wasPointingToFunctionAtomRef {
-				return nil, decorated.NewInternalError(fmt.Errorf("unknown function type %v", functionValueExpression.Type().Next()))
+				return nil, decorated.NewInternalError(
+					fmt.Errorf(
+						"unknown function type %v", functionValueExpression.Type().Next(),
+					),
+				)
 			}
 		}
 
@@ -159,7 +184,9 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		concreteArguments = append(concreteArguments, dectype.NewAnyType())
 
 		localNameOnlyContextRef := dectype.NewLocalTypeNameContextReference(nil, localNameOnlyContext)
-		resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(localNameOnlyContextRef, concreteArguments)
+		resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
+			localNameOnlyContextRef, concreteArguments,
+		)
 		if concreteErr != nil {
 			return nil, concreteErr
 		}
@@ -174,5 +201,7 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		completeCallType, _ = functionValueExpression.Type().(*dectype.FunctionAtom)
 	}
 
-	return decorateFunctionCallInternal(d, call, functionValueExpression, decoratedEncounteredArgumentExpressions, completeCallType, context)
+	return decorateFunctionCallInternal(
+		d, call, functionValueExpression, decoratedEncounteredArgumentExpressions, completeCallType, context,
+	)
 }

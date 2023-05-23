@@ -6,17 +6,20 @@
 package generate_ir
 
 import (
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
 func generateRecordConstructorSortedAssignmentsHelper(
-	recordType *dectype.RecordAtom, sortedAssignments []*decorated.RecordLiteralAssignment, genContext *generateContext) (value.Value, error) {
+	recordType *dectype.RecordAtom, sortedAssignments []*decorated.RecordLiteralAssignment, genContext *generateContext) (
+	value.Value, error,
+) {
 	irType, lookupErr := genContext.irTypeRepo.GetTypeRef(recordType)
 	if lookupErr != nil {
 		return nil, lookupErr
@@ -41,7 +44,11 @@ func generateRecordConstructorSortedAssignmentsHelper(
 	return instAlloc, nil
 }
 
-func generateRecordConstructorSortedAssignments(recordConstructor *decorated.RecordConstructorFromParameters, genContext *generateContext) (value.Value, error) {
+func generateRecordConstructorSortedAssignments(recordConstructor *decorated.RecordConstructorFromParameters, genContext *generateContext) (
+	value.Value, error,
+) {
 	recordType := recordConstructor.RecordType()
-	return generateRecordConstructorSortedAssignmentsHelper(recordType, recordConstructor.SortedAssignments(), genContext)
+	return generateRecordConstructorSortedAssignmentsHelper(
+		recordType, recordConstructor.SortedAssignments(), genContext,
+	)
 }

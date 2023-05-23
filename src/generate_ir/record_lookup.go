@@ -7,12 +7,13 @@ package generate_ir
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	"log"
 )
 
 func handleRecordLookup(lookups *decorated.RecordLookups,
@@ -41,7 +42,10 @@ func handleRecordLookup(lookups *decorated.RecordLookups,
 		//irFieldTypePtr := types.NewPointer(irFieldType)
 		log.Printf("expected type %v", irFieldType)
 
-		log.Printf("#%d lookup %v source:%v indices:%v raw:%v", lookupIndex, irFieldType, structPtr, indices, lookups.LookupFields())
+		log.Printf(
+			"#%d lookup %v source:%v indices:%v raw:%v", lookupIndex, irFieldType, structPtr, indices,
+			lookups.LookupFields(),
+		)
 		structPtr = ir.NewGetElementPtr(irFieldType, structPtr, indices...)
 	}
 

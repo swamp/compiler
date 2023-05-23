@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+
 	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/ast"
@@ -20,7 +21,9 @@ type ExternalFunctionDeclarationExpression struct {
 }
 
 func NewExternalFunctionDeclarationExpression(astFunctionDeclaration *ast.FunctionDeclarationExpression) *ExternalFunctionDeclarationExpression {
-	return &ExternalFunctionDeclarationExpression{astFunctionDeclaration: astFunctionDeclaration, functionType: dectype.NewAnyType()}
+	return &ExternalFunctionDeclarationExpression{
+		astFunctionDeclaration: astFunctionDeclaration, functionType: dectype.NewAnyType(),
+	}
 }
 
 func (i *ExternalFunctionDeclarationExpression) Type() dtype.Type {

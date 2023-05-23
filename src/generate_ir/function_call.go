@@ -7,13 +7,14 @@ package generate_ir
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
 func generateFunctionCall(call *decorated.FunctionCall,
@@ -34,7 +35,12 @@ func handleFunctionCall(call *decorated.FunctionCall, isLeafNode bool,
 	maybeOriginalFunctionType := dectype.UnaliasWithResolveInvoker(call.FunctionExpression().Type())
 	originalFunctionType, _ := maybeOriginalFunctionType.(*dectype.FunctionAtom)
 	if dectype.TypeIsTemplateHasLocalTypes(functionAtom) {
-		panic(fmt.Errorf("we can not call functions that has local types %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), functionAtom))
+		panic(
+			fmt.Errorf(
+				"we can not call functions that has local types %v %v",
+				call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), functionAtom,
+			),
+		)
 	}
 
 	fn := call.FunctionExpression()
@@ -64,7 +70,12 @@ func handleFunctionCall(call *decorated.FunctionCall, isLeafNode bool,
 
 	expectedParameters, _ := originalFunctionType.ParameterAndReturn()
 	if len(expectedParameters) < len(call.Arguments()) {
-		panic(fmt.Errorf("wrong parameters %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))
+		panic(
+			fmt.Errorf(
+				"wrong parameters %v %v", call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(),
+				call.AstFunctionCall(),
+			),
+		)
 	}
 
 	var argumentValues []value.Value

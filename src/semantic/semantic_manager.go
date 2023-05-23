@@ -6,9 +6,10 @@
 package semantic
 
 import (
+	"log"
+
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/token"
-	"log"
 )
 
 func generateNodesLeaf(expanded *decorated.ExpandedNode, builder *SemanticBuilder) error {
@@ -26,7 +27,9 @@ func generateNodesLeaf(expanded *decorated.ExpandedNode, builder *SemanticBuilde
 	return nil
 }
 
-func generateNodesHelper(expandedRootNodes []*decorated.ExpandedNode, debugDocument *token.SourceFileDocument) (*SemanticBuilder, error) {
+func generateNodesHelper(expandedRootNodes []*decorated.ExpandedNode, debugDocument *token.SourceFileDocument) (
+	*SemanticBuilder, error,
+) {
 	builder := NewSemanticBuilder(debugDocument)
 	for _, foundToken := range expandedRootNodes {
 		if err := generateNodesLeaf(foundToken, builder); err != nil {
@@ -36,7 +39,9 @@ func generateNodesHelper(expandedRootNodes []*decorated.ExpandedNode, debugDocum
 	return builder, nil
 }
 
-func GenerateTokensEncodedValues(allTokens []*decorated.ExpandedNode, debugDocument *token.SourceFileDocument) ([]uint, error) {
+func GenerateTokensEncodedValues(allTokens []*decorated.ExpandedNode, debugDocument *token.SourceFileDocument) (
+	[]uint, error,
+) {
 	builder, err := generateNodesHelper(allTokens, debugDocument)
 	if err != nil {
 		return nil, err
@@ -45,7 +50,9 @@ func GenerateTokensEncodedValues(allTokens []*decorated.ExpandedNode, debugDocum
 	return builder.EncodedValues(), nil
 }
 
-func GenerateTokensNodes(allTokens []*decorated.ExpandedNode, debugDocument *token.SourceFileDocument) ([]SemanticNode, error) {
+func GenerateTokensNodes(allTokens []*decorated.ExpandedNode, debugDocument *token.SourceFileDocument) (
+	[]SemanticNode, error,
+) {
 	builder, err := generateNodesHelper(allTokens, debugDocument)
 	if err != nil {
 		return nil, err

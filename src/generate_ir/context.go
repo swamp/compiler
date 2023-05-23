@@ -7,12 +7,13 @@ package generate_ir
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/llir/llvm/ir"
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/compiler/src/resourceid"
 	"github.com/swamp/compiler/src/typeinfo"
-	"strings"
 )
 
 type parameterContext struct {

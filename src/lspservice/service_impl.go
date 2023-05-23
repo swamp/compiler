@@ -7,9 +7,10 @@ package lspservice
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/parser"
 	"log"
 	"reflect"
+
+	"github.com/swamp/compiler/src/parser"
 
 	swampcompiler "github.com/swamp/compiler/src/compiler"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -38,7 +39,9 @@ func (l *LspImpl) Compile(filename string) (*decorated.Module, error) {
 
 	const verboseFlag = verbosity.None
 
-	world, module, err := swampcompiler.CompileMainFindLibraryRoot(filename, l.documentCache, l.configuration, enforceStyle, verboseFlag)
+	world, module, err := swampcompiler.CompileMainFindLibraryRoot(
+		filename, l.documentCache, l.configuration, enforceStyle, verboseFlag,
+	)
 	if parser.IsCompileErr(err) {
 		return nil, err
 	}
@@ -96,7 +99,8 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 
 	smallestRange := token.MakeRange(
 		token.MakePosition(0, 0, -1),
-		token.MakePosition(9999999, 0, -1))
+		token.MakePosition(9999999, 0, -1),
+	)
 
 	var bestToken decorated.TypeOrToken
 
@@ -121,13 +125,17 @@ func (l *LspImpl) FindToken(sourceFile token.DocumentURI, position token.Positio
 	if bestToken == nil {
 		log.Printf("FindToken: couldn't find anything at %v %v\n", sourceFile, position)
 	} else {
-		log.Printf("FindToken: best is: %T %v\n", bestToken, bestToken.FetchPositionLength().ToCompleteReferenceString())
+		log.Printf(
+			"FindToken: best is: %T %v\n", bestToken, bestToken.FetchPositionLength().ToCompleteReferenceString(),
+		)
 	}
 
 	return bestToken
 }
 
-func (l *LspImpl) GetDocument(localFilePath LocalFileSystemPath, newVersion DocumentVersion) (*InMemoryDocument, error) {
+func (l *LspImpl) GetDocument(localFilePath LocalFileSystemPath, newVersion DocumentVersion) (
+	*InMemoryDocument, error,
+) {
 	inMemoryDocument, err := l.documentCache.GetDocumentByVersion(localFilePath, newVersion-1)
 	if err != nil {
 		return nil, err

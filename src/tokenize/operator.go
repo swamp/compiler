@@ -7,6 +7,7 @@ package tokenize
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -133,7 +134,9 @@ func (t *Tokenizer) ParseOperator() (token.Token, TokenError) {
 			raw += string(nch)
 		} else if nch == '-' {
 			commentString := t.ReadStringUntilEndOfLine()
-			return token.NewSingleLineCommentToken("--"+commentString, commentString, false, t.MakeSourceFileReference(startPosition)), nil
+			return token.NewSingleLineCommentToken(
+				"--"+commentString, commentString, false, t.MakeSourceFileReference(startPosition),
+			), nil
 		} else {
 			if isDigit(nch) {
 				t.unreadRune()

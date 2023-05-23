@@ -7,9 +7,10 @@ package deccy
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/semantic"
 	"reflect"
 	"strings"
+
+	"github.com/swamp/compiler/src/semantic"
 
 	"github.com/swamp/compiler/src/ast"
 	decorator "github.com/swamp/compiler/src/decorated/convert"
@@ -26,11 +27,15 @@ import (
 
 type NoImportModuleRepository struct{}
 
-func (*NoImportModuleRepository) FetchModuleInPackage(moduleType decorated.ModuleType, moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (*decorated.Module, decshared.DecoratedError) {
+func (*NoImportModuleRepository) FetchModuleInPackage(moduleType decorated.ModuleType, moduleName dectype.PackageRelativeModuleName, verboseFlag verbosity.Verbosity) (
+	*decorated.Module, decshared.DecoratedError,
+) {
 	return nil, decorated.NewInternalError(fmt.Errorf("this is a no import module. Imports are not allowed"))
 }
 
-func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings bool) (*decorated.Module, decshared.DecoratedError) {
+func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings bool) (
+	*decorated.Module, decshared.DecoratedError,
+) {
 	rootModule, rootModuleErr := CreateDefaultRootModule(useCores)
 	if parser.IsCompileError(rootModuleErr) {
 		return nil, rootModuleErr
@@ -50,8 +55,11 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 	const enforceStyle = true
 
 	absoluteFilename := "/test/fortest.swamp"
-	module, compileErr := InternalCompileToModule(decorated.ModuleTypeNormal, importRepository, rootModule, dectype.MakeArtifactFullyQualifiedModuleName(nil), absoluteFilename, code,
-		enforceStyle, verbose, errorsAsWarnings)
+	module, compileErr := InternalCompileToModule(
+		decorated.ModuleTypeNormal, importRepository, rootModule, dectype.MakeArtifactFullyQualifiedModuleName(nil),
+		absoluteFilename, code,
+		enforceStyle, verbose, errorsAsWarnings,
+	)
 
 	totalErr = decorated.AppendError(totalErr, compileErr)
 
@@ -59,7 +67,9 @@ func CompileToModuleOnceForTest(code string, useCores bool, errorsAsWarnings boo
 
 }
 
-func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose verbosity.Verbosity) (*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError) {
+func InternalCompileToProgram(absoluteFilename string, code string, enforceStyle bool, verbose verbosity.Verbosity) (
+	*tokenize.Tokenizer, *ast.SourceFile, decshared.DecoratedError,
+) {
 	ioReader := strings.NewReader(code)
 
 	var errors decshared.DecoratedError
@@ -120,7 +130,9 @@ func checkUnusedImports(module *decorated.Module) decshared.DecoratedError {
 	}
 	for _, importedType := range module.ImportedTypes().AllInOrderTypes() {
 		if !importedType.WasReferenced() && importedType.CreatedByModuleImport() != nil && !isInternalType(importedType.ReferencedType()) {
-			warning := decorated.NewUnusedImportWarning(importedType.CreatedByModuleImport(), fmt.Sprintf("imported types '%v'", importedType.String()))
+			warning := decorated.NewUnusedImportWarning(
+				importedType.CreatedByModuleImport(), fmt.Sprintf("imported types '%v'", importedType.String()),
+			)
 			errors = decorated.AppendError(errors, warning)
 		}
 	}
@@ -162,12 +174,18 @@ func InternalCompileToModule(moduleType decorated.ModuleType, moduleRepository M
 	}
 
 	for _, importedSubModule := range rootModule.ImportedModules().AllInOrderModules() {
-		fakeModuleReference := decorated.NewModuleReference(rootModule.FullyQualifiedModuleName().Path(), importedSubModule.ReferencedModule())
+		fakeModuleReference := decorated.NewModuleReference(
+			rootModule.FullyQualifiedModuleName().Path(), importedSubModule.ReferencedModule(),
+		)
 		i := ast.NewImport(keyword, nil, nil, fakeModuleReference.AstModuleReference(), nil, nil, nil, true, nil)
 		fakeImportStatement := decorated.NewImport(i, fakeModuleReference, fakeModuleReference, exposeAllImports)
-		module.ImportedModules().ImportModule(importedSubModule.ModuleName(), importedSubModule.ReferencedModule(), fakeImportStatement)
+		module.ImportedModules().ImportModule(
+			importedSubModule.ModuleName(), importedSubModule.ReferencedModule(), fakeImportStatement,
+		)
 	}
-	importedModule := module.ImportedModules().ImportModule(rootModule.FullyQualifiedModuleName().Path(), rootModule, fakeImportStatement)
+	importedModule := module.ImportedModules().ImportModule(
+		rootModule.FullyQualifiedModuleName().Path(), rootModule, fakeImportStatement,
+	)
 
 	typeLookup := decorated.NewTypeLookup(module.ImportedModules(), module.LocalTypes(), module.ImportedTypes())
 	createAndLookup := decorated.NewTypeCreateAndLookup(typeLookup, module.LocalTypes(), nil)
@@ -231,14 +249,20 @@ func ImportModuleToModule(target *decorated.Module, statement *decorated.ImportS
 	exposedTypes := source.ExposedTypes().AllInOrderTypes()
 	exposedDefinitions := source.ExposedDefinitions().ReferencedDefinitions()
 
-	importedModule := target.ImportedModules().ImportModule(statement.ImportAsName().AstModuleReference(), source, statement)
+	importedModule := target.ImportedModules().ImportModule(
+		statement.ImportAsName().AstModuleReference(), source, statement,
+	)
 
 	if statement.ExposeAll() {
 		target.ImportedTypes().AddTypes(exposedTypes, importedModule)
 		for _, exposedDefinition := range exposedDefinitions {
-			importedModule := decorated.NewImportedModule(target,
-				statement)
-			importedDefinition := decorated.NewImportedDefinition(importedModule, exposedDefinition.Identifier(), exposedDefinition)
+			importedModule := decorated.NewImportedModule(
+				target,
+				statement,
+			)
+			importedDefinition := decorated.NewImportedDefinition(
+				importedModule, exposedDefinition.Identifier(), exposedDefinition,
+			)
 			target.ImportedDefinitions().AddDefinition(exposedDefinition.Identifier(), importedDefinition)
 		}
 

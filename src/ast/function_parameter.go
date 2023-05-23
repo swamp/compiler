@@ -7,6 +7,7 @@ package ast
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -19,7 +20,9 @@ type FunctionParameter struct {
 func NewFunctionParameter(identifier *VariableIdentifier, parameterType Type) *FunctionParameter {
 	inclusive := parameterType.FetchPositionLength()
 	if identifier != nil {
-		inclusive = token.MakeInclusiveSourceFileReference(identifier.FetchPositionLength(), parameterType.FetchPositionLength())
+		inclusive = token.MakeInclusiveSourceFileReference(
+			identifier.FetchPositionLength(), parameterType.FetchPositionLength(),
+		)
 	}
 
 	return &FunctionParameter{inclusive: inclusive, identifier: identifier, parameterType: parameterType}

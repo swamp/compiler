@@ -7,11 +7,12 @@ package decorated
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
-	"log"
 )
 
 type FunctionParameterDefinition struct {
@@ -80,7 +81,11 @@ func NewPrepareFunctionValue(astFunction *ast.FunctionValue, forcedFunctionType 
 	if forcedFunctionType == nil {
 		panic("must provide forced function type")
 	}
-	return &FunctionValue{astFunction: astFunction, forcedFunctionType: forcedFunctionType, convertedFunctionType: convertedFunctionType, parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock, sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference}
+	return &FunctionValue{
+		astFunction: astFunction, forcedFunctionType: forcedFunctionType, convertedFunctionType: convertedFunctionType,
+		parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock,
+		sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference,
+	}
 }
 
 func (f *FunctionValue) ConvertedFunctionType() *dectype.FunctionAtom {
@@ -89,7 +94,8 @@ func (f *FunctionValue) ConvertedFunctionType() *dectype.FunctionAtom {
 
 func (f *FunctionValue) DefineExpression(decoratedExpression Expression) {
 	f.sourceFileReference = token.MakeInclusiveSourceFileReference(
-		f.astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength())
+		f.astFunction.DebugFunctionIdentifier().SourceFileReference, decoratedExpression.FetchPositionLength(),
+	)
 	f.decoratedExpression = decoratedExpression
 }
 

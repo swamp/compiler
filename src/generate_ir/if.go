@@ -6,10 +6,11 @@
 package generate_ir
 
 import (
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/value"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	"log"
 )
 
 func generateIf(ifExpr *decorated.If, isLeafNode bool, genContext *generateContext) (value.Value, error) {

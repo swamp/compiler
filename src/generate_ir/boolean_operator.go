@@ -7,6 +7,8 @@ package generate_ir
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
@@ -14,7 +16,6 @@ import (
 	"github.com/llir/llvm/ir/value"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
 func booleanIntToIPred(operatorType decorated.BooleanOperatorType) enum.IPred {
@@ -38,7 +39,9 @@ func booleanIntToIPred(operatorType decorated.BooleanOperatorType) enum.IPred {
 	return 0
 }
 
-func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, genContext *generateContext) (value.Value, error) {
+func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, genContext *generateContext) (
+	value.Value, error,
+) {
 	leftVar, leftErr := generateExpression(operator.Left(), false, genContext)
 	if leftErr != nil {
 		return nil, leftErr

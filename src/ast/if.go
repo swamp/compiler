@@ -7,6 +7,7 @@ package ast
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -21,8 +22,13 @@ type IfExpression struct {
 }
 
 func NewIfExpression(keywordIf token.Keyword, keywordThen token.Keyword, keywordElse token.Keyword, condition Expression, consequence Expression, alternative Expression) *IfExpression {
-	inclusive := token.MakeInclusiveSourceFileReference(keywordIf.FetchPositionLength(), alternative.FetchPositionLength())
-	return &IfExpression{inclusive: inclusive, keywordElse: keywordElse, keywordIf: keywordIf, keywordThen: keywordThen, condition: condition, consequence: consequence, alternative: alternative}
+	inclusive := token.MakeInclusiveSourceFileReference(
+		keywordIf.FetchPositionLength(), alternative.FetchPositionLength(),
+	)
+	return &IfExpression{
+		inclusive: inclusive, keywordElse: keywordElse, keywordIf: keywordIf, keywordThen: keywordThen,
+		condition: condition, consequence: consequence, alternative: alternative,
+	}
 }
 
 func (i *IfExpression) Condition() Expression {

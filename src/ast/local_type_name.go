@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/token"
 )
 

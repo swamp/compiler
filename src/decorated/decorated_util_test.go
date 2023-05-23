@@ -6,19 +6,22 @@
 package deccy
 
 import (
-	"github.com/swamp/compiler/src/parser"
-	parerr "github.com/swamp/compiler/src/parser/errors"
 	"log"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/swamp/compiler/src/parser"
+	parerr "github.com/swamp/compiler/src/parser/errors"
 
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 
 	"github.com/swamp/compiler/src/decorated/decshared"
 )
 
-func testDecorateInternal(code string, useCores bool, errorsAsWarnings bool) (string, string, decshared.DecoratedError) {
+func testDecorateInternal(code string, useCores bool, errorsAsWarnings bool) (
+	string, string, decshared.DecoratedError,
+) {
 	code = strings.TrimSpace(code)
 	module, compileErr := CompileToModuleOnceForTest(code, useCores, errorsAsWarnings)
 	if parser.IsCompileError(compileErr) {

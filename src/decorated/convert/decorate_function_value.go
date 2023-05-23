@@ -6,8 +6,9 @@
 package decorator
 
 import (
-	dectype "github.com/swamp/compiler/src/decorated/types"
 	"log"
+
+	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -31,7 +32,9 @@ func createVariableContextFromParameters(context *VariableContext, parameters []
 		if parameter.Parameter().Identifier() == nil {
 			continue
 		}
-		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(parameter.Parameter().Identifier().Name(), nil, parameter)
+		namedDecoratedExpression := decorated.NewNamedDecoratedExpression(
+			parameter.Parameter().Identifier().Name(), nil, parameter,
+		)
 		newVariableContext.Add(parameter.Parameter().Identifier(), namedDecoratedExpression)
 	}
 
@@ -43,7 +46,9 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 	targetFunctionValue := targetFunctionNamedValue.Value()
 	subVariableContext := createVariableContextFromParameters(context, targetFunctionValue.Parameters())
 	functionValueExpression := targetFunctionValue.AstFunctionValue().Expression()
-	convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(d, functionValueExpression, subVariableContext)
+	convertedDecoratedExpression, decoratedExpressionErr := DecorateExpression(
+		d, functionValueExpression, subVariableContext,
+	)
 	if decoratedExpressionErr != nil {
 		return decoratedExpressionErr
 	}
@@ -60,10 +65,14 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
 	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
 
-	compatibleErr := dectype.CompatibleTypes(targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType)
+	compatibleErr := dectype.CompatibleTypes(
+		targetFunctionValue.ForcedFunctionType().ReturnType(), decoratedExpressionType,
+	)
 	if compatibleErr != nil {
-		return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(targetFunctionValue.AstFunctionValue(),
-			functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr)
+		return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(
+			targetFunctionValue.AstFunctionValue(),
+			functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr,
+		)
 	}
 
 	if !targetFunctionValue.IsSomeKindOfExternal() {

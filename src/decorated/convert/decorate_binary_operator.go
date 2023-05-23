@@ -7,13 +7,14 @@ package decorator
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
-	"log"
 )
 
 func tryConvertToArithmeticOperator(operatorType token.Type) (decorated.ArithmeticOperatorType, bool) {
@@ -84,7 +85,9 @@ func tryConvertToBitwiseOperator(operatorType token.Type) (decorated.BitwiseOper
 	return 0, false
 }
 
-func tryConvertCastOperator(infix *ast.BinaryOperator, left decorated.Expression, right *decorated.AliasReference) (*decorated.CastOperator, decshared.DecoratedError) {
+func tryConvertCastOperator(infix *ast.BinaryOperator, left decorated.Expression, right *decorated.AliasReference) (
+	*decorated.CastOperator, decshared.DecoratedError,
+) {
 	a := decorated.NewCastOperator(left, right, infix)
 	if err := dectype.CompatibleTypes(left.Type(), right.Type()); err != nil {
 		return nil, decorated.NewUnmatchingBitwiseOperatorTypes(infix, left, nil)
@@ -142,7 +145,9 @@ func defToFunctionReference(def *decorated.NamedDecoratedExpression, ident ast.S
 	return decorated.NewFunctionReference(nameWithModuleRef, functionValue)
 }
 
-func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context *VariableContext) (*ast.FunctionCall, decorated.Expression, []decorated.Expression, decshared.DecoratedError) {
+func decorateHalfOfAFunctionCall(d DecorateStream, left ast.Expression, context *VariableContext) (
+	*ast.FunctionCall, decorated.Expression, []decorated.Expression, decshared.DecoratedError,
+) {
 	var arguments []decorated.Expression
 	var functionExpression decorated.Expression
 	var leftAstCall *ast.FunctionCall
@@ -249,7 +254,9 @@ func resolveToFunctionAtom(leftDecorated decorated.Expression) *dectype.Function
 	halfRightFunctionCall := decorated.NewFunctionCall(rightAstCall, functionCall, functionCall.SmashedFunctionType(), arguments)
 */
 
-func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	left := infix.Left()
 	right := infix.Right()
 
@@ -304,7 +311,9 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 	return decorated.NewPipeRightOperator(leftDecorated, rightDecorated, resultingReturnType), nil
 }
 
-func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	left := infix.Left()
 	right := infix.Right()
 
@@ -362,7 +371,9 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 	return decorated.NewPipeLeftOperator(leftDecorated, rightDecorated, resultingReturnType), nil
 }
 
-func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	if infix.OperatorType() == token.OperatorPipeLeft {
 		return decoratePipeLeft(d, infix, context)
 	} else if infix.OperatorType() == token.OperatorPipeRight {
@@ -372,7 +383,9 @@ func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context
 	}
 }
 
-func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func decorateBinaryOperatorSameType(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (
+	decorated.Expression, decshared.DecoratedError,
+) {
 	leftExpression, leftExpressionErr := DecorateExpression(d, infix.Left(), context)
 	if leftExpressionErr != nil {
 		return nil, leftExpressionErr

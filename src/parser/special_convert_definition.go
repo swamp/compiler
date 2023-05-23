@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -37,7 +38,9 @@ func isConstant(expression ast.Expression) bool {
 	return false
 }
 
-func parseParameters(p ParseStream, keywordIndentation int, nameOnlyContext ast.LocalTypeNameDefinitionContextDynamic) ([]*ast.FunctionParameter, parerr.ParseError) {
+func parseParameters(p ParseStream, keywordIndentation int, nameOnlyContext ast.LocalTypeNameDefinitionContextDynamic) (
+	[]*ast.FunctionParameter, parerr.ParseError,
+) {
 	var parameters []*ast.FunctionParameter
 
 	for {
@@ -84,7 +87,9 @@ func parseParameters(p ParseStream, keywordIndentation int, nameOnlyContext ast.
 }
 
 func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
-	annotationFunctionType token.AnnotationFunctionType, precedingComments *ast.MultilineComment) (ast.Expression, parerr.ParseError) {
+	annotationFunctionType token.AnnotationFunctionType, precedingComments *ast.MultilineComment) (
+	ast.Expression, parerr.ParseError,
+) {
 	keywordIndentation := ident.Symbol().FetchIndentation()
 
 	var returnType ast.Type

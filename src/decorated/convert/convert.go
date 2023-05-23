@@ -7,6 +7,7 @@ package decorator
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -23,7 +24,9 @@ func AstLocalTypeNamesToTypeArgumentName(typeParameters []*ast.LocalTypeName) []
 	return argumentNames
 }
 
-func DecorateTupleType(tupleType *ast.TupleType, t decorated.TypeAddAndReferenceMaker) (dtype.Type, decshared.DecoratedError) {
+func DecorateTupleType(tupleType *ast.TupleType, t decorated.TypeAddAndReferenceMaker) (
+	dtype.Type, decshared.DecoratedError,
+) {
 	var convertedParameters []dtype.Type
 	for _, a := range tupleType.Types() {
 		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
@@ -36,7 +39,9 @@ func DecorateTupleType(tupleType *ast.TupleType, t decorated.TypeAddAndReference
 	return dectype.NewTupleTypeAtom(tupleType, convertedParameters), nil
 }
 
-func ConvertFromAstToDecoratedSlice(astTypes []ast.Type, t decorated.TypeAddAndReferenceMaker) ([]dtype.Type, decshared.DecoratedError) {
+func ConvertFromAstToDecoratedSlice(astTypes []ast.Type, t decorated.TypeAddAndReferenceMaker) (
+	[]dtype.Type, decshared.DecoratedError,
+) {
 	var types []dtype.Type
 	for _, astType := range astTypes {
 		convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(astType, t)

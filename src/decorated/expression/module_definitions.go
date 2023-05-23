@@ -7,10 +7,11 @@ package decorated
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/decorated/debug"
 	"io"
 	"log"
 	"strings"
+
+	"github.com/swamp/compiler/src/decorated/debug"
 
 	"github.com/swamp/compiler/src/ast"
 )

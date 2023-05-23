@@ -1,13 +1,14 @@
 package concretize_test
 
 import (
+	"log"
+	"testing"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
-	"log"
-	"testing"
 )
 
 func MakeFakeSourceFileReference() token.SourceFileReference {
@@ -115,7 +116,9 @@ func TestCustomTypeVariant(t *testing.T) {
 
 	decoratedTypeNames.SetType(reference)
 
-	concretizedVariant, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(decoratedTypeNames, concreteArguments)
+	concretizedVariant, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
+		decoratedTypeNames, concreteArguments,
+	)
 	if concreteErr != nil {
 		t.Error(concreteErr)
 	}
@@ -164,7 +167,9 @@ func TestFunction(t *testing.T) {
 
 	decoratedTypeNames.SetType(functionWithLocalTypeNames)
 
-	concretizedVariant, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(decoratedTypeNames, concreteArguments)
+	concretizedVariant, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
+		decoratedTypeNames, concreteArguments,
+	)
 	if concreteErr != nil {
 		t.Error(concreteErr)
 	}

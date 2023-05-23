@@ -8,8 +8,9 @@ package lspservice
 import (
 	"errors"
 	"fmt"
-	"github.com/swamp/compiler/src/semantic"
 	"log"
+
+	"github.com/swamp/compiler/src/semantic"
 
 	"github.com/swamp/compiler/src/parser"
 	parerr "github.com/swamp/compiler/src/parser/errors"
@@ -52,7 +53,9 @@ type Service struct {
 
 func NewService(compiler Compiler, scanner DecoratedTokenScanner, documents DocumentCacher, workspacer Workspacer) *Service {
 	diagnostics := NewDiagnosticsForDocuments()
-	return &Service{scanner: scanner, compiler: compiler, documents: documents, workspacer: workspacer, diagnostics: diagnostics}
+	return &Service{
+		scanner: scanner, compiler: compiler, documents: documents, workspacer: workspacer, diagnostics: diagnostics,
+	}
 }
 
 func (s *Service) Reset() error {
@@ -102,7 +105,8 @@ func tokenToLspRange(rangeToken token.Range) *lsp.Range {
 func lspToTokenRange(lspRange lsp.Range) token.Range {
 	return token.MakeRange(
 		token.MakePosition(lspRange.Start.Line, lspRange.Start.Character, -1),
-		token.MakePosition(lspRange.End.Line, lspRange.End.Character, -1))
+		token.MakePosition(lspRange.End.Line, lspRange.End.Character, -1),
+	)
 }
 
 func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Hover, error) {
@@ -141,7 +145,9 @@ func (s *Service) HandleHover(params lsp.TextDocumentPositionParams, conn lspser
 		case *dectype.AnyMatchingTypes:
 		case *dectype.UnmanagedType:
 			name = "NativeLanguageType"
-			documentation = fmt.Sprintf("implemented in native language type '%v'", t.Identifier().NativeLanguageTypeName().Name())
+			documentation = fmt.Sprintf(
+				"implemented in native language type '%v'", t.Identifier().NativeLanguageTypeName().Name(),
+			)
 		default:
 			log.Printf("unhandled for documentation %T", pureType)
 		}
@@ -271,7 +277,9 @@ func tokenToDefinition(decoratedToken decorated.TypeOrToken) (token.SourceFileRe
 	return token.SourceFileReference{}, err
 }
 
-func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {
+func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (
+	*lsp.Location, error,
+) {
 	tokenPosition := lspToTokenPosition(params.Position)
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
 	decoratedToken := s.scanner.FindToken(sourceFileURI, tokenPosition)
@@ -297,7 +305,9 @@ func (s *Service) HandleGotoDefinition(params lsp.TextDocumentPositionParams, co
 	return location, nil
 }
 
-func (s *Service) HandleLinkedEditingRange(params lsp.LinkedEditingRangeParams, conn lspserv.Connection) (*lsp.LinkedEditingRanges, error) {
+func (s *Service) HandleLinkedEditingRange(params lsp.LinkedEditingRangeParams, conn lspserv.Connection) (
+	*lsp.LinkedEditingRanges, error,
+) {
 	tokenPosition := lspToTokenPosition(params.Position)
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
 	decoratedToken := s.scanner.FindToken(sourceFileURI, tokenPosition)
@@ -328,15 +338,21 @@ func (s *Service) HandleGotoDeclaration(params lsp.DeclarationOptions, conn lsps
 	return nil, fmt.Errorf("concept of go to declaration not in the Swamp language")
 }
 
-func (s *Service) HandleGotoTypeDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {
+func (s *Service) HandleGotoTypeDefinition(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (
+	*lsp.Location, error,
+) {
 	return nil, nil
 }
 
-func (s *Service) HandleGotoImplementation(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.Location, error) {
+func (s *Service) HandleGotoImplementation(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (
+	*lsp.Location, error,
+) {
 	return nil, fmt.Errorf("concept of go to implementation not in the Swamp language")
 }
 
-func findReferences(uri lsp.DocumentURI, position lsp.Position, scanner DecoratedTokenScanner) ([]token.SourceFileReference, error) {
+func findReferences(uri lsp.DocumentURI, position lsp.Position, scanner DecoratedTokenScanner) (
+	[]token.SourceFileReference, error,
+) {
 	tokenPosition := lspToTokenPosition(position)
 	sourceFileURI := toDocumentURI(uri)
 	decoratedToken := scanner.FindToken(sourceFileURI, tokenPosition)
@@ -430,7 +446,9 @@ func convertRootTokenToOutlineSymbol(rootToken decorated.TypeOrToken) *lsp.Docum
 	return nil
 }
 
-func (s *Service) HandleSymbol(params lsp.DocumentSymbolParams, conn lspserv.Connection) ([]*lsp.DocumentSymbol, error) {
+func (s *Service) HandleSymbol(params lsp.DocumentSymbolParams, conn lspserv.Connection) (
+	[]*lsp.DocumentSymbol, error,
+) {
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
 	rootTokens := s.scanner.RootTokens(sourceFileURI)
 
@@ -450,15 +468,21 @@ func (s *Service) HandleCompletion(params lsp.CompletionParams, conn lspserv.Con
 	return nil, nil
 } // Intellisense when pressing '.'.
 
-func (s *Service) HandleCompletionItemResolve(params lsp.CompletionItem, conn lspserv.Connection) (*lsp.CompletionItem, error) {
+func (s *Service) HandleCompletionItemResolve(params lsp.CompletionItem, conn lspserv.Connection) (
+	*lsp.CompletionItem, error,
+) {
 	return nil, nil
 }
 
-func (s *Service) HandleSignatureHelp(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (*lsp.SignatureHelp, error) {
+func (s *Service) HandleSignatureHelp(params lsp.TextDocumentPositionParams, conn lspserv.Connection) (
+	*lsp.SignatureHelp, error,
+) {
 	return nil, nil
 }
 
-func (s *Service) HandleFormatting(params lsp.DocumentFormattingParams, conn lspserv.Connection) ([]*lsp.TextEdit, error) {
+func (s *Service) HandleFormatting(params lsp.DocumentFormattingParams, conn lspserv.Connection) (
+	[]*lsp.TextEdit, error,
+) {
 	return nil, nil
 }
 
@@ -518,7 +542,9 @@ func findAllLinkedSymbolsInDocument(decoratedToken decorated.TypeOrToken, filter
 
 	case *decorated.FunctionValue:
 		if t.FetchPositionLength().Document.EqualTo(filterDocument) {
-			sourceFileReferences = append(sourceFileReferences, t.AstFunctionValue().DebugFunctionIdentifier().FetchPositionLength())
+			sourceFileReferences = append(
+				sourceFileReferences, t.AstFunctionValue().DebugFunctionIdentifier().FetchPositionLength(),
+			)
 		}
 		for _, ref := range t.References() {
 			if ref.FetchPositionLength().Document.EqualTo(filterDocument) {
@@ -632,7 +658,9 @@ func (s *Service) HandleRename(params lsp.RenameParams) (*lsp.WorkspaceEdit, err
 	return nil, nil
 }
 
-func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (*lsp.SemanticTokens, error) {
+func (s *Service) HandleSemanticTokensFull(params lsp.SemanticTokensParams, conn lspserv.Connection) (
+	*lsp.SemanticTokens, error,
+) {
 	sourceFileURI := toDocumentURI(params.TextDocument.URI)
 	allTokens := s.scanner.RootTokens(sourceFileURI)
 	sourceFile := &token.SourceFileDocument{Uri: sourceFileURI}

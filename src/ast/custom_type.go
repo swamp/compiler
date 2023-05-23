@@ -7,6 +7,7 @@ package ast
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -18,8 +19,10 @@ type CustomType struct {
 }
 
 func (i *CustomType) String() string {
-	return fmt.Sprintf("[CustomType %v %v]", i.name,
-		i.variants)
+	return fmt.Sprintf(
+		"[CustomType %v %v]", i.name,
+		i.variants,
+	)
 }
 
 func (i *CustomType) Identifier() *TypeIdentifier {

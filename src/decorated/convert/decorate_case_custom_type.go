@@ -6,15 +6,18 @@
 package decorator
 
 import (
+	"log"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
-	"log"
 )
 
-func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomType, context *VariableContext) (*decorated.CaseCustomType, decshared.DecoratedError) {
+func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomType, context *VariableContext) (
+	*decorated.CaseCustomType, decshared.DecoratedError,
+) {
 	//log.Printf("before %v", caseExpression)
 	decoratedTest, decoratedTestErr := DecorateExpression(d, caseExpression.Test(), context)
 	if decoratedTestErr != nil {
@@ -60,8 +63,10 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 
 			numberOfVariantArguments := len(foundVariant.ParameterTypes())
 			if numberOfVariantArguments != len(consequenceField.Arguments()) {
-				return nil, decorated.NewCaseWrongParameterCountInCustomTypeVariant(caseExpression,
-					consequenceField, foundVariant)
+				return nil, decorated.NewCaseWrongParameterCountInCustomTypeVariant(
+					caseExpression,
+					consequenceField, foundVariant,
+				)
 			}
 
 			log.Printf("type for found variant: %T %v", customType, customType)
@@ -69,8 +74,10 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 				ident := consequenceField.Arguments()[index]
 				param := decorated.NewCaseConsequenceParameterForCustomType(ident, argumentType)
 				log.Printf("param: %T %v", argumentType, argumentType)
-				fakeNamedExpression := decorated.NewNamedDecoratedExpression(ident.Name(), nil,
-					param)
+				fakeNamedExpression := decorated.NewNamedDecoratedExpression(
+					ident.Name(), nil,
+					param,
+				)
 				consequenceVariableContext.Add(ident, fakeNamedExpression)
 				parameters = append(parameters, param)
 			}
@@ -85,8 +92,10 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 			*/
 		}
 
-		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, consequenceField.Expression(),
-			consequenceVariableContext)
+		decoratedExpression, decoratedExpressionErr := DecorateExpression(
+			d, consequenceField.Expression(),
+			consequenceVariableContext,
+		)
 		if decoratedExpressionErr != nil {
 			return nil, decoratedExpressionErr
 		}
@@ -95,10 +104,14 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 		}
 
 		if previousConsequenceType != nil {
-			incompatibleErr := dectype.CompatibleTypesCheckCustomType(previousConsequenceType, decoratedExpression.Type())
+			incompatibleErr := dectype.CompatibleTypesCheckCustomType(
+				previousConsequenceType, decoratedExpression.Type(),
+			)
 			if incompatibleErr != nil {
-				return nil, decorated.NewUnMatchingTypes(consequenceField.Expression(), previousConsequenceType,
-					decoratedExpression.Type(), incompatibleErr)
+				return nil, decorated.NewUnMatchingTypes(
+					consequenceField.Expression(), previousConsequenceType,
+					decoratedExpression.Type(), incompatibleErr,
+				)
 			}
 		}
 		previousConsequenceType = decoratedExpression.Type()
@@ -110,16 +123,20 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 			expectedArgumentCount := len(foundVariant.ParameterTypes())
 			actualArgumentCount := len(consequenceField.Arguments())
 			if expectedArgumentCount != actualArgumentCount {
-				return nil, decorated.NewCaseWrongParameterCountInCustomTypeVariant(caseExpression, consequenceField,
-					foundVariant)
+				return nil, decorated.NewCaseWrongParameterCountInCustomTypeVariant(
+					caseExpression, consequenceField,
+					foundVariant,
+				)
 			}
 
 			// Intentionally without module reference for easier reading
 			fieldTypeRef := ast.NewTypeReference(consequenceField.Identifier(), nil)
 			named := dectype.NewNamedDefinitionTypeReference(nil, fieldTypeRef)
 			variantReference := dectype.NewCustomTypeVariantReference(named, foundVariant)
-			decoratedConsequence := decorated.NewCaseConsequenceForCustomType(foundVariant.Index(), variantReference,
-				parameters, decoratedExpression, consequenceField)
+			decoratedConsequence := decorated.NewCaseConsequenceForCustomType(
+				foundVariant.Index(), variantReference,
+				parameters, decoratedExpression, consequenceField,
+			)
 			decoratedConsequences = append(decoratedConsequences, decoratedConsequence)
 		}
 	}

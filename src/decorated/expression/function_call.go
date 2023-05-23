@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -41,10 +42,15 @@ func NewFunctionCall(astFunctionCall *ast.FunctionCall, functionValueExpression 
 
 	inclusive := astFunctionCall.FetchPositionLength()
 	if len(arguments) > 0 {
-		inclusive = token.MakeInclusiveSourceFileReferenceFlipIfNeeded(astFunctionCall.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength())
+		inclusive = token.MakeInclusiveSourceFileReferenceFlipIfNeeded(
+			astFunctionCall.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength(),
+		)
 	}
 
-	return &FunctionCall{astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, arguments: arguments, smashedFunctionType: smashedFunctionType, inclusive: inclusive}
+	return &FunctionCall{
+		astFunctionCall: astFunctionCall, functionValueExpression: functionValueExpression, arguments: arguments,
+		smashedFunctionType: smashedFunctionType, inclusive: inclusive,
+	}
 }
 
 func (c *FunctionCall) AstFunctionCall() *ast.FunctionCall {
@@ -68,7 +74,9 @@ func (c *FunctionCall) SmashedFunctionType() *dectype.FunctionAtom {
 }
 
 func (c *FunctionCall) String() string {
-	return fmt.Sprintf("[FnCall %v %v %v]", c.smashedFunctionType, c.functionValueExpression, c.arguments) // c.functionValueExpression, c.arguments)
+	return fmt.Sprintf(
+		"[FnCall %v %v %v]", c.smashedFunctionType, c.functionValueExpression, c.arguments,
+	) // c.functionValueExpression, c.arguments)
 }
 
 func (c *FunctionCall) HumanReadable() string {

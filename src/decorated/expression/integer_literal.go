@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+
 	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/ast"

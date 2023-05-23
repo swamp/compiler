@@ -7,8 +7,9 @@ package ast
 
 import (
 	"fmt"
-	"github.com/swamp/compiler/src/token"
 	"strings"
+
+	"github.com/swamp/compiler/src/token"
 )
 
 type LocalTypeNameDefinitionContextDynamic interface {
@@ -41,7 +42,9 @@ func (t *LocalTypeNameDefinitionContext) DebugString() string {
 	return fmt.Sprintf("[type-param-context %s]", t.arrayToString())
 }
 
-func (t *LocalTypeNameDefinitionContext) GetOrCreateReferenceFromName(parameter *LocalTypeName) (*LocalTypeNameReference, error) {
+func (t *LocalTypeNameDefinitionContext) GetOrCreateReferenceFromName(parameter *LocalTypeName) (
+	*LocalTypeNameReference, error,
+) {
 	if t == nil {
 		panic(fmt.Errorf("no local type name definition context"))
 	}
@@ -78,7 +81,9 @@ func (t *LocalTypeNameDefinitionContext) NotReferencedNames() []*LocalTypeNameDe
 	return unusedTypeParameterNames
 }
 
-func (t *LocalTypeNameDefinitionContext) ParseReferenceFromName(parameter *LocalTypeName) (*LocalTypeNameReference, error) {
+func (t *LocalTypeNameDefinitionContext) ParseReferenceFromName(parameter *LocalTypeName) (
+	*LocalTypeNameReference, error,
+) {
 	definition, foundDefinition := t.lookup[parameter.Identifier().Name()]
 	if !foundDefinition {
 		return nil, NewUnknownTypeParameterError(parameter, t)
@@ -125,5 +130,7 @@ func NewLocalTypeNameContext(typeParameterNames []*LocalTypeName, nextType Type)
 		localTypeDefs = append(localTypeDefs, newLocalDef)
 		lookup[typeParameterIdentifier.Name()] = newLocalDef
 	}
-	return &LocalTypeNameDefinitionContext{lookup: lookup, nextType: nextType, typeParameterIdentifiers: localTypeDefs, isDynamic: len(localTypeDefs) == 0}
+	return &LocalTypeNameDefinitionContext{
+		lookup: lookup, nextType: nextType, typeParameterIdentifiers: localTypeDefs, isDynamic: len(localTypeDefs) == 0,
+	}
 }

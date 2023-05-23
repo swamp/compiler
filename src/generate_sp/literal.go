@@ -7,6 +7,7 @@ package generate_sp
 
 import (
 	"fmt"
+
 	"github.com/swamp/assembler/lib/assembler_sp"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	"github.com/swamp/opcodes/instruction_sp"

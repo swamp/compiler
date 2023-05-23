@@ -7,13 +7,14 @@ package generate_ir
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
-	"log"
 )
 
 func GetIrType(p dtype.Type) types.Type {
@@ -41,7 +42,9 @@ func generateCaseCustomType(caseExpr *decorated.CaseCustomType, genContext *gene
 		for index, param := range consequence.Parameters() {
 			field := fields[index]
 
-			consequenceParameter := ir.NewGetElementPtr(GetIrType(field.Type()), testVar, constant.NewInt(types.I32, int64(index)))
+			consequenceParameter := ir.NewGetElementPtr(
+				GetIrType(field.Type()), testVar, constant.NewInt(types.I32, int64(index)),
+			)
 			consequenceParameter.LocalIdent.SetName(param.Identifier().Name())
 		}
 
@@ -55,7 +58,9 @@ func generateCaseCustomType(caseExpr *decorated.CaseCustomType, genContext *gene
 		}
 		customTypeCaseConsequence.Value = consequenceValue
 		customTypeCaseConsequence.Block = consequenceContext.block
-		customTypeCaseConsequence.Incoming = ir.NewIncoming(customTypeCaseConsequence.Value, customTypeCaseConsequence.Block)
+		customTypeCaseConsequence.Incoming = ir.NewIncoming(
+			customTypeCaseConsequence.Value, customTypeCaseConsequence.Block,
+		)
 		consequenceBlocks = append(consequenceBlocks, customTypeCaseConsequence)
 	}
 

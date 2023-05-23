@@ -7,6 +7,7 @@ package decorated
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
@@ -23,7 +24,9 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomT
 	arguments []Expression) *CustomTypeVariantConstructor {
 	inclusive := customTypeVariantReference.FetchPositionLength()
 	if len(arguments) > 0 {
-		inclusive = token.MakeInclusiveSourceFileReference(customTypeVariantReference.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength())
+		inclusive = token.MakeInclusiveSourceFileReference(
+			customTypeVariantReference.FetchPositionLength(), arguments[len(arguments)-1].FetchPositionLength(),
+		)
 	}
 
 	if customTypeVariantReference == nil {
@@ -36,7 +39,13 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomT
 	}
 
 	if customTypeVariant.ParameterCount() != len(arguments) {
-		panic(fmt.Sprintf("%v custom type variant constructor. wrong number of arguments %v %v %v", customTypeVariantReference.FetchPositionLength(), customTypeVariantReference, customTypeVariant.ParameterCount(), arguments))
+		panic(
+			fmt.Sprintf(
+				"%v custom type variant constructor. wrong number of arguments %v %v %v",
+				customTypeVariantReference.FetchPositionLength(), customTypeVariantReference,
+				customTypeVariant.ParameterCount(), arguments,
+			),
+		)
 	}
 
 	var returnType dtype.Type

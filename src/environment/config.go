@@ -8,12 +8,13 @@ package environment
 import (
 	"bufio"
 	"fmt"
-	"github.com/pelletier/go-toml/v2"
 	"io"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/pelletier/go-toml/v2"
 
 	"github.com/swamp/compiler/src/file"
 )

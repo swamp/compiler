@@ -7,13 +7,16 @@ package parser
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/swamp/compiler/src/ast"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	parerr "github.com/swamp/compiler/src/parser/errors"
-	"reflect"
 )
 
-func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (ast.TypeIdentifierNormalOrScoped, parerr.ParseError) {
+func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (
+	ast.TypeIdentifierNormalOrScoped, parerr.ParseError,
+) {
 	var moduleNameParts []*ast.ModuleNamePart
 
 	for p.maybeAccessor() {
@@ -35,11 +38,15 @@ func parseTypeSymbolWithOptionalModules(p ParseStream, x *ast.TypeIdentifier) (a
 }
 
 func parseTypeTermReference(p ParseStream, keywordIndentation int,
-	typeParameterContext ast.LocalTypeNameDefinitionContextDynamic, precedingComments *ast.MultilineComment) (ast.Type, parerr.ParseError) {
+	typeParameterContext ast.LocalTypeNameDefinitionContextDynamic, precedingComments *ast.MultilineComment) (
+	ast.Type, parerr.ParseError,
+) {
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, true, precedingComments)
 }
 
-func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParameterContext *ast.LocalTypeNameDefinitionContext) (ast.Type, parerr.ParseError) {
+func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParameterContext *ast.LocalTypeNameDefinitionContext) (
+	ast.Type, parerr.ParseError,
+) {
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, false, nil)
 }
 
@@ -86,12 +93,16 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 			if rightErr != nil {
 				return nil, leftErr
 			}
-			return ast.NewUnmanagedType(leftAngleBracket, rightAngleBracket, nativeLanguageTypeName, foundTypeIdentifier, nil), nil
+			return ast.NewUnmanagedType(
+				leftAngleBracket, rightAngleBracket, nativeLanguageTypeName, foundTypeIdentifier, nil,
+			), nil
 		}
 		var typeParameters []ast.Type
 		if checkTypeParam {
 			var typeParameterIdentifiersErr parerr.ParseError
-			typeParameters, typeParameterIdentifiersErr = readOptionalTypeParameters(p, keywordIndentation, typeParameterContext)
+			typeParameters, typeParameterIdentifiersErr = readOptionalTypeParameters(
+				p, keywordIndentation, typeParameterContext,
+			)
 			if typeParameterIdentifiersErr != nil {
 				return nil, typeParameterIdentifiersErr
 			}
