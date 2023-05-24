@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
@@ -73,8 +74,9 @@ func (p *Parser) Parse() (*ast.SourceFile, parerr.ParseError) {
 	for !p.stream.tokenizer.MaybeEOF() {
 		report, mustHaveLineAfterStatementErr := p.stream.eatNewLinesAfterStatement(linesToPadMin, linesToPadMax)
 		if mustHaveLineAfterStatementErr != nil {
-			p.stream.debugInfo(fmt.Sprintf("problem was here %d %d (%d)", linesToPadMin, linesToPadMax, report.NewLineCount))
-			errors = parerr.AppendError(errors, parerr.NewExpectedTwoLinesAfterStatement(mustHaveLineAfterStatementErr))
+			p.stream.debugInfo(fmt.Sprintf("problem was here %d %d (%d)", linesToPadMin, linesToPadMax,
+				report.NewLineCount))
+			//errors = parerr.AppendError(errors, parerr.NewExpectedTwoLinesAfterStatement(mustHaveLineAfterStatementErr))
 		}
 
 		if p.stream.tokenizer.MaybeEOF() {
@@ -195,7 +197,8 @@ func (p *Parser) peekIsCall() bool {
 	return wasLeaf
 }
 
-func (p *Parser) internalParseExpression(filterPrecedence Precedence, startIndentation int) (ast.Expression, parerr.ParseError) {
+func (p *Parser) internalParseExpression(filterPrecedence Precedence, startIndentation int) (ast.Expression,
+	parerr.ParseError) {
 	t, tErr := p.stream.readTermToken()
 	if tErr != nil {
 		return nil, tErr
@@ -287,7 +290,8 @@ func (p *Parser) parseExpressionNormal(startIndentation int) (ast.Expression, pa
 	return expr, nil
 }
 
-func (p *Parser) parseExpressionNormalWithComment(startIndentation int, comment token.Comment) (ast.Expression, parerr.ParseError) {
+func (p *Parser) parseExpressionNormalWithComment(startIndentation int, comment token.Comment) (ast.Expression,
+	parerr.ParseError) {
 	p.previousComment = comment
 	expr, err := p.parseExpressionNormal(startIndentation)
 	p.previousComment = nil

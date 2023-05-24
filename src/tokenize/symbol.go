@@ -17,20 +17,24 @@ func (t *Tokenizer) parseAnySymbol(startPosition token.PositionToken) (token.Tok
 		if typeSymbolErr != nil {
 			return nil, typeSymbolErr
 		}
-		booleanSymbol, booleanSymbolErr := DetectUppercaseBoolean(typeSymbol)
-		if booleanSymbolErr == nil {
-			return booleanSymbol, nil
-		}
 		return typeSymbol, nil
+	} else {
+
 	}
 	variableSymbol, variableSymbolErr := t.ParseVariableSymbol()
 	if variableSymbolErr != nil {
 		return nil, variableSymbolErr
 	}
 
+	booleanSymbol, booleanSymbolErr := DetectLowerCaseBoolean(variableSymbol)
+	if booleanSymbolErr == nil {
+		return booleanSymbol, nil
+	}
+
 	if variableSymbol.Name() == "not" {
 		t.EatOneSpace()
-		return token.NewOperatorToken(token.OperatorUnaryNot, variableSymbol.FetchPositionLength(), variableSymbol.Raw(), "NOT"), nil
+		return token.NewOperatorToken(token.OperatorUnaryNot, variableSymbol.FetchPositionLength(),
+			variableSymbol.Raw(), "NOT"), nil
 	}
 	keywordSymbol, keywordSymbolErr := DetectLowercaseKeyword(variableSymbol)
 	if keywordSymbolErr == nil {
