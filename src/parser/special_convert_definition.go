@@ -7,6 +7,7 @@ package parser
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	parerr "github.com/swamp/compiler/src/parser/errors"
@@ -99,6 +100,8 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 		p.eatOneSpace("after colon")
 	}
 
+	shouldDebugOutput := ident.Name() == "map"
+
 	expressionFollows := false
 	nameOnlyDynamicContext := ast.NewLocalTypeNameContext(nil, nil)
 
@@ -121,6 +124,7 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 			if err := p.eatRightArrow(); err != nil {
 				return nil, err
 			}
+
 			for _, parameter := range parameters {
 				allTypes = append(allTypes, parameter.Type())
 			}
@@ -133,7 +137,6 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 		if tErr != nil {
 			return nil, tErr
 		}
-
 		allTypes = append(allTypes, returnType)
 
 		p.eatOneSpace("after arrow")
@@ -145,6 +148,10 @@ func parseDefinition(p ParseStream, ident *ast.VariableIdentifier,
 		typeToUse = functionType
 		if !nameOnlyDynamicContext.IsEmpty() {
 			nameOnlyDynamicContext.SetNextType(typeToUse)
+			if shouldDebugOutput {
+				log.Printf("parameters: %v", parameters)
+				log.Printf("context: %v", nameOnlyDynamicContext)
+			}
 			typeToUse = nameOnlyDynamicContext
 		}
 	} else {

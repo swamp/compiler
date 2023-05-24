@@ -19,7 +19,7 @@ func replaceCustomTypeFromContext(nameContext *CustomTypeAtom, lookup ParseRefer
 
 	var replacedGenerics []dtype.Type
 	for _, genericType := range nameContext.Parameters() {
-		lookedUpType, err := lookup.LookupType(genericType.identifier.Name())
+		lookedUpType, err := lookup.LookupType(genericType.localTypeNameReference.Name())
 		if err != nil {
 			return nil, err
 		}

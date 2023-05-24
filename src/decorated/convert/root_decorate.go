@@ -10,6 +10,7 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/parser"
 
 	"github.com/swamp/compiler/src/ast"
@@ -141,7 +142,7 @@ func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream,
 	assignment *ast.FunctionValueNamedDefinition) (*decorated.NamedFunctionValue, decshared.DecoratedError) {
 
 	/*
-		forcedFunctionTypeLike := targetFunctionValue.DeclaredFunctionTypeAtom2()
+		forcedFunctionTypeLike := targetFunctionValue.UnaliasedDeclaredFunctionType()
 
 		potentialFunc := targetFunctionValue.AstFunctionValue()
 
@@ -157,10 +158,21 @@ func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream,
 
 	*/
 
+	shouldDebugOutput := assignment.Identifier().Name() == "map"
+
+	if shouldDebugOutput {
+		log.Printf("before: %s", debug.TreeString(assignment.FunctionValue().Type()))
+	}
+
 	declaredFunctionTypeLike, convertedTypeErr := g.findTypeFromAstType(assignment.FunctionValue().Type())
 	if convertedTypeErr != nil {
 		return nil, decorated.NewUnknownAnnotationTypeReference(assignment.Identifier(), convertedTypeErr)
 	}
+
+	if shouldDebugOutput {
+		log.Printf("after concretize: %s", debug.TreeString(declaredFunctionTypeLike))
+	}
+
 	if declaredFunctionTypeLike == nil {
 		return nil, decorated.NewInternalError(fmt.Errorf("can not have nil in local annotation"))
 	}
@@ -204,17 +216,16 @@ func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *
 	decshared.DecoratedError) {
 	astContext, wasAstContext := customTypeStatement.CustomType().(*ast.LocalTypeNameDefinitionContext)
 
-	context := dectype.NewLocalTypeNameContext()
+	var astNames []*ast.LocalTypeName
 	var astCustomType *ast.CustomType
 	if wasAstContext {
-		for _, name := range astContext.LocalTypeNames() {
-			decLocalTypeName := dtype.NewLocalTypeName(name)
-			context.AddDef(decLocalTypeName)
-		}
+		astNames = astContext.LocalTypeNames()
 		astCustomType, _ = astContext.Next().(*ast.CustomType)
 	} else {
 		astCustomType = customTypeStatement.CustomType().(*ast.CustomType)
 	}
+	context := dectype.NewLocalTypeNameContext(astNames)
+
 	decCustomType, err := g.handleCustomTypeStatement(astCustomType, context)
 	if err != nil {
 		return nil, err
@@ -241,7 +252,6 @@ func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *
 
 func (g *RootStatementHandler) convertStatement(statement ast.Expression) (decorated.Statement,
 	decshared.DecoratedError) {
-	log.Printf("convert statement %T %v", statement, statement)
 	switch v := statement.(type) {
 	case *ast.Alias:
 		return g.handleAliasStatement(v)

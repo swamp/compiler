@@ -7,7 +7,6 @@ package decorated
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -79,9 +78,6 @@ func NewPrepareFunctionValue(astFunction *ast.FunctionValue, declaredFunctionTyp
 		panic(fmt.Errorf("not great. different number of parameters %d vs %v", len(parameters),
 			declaredFunctionTypeAtom))
 	}
-	for _, param := range parameters {
-		log.Printf("param %v %T", param.Parameter().Name(), param.Type().Next())
-	}
 	if declaredFunctionType == nil {
 		panic("must provide forced function type")
 	}
@@ -121,7 +117,7 @@ func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
 	return f.parameters
 }
 
-func (f *FunctionValue) DeclaredFunctionTypeAtom2() *dectype.FunctionAtom {
+func (f *FunctionValue) UnaliasedDeclaredFunctionType() *dectype.FunctionAtom {
 	return dectype.DerefFunctionType(f.declaredFunctionType)
 }
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -94,6 +95,7 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall,
 			concreteArguments = append([]dtype.Type(nil), encounteredArgumentTypes...)
 			concreteArguments = append(concreteArguments, dectype.NewAnyType())
 
+			log.Printf("concretize call to %v\n%s", functionValueExpression, debug.TreeString(localTypeContextRef))
 			resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
 				localTypeContextRef, concreteArguments,
 			)
@@ -101,14 +103,18 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall,
 				return nil, concreteErr
 			}
 
+			log.Printf("concretize done, resulted in:\n%s", debug.TreeString(resolvedContext))
+
 			atom, resolveErr := resolvedContext.Resolve()
 			if resolveErr != nil {
 				return nil, decorated.NewInternalError(resolveErr)
 			}
+			log.Printf("collapse done, resulted in:\n%s", debug.TreeString(atom))
 			functionValueExpressionFunctionType, _ = atom.(*dectype.FunctionAtom)
 
 		} else {
 			functionValueExpressionFunctionType = functionTypeReference.FunctionAtom()
+
 		}
 	}
 
@@ -121,20 +127,20 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall,
 
 	*/
 
-	/* Extra check here. Is it neccessary?
-	 */
-
-	/* TODO TODO: FIX
 	expectedArgumentTypes := completeCalledFunctionType.FunctionParameterTypes()
 	for index, encounteredArgumentType := range encounteredArgumentTypes {
 		expectedArgumentType := expectedArgumentTypes[index]
-		log.Printf("compare argument %T (%v) vs %T (%v) %v", expectedArgumentType, expectedArgumentType.HumanReadable(), encounteredArgumentType, encounteredArgumentType.HumanReadable(), expectedArgumentType.FetchPositionLength().ToCompleteReferenceString())
+		log.Printf("compare argument %T (%v) vs %T (%v) %v", expectedArgumentType, expectedArgumentType.HumanReadable(),
+			encounteredArgumentType, encounteredArgumentType.HumanReadable(),
+			expectedArgumentType.FetchPositionLength().ToCompleteReferenceString())
 		compatibleErr := dectype.CompatibleTypes(expectedArgumentType, encounteredArgumentType)
 		if compatibleErr != nil {
-			return nil, decorated.NewFunctionArgumentTypeMismatch(call.FetchPositionLength(), nil, nil, expectedArgumentType, encounteredArgumentType, fmt.Errorf("%v %v", completeCalledFunctionType, compatibleErr))
+			return nil, decorated.NewFunctionArgumentTypeMismatch(call.FetchPositionLength(), nil, nil,
+				expectedArgumentType, encounteredArgumentType,
+				fmt.Errorf("%v %v", completeCalledFunctionType, compatibleErr))
 		}
 	}
-	*/
+
 	isCurrying := len(decoratedEncounteredArgumentExpressions) < completeCalledFunctionType.ParameterCount()-1
 	if isCurrying {
 		providedArgumentCount := len(decoratedEncounteredArgumentExpressions)

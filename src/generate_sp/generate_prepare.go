@@ -28,7 +28,7 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 				isExternal := maybeFunction.IsSomeKindOfExternal()
 				if isExternal {
 					var paramPosRanges []assembler_sp.SourceStackPosRange
-					hasLocalTypes := dectype.TypeIsTemplateHasLocalTypes(maybeFunction.DeclaredFunctionTypeAtom2())
+					hasLocalTypes := dectype.TypeIsTemplateHasLocalTypes(maybeFunction.UnaliasedDeclaredFunctionType())
 					// parameterCount := len(maybeFunction.Parameters())
 					pos := dectype.MemoryOffset(0)
 					if hasLocalTypes {
@@ -43,7 +43,7 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 						}
 						continue
 					}
-					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.DeclaredFunctionTypeAtom2().ReturnType())
+					returnSize, _ := dectype.GetMemorySizeAndAlignment(maybeFunction.UnaliasedDeclaredFunctionType().ReturnType())
 					returnPosRange := assembler_sp.SourceStackPosRange{
 						Pos:  assembler_sp.SourceStackPos(pos),
 						Size: assembler_sp.SourceStackRange(returnSize),
@@ -51,7 +51,7 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 
 					pos += dectype.MemoryOffset(returnSize)
 
-					parameterTypes, _ := maybeFunction.DeclaredFunctionTypeAtom2().ParameterAndReturn()
+					parameterTypes, _ := maybeFunction.UnaliasedDeclaredFunctionType().ParameterAndReturn()
 
 					for _, param := range parameterTypes {
 						unaliased := dectype.Unalias(param)
@@ -82,11 +82,11 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 						return decorated.NewInternalError(err)
 					}
 				} else {
-					// parameterTypes, _ := maybeFunction.DeclaredFunctionTypeAtom2().ParameterAndReturn()
-					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.DeclaredFunctionTypeAtom2().ReturnType())
+					// parameterTypes, _ := maybeFunction.UnaliasedDeclaredFunctionType().ParameterAndReturn()
+					returnSize, returnAlign := dectype.GetMemorySizeAndAlignment(maybeFunction.UnaliasedDeclaredFunctionType().ReturnType())
 					parameterCount := uint(len(maybeFunction.Parameters())) // parameterTypes
 
-					functionTypeIndex, lookupErr := typeInformationChunk.Lookup(maybeFunction.DeclaredFunctionTypeAtom2())
+					functionTypeIndex, lookupErr := typeInformationChunk.Lookup(maybeFunction.UnaliasedDeclaredFunctionType())
 					if lookupErr != nil {
 						return decorated.NewInternalError(lookupErr)
 					}

@@ -7,21 +7,20 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
 
 type ResolvedLocalType struct {
-	identifier     *LocalTypeName `debug:"true"`
-	referencedType dtype.Type     `debug:"true"`
-	wasReferenced  bool
-	references     []*ResolvedLocalTypeReference
+	debugLocalTypeName *LocalTypeName `debug:"true"`
+	referencedType     dtype.Type     `debug:"true"`
+	wasReferenced      bool
+	references         []*ResolvedLocalTypeReference
 }
 
 func (u *ResolvedLocalType) String() string {
-	return fmt.Sprintf("%v:%v", u.identifier.Name(), u.referencedType)
+	return fmt.Sprintf("%v:%v", u.debugLocalTypeName.Identifier().Name(), u.referencedType)
 }
 
 func (u *ResolvedLocalType) AddReference(ref *ResolvedLocalTypeReference) {
@@ -40,7 +39,7 @@ func (u *ResolvedLocalType) HumanReadable() string {
 }
 
 func (u *ResolvedLocalType) Identifier() *LocalTypeName {
-	return u.identifier
+	return u.debugLocalTypeName
 }
 
 func (u *ResolvedLocalType) WantsToBeReplaced() bool {
@@ -57,10 +56,6 @@ func (u *ResolvedLocalType) Resolve() (dtype.Atom, error) {
 
 func (u *ResolvedLocalType) ReferencedType() dtype.Type {
 	return u.referencedType
-}
-
-func (u *ResolvedLocalType) ParameterCount() int {
-	return 0
 }
 
 func (u *ResolvedLocalType) Next() dtype.Type {
@@ -87,30 +82,25 @@ func (u *ResolvedLocalType) Verify(referencedType dtype.Type) {
 		}
 	}
 
-	//	TypeChain(referencedType, 0)
+	//	TypeChain(localTypeName, 0)
 }
 
 /*
 
-func (u *ResolvedLocalType) SetDefinition(referencedType dtype.Type) error {
-	u.Verify(referencedType)
-	u.referencedType = referencedType
+func (u *ResolvedLocalType) SetDefinition(localTypeName dtype.Type) error {
+	u.Verify(localTypeName)
+	u.localTypeName = localTypeName
 	u.hasBeenDefined = true
 	return nil
 }
 */
 
-func NewResolvedLocalType(identifier *LocalTypeName, referencedType dtype.Type) *ResolvedLocalType {
-	if !identifier.identifier.LocalType().FetchPositionLength().Verify() {
-		panic(fmt.Errorf("wrong identifier"))
+func NewResolvedLocalType(localTypeName *LocalTypeName,
+	referencedType dtype.Type) *ResolvedLocalType {
+	localIdent := localTypeName.identifier
+	if !localIdent.LocalType().FetchPositionLength().Verify() {
+		panic(fmt.Errorf("wrong localTypeName"))
 	}
-	if identifier.identifier.LocalType().FetchPositionLength().Range.Position().Line() == 1 && identifier.identifier.LocalType().FetchPositionLength().Range.Position().Column() == 0 {
-		log.Printf("found")
-	}
-	log.Printf(
-		"NewResolvedLocalType %T %v %v", referencedType,
-		referencedType.FetchPositionLength().ToCompleteReferenceString(), referencedType,
-	)
-	x := &ResolvedLocalType{identifier: identifier, referencedType: referencedType}
+	x := &ResolvedLocalType{debugLocalTypeName: localTypeName, referencedType: referencedType}
 	return x
 }

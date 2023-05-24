@@ -31,7 +31,7 @@ func (t *LocalTypeNameOnlyContext) Names() []*dtype.LocalTypeName {
 	var x []*dtype.LocalTypeName
 
 	for _, f := range t.localTypeNames {
-		x = append(x, f.identifier)
+		x = append(x, f.LocalTypeName())
 	}
 
 	return x
@@ -67,21 +67,33 @@ func (t *LocalTypeNameOnlyContext) DebugString() string {
 	return s
 }
 
-func NewLocalTypeNameContext() *LocalTypeNameOnlyContext {
+func NewLocalTypeNameContext(names []*ast.LocalTypeName) *LocalTypeNameOnlyContext {
 	t := &LocalTypeNameOnlyContext{
 		localTypeNamesMap:             make(map[string]*LocalTypeName),
 		typeThatIsReferencingTheNames: nil,
 	}
 
-	/*
-		for _, name := range names {
-			newLocalTypeDef := NewResolvedLocalType(name, NewAnyType())
-			t.localTypeNamesMap[name.Name()] = newLocalTypeDef
-			t.localTypeNames = append(t.localTypeNames, newLocalTypeDef)
+	for _, name := range names {
+		if !name.FetchPositionLength().Verify() {
+			panic(fmt.Errorf("wrong position length"))
 		}
+		dLocalTypeName := dtype.NewLocalTypeName(name)
+		localTypeName := NewLocalTypeName(dLocalTypeName)
+		t.localTypeNamesMap[name.Name()] = localTypeName
+		t.localTypeNames = append(t.localTypeNames, localTypeName)
+	}
 
-	*/
 	return t
+}
+
+func (t *LocalTypeNameOnlyContext) LookupNameReference(some *ast.LocalTypeNameReference) (*LocalTypeNameReference,
+	error) {
+	found, wasFound := t.localTypeNamesMap[some.Name()]
+	if !wasFound {
+		return nil, fmt.Errorf("could not find %v", some)
+	}
+	ref := NewLocalTypeNameReference(some, found)
+	return ref, nil
 }
 
 func (t *LocalTypeNameOnlyContext) AtomName() string {
@@ -100,10 +112,6 @@ func (t *LocalTypeNameOnlyContext) Resolve() (dtype.Atom, error) {
 	return t, nil //fmt.Errorf("can not be resolved since it is a type name context %T", t)
 }
 
-func (t *LocalTypeNameOnlyContext) ParameterCount() int {
-	return 0
-}
-
 func (t *LocalTypeNameOnlyContext) FetchPositionLength() token.SourceFileReference {
 	return t.Next().FetchPositionLength()
 }
@@ -119,28 +127,6 @@ func (t *LocalTypeNameOnlyContext) SetType(d dtype.Type) {
 	t.typeThatIsReferencingTheNames = d
 }
 
-func (t *LocalTypeNameOnlyContext) HasDefinitions() bool {
+func (t *LocalTypeNameOnlyContext) HasNames() bool {
 	return len(t.localTypeNames) > 0
-}
-
-func (t *LocalTypeNameOnlyContext) AddDef(identifier *dtype.LocalTypeName) *LocalTypeName {
-	nameDef := NewLocalTypeName(identifier)
-	t.localTypeNamesMap[identifier.Name()] = nameDef
-	if !nameDef.FetchPositionLength().Verify() {
-		panic(fmt.Errorf("wrong position length"))
-	}
-	t.localTypeNames = append(t.localTypeNames, nameDef)
-
-	return nameDef
-}
-
-func (t *LocalTypeNameOnlyContext) ReferenceNameOnly(identifier *ast.LocalTypeNameReference) (
-	*LocalTypeNameReference, error,
-) {
-	found := t.localTypeNamesMap[identifier.Name()]
-	if found == nil {
-		return nil, fmt.Errorf("could not find %v", identifier)
-	}
-
-	return NewLocalTypeNameReference(identifier, found), nil
 }

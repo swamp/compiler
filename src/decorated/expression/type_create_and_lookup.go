@@ -72,7 +72,7 @@ func (l *TypeCreateAndLookup) CreateLocalTypeNameOnlyReference(some *ast.LocalTy
 	if l.localNameContext == nil {
 		panic(fmt.Errorf("no localNameContext set"))
 	}
-	found, err := l.localNameContext.ReferenceNameOnly(some)
+	found, err := l.localNameContext.LookupNameReference(some)
 	if err != nil {
 		return nil, NewInternalError(err)
 	}
@@ -80,8 +80,12 @@ func (l *TypeCreateAndLookup) CreateLocalTypeNameOnlyReference(some *ast.LocalTy
 	return found, nil
 }
 
-func (l *TypeCreateAndLookup) LookupLocalTypeName(some *ast.LocalTypeName) (dtype.Type, decshared.DecoratedError) {
-	found, err := l.localTypeLookup.LookupTypeName(some)
+func (l *TypeCreateAndLookup) LookupLocalTypeName(some *ast.LocalTypeNameReference) (dtype.Type,
+	decshared.DecoratedError) {
+	if l.localTypeLookup == nil {
+		return l.CreateLocalTypeNameOnlyReference(some)
+	}
+	found, err := l.localTypeLookup.LookupTypeName(some.LocalTypeName())
 	if err != nil {
 		return nil, NewInternalError(err)
 	}

@@ -71,7 +71,7 @@ func NewCustomTypeVariantConstructor(customTypeVariantReference *dectype.CustomT
 	/*
 
 		genericContext := customTypeVariantReference.CustomTypeVariant().ResolvedLocalTypeContext()
-		if genericContext.HasDefinitions() {
+		if genericContext.HasNames() {
 			concretizedCustomTypeVariant := concretize.ConcretizeCustomTypeVariant(customTypeVariantReference, arguments)
 			invokerType, typeErr := dectype.NewInvokerType(customTypeVariantReference, types)
 			if typeErr != nil {

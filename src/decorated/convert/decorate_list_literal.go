@@ -17,7 +17,8 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext, containerName string, reference token.SourceFileReference) (
+func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, context *VariableContext,
+	containerName string, reference token.SourceFileReference) (
 	*dectype.ResolvedLocalTypeContext, []decorated.Expression, decshared.DecoratedError,
 ) {
 	var listExpressions []decorated.Expression
@@ -56,14 +57,14 @@ func decorateContainerLiteral(d DecorateStream, expressions []ast.Expression, co
 		panic(fmt.Errorf("must have a List type defined to use [] list literals %T", listType))
 	}
 
-	concretizedLiteral, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
+	concretizedLiteralResolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
 		localNameContext, []dtype.Type{detectedType},
 	)
 	if concreteErr != nil {
 		return nil, nil, concreteErr
 	}
 
-	return concretizedLiteral, listExpressions, nil
+	return concretizedLiteralResolvedContext, listExpressions, nil
 }
 
 func decorateListLiteral(d DecorateStream, list *ast.ListLiteral, context *VariableContext) (

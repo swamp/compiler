@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -130,7 +129,6 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 }
 
 func ResolveToRecordType(expectedRecord dtype.Type) (*RecordAtom, error) {
-	log.Printf("trying to resolve this to a record %T", expectedRecord)
 	atom := UnaliasWithResolveInvoker(expectedRecord)
 
 	recordAtom, wasRecord := atom.(*RecordAtom)

@@ -61,9 +61,9 @@ func (n *RecordLiteralField) Type() dtype.Type {
 }
 
 type RecordLiteralAssignment struct {
-	expression Expression `debug:"true"`
-	index      int
 	fieldName  *RecordLiteralField `debug:"true"`
+	expression Expression          `debug:"true"`
+	index      int
 }
 
 func NewRecordLiteralAssignment(index int, fieldName *RecordLiteralField,

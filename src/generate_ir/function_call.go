@@ -149,7 +149,7 @@ func handleFunctionCall(call *decorated.FunctionCall, isLeafNode bool,
 	} else {
 		if callSelf {
 			/*
-				returnSize, _ := dectype.GetMemorySizeAndAlignment(insideFunction.DeclaredFunctionTypeAtom2().ReturnType())
+				returnSize, _ := dectype.GetMemorySizeAndAlignment(insideFunction.UnaliasedDeclaredFunctionType().ReturnType())
 				pos := dectype.MemoryOffset(returnSize)
 				pos = align(pos, argumentsAlign[0])
 				firstArgumentStackPosition := assembler_sp.TargetStackPos(pos)

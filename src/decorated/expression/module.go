@@ -22,7 +22,7 @@ type TypeReferenceMaker interface {
 		decshared.DecoratedError)
 	CreateLocalTypeNameOnlyReference(some *ast.LocalTypeNameReference) (*dectype.LocalTypeNameReference,
 		decshared.DecoratedError)
-	LookupLocalTypeName(some *ast.LocalTypeName) (dtype.Type, decshared.DecoratedError)
+	LookupLocalTypeName(some *ast.LocalTypeNameReference) (dtype.Type, decshared.DecoratedError)
 }
 
 type TypeAddAndReferenceMaker interface {

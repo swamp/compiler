@@ -13,12 +13,13 @@ import (
 )
 
 type ResolvedLocalTypeReference struct {
-	identifier     *LocalTypeNameReference
+	identifier     *LocalTypeName
 	typeDefinition *ResolvedLocalType `debug:"true"`
 }
 
 func (u *ResolvedLocalTypeReference) String() string {
-	return fmt.Sprintf("[ConcreteGenericRef %v => %v]", u.typeDefinition.identifier, u.typeDefinition.referencedType)
+	return fmt.Sprintf("[ConcreteGenericRef %v => %v]", u.typeDefinition.debugLocalTypeName,
+		u.typeDefinition.referencedType)
 }
 
 func (u *ResolvedLocalTypeReference) FetchPositionLength() token.SourceFileReference {
@@ -33,7 +34,7 @@ func (u *ResolvedLocalTypeReference) TypeDefinition() *ResolvedLocalType {
 	return u.typeDefinition
 }
 
-func (u *ResolvedLocalTypeReference) Identifier() *LocalTypeNameReference {
+func (u *ResolvedLocalTypeReference) Identifier() *LocalTypeName {
 	return u.identifier
 }
 
@@ -57,7 +58,7 @@ func (u *ResolvedLocalTypeReference) WasReferenced() bool {
 	return false
 }
 
-func NewLocalTypeDefinitionReference(identifier *LocalTypeNameReference,
+func NewResolvedLocalTypeReference(identifier *LocalTypeName,
 	referencedDefinition *ResolvedLocalType) *ResolvedLocalTypeReference {
 	x := &ResolvedLocalTypeReference{identifier: identifier, typeDefinition: referencedDefinition}
 	referencedDefinition.AddReference(x)

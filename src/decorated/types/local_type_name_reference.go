@@ -14,8 +14,8 @@ import (
 )
 
 type LocalTypeNameReference struct {
-	identifier     *ast.LocalTypeNameReference
-	referencedType *LocalTypeName `debug:"true"`
+	identifier    *ast.LocalTypeNameReference
+	localTypeName *LocalTypeName `debug:"true"`
 }
 
 func (u *LocalTypeNameReference) String() string {
@@ -46,8 +46,8 @@ func (u *LocalTypeNameReference) ReferencedType() dtype.Type {
 	return NewAnyType()
 }
 
-func (u *LocalTypeNameReference) ParameterCount() int {
-	return 0
+func (u *LocalTypeNameReference) LocalTypeName() *LocalTypeName {
+	return u.localTypeName
 }
 
 func (u *LocalTypeNameReference) Next() dtype.Type {
@@ -59,6 +59,6 @@ func (u *LocalTypeNameReference) WasReferenced() bool {
 }
 
 func NewLocalTypeNameReference(identifier *ast.LocalTypeNameReference,
-	referencedType *LocalTypeName) *LocalTypeNameReference {
-	return &LocalTypeNameReference{identifier: identifier, referencedType: referencedType}
+	localTypeName *LocalTypeName) *LocalTypeNameReference {
+	return &LocalTypeNameReference{identifier: identifier, localTypeName: localTypeName}
 }

@@ -69,7 +69,7 @@ func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackag
 		//code.PrintOut()
 	}
 
-	parameterTypes, _ := f.DeclaredFunctionTypeAtom2().ParameterAndReturn()
+	parameterTypes, _ := f.UnaliasedDeclaredFunctionType().ParameterAndReturn()
 	parameterCount := uint(len(parameterTypes))
 
 	signature, lookupErr := lookup.Lookup(f.Type())

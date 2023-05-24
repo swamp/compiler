@@ -32,7 +32,7 @@ func addSemanticTokenFunctionValue(f *decorated.FunctionValue, builder *Semantic
 	}
 
 	/* TODO:
-	if err := addSemanticToken(f.DeclaredFunctionTypeAtom2().ReturnType(), builder); err != nil {
+	if err := addSemanticToken(f.UnaliasedDeclaredFunctionType().ReturnType(), builder); err != nil {
 		return err
 	}
 	*/

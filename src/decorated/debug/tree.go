@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"reflect"
 	"strings"
 )
@@ -65,9 +64,6 @@ func writeAllSingleFieldStructs(fieldValue reflect.Value, structField reflect.St
 		fmt.Fprintf(writer, ".")
 	}
 	fmt.Fprintf(writer, "%s", structField.Name)
-	if structField.Name == "decoratedExpression" {
-		log.Printf("hej")
-	}
 
 	foundFieldValue, foundSingleField, fieldWasFound, _ := checkIfStructContainSingleVisibleField(fieldValue)
 	if fieldWasFound {
@@ -155,4 +151,10 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 func Tree(expr interface{}, writer io.Writer) {
 	subType := reflect.ValueOf(expr)
 	tree(subType, 0, writer)
+}
+
+func TreeString(expr interface{}) string {
+	var writer strings.Builder
+	Tree(expr, &writer)
+	return writer.String()
 }

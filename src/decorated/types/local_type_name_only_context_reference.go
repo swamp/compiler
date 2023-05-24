@@ -46,10 +46,6 @@ func (g *LocalTypeNameOnlyContextReference) NameReference() *NamedDefinitionType
 	return g.named
 }
 
-func (g *LocalTypeNameOnlyContextReference) ParameterCount() int {
-	return g.nameContext.ParameterCount()
-}
-
 func (g *LocalTypeNameOnlyContextReference) Resolve() (dtype.Atom, error) {
 	return g.nameContext.Resolve()
 }

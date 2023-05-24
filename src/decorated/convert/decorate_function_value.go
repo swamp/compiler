@@ -6,8 +6,11 @@
 package decorator
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
+	"github.com/swamp/compiler/src/decorated/debug"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -64,13 +67,22 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 
 	targetFunctionNamedValue.DefineExpression(decoratedExpression)
 
-	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.DeclaredFunctionTypeAtom2().ReturnType(), decoratedExpressionType)
-	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.DeclaredFunctionTypeAtom2().ReturnType(), decoratedExpressionType)
+	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType)
+	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType)
 
 	compatibleErr := dectype.CompatibleTypes(
-		targetFunctionValue.DeclaredFunctionTypeAtom2().ReturnType(), decoratedExpressionType,
+		targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType,
 	)
 	if compatibleErr != nil {
+		var writer strings.Builder
+		fmt.Fprintf(&writer, "\n\ntargetType: %v", targetFunctionNamedValue.FunctionName())
+		debug.Tree(targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), &writer)
+
+		fmt.Fprintf(&writer, "\n\nencounteredType:")
+		debug.Tree(decoratedExpression, &writer)
+
+		log.Println(writer.String())
+
 		return decorated.NewUnMatchingFunctionReturnTypesInFunctionValue(
 			targetFunctionValue.AstFunctionValue(),
 			functionValueExpression, targetFunctionValue.Type(), decoratedExpression.Type(), compatibleErr,

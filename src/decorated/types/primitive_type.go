@@ -115,10 +115,24 @@ func IsLocalType(checkType dtype.Type) bool {
 	return wasLocalType
 }
 
+func IsConcrete(checkType dtype.Type) bool {
+	return !IsLocalType(checkType) && !IsAny(checkType)
+}
+
 func IsSomeLocalType(checkTypes []dtype.Type) bool {
 	for _, checkType := range checkTypes {
 		if IsLocalType(checkType) {
 			return true
+		}
+	}
+
+	return false
+}
+
+func IsAllLocalTypes(checkTypes []dtype.Type) bool {
+	for _, checkType := range checkTypes {
+		if !IsLocalType(checkType) {
+			return false
 		}
 	}
 
@@ -208,7 +222,8 @@ func NewPrimitiveType(name *ast.TypeIdentifier, parameterTypes []dtype.Type) *Pr
 		panic(fmt.Errorf("name is wrong"))
 	}
 	if len(parameterTypes) > 0 {
-		inclusive = token.MakeInclusiveSourceFileReference(name.FetchPositionLength(), parameterTypes[len(parameterTypes)-1].FetchPositionLength())
+		//inclusive = token.MakeInclusiveSourceFileReference(name.FetchPositionLength(),
+		//	parameterTypes[len(parameterTypes)-1].FetchPositionLength())
 	}
 	return &PrimitiveAtom{name: name, parameterTypes: parameterTypes, inclusive: inclusive}
 }
@@ -235,7 +250,8 @@ func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
 	for index, genericType := range u.parameterTypes {
 		otherGenericType := other.parameterTypes[index]
 		if err := CompatibleTypes(genericType, otherGenericType); err != nil {
-			return fmt.Errorf("not same generic type %v and %v %v", genericType.HumanReadable(), otherGenericType.HumanReadable(), err)
+			return fmt.Errorf("not same generic type %v and %v %v", genericType.HumanReadable(),
+				otherGenericType.HumanReadable(), err)
 		}
 	}
 

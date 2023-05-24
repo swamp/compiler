@@ -18,8 +18,8 @@ type LocalTypeNameDefinitionContextDynamic interface {
 
 type LocalTypeNameDefinitionContext struct {
 	lookup                   map[string]*LocalTypeNameDefinition
-	typeParameterIdentifiers []*LocalTypeNameDefinition
-	nextType                 Type
+	typeParameterIdentifiers []*LocalTypeNameDefinition `debug:"true"`
+	nextType                 Type                       `debug:"true"`
 	isDynamic                bool
 }
 

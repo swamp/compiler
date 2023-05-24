@@ -80,7 +80,7 @@ func NewCustomTypeVariant(index int, inCustomType *CustomTypeAtom, astCustomType
 
 	var fields []*CustomTypeVariantField
 
-	pos := MemoryOffset(1) // Leave room for the custom type identifier
+	pos := MemoryOffset(1) // Leave room for the custom type localTypeNameReference
 	var biggestMemoryAlign MemoryAlign
 	biggestMemoryAlign = 1
 	for index, paramType := range parameterTypes {

@@ -20,7 +20,8 @@ func colorAlias(alias *dectype.Alias, colorer coloring.Colorer) {
 	colorer.AliasNameSymbol(alias.TypeIdentifier().Symbol())
 }
 
-func colorFunctionParameters(functionParameterTypes []dtype.Type, indentation int, inside bool, colorer coloring.Colorer) {
+func colorFunctionParameters(functionParameterTypes []dtype.Type, indentation int, inside bool,
+	colorer coloring.Colorer) {
 	for index, parameterType := range functionParameterTypes {
 		if index > 0 {
 			colorer.OneSpace()
@@ -31,7 +32,8 @@ func colorFunctionParameters(functionParameterTypes []dtype.Type, indentation in
 	}
 }
 
-func colorFunctionParametersWithAlias(functionParameterTypes []dtype.Type, indentation int, inside bool, colorer coloring.Colorer) {
+func colorFunctionParametersWithAlias(functionParameterTypes []dtype.Type, indentation int, inside bool,
+	colorer coloring.Colorer) {
 	colorFunctionParameters(functionParameterTypes, indentation, inside, colorer)
 	userInstruction("Explanation", indentation+1, colorer)
 	ColorTypesWithAtom(functionParameterTypes, indentation+2, inside, colorer)
@@ -95,7 +97,8 @@ func colorTupleType(recordType *dectype.TupleTypeAtom, indentation int, inside b
 	colorer.OperatorString(")")
 }
 
-func colorCustomTypeVariant(variantAtom *dectype.CustomTypeVariantAtom, indentation int, inside bool, colorer coloring.Colorer) {
+func colorCustomTypeVariant(variantAtom *dectype.CustomTypeVariantAtom, indentation int, inside bool,
+	colorer coloring.Colorer) {
 	colorer.TypeSymbol(variantAtom.Name().Symbol())
 
 	for _, parameterType := range variantAtom.ParameterTypes() {
@@ -137,7 +140,7 @@ func colorPrimitive(primitive *dectype.PrimitiveAtom, indentation int, inside bo
 }
 
 func colorLocalType(primitive *dectype.ResolvedLocalType, indentation int, inside bool, colorer coloring.Colorer) {
-	colorer.LocalType(primitive.Identifier().Identifier().LocalType().Identifier().Symbol())
+	colorer.LocalType(primitive.Identifier().LocalTypeName().LocalType().Identifier().Symbol())
 }
 
 func colorAny(indentation int, inside bool, colorer coloring.Colorer) {

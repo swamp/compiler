@@ -61,10 +61,6 @@ func (t *ResolvedLocalTypeContext) Next() dtype.Type {
 	return t.contextRefThatWantsResolvedTypes
 }
 
-func (t *ResolvedLocalTypeContext) ParameterCount() int {
-	return 0
-}
-
 func (t *ResolvedLocalTypeContext) WasReferenced() bool {
 	return false
 }
@@ -91,8 +87,9 @@ func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeName
 			panic(fmt.Errorf("must have concrete types in a resolved type context %T", resolvedType))
 		}
 		foundName := contextRefThatWantsResolvedTypes.nameContext.Definitions()[index]
+		log.Printf("resolved '%s' <- %T %v", foundName.identifier.Name(), resolvedType, resolvedType)
 		newLocalTypeDef := NewResolvedLocalType(foundName, resolvedType)
-		t.resolvedArguments[foundName.Name()] = newLocalTypeDef
+		t.resolvedArguments[foundName.identifier.Name()] = newLocalTypeDef
 		t.definitions = append(t.definitions, newLocalTypeDef)
 	}
 
@@ -151,10 +148,6 @@ func (t *ResolvedLocalTypeContext) HasDefinitions() bool {
 	return len(t.definitions) > 0
 }
 
-func (t *ResolvedLocalTypeContext) LookupType(definition *ResolvedLocalTypeReference) *ResolvedLocalType {
-	return t.resolvedArguments[definition.identifier.identifier.Name()]
-}
-
 /*
 func (t *ResolvedLocalTypeContext) ResolveTypeRef(defRef *ResolvedLocalTypeReference) (*ResolvedLocalTypeReference, error) {
 	definition, found := t.localTypeNamesMap[defRef.Identifier().Name()]
@@ -162,7 +155,7 @@ func (t *ResolvedLocalTypeContext) ResolveTypeRef(defRef *ResolvedLocalTypeRefer
 		return nil, fmt.Errorf("could not find %v", defRef.Identifier().Name())
 	}
 
-	return NewLocalTypeDefinitionReference(definition, definition), nil
+	return NewResolvedLocalTypeReference(definition, definition), nil
 }
 */
 
@@ -173,10 +166,9 @@ func (t *ResolvedLocalTypeContext) LookupTypeAstRef(astReference *ast.LocalTypeN
 	if !found {
 		return nil, NewCouldNotFindLocalTypeName(astReference, fmt.Errorf("could not find %v", astReference.Name()))
 	}
-	log.Printf("looked up definition %T %v", definition, definition.FetchPositionLength().ToCompleteReferenceString())
 
-	decoratedNameReference := NewLocalTypeNameReference(astReference, definition.identifier)
-	return NewLocalTypeDefinitionReference(decoratedNameReference, definition), nil
+	log.Printf("looking up '%v' and got %T %v", astReference.Name(), definition.referencedType, definition)
+	return NewResolvedLocalTypeReference(definition.debugLocalTypeName, definition), nil
 }
 
 func (t *ResolvedLocalTypeContext) LookupTypeRef(decReference *LocalTypeNameReference) (
@@ -186,6 +178,9 @@ func (t *ResolvedLocalTypeContext) LookupTypeRef(decReference *LocalTypeNameRefe
 }
 
 func (t *ResolvedLocalTypeContext) LookupTypeName(astReference *ast.LocalTypeName) (dtype.Type, error) {
+	if astReference == nil {
+		panic(fmt.Errorf("ast localtypename is nil"))
+	}
 	definition, found := t.resolvedArguments[astReference.Name()]
 	if !found {
 		return nil, fmt.Errorf("could not find %v", astReference.Name())

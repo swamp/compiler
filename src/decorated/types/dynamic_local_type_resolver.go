@@ -122,8 +122,8 @@ func (t *DynamicLocalTypeResolver) LookupType(name string) (dtype.Type, error) {
 */
 
 func (t *DynamicLocalTypeResolver) SpecialSet(name string, resolved dtype.Type) error {
-	if IsLocalType(resolved) {
-		panic(fmt.Errorf("can not set with a local type"))
+	if IsLocalType(resolved) || IsAny(resolved) {
+		panic(fmt.Errorf("must be set with a concrete type %T %v", resolved, resolved))
 	}
 	for index, foundParam := range t.argumentNames {
 		if foundParam.Name() == name {
@@ -136,7 +136,7 @@ func (t *DynamicLocalTypeResolver) SpecialSet(name string, resolved dtype.Type) 
 				}
 			}
 
-			log.Printf("name: '%v' <- %v", name, resolved)
+			log.Printf("%s <- %T %v", name, resolved, resolved)
 			t.resolvedArguments[index] = resolved
 
 			return nil
@@ -146,8 +146,8 @@ func (t *DynamicLocalTypeResolver) SpecialSet(name string, resolved dtype.Type) 
 	return fmt.Errorf("couldn't find %v", name)
 }
 
-func (t *DynamicLocalTypeResolver) SetType(defRef *LocalTypeNameReference, definedType dtype.Type) error {
-	return t.SpecialSet(defRef.referencedType.Name(), definedType)
+func (t *DynamicLocalTypeResolver) SetType(defRef *LocalTypeName, definedType dtype.Type) error {
+	return t.SpecialSet(defRef.Name(), definedType)
 }
 
 func (t *DynamicLocalTypeResolver) Verify() error {

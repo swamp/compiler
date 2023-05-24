@@ -7,9 +7,11 @@ package decorator
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -79,11 +81,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		return newType, t.AddTypeAlias(newType)
 
 	case *ast.LocalTypeNameDefinitionContext:
-		decContext := dectype.NewLocalTypeNameContext()
-		for _, name := range info.LocalTypeNames() {
-			decName := dtype.NewLocalTypeName(name)
-			decContext.AddDef(decName)
-		}
+		decContext := dectype.NewLocalTypeNameContext(info.LocalTypeNames())
 		subContext := t.MakeLocalNameContext(decContext)
 		subType, subTypeErr := ConvertFromAstToDecorated(info.Next(), subContext)
 		if subTypeErr != nil {
@@ -111,8 +109,15 @@ func ConvertFromAstToDecorated(astType ast.Type,
 
 	case *ast.LocalTypeNameReference:
 		//artifactTypeName := t.SourceModule().FullyQualifiedModuleName().JoinTypeIdentifier(info.Identifier())
-		return t.CreateLocalTypeNameOnlyReference(info)
-		//return dectype.NewLocalTypeDefinitionReference(info, dectype.NewAnyType()), nil
+		foundType, findErr := t.LookupLocalTypeName(info)
+		if findErr != nil {
+			return nil, findErr
+		}
+		if info.Name() == "b" {
+			log.Printf("found it")
+		}
+		log.Printf("looking up '%s' and found: %s", info.Name(), debug.TreeString(foundType))
+		return foundType, findErr
 
 	case *ast.TypeReferenceScoped:
 		foundType, err := t.CreateSomeTypeReference(info.TypeResolver())

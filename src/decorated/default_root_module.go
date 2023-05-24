@@ -143,7 +143,8 @@ type Result value error =
     | Err error
 `
 
-func compileToModule(globalModule *decorated.Module, name string, code string) (*decorated.Module, decshared.DecoratedError) {
+func compileToModule(globalModule *decorated.Module, name string, code string) (*decorated.Module,
+	decshared.DecoratedError) {
 	const verbose = verbosity.Low
 	const enforceStyle = true
 	const errorAsWarning = false
@@ -302,10 +303,8 @@ func MakeLocalTypeNameContext(name *ast.TypeIdentifier) *dectype.LocalTypeNameOn
 	typeParameter := ast.NewLocalTypeNameDefinition(localTypeName)
 	localType := ast.NewLocalTypeNameReference(localTypeName, typeParameter)
 
-	decLocalTypeNameContext := dectype.NewLocalTypeNameContext()
-	decLocalTypeName := dtype.NewLocalTypeName(localTypeName)
-	decTypeNameDef := decLocalTypeNameContext.AddDef(decLocalTypeName)
-	decLocalTypeRef := dectype.NewLocalTypeNameReference(localType, decTypeNameDef)
+	decLocalTypeNameContext := dectype.NewLocalTypeNameContext([]*ast.LocalTypeName{localTypeName})
+	decLocalTypeRef, _ := decLocalTypeNameContext.LookupNameReference(localType)
 	primitiveType := dectype.NewPrimitiveType(name, []dtype.Type{decLocalTypeRef})
 
 	decLocalTypeNameContext.SetType(primitiveType)
@@ -321,7 +320,9 @@ func kickstartPrimitives() *decorated.Module {
 	nameTypeIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("", sourceFileReference, 0))
 	sourceFileDocument := &token.SourceFileDocument{
 		Uri: newSourceFileUri}
-	rootPrimitiveModule := decorated.NewModule(decorated.ModuleTypeNormal, dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})), sourceFileDocument)
+	rootPrimitiveModule := decorated.NewModule(decorated.ModuleTypeNormal,
+		dectype.MakeArtifactFullyQualifiedModuleName(ast.NewModuleReference([]*ast.ModuleNamePart{ast.NewModuleNamePart(nameTypeIdentifier)})),
+		sourceFileDocument)
 	rootPrimitiveModule.MarkAsInternal()
 	primitiveModuleLocalTypes := rootPrimitiveModule.LocalTypes()
 
@@ -345,15 +346,18 @@ func kickstartPrimitives() *decorated.Module {
 	addPrimitive(primitiveModuleLocalTypes, blobType)
 	addPrimitive(primitiveModuleLocalTypes, unmanagedType)
 
-	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReferenceRow(1), 0))
+	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReferenceRow(1),
+		0))
 	listIdentifierNameContext := MakeLocalTypeNameContext(listIdentifier)
 	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, listIdentifierNameContext)
 
-	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array", token.NewInternalSourceFileReferenceRow(1), 0))
+	arrayIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("Array",
+		token.NewInternalSourceFileReferenceRow(1), 0))
 	arrayTypeNameContext := MakeLocalTypeNameContext(arrayIdentifier)
 	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, arrayTypeNameContext)
 
-	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef", token.NewInternalSourceFileReferenceRow(1), 0))
+	typeRefIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("TypeRef",
+		token.NewInternalSourceFileReferenceRow(1), 0))
 	typeRefTypeNameContext := MakeLocalTypeNameContext(typeRefIdentifier)
 	addLocalTypeNameContextPrimitive(primitiveModuleLocalTypes, typeRefTypeNameContext)
 

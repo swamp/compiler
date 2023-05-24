@@ -12,7 +12,7 @@ import (
 )
 
 type LocalTypeNameDefinition struct {
-	ident      *LocalTypeName
+	ident      *LocalTypeName `debug:"true"`
 	references []*LocalTypeNameReference
 }
 
