@@ -135,6 +135,9 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall,
 			expectedArgumentType.FetchPositionLength().ToCompleteReferenceString())
 		compatibleErr := dectype.CompatibleTypes(expectedArgumentType, encounteredArgumentType)
 		if compatibleErr != nil {
+			log.Printf("func:%s expected:%s\nencountered:\n%s", functionValueExpression,
+				debug.TreeString(expectedArgumentTypes),
+				debug.TreeString(encounteredArgumentType))
 			return nil, decorated.NewFunctionArgumentTypeMismatch(call.FetchPositionLength(), nil, nil,
 				expectedArgumentType, encounteredArgumentType,
 				fmt.Errorf("%v %v", completeCalledFunctionType, compatibleErr))

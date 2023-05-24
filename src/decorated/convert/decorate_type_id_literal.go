@@ -11,6 +11,7 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -40,6 +41,6 @@ func decorateTypeId(d DecorateStream, typeId *ast.TypeId) (decorated.Expression,
 		return nil, decorated.NewInternalError(err2)
 	}
 
-	log.Printf("constructed %v decorated %v", constructedType, decoratedType)
+	log.Printf("constructed %s decorated %v", debug.TreeString(constructedType), decoratedType)
 	return decorated.NewTypeIdLiteral(typeId, constructedType, decoratedType), nil
 }

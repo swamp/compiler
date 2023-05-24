@@ -57,7 +57,7 @@ func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, ge
 	if foundPrimitive == nil {
 		foundCustomType, _ := unaliasedTypeLeft.(*dectype.CustomTypeAtom)
 		if foundCustomType == nil {
-			panic(fmt.Errorf("not implemented binary operator boolean %v", unaliasedTypeLeft.HumanReadable()))
+			panic(fmt.Errorf("not implemented binary operator boolean %v", operator.Left().Type().HumanReadable()))
 		} else {
 			zeroIndex := constant.NewInt(types.I32, 0)
 			var indices []value.Value

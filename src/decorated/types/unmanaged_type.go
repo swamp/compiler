@@ -14,7 +14,7 @@ import (
 )
 
 type UnmanagedType struct {
-	identifier    *ast.UnmanagedType
+	identifier    *ast.UnmanagedType `debug:"true"`
 	wasReferenced bool
 }
 

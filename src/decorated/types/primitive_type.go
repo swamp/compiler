@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	"github.com/swamp/compiler/src/token"
 )
@@ -250,8 +251,9 @@ func (u *PrimitiveAtom) IsEqual(other_ dtype.Atom) error {
 	for index, genericType := range u.parameterTypes {
 		otherGenericType := other.parameterTypes[index]
 		if err := CompatibleTypes(genericType, otherGenericType); err != nil {
-			return fmt.Errorf("not same generic type %v and %v %v", genericType.HumanReadable(),
-				otherGenericType.HumanReadable(), err)
+			return fmt.Errorf("not same generic type %v and %v %v\n%s\n%s", genericType.HumanReadable(),
+				otherGenericType.HumanReadable(), err, debug.TreeString(genericType),
+				debug.TreeString(otherGenericType))
 		}
 	}
 

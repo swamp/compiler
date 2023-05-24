@@ -15,14 +15,16 @@ type UnmanagedType struct {
 	startParen             token.ParenToken
 	endParen               token.ParenToken
 	comment                *MultilineComment
-	nativeLanguageTypeName *TypeIdentifier
+	nativeLanguageTypeName *TypeIdentifier `debug:"true"`
 	keyword                *TypeIdentifier
 	inclusive              token.SourceFileReference
 }
 
-func NewUnmanagedType(startParen token.ParenToken, endParen token.ParenToken, nativeLanguageTypeName *TypeIdentifier, keyword *TypeIdentifier, comment *MultilineComment) *UnmanagedType {
+func NewUnmanagedType(startParen token.ParenToken, endParen token.ParenToken, nativeLanguageTypeName *TypeIdentifier,
+	keyword *TypeIdentifier, comment *MultilineComment) *UnmanagedType {
 	inclusive := token.MakeInclusiveSourceFileReference(keyword.FetchPositionLength(), endParen.SourceFileReference)
-	return &UnmanagedType{nativeLanguageTypeName: nativeLanguageTypeName, startParen: startParen, endParen: endParen, inclusive: inclusive, keyword: keyword, comment: comment}
+	return &UnmanagedType{nativeLanguageTypeName: nativeLanguageTypeName, startParen: startParen, endParen: endParen,
+		inclusive: inclusive, keyword: keyword, comment: comment}
 }
 
 func (i *UnmanagedType) NativeLanguageTypeName() *TypeIdentifier {
@@ -38,7 +40,7 @@ func (i *UnmanagedType) Name() string {
 }
 
 func (i *UnmanagedType) String() string {
-	return fmt.Sprintf("[unmanaged-type %v]", i.nativeLanguageTypeName)
+	return fmt.Sprintf("[Unmanaged %v]", i.nativeLanguageTypeName)
 }
 
 func (i *UnmanagedType) Comment() *MultilineComment {

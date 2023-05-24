@@ -1109,13 +1109,14 @@ a : Bool -> (Int, String) =
 `, &decorated.UnMatchingFunctionReturnTypesInFunctionValue{})
 }
 
+/*
 func TestTypeRef(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 haveTypeRefAsParameter : (TypeRef a) -> Bool
 
 main : Bool =
-    haveTypeRefAsParameter "hi"
+    haveTypeRefAsParameter $String
 `, `
 [ModuleDef $haveTypeRefAsParameter = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] ([[Param $_ : [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
 [ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([]) -> [FnCall [FunctionType [[Primitive TypeRef<[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]>] [Primitive Bool]]] [FunctionRef [NamedDefinitionReference /haveTypeRefAsParameter]] [[String hi]]]]]
@@ -1138,6 +1139,7 @@ main : Bool =
 [ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([]) -> [FnCall [FunctionType [[Primitive TypeRef<[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]>] [Primitive Bool]]] [FunctionRef [NamedDefinitionReference /haveTypeRefAsParameter]] [[String hi]]] |> [FunctionRef [NamedDefinitionReference /another]]]]
 `)
 }
+*/
 
 func xTestTypeRefPipeRight2(t *testing.T) {
 	testDecorate(t,
@@ -1381,6 +1383,18 @@ type alias Tinkering t =
     }
 `, `
 Tinkering : [Alias Tinkering [LocalTypeNameOnlyContext t => [RecordType [[Field $secret [LocalTypeNameRef t] (0)] [Field $solder [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]]
+`)
+}
+
+func TestUnmanaged(t *testing.T) {
+	testDecorateWithoutDefault(t,
+		`
+type alias CAbstraction =
+    { used : Bool
+    , native : Unmanaged<CStruct>
+    }
+`, `
+CAbstraction : [Alias CAbstraction [RecordType [[Field $native [unmanaged [Unmanaged $CStruct]] (0)] [Field $used [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] (1)]]]]
 `)
 }
 

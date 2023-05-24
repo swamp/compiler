@@ -135,6 +135,12 @@ func internalCollapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type
 		return replaceLocalNamesInPrimitiveIfNeeded(t, lookup)
 	case *LocalTypeNameOnlyContextReference:
 		return internalCollapse(t.Next(), lookup)
+	case *AliasReference:
+		return internalCollapse(t.Next(), lookup)
+	case *Alias:
+		return internalCollapse(t.Next(), lookup)
+	case *UnmanagedType:
+		return typeToCheck, false, nil
 	//return replaceLocalNameInNameOnlyContext(t, lookup)
 	case *LocalTypeNameOnlyContext:
 		return internalCollapse(t.Next(), lookup)
