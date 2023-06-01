@@ -11,11 +11,11 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func DetectUppercaseBoolean(t token.TypeSymbolToken) (token.BooleanToken, error) {
+func DetectLowerCaseBoolean(t token.VariableSymbolToken) (token.BooleanToken, error) {
 	switch t.Name() {
-	case "True":
+	case "true":
 		return token.NewBooleanToken(t.Raw(), true, t.SourceFileReference), nil
-	case "False":
+	case "false":
 		return token.NewBooleanToken(t.Raw(), false, t.SourceFileReference), nil
 	}
 

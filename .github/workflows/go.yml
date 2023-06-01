@@ -6,23 +6,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.19.5
+          go-version: '1.20.4'
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45.2
+          version: v1.52.2
           args: --issues-exit-code=0 # Temporarily make this warning instead of error
 
       - name: Static Check
-        uses: dominikh/staticcheck-action@v1.1.0
+        uses: dominikh/staticcheck-action@v1.3.0
         with:
-          version: "2022.1"
+          version: '2022.1.3'
           install-go: false
         continue-on-error: true
 
@@ -43,15 +43,17 @@ jobs:
             goos: windows
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.19.5
+          go-version: '1.20.4'
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Compile for ${{ matrix.goos }} and ${{ matrix.goarch }}
-        run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -o swamp_${{ matrix.goos }}_${{ matrix.goarch }} ./src/swamp/
+        run:
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -o
+          swamp_${{ matrix.goos }}_${{ matrix.goarch }} ./src/swamp/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
