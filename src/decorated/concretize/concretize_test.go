@@ -47,6 +47,12 @@ func MakeFakeLocalTypeName(name string) *ast.LocalTypeName {
 	return ast.NewLocalTypeName(MakeFakeVariable(name))
 }
 
+func MakeFakeLocalTypeNameRef(name string) *ast.LocalTypeNameReference {
+	aName := MakeFakeLocalTypeName(name)
+	aNameDef := ast.NewLocalTypeNameDefinition(aName)
+	return ast.NewLocalTypeNameReference(aName, aNameDef)
+}
+
 func MakeFakeList(localTypeName string) *dectype.PrimitiveAtom {
 	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReference(), 0))
 
@@ -98,15 +104,12 @@ func TestCustomTypeVariant(t *testing.T) {
 	typeIdentifierForVariant := MakeFakeTypeIdentifier("SomeVariant")
 	astVariant := ast.NewCustomTypeVariant(42, typeIdentifierForVariant, generics, nil)
 
-	decoratedTypeNames := dectype.NewLocalTypeNameContext()
-	aName := MakeFakeLocalTypeName("a")
-	argName := dtype.NewLocalTypeName(aName)
-	aNameDef := decoratedTypeNames.AddDef(argName)
-
-	aNameRef := dectype.NewLocalTypeNameReference(firstNameDefRef, aNameDef)
+	aNameRef := MakeFakeLocalTypeNameRef("a")
+	localTypeNameOnlyContext := dectype.NewLocalTypeNameContext([]*ast.LocalTypeName{aNameRef.LocalTypeName()})
+	aNameDecRef, _ := localTypeNameOnlyContext.LookupNameReference(aNameRef)
 
 	listA := MakeFakeList("a")
-	decoratedGenericsForVariant := []dtype.Type{listA, aNameRef}
+	decoratedGenericsForVariant := []dtype.Type{listA, aNameDecRef}
 	reference := dectype.NewCustomTypeVariant(42, nil, astVariant, decoratedGenericsForVariant)
 
 	integerType := MakeIntegerType()
@@ -114,10 +117,12 @@ func TestCustomTypeVariant(t *testing.T) {
 
 	concreteArguments := []dtype.Type{listOfInt}
 
-	decoratedTypeNames.SetType(reference)
+	localTypeNameOnlyContext.SetType(reference)
+
+	localTypeNameOnlyContextRef := dectype.NewLocalTypeNameContextReference(nil, localTypeNameOnlyContext)
 
 	concretizedVariant, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
-		decoratedTypeNames, concreteArguments,
+		localTypeNameOnlyContextRef, concreteArguments,
 	)
 	if concreteErr != nil {
 		t.Error(concreteErr)
@@ -146,7 +151,7 @@ func TestFunction(t *testing.T) {
 	astFunction := ast.NewFunctionType(astFunctionParameters)
 
 	decoratedTypeNames := dectype.NewLocalTypeNameContext()
-	aName := MakeFakeLocalTypeName("a")
+	aName := MakeFakeLocalTypeNameRef("a")
 	aArgName := dtype.NewLocalTypeName(aName)
 	aNameDef := decoratedTypeNames.AddDef(aArgName)
 	aNameRef := dectype.NewLocalTypeNameReference(firstNameDefRef, aNameDef)

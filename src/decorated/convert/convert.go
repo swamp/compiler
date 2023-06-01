@@ -137,6 +137,14 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if foundType == nil {
 			return nil, decorated.NewInternalError(fmt.Errorf("couldn't find type reference %v", refName))
 		}
+
+		log.Printf("arguments: %s", debug.TreeString(info.Arguments()))
+		if len(info.Arguments()) == 1 {
+			if info.Arguments()[0].Name() == "b" {
+				log.Printf("found something\n")
+			}
+		}
+
 		types, sliceErr := ConvertFromAstToDecoratedSlice(info.Arguments(), t)
 		if sliceErr != nil {
 			return nil, sliceErr
@@ -160,6 +168,22 @@ func ConvertFromAstToDecorated(astType ast.Type,
 				}
 				return newType, nil
 			}
+		} else {
+			var astNames []*ast.LocalTypeName
+			for _, argType := range info.Arguments() {
+				localTypeName, isLocalTypeName := argType.(*ast.LocalTypeNameReference)
+				if isLocalTypeName {
+					astNames = append(astNames, localTypeName.LocalTypeName())
+				}
+			}
+			newContext := dectype.NewLocalTypeNameContext(astNames)
+			newContext.SetType(foundType)
+
+			return newContext, nil
+		}
+
+		if nameOnlyContextRef != nil {
+			return nameOnlyContextRef, nil
 		}
 
 		return foundType, nil
