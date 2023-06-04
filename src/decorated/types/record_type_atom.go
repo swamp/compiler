@@ -248,7 +248,7 @@ func (s *RecordAtom) SortedFields() []*RecordField {
 func (s *RecordAtom) NameFromSortedFields() string {
 	out := ""
 	for index, field := range s.sortedFields {
-		unaliasedType := UnaliasWithResolveInvoker(field.Type())
+		unaliasedType := ResolveToAtom(field.Type())
 		if index > 0 {
 			out += ":"
 		}

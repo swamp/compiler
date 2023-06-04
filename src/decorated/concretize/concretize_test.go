@@ -6,13 +6,14 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
 func MakeFakeSourceFileReference() token.SourceFileReference {
-	return token.NewInternalSourceFileReference()
+	return token.NewInternalSourceFileReferenceRow(1)
 }
 
 func MakeFakeTypeIdentifier(name string) *ast.TypeIdentifier {
@@ -70,7 +71,8 @@ func MakeFakeList(localTypeName string) *dectype.PrimitiveAtom {
 }
 
 func MakeFakeListOf(typeParam dtype.Type) *dectype.PrimitiveAtom {
-	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReference(), 0))
+	listIdentifier := ast.NewTypeIdentifier(token.NewTypeSymbolToken("List", token.NewInternalSourceFileReferenceRow(1),
+		0))
 	listType := dectype.NewPrimitiveType(listIdentifier, []dtype.Type{typeParam})
 	return listType
 }
@@ -83,6 +85,10 @@ func MakeFakeNameContext(names []string) *ast.LocalTypeNameDefinitionContext {
 	}
 
 	return ast.NewLocalTypeNameContext(generics, nil)
+}
+
+func MakeBoolType() *dectype.PrimitiveAtom {
+	return dectype.NewPrimitiveType(MakeFakeTypeIdentifier("Bool"), nil)
 }
 
 func MakeIntegerType() *dectype.PrimitiveAtom {
@@ -105,7 +111,7 @@ func TestCustomTypeVariant(t *testing.T) {
 	astVariant := ast.NewCustomTypeVariant(42, typeIdentifierForVariant, generics, nil)
 
 	aNameRef := MakeFakeLocalTypeNameRef("a")
-	localTypeNameOnlyContext := dectype.NewLocalTypeNameContext([]*ast.LocalTypeName{aNameRef.LocalTypeName()})
+	localTypeNameOnlyContext := dectype.NewLocalTypeNameOnlyContext([]*ast.LocalTypeName{aNameRef.LocalTypeName()})
 	aNameDecRef, _ := localTypeNameOnlyContext.LookupNameReference(aNameRef)
 
 	listA := MakeFakeList("a")
@@ -132,6 +138,109 @@ func TestCustomTypeVariant(t *testing.T) {
 	log.Printf("concretized variant: %v", concretizedVariant)
 }
 
+func TestFailingMap(t *testing.T) {
+	// -----------------------------------------------------------------------------------------------------------------
+	/*
+	   drawSprite : (Int) -> Bool =
+	   	true
+
+
+	   drawSprites : (sprites: List Int) -> List Bool =
+	   	List.map drawSprite sprites
+	*/
+
+	//astIntReference := MakeFakeAstTypeReference("Int")
+	astIntType := MakeFakeTypeIdentifier("Int")
+	decIntType := dectype.NewPrimitiveType(astIntType, nil)
+
+	//astBoolReference := MakeFakeAstTypeReference("Bool")
+
+	astBoolType := MakeFakeTypeIdentifier("Bool")
+	decBoolType := dectype.NewPrimitiveType(astBoolType, nil)
+
+	//	astFunctionParameters := []ast.Type{astIntReference, astBoolReference}
+	//	astFunctionType := ast.NewFunctionType(astFunctionParameters)
+	//	decParameters := []dtype.Type{decIntType, decBoolType}
+
+	// drawSpriteFunctionType := dectype.NewFunctionAtom(astFunctionType, decParameters)
+
+	// -----------------------------------------------------------------------------------------------------------------
+	//  map : ((a -> b), List a) -> List b
+	// -----------------------------------------------------------------------------------------------------------------
+	//astListA := MakeFakeAstTypeReferenceWithLocalTypeNames("List", []string{"a"})
+	//astListB := MakeFakeAstTypeReferenceWithLocalTypeNames("List", []string{"b"})
+
+	astNames := []*ast.LocalTypeName{MakeFakeLocalTypeName("a"), MakeFakeLocalTypeName("b")}
+	astNameOnlyContext := ast.NewLocalTypeNameContext(astNames, nil)
+	astARef, _ := astNameOnlyContext.GetOrCreateReferenceFromName(MakeFakeLocalTypeName("a"))
+	astBRef, _ := astNameOnlyContext.GetOrCreateReferenceFromName(MakeFakeLocalTypeName("b"))
+	astFnAToB := ast.NewFunctionType([]ast.Type{astARef, astBRef})
+	astListRef := MakeFakeAstTypeReference("List")
+	astListOfA := ast.NewTypeReference(astListRef.TypeIdentifier(), []ast.Type{astARef})
+	astListOfB := ast.NewTypeReference(astListRef.TypeIdentifier(), []ast.Type{astBRef})
+
+	astGenericMapFn := ast.NewFunctionType([]ast.Type{astFnAToB, astListOfA, astListOfB})
+
+	decNameOnlyContext := dectype.NewLocalTypeNameOnlyContext(astNames)
+	decRefA, _ := decNameOnlyContext.LookupNameReference(astARef)
+	decRefB, _ := decNameOnlyContext.LookupNameReference(astBRef)
+	decFnAToB := dectype.NewFunctionAtom(astFnAToB, []dtype.Type{decRefA, decRefB})
+
+	decListA := dectype.NewPrimitiveType(astListRef.TypeIdentifier(), []dtype.Type{decRefA})
+	decListB := dectype.NewPrimitiveType(astListRef.TypeIdentifier(), []dtype.Type{decRefB})
+
+	decGenericMapFn := dectype.NewFunctionAtom(astGenericMapFn, []dtype.Type{decFnAToB, decListA, decListB})
+	decNameOnlyContext.SetType(decGenericMapFn)
+
+	decNameOnlyContextForMapRef := dectype.NewLocalTypeNameContextReference(nil, decNameOnlyContext)
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// Concrete
+	// -----------------------------------------------------------------------------------------------------------------
+
+	decIntToBoolFn := dectype.NewFunctionAtom(nil, []dtype.Type{decIntType, decBoolType})
+
+	astListANames := []*ast.LocalTypeName{MakeFakeLocalTypeName("a")}
+	astListANameOnlyContext := ast.NewLocalTypeNameContext(astListANames, nil)
+	astListARef, _ := astListANameOnlyContext.GetOrCreateReferenceFromName(MakeFakeLocalTypeName("a"))
+
+	astListAAgain := ast.NewTypeReference(MakeFakeTypeIdentifier("List"), []ast.Type{astListARef})
+	decListANameOnlyContext := dectype.NewLocalTypeNameOnlyContext(astListANames)
+	decRefAAgain, _ := decNameOnlyContext.LookupNameReference(astListARef)
+	decListAAgain := dectype.NewPrimitiveType(astListAAgain.TypeIdentifier(), []dtype.Type{decRefAAgain})
+	decListANameOnlyContext.SetType(decListAAgain)
+	decListANameOnlyContextRef := dectype.NewLocalTypeNameContextReference(nil, decListANameOnlyContext)
+
+	decListOfIntWrappedInResolvedContext, _ := dectype.NewResolvedLocalTypeContext(decListANameOnlyContextRef,
+		[]dtype.Type{decIntType})
+
+	argumentsForConretization := []dtype.Type{decIntToBoolFn, decListOfIntWrappedInResolvedContext,
+		dectype.NewAnyType()}
+
+	concretizedContext, err := concretize.ConcretizeLocalTypeContextUsingArguments(decNameOnlyContextForMapRef,
+		argumentsForConretization)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println(debug.TreeString(concretizedContext))
+
+	log.Printf("RESOLVING TO ATOM")
+
+	atomFromContext := dectype.ResolveToAtom(concretizedContext)
+	functionAtom, _ := atomFromContext.(*dectype.FunctionAtom)
+	log.Printf("atom is %T :%s", functionAtom, debug.TreeString(functionAtom))
+
+	expectedReturn := MakeFakeListOf(MakeBoolType())
+
+	err2 := dectype.CompatibleTypes(expectedReturn, functionAtom.ReturnType())
+	if err2 != nil {
+		t.Fatal(err2)
+	}
+}
+
+/*
 func TestFunction(t *testing.T) {
 	nameOnlyContext := MakeFakeNameContext([]string{"a", "b"})
 
@@ -150,7 +259,7 @@ func TestFunction(t *testing.T) {
 	astFunctionParameters := []ast.Type{astIntReference, astListB, firstNameDefRef, secondNameDefRef}
 	astFunction := ast.NewFunctionType(astFunctionParameters)
 
-	decoratedTypeNames := dectype.NewLocalTypeNameContext()
+	decoratedTypeNames := dectype.NewLocalTypeNameOnlyContext()
 	aName := MakeFakeLocalTypeNameRef("a")
 	aArgName := dtype.NewLocalTypeName(aName)
 	aNameDef := decoratedTypeNames.AddDef(aArgName)
@@ -189,3 +298,5 @@ func TestFunction(t *testing.T) {
 	log.Printf("resolved %v", resolved)
 
 }
+
+*/

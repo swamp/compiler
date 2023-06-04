@@ -293,7 +293,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		allTypes = append(allTypes, originalReturn)
 	case *decorated.FunctionReference:
 		originalRightFunctionAtom = t.FunctionValue().Type().(*dectype.FunctionAtom)
-		rightFunctionAtom = t.FunctionValue().DeclaredFunctionTypeAtom()
+		rightFunctionAtom = dectype.ResolveToFunctionAtom(t.FunctionValue().Type())
 		rightParameterTypes, originalRightReturn := originalRightFunctionAtom.ParameterAndReturn()
 		allTypes = append(allTypes, rightParameterTypes[:len(rightParameterTypes)-1]...)
 		allTypes = append(allTypes, leftSideReturns)
@@ -352,7 +352,7 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 		allTypes = append(allTypes, originalReturn)
 	case *decorated.FunctionReference:
 		originalLeftFunctionAtom = t.FunctionValue().Type().(*dectype.FunctionAtom)
-		leftFunctionAtom = t.FunctionValue().DeclaredFunctionTypeAtom()
+		leftFunctionAtom = dectype.ResolveToFunctionAtom(t.FunctionValue().Type())
 		leftParameterTypes, originalLeftReturn := originalLeftFunctionAtom.ParameterAndReturn()
 		allTypes = append(allTypes, leftParameterTypes[:len(leftParameterTypes)-1]...)
 		allTypes = append(allTypes, rightSideReturns)

@@ -31,8 +31,8 @@ func generateFunctionCall(call *decorated.FunctionCall,
 
 func handleFunctionCall(call *decorated.FunctionCall, isLeafNode bool,
 	genContext *generateContext) (value.Value, error) {
-	functionAtom := dectype.UnaliasWithResolveInvoker(call.ConcretizedFunctionType()).(*dectype.FunctionAtom)
-	maybeOriginalFunctionType := dectype.UnaliasWithResolveInvoker(call.FunctionExpression().Type())
+	functionAtom := dectype.ResolveToAtom(call.ConcretizedFunctionType()).(*dectype.FunctionAtom)
+	maybeOriginalFunctionType := dectype.ResolveToAtom(call.FunctionExpression().Type())
 	originalFunctionType, _ := maybeOriginalFunctionType.(*dectype.FunctionAtom)
 	if dectype.TypeIsTemplateHasLocalTypes(functionAtom) {
 		panic(
@@ -91,7 +91,7 @@ func handleFunctionCall(call *decorated.FunctionCall, isLeafNode bool,
 				return nil, err
 			}
 			if dectype.IsTypeIdRef(arg.Type()) {
-				unaliased := dectype.UnaliasWithResolveInvoker(arg.Type())
+				unaliased := dectype.ResolveToAtom(arg.Type())
 				primitiveAtom, _ := unaliased.(*dectype.PrimitiveAtom)
 				typeID, err = genContext.lookup.Lookup(primitiveAtom)
 				if err != nil {

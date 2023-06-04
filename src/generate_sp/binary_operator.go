@@ -73,7 +73,8 @@ func booleanToBinaryBooleanOperatorType(operatorType decorated.BooleanOperatorTy
 	return 0
 }
 
-func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, operator *decorated.BooleanOperator, genContext *generateContext) error {
+func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
+	operator *decorated.BooleanOperator, genContext *generateContext) error {
 	leftVar, leftErr := generateExpressionWithSourceVar(code, operator.Left(), genContext, "bool-left")
 	if leftErr != nil {
 		return leftErr
@@ -86,14 +87,14 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 
 	filePosition := genContext.toFilePosition(operator.FetchPositionLength())
 
-	unaliasedTypeLeft := dectype.UnaliasWithResolveInvoker(operator.Left().Type())
+	unaliasedTypeLeft := dectype.ResolveToAtom(operator.Left().Type())
 	foundPrimitive, _ := unaliasedTypeLeft.(*dectype.PrimitiveAtom)
 	if foundPrimitive == nil {
 		foundCustomType, _ := unaliasedTypeLeft.(*dectype.CustomTypeAtom)
 		if foundCustomType == nil {
 			panic(fmt.Errorf("not implemented binary operator boolean %v", unaliasedTypeLeft.AtomName()))
 		} else {
-			// unaliasedTypeRight := dectype.UnaliasWithResolveInvoker(operator.Right().Type())
+			// unaliasedTypeRight := dectype.ResolveToAtom(operator.Right().Type())
 			opcodeBinaryOperator := booleanToBinaryEnumOperatorType(operator.OperatorType())
 			code.EnumBinaryOperator(target.Pos, leftVar.Pos, rightVar.Pos, opcodeBinaryOperator, filePosition)
 			//			panic(fmt.Errorf("not implemented yet %v", unaliasedTypeRight))
@@ -116,8 +117,10 @@ func generateBinaryOperatorBooleanResult(code *assembler_sp.Code, target assembl
 	return nil
 }
 
-func handleBinaryOperatorBooleanResult(code *assembler_sp.Code, operator *decorated.BooleanOperator, genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	target := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampBool), uint32(opcode_sp_type.AlignOfSwampBool), "booleanOperatorTarget")
+func handleBinaryOperatorBooleanResult(code *assembler_sp.Code, operator *decorated.BooleanOperator,
+	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
+	target := genContext.context.stackMemory.Allocate(uint(opcode_sp_type.SizeofSwampBool),
+		uint32(opcode_sp_type.AlignOfSwampBool), "booleanOperatorTarget")
 	if err := generateBinaryOperatorBooleanResult(code, target, operator, genContext); err != nil {
 		return assembler_sp.SourceStackPosRange{}, err
 	}

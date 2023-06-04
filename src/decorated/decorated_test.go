@@ -1432,6 +1432,20 @@ World : [Alias World [RecordType [[Field $enemies [ResolvedContext a:[AliasRef [
 `)
 }
 
+func TestRecordListInList2(t *testing.T) {
+	testDecorate(t,
+
+		`
+drawSprite : (Int) -> Bool =
+    true
+
+
+drawSprites : (sprites: List Int) -> List Bool =
+    List.map drawSprite sprites
+`, `
+`)
+}
+
 func TestRecordListInList(t *testing.T) {
 	testDecorate(t,
 

@@ -81,7 +81,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		return newType, t.AddTypeAlias(newType)
 
 	case *ast.LocalTypeNameDefinitionContext:
-		decContext := dectype.NewLocalTypeNameContext(info.LocalTypeNames())
+		decContext := dectype.NewLocalTypeNameOnlyContext(info.LocalTypeNames())
 		subContext := t.MakeLocalNameContext(decContext)
 		subType, subTypeErr := ConvertFromAstToDecorated(info.Next(), subContext)
 		if subTypeErr != nil {
@@ -176,7 +176,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 					astNames = append(astNames, localTypeName.LocalTypeName())
 				}
 			}
-			newContext := dectype.NewLocalTypeNameContext(astNames)
+			newContext := dectype.NewLocalTypeNameOnlyContext(astNames)
 			newContext.SetType(foundType)
 
 			return newContext, nil

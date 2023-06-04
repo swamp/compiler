@@ -20,7 +20,7 @@ func TypesIsTemplateHasLocalTypes(p []dtype.Type) bool {
 }
 
 func TypeIsTemplateHasLocalTypes(p dtype.Type) bool {
-	atom := UnaliasWithResolveInvoker(p)
+	atom := ResolveToAtom(p)
 	switch t := atom.(type) {
 	case *CustomTypeAtom:
 		for _, variant := range t.Variants() {
@@ -75,13 +75,30 @@ func Unalias(t dtype.Type) dtype.Type {
 	return unref
 }
 
-func UnaliasWithResolveInvoker(t dtype.Type) dtype.Atom {
-	unaliased := Unalias(t)
-
-	resolved, err := unaliased.Resolve()
+func ResolveToAtom(t dtype.Type) dtype.Atom {
+	resolved, err := t.Resolve()
 	if err != nil {
 		panic(err)
 	}
 
 	return resolved
+}
+
+func ResolveToFunctionAtom(t dtype.Type) *FunctionAtom {
+	atom := ResolveToAtom(t)
+	functionAtom, _ := atom.(*FunctionAtom)
+	return functionAtom
+}
+
+func NonResolvedFunctionParameters(t dtype.Type) []dtype.Type {
+	switch info := t.(type) {
+	case *FunctionAtom:
+		return info.parameterTypes
+	case *FunctionTypeReference:
+		return info.referencedType.parameterTypes
+	case *LocalTypeNameOnlyContext:
+		return NonResolvedFunctionParameters(info.Next())
+	}
+
+	panic("can not convert to function parameter types")
 }

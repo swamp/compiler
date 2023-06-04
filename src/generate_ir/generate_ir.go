@@ -30,8 +30,10 @@ func NewGenerator() *Generator {
 	return &Generator{repo: NewIrTypeRepo(), irFunctions: NewIrFunctions()}
 }
 
-func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, irModule *ir.Module, repo *IrTypeRepo, irFunctions *IrFunctions,
-	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) error {
+func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, irModule *ir.Module, repo *IrTypeRepo,
+	irFunctions *IrFunctions,
+	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup,
+	fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) error {
 	for _, named := range module.LocalDefinitions().Definitions() {
 		unknownType := named.Expression()
 		_, isConstant := unknownType.(*decorated.Constant)
@@ -45,7 +47,8 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, i
 				continue
 			}
 			if verboseFlag >= verbosity.Mid {
-				log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+				log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n",
+					fullyQualifiedName)
 			}
 
 			if maybeFunction.IsSomeKindOfExternal() {
@@ -67,7 +70,8 @@ func (g *Generator) GenerateAllLocalDefinedFunctions(module *decorated.Module, i
 			maybeConstant, _ := unknownType.(*decorated.Constant)
 			if maybeConstant != nil {
 				if verboseFlag >= verbosity.Mid {
-					log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n", fullyQualifiedName)
+					log.Printf("--------------------------- GenerateAllLocalDefinedFunctions function %v --------------------------\n",
+						fullyQualifiedName)
 				}
 			} else {
 				return fmt.Errorf("generate: unknown type %T", unknownType)
@@ -154,7 +158,7 @@ func generateCustomType(irModule *ir.Module, repo *IrTypeRepo, customType *decty
 }
 
 func generateType(irModule *ir.Module, repo *IrTypeRepo, definedType dtype.Type) error {
-	unAliased := dectype.UnaliasWithResolveInvoker(definedType)
+	unAliased := dectype.ResolveToAtom(definedType)
 	switch t := unAliased.(type) {
 	case *dectype.CustomTypeAtom:
 		return generateCustomType(irModule, repo, t)
@@ -174,7 +178,8 @@ func generateType(irModule *ir.Module, repo *IrTypeRepo, definedType dtype.Type)
 }
 
 func (g *Generator) GenerateModule(module *decorated.Module,
-	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) error {
+	lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup,
+	fileUrlCache *assembler_sp.FileUrlCache, verboseFlag verbosity.Verbosity) error {
 	irModule := ir.NewModule()
 
 	for _, definedType := range module.LocalTypes().AllInOrderTypes() {
@@ -183,9 +188,12 @@ func (g *Generator) GenerateModule(module *decorated.Module,
 		}
 	}
 
-	return g.GenerateAllLocalDefinedFunctions(module, irModule, g.repo, g.irFunctions, lookup, resourceNameLookup, fileUrlCache, verboseFlag)
+	return g.GenerateAllLocalDefinedFunctions(module, irModule, g.repo, g.irFunctions, lookup, resourceNameLookup,
+		fileUrlCache, verboseFlag)
 }
 
-func (g *Generator) GenerateFromPackageAndWriteOutput(compiledPackage *loader.Package, resourceNameLookup resourceid.ResourceNameLookup, outputDirectory string, packageSubDir string, verboseFlag verbosity.Verbosity, showAssembler bool) error {
+func (g *Generator) GenerateFromPackageAndWriteOutput(compiledPackage *loader.Package,
+	resourceNameLookup resourceid.ResourceNameLookup, outputDirectory string, packageSubDir string,
+	verboseFlag verbosity.Verbosity, showAssembler bool) error {
 	return nil
 }

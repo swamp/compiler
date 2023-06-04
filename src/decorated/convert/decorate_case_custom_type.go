@@ -25,7 +25,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 	}
 	//log.Printf("after %v", decoratedTest)
 
-	pureTestType := dectype.UnaliasWithResolveInvoker(decoratedTest.Type())
+	pureTestType := dectype.ResolveToAtom(decoratedTest.Type())
 	testType := pureTestType
 
 	customType, _ := testType.(*dectype.CustomTypeAtom)

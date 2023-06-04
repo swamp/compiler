@@ -67,7 +67,7 @@ func (t *LocalTypeNameOnlyContext) DebugString() string {
 	return s
 }
 
-func NewLocalTypeNameContext(names []*ast.LocalTypeName) *LocalTypeNameOnlyContext {
+func NewLocalTypeNameOnlyContext(names []*ast.LocalTypeName) *LocalTypeNameOnlyContext {
 	t := &LocalTypeNameOnlyContext{
 		localTypeNamesMap:             make(map[string]*LocalTypeName),
 		typeThatIsReferencingTheNames: nil,
@@ -97,6 +97,10 @@ func (t *LocalTypeNameOnlyContext) LookupNameReference(some *ast.LocalTypeNameRe
 }
 
 func (t *LocalTypeNameOnlyContext) AtomName() string {
+	return "NameOnlyContext"
+}
+
+func (t *LocalTypeNameOnlyContext) Name() string {
 	return "NameOnlyContext"
 }
 

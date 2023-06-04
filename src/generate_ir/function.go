@@ -96,7 +96,7 @@ func (r *IrTypeRepo) AddTypeDef(decoratedType dtype.Type, newType types.Type) {
 
 func (r *IrTypeRepo) GetTypeRef(decoratedType dtype.Type) (types.Type, error) {
 	unreferenced := dectype.UnReference(decoratedType)
-	unaliased := dectype.UnaliasWithResolveInvoker(decoratedType)
+	unaliased := dectype.ResolveToAtom(decoratedType)
 	switch t := unaliased.(type) {
 	case *dectype.RecordAtom:
 		{
@@ -144,7 +144,7 @@ func (r *IrTypeRepo) GetTypeRef(decoratedType dtype.Type) (types.Type, error) {
 }
 
 func makeIrForType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Type {
-	unaliased := dectype.UnaliasWithResolveInvoker(p)
+	unaliased := dectype.ResolveToAtom(p)
 	switch t := unaliased.(type) {
 	case *dectype.RecordAtom:
 		return generateRecordType(irModule, repo, t)
@@ -197,7 +197,8 @@ func makeIrType(irModule *ir.Module, repo *IrTypeRepo, p dtype.Type) types.Type 
 	return makeIrForType(irModule, repo, p)
 }
 
-func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo, functionParam *decorated.FunctionParameterDefinition) *ir.Param {
+func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo,
+	functionParam *decorated.FunctionParameterDefinition) *ir.Param {
 	irType := makeIrType(irModule, repo, functionParam.Type())
 	if types.IsStruct(irType) {
 		irType = types.NewPointer(irType)
@@ -208,12 +209,14 @@ func generateFunctionParameter(irModule *ir.Module, repo *IrTypeRepo, functionPa
 }
 
 func generateFunction(fullyQualifiedVariableName *decorated.FullyQualifiedPackageVariableName,
-	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup, fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, irFunctions *IrFunctions, verboseFlag verbosity.Verbosity) (
+	f *decorated.FunctionValue, lookup typeinfo.TypeLookup, resourceNameLookup resourceid.ResourceNameLookup,
+	fileCache *assembler_sp.FileUrlCache, irModule *ir.Module, repo *IrTypeRepo, irFunctions *IrFunctions,
+	verboseFlag verbosity.Verbosity) (
 	*ir.Func, error,
 ) {
 	functionType := f.Type().(*dectype.FunctionTypeReference).FunctionAtom()
 	irReturnType := makeIrType(irModule, repo, functionType.ReturnType())
-	//unaliasedReturnType := dectype.UnaliasWithResolveInvoker()
+	//unaliasedReturnType := dectype.ResolveToAtom()
 
 	var irParams []*ir.Param
 	for _, parameter := range f.Parameters() {

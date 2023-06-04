@@ -44,8 +44,8 @@ func decorateIf(d DecorateStream, ifExpression *ast.IfExpression,
 	compatibleErr := dectype.CompatibleTypesCheckCustomType(consequence.Type(), alternative.Type())
 
 	if compatibleErr != nil {
-		consPureType := dectype.UnaliasWithResolveInvoker(consequence.Type())
-		altPureType := dectype.UnaliasWithResolveInvoker(alternative.Type())
+		consPureType := dectype.ResolveToAtom(consequence.Type())
+		altPureType := dectype.ResolveToAtom(alternative.Type())
 		log.Printf("ERROR %v", ifExpression.FetchPositionLength().ToStandardReferenceString())
 		log.Printf("TYPES:\n%v\n%v\n", consPureType, altPureType)
 		return nil, decorated.NewIfConsequenceAndAlternativeMustHaveSameType(ifExpression, consequence,

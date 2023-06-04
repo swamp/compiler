@@ -2,13 +2,16 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
 type LookupTypeName interface {
 	LookupTypeRef(decReference *LocalTypeNameReference) (*ResolvedLocalTypeReference, decshared.DecoratedError)
+	DebugString() string
 }
 
 func replaceLocalNamesInFunctionIfNeeded(atom *FunctionAtom, lookup LookupTypeName) (*FunctionAtom, bool, error) {
@@ -112,6 +115,8 @@ func replaceLocalNamesInPrimitiveIfNeeded(atom *PrimitiveAtom, lookup LookupType
 
 func Collapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type, error) {
 	newType, _, err := internalCollapse(typeToCheck, lookup)
+	log.Printf("collapsing %T %s\n%s\nTo\n%s", typeToCheck, lookup.DebugString(), debug.TreeString(typeToCheck),
+		debug.TreeString(newType))
 
 	return newType, err
 }

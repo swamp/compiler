@@ -22,7 +22,8 @@ const (
 	PatternMatchingTypeString
 )
 
-func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange, caseExpr *decorated.CaseForPatternMatching, matchingType PatternMatchingType, genContext *generateContext) error {
+func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
+	caseExpr *decorated.CaseForPatternMatching, matchingType PatternMatchingType, genContext *generateContext) error {
 	testVar, testErr := generateExpressionWithSourceVar(code, caseExpr.Test(), genContext, "cast-test")
 	if testErr != nil {
 		return testErr
@@ -110,7 +111,7 @@ func generateCasePatternMatchingInt(code *assembler_sp.Code, target assembler_sp
 
 func generateCasePatternMatchingMultiple(code *assembler_sp.Code, target assembler_sp.TargetStackPosRange,
 	caseExpr *decorated.CaseForPatternMatching, genContext *generateContext) error {
-	matchType := dectype.UnaliasWithResolveInvoker(caseExpr.ComparisonType())
+	matchType := dectype.ResolveToAtom(caseExpr.ComparisonType())
 	primitiveAtom, wasPrimitiveAtom := matchType.(*dectype.PrimitiveAtom)
 	if !wasPrimitiveAtom {
 		panic(fmt.Errorf("must have primitive atom"))

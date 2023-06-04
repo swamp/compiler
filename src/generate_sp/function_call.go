@@ -24,8 +24,8 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 
 func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, isLeafNode bool,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	functionAtom := dectype.UnaliasWithResolveInvoker(call.ConcretizedFunctionType()).(*dectype.FunctionAtom)
-	maybeOriginalFunctionType := dectype.UnaliasWithResolveInvoker(call.FunctionExpression().Type())
+	functionAtom := dectype.ResolveToAtom(call.ConcretizedFunctionType()).(*dectype.FunctionAtom)
+	maybeOriginalFunctionType := dectype.ResolveToAtom(call.FunctionExpression().Type())
 	originalFunctionType, _ := maybeOriginalFunctionType.(*dectype.FunctionAtom)
 	if dectype.TypeIsTemplateHasLocalTypes(functionAtom) {
 		panic(fmt.Errorf("we can not call functions that has local types %v %v",
@@ -103,7 +103,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 				return assembler_sp.SourceStackPosRange{}, err
 			}
 			if dectype.IsTypeIdRef(arg.Type()) {
-				unaliased := dectype.UnaliasWithResolveInvoker(arg.Type())
+				unaliased := dectype.ResolveToAtom(arg.Type())
 				primitiveAtom, _ := unaliased.(*dectype.PrimitiveAtom)
 				typeID, err = genContext.lookup.Lookup(primitiveAtom)
 				if err != nil {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/dtype"
-	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -61,36 +60,27 @@ func (a *FunctionParameterDefinition) References() []*FunctionParameterReference
 }
 
 type FunctionValue struct {
-	declaredFunctionType     dtype.Type                     `debug:"true"`
-	decoratedExpression      Expression                     `debug:"true"`
-	parameters               []*FunctionParameterDefinition `debug:"true"`
-	commentBlock             *ast.MultilineComment
-	astFunction              *ast.FunctionValue
-	sourceFileReference      token.SourceFileReference
-	references               []*FunctionReference
-	declaredFunctionTypeAtom *dectype.FunctionAtom
+	declaredFunctionType dtype.Type                     `debug:"true"`
+	decoratedExpression  Expression                     `debug:"true"`
+	parameters           []*FunctionParameterDefinition `debug:"true"`
+	commentBlock         *ast.MultilineComment
+	astFunction          *ast.FunctionValue
+	sourceFileReference  token.SourceFileReference
+	references           []*FunctionReference
 }
 
 func NewPrepareFunctionValue(astFunction *ast.FunctionValue, declaredFunctionType dtype.Type,
-	parameters []*FunctionParameterDefinition, declaredFunctionTypeAtom *dectype.FunctionAtom,
+	parameters []*FunctionParameterDefinition,
 	commentBlock *ast.MultilineComment) *FunctionValue {
-	if len(parameters) != (declaredFunctionTypeAtom.ParameterCount() - 1) {
-		panic(fmt.Errorf("not great. different number of parameters %d vs %v", len(parameters),
-			declaredFunctionTypeAtom))
-	}
+
 	if declaredFunctionType == nil {
 		panic("must provide forced function type")
 	}
 	return &FunctionValue{
 		astFunction: astFunction, declaredFunctionType: declaredFunctionType,
-		declaredFunctionTypeAtom: declaredFunctionTypeAtom,
-		parameters:               parameters, decoratedExpression: nil, commentBlock: commentBlock,
+		parameters: parameters, decoratedExpression: nil, commentBlock: commentBlock,
 		sourceFileReference: astFunction.DebugFunctionIdentifier().SourceFileReference,
 	}
-}
-
-func (f *FunctionValue) DeclaredFunctionTypeAtom() *dectype.FunctionAtom {
-	return f.declaredFunctionTypeAtom
 }
 
 func (f *FunctionValue) DefineExpression(decoratedExpression Expression) {
@@ -115,10 +105,6 @@ func (f *FunctionValue) IsSomeKindOfExternal() bool {
 
 func (f *FunctionValue) Parameters() []*FunctionParameterDefinition {
 	return f.parameters
-}
-
-func (f *FunctionValue) UnaliasedDeclaredFunctionType() *dectype.FunctionAtom {
-	return dectype.DerefFunctionType(f.declaredFunctionType)
 }
 
 func (f *FunctionValue) String() string {

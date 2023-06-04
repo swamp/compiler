@@ -13,7 +13,8 @@ import (
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func generateAssemblerVariable(variable *decorated.LetVariable, assignmentIndex int, tupleIndex int) assembler_sp.VariableName {
+func generateAssemblerVariable(variable *decorated.LetVariable, assignmentIndex int,
+	tupleIndex int) assembler_sp.VariableName {
 	varName := variable.Name().Name()
 	if variable.IsIgnore() {
 		varName = fmt.Sprintf("_%v_%v", assignmentIndex, tupleIndex)
@@ -34,7 +35,7 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 		}
 
 		if assignment.WasRecordDestructuring() {
-			recordType := dectype.UnaliasWithResolveInvoker(assignment.Expression().Type()).(*dectype.RecordAtom)
+			recordType := dectype.ResolveToAtom(assignment.Expression().Type()).(*dectype.RecordAtom)
 			letVariableScopeStartLabel := code.Label("scope start let", "let variable")
 
 			for index, letVariable := range assignment.LetVariables() {
@@ -51,7 +52,8 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 				if lookupErr != nil {
 					return lookupErr
 				}
-				if _, err := letContext.context.scopeVariables.DefineVariable(varName, fieldSourcePosRange, assembler_sp.TypeID(letVariableTypeID), typeString, letVariableScopeStartLabel); err != nil {
+				if _, err := letContext.context.scopeVariables.DefineVariable(varName, fieldSourcePosRange,
+					assembler_sp.TypeID(letVariableTypeID), typeString, letVariableScopeStartLabel); err != nil {
 					return err
 				}
 			}
@@ -69,7 +71,8 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 				if lookupErr != nil {
 					return lookupErr
 				}
-				if _, err := letContext.context.scopeVariables.DefineVariable(firstVarName, sourceVar, assembler_sp.TypeID(letVariableTypeID), typeString, letVariableScopeStartLabel); err != nil {
+				if _, err := letContext.context.scopeVariables.DefineVariable(firstVarName, sourceVar,
+					assembler_sp.TypeID(letVariableTypeID), typeString, letVariableScopeStartLabel); err != nil {
 					return err
 				}
 			} else {
@@ -89,7 +92,8 @@ func generateLet(code *assembler_sp.Code, target assembler_sp.TargetStackPosRang
 					if lookupErr != nil {
 						return lookupErr
 					}
-					if _, err := letContext.context.scopeVariables.DefineVariable(varName, fieldSourcePosRange, assembler_sp.TypeID(letVariableTypeID), typeString, letVariableScopeStartLabel); err != nil {
+					if _, err := letContext.context.scopeVariables.DefineVariable(varName, fieldSourcePosRange,
+						assembler_sp.TypeID(letVariableTypeID), typeString, letVariableScopeStartLabel); err != nil {
 						return err
 					}
 				}

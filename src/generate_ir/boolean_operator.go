@@ -52,7 +52,7 @@ func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, ge
 		return nil, rightErr
 	}
 
-	unaliasedTypeLeft := dectype.UnaliasWithResolveInvoker(operator.Left().Type())
+	unaliasedTypeLeft := dectype.ResolveToAtom(operator.Left().Type())
 	foundPrimitive, _ := unaliasedTypeLeft.(*dectype.PrimitiveAtom)
 	if foundPrimitive == nil {
 		foundCustomType, _ := unaliasedTypeLeft.(*dectype.CustomTypeAtom)

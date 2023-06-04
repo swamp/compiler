@@ -119,20 +119,13 @@ func (g *RootStatementHandler) handleConstantDefinition(d DecorateStream,
 	return namedConstant, nil
 }
 
-func createParameterDefinitions(referenceMaker decorated.TypeAddAndReferenceMaker,
-	forcedFunctionType *dectype.FunctionAtom,
-	functionValue *ast.FunctionValue) ([]*decorated.FunctionParameterDefinition, decshared.DecoratedError) {
+func (g *RootStatementHandler) createParameterDefinitions(
+	functionValue *ast.FunctionValue, nonCollapsedTypes []dtype.Type) ([]*decorated.FunctionParameterDefinition,
+	decshared.DecoratedError) {
 	var parameters []*decorated.FunctionParameterDefinition
-	functionParameterTypes, _ := forcedFunctionType.ParameterAndReturn()
-	identifiers := functionValue.Parameters()
-	if len(identifiers) < len(functionParameterTypes) {
-		return nil, decorated.NewTooFewIdentifiersForFunctionType(identifiers, forcedFunctionType, functionValue)
-	} else if len(identifiers) > len(functionParameterTypes) {
-		return nil, decorated.NewTooManyIdentifiersForFunctionType(identifiers, forcedFunctionType, functionValue)
-	}
-	for index, parameterType := range functionParameterTypes {
-		identifier := identifiers[index]
-		argDef := decorated.NewFunctionParameterDefinition(identifier, parameterType)
+	for index, parameter := range functionValue.Parameters() {
+		nonCollapsedType := nonCollapsedTypes[index]
+		argDef := decorated.NewFunctionParameterDefinition(parameter, nonCollapsedType)
 		parameters = append(parameters, argDef)
 	}
 	return parameters, nil
@@ -179,19 +172,15 @@ func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream,
 
 	name := assignment.Identifier()
 
-	declaredFunctionTypeAtom := dectype.DerefFunctionType(declaredFunctionTypeLike)
-	if declaredFunctionTypeAtom == nil {
-		return nil, decorated.NewInternalError(fmt.Errorf("expected function type %T", declaredFunctionTypeAtom))
-	}
+	nonResolvedFunctionParameters := dectype.NonResolvedFunctionParameters(declaredFunctionTypeLike)
 
-	parameters, parametersErr := createParameterDefinitions(d.TypeReferenceMaker(), declaredFunctionTypeAtom,
-		assignment.FunctionValue())
+	parameters, parametersErr := g.createParameterDefinitions(assignment.FunctionValue(), nonResolvedFunctionParameters)
 	if parametersErr != nil {
 		return nil, parametersErr
 	}
 
 	preparedFunctionValue := decorated.NewPrepareFunctionValue(assignment.FunctionValue(), declaredFunctionTypeLike,
-		parameters, declaredFunctionTypeAtom, g.localCommentBlock)
+		parameters, g.localCommentBlock)
 
 	d.AddDefinition(name, preparedFunctionValue)
 
@@ -224,7 +213,7 @@ func (g *RootStatementHandler) handleCustomTypeStatementEx(customTypeStatement *
 	} else {
 		astCustomType = customTypeStatement.CustomType().(*ast.CustomType)
 	}
-	context := dectype.NewLocalTypeNameContext(astNames)
+	context := dectype.NewLocalTypeNameOnlyContext(astNames)
 
 	decCustomType, err := g.handleCustomTypeStatement(astCustomType, context)
 	if err != nil {

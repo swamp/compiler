@@ -53,7 +53,7 @@ func booleanToCCode(operatorType decorated.BooleanOperatorType) string {
 
 func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, writer io.Writer, indentation int) error {
 	fmt.Fprintf(writer, "(")
-	unaliasedTypeLeft := dectype.UnaliasWithResolveInvoker(operator.Left().Type())
+	unaliasedTypeLeft := dectype.ResolveToAtom(operator.Left().Type())
 	foundPrimitive, _ := unaliasedTypeLeft.(*dectype.PrimitiveAtom)
 	isStringComparison := foundPrimitive != nil && foundPrimitive.AtomName() == "String"
 
@@ -84,7 +84,7 @@ func generateBinaryOperatorBooleanResult(operator *decorated.BooleanOperator, wr
 		if foundCustomType == nil {
 			panic(fmt.Errorf("not implemented binary operator boolean %v", unaliasedTypeLeft.HumanReadable()))
 		} else {
-			// unaliasedTypeRight := dectype.UnaliasWithResolveInvoker(operator.Right().Type())
+			// unaliasedTypeRight := dectype.ResolveToAtom(operator.Right().Type())
 			panic("todo")
 			//			panic(fmt.Errorf("not implemented yet %v", unaliasedTypeRight))
 		}

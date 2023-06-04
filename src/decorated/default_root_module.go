@@ -303,7 +303,7 @@ func MakeLocalTypeNameContext(name *ast.TypeIdentifier) *dectype.LocalTypeNameOn
 	typeParameter := ast.NewLocalTypeNameDefinition(localTypeName)
 	localType := ast.NewLocalTypeNameReference(localTypeName, typeParameter)
 
-	decLocalTypeNameContext := dectype.NewLocalTypeNameContext([]*ast.LocalTypeName{localTypeName})
+	decLocalTypeNameContext := dectype.NewLocalTypeNameOnlyContext([]*ast.LocalTypeName{localTypeName})
 	decLocalTypeRef, _ := decLocalTypeNameContext.LookupNameReference(localType)
 	primitiveType := dectype.NewPrimitiveType(name, []dtype.Type{decLocalTypeRef})
 

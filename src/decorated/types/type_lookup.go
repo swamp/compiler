@@ -7,8 +7,10 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
@@ -84,6 +86,10 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 		panic(fmt.Sprintf("shouldn't happen. actualType is nil, expectedType is %v", expectedType))
 	}
 
+	log.Printf("compare compatibility between %T and %T\n%s\nand\n%s", expectedType, actualType,
+		debug.TreeString(expectedType),
+		debug.TreeString(actualType))
+
 	unaliasExpectedType := Unalias(expectedType)
 
 	expectedLocalTypeNameOnlyContext, wasLocalTypeNameContext := unaliasExpectedType.(*LocalTypeNameOnlyContext)
@@ -123,13 +129,17 @@ func CompatibleTypes(expectedType dtype.Type, actualType dtype.Type) error {
 		return expectedErr
 	}
 
+	log.Printf("... compare compatibility between atoms %T and %T\n%s\nand\n%s", pureExpected, pureActual,
+		debug.TreeString(pureExpected),
+		debug.TreeString(pureActual))
+
 	err := compareAtoms(pureExpected, pureActual)
 
 	return err
 }
 
 func ResolveToRecordType(expectedRecord dtype.Type) (*RecordAtom, error) {
-	atom := UnaliasWithResolveInvoker(expectedRecord)
+	atom := ResolveToAtom(expectedRecord)
 
 	recordAtom, wasRecord := atom.(*RecordAtom)
 	if !wasRecord {
