@@ -149,6 +149,8 @@ func internalCollapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type
 	//return replaceLocalNameInNameOnlyContext(t, lookup)
 	case *LocalTypeNameOnlyContext:
 		return internalCollapse(t.Next(), lookup)
+	case *ResolvedLocalTypeContext:
+		return internalCollapse(t.Next(), t)
 	default:
 		panic(fmt.Errorf("collapse not implemented for %T", typeToCheck))
 		return typeToCheck, false, nil

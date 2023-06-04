@@ -12,13 +12,14 @@ import (
 )
 
 type Record struct {
-	fields     []*RecordTypeField
+	fields     []*RecordTypeField `debug:"true"`
 	startParen token.ParenToken
 	endParen   token.ParenToken
 	comment    *MultilineComment
 }
 
-func NewRecordType(startParen token.ParenToken, endParen token.ParenToken, fields []*RecordTypeField, comment *MultilineComment) *Record {
+func NewRecordType(startParen token.ParenToken, endParen token.ParenToken, fields []*RecordTypeField,
+	comment *MultilineComment) *Record {
 	return &Record{fields: fields, startParen: startParen, endParen: endParen, comment: comment}
 }
 
@@ -48,6 +49,7 @@ func (i *Record) Comment() *MultilineComment {
 }
 
 func (i *Record) FetchPositionLength() token.SourceFileReference {
-	inclusive := token.MakeInclusiveSourceFileReference(i.startParen.SourceFileReference, i.endParen.SourceFileReference)
+	inclusive := token.MakeInclusiveSourceFileReference(i.startParen.SourceFileReference,
+		i.endParen.SourceFileReference)
 	return inclusive
 }

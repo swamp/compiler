@@ -124,7 +124,7 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 		}
 
 		if fieldWrittenCount == 0 && !filteredOut {
-			panic(fmt.Errorf("not allowed '%s'", reflectValue.Type().String()))
+			panic(fmt.Errorf("not found any debug fields on '%s'", reflectValue.Type().String()))
 		}
 
 	case reflect.Slice:

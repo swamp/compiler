@@ -131,7 +131,7 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type,
 			t, concrete.(*dectype.FunctionAtom).FunctionParameterTypes(), resolveLocalTypeNames,
 		)
 	case *dectype.ResolvedLocalTypeContext:
-		break
+		return ConcreteTypeIfNeeded(t.Next(), concrete, resolveLocalTypeNames)
 	case *dectype.PrimitiveTypeReference:
 		concreteAtom, _ := concrete.(*dectype.PrimitiveAtom)
 		if concreteAtom == nil {
@@ -295,19 +295,6 @@ func handleFunction(functionAtom *dectype.FunctionAtom,
 	return createResolvedFromDynamic(localTypeNameContextRef, resolver)
 }
 
-func handlePrimitive(primitiveAtom *dectype.PrimitiveAtom,
-	localTypeNameContextRef *dectype.LocalTypeNameOnlyContextReference, concreteArguments []dtype.Type) (
-	*dectype.ResolvedLocalTypeContext, decshared.DecoratedError,
-) {
-	resolver := dectype.NewDynamicLocalTypeResolver(localTypeNameContextRef.LocalTypeNameContext().Names())
-	err := FillLocalTypesFromSlice(primitiveAtom.ParameterTypes(), concreteArguments, resolver)
-	if err != nil {
-		return nil, err
-	}
-
-	return createResolvedFromDynamic(localTypeNameContextRef, resolver)
-}
-
 func ConcretizeLocalTypeContextUsingArguments(localTypeNameContext *dectype.LocalTypeNameOnlyContextReference,
 	concreteArguments []dtype.Type) (
 	*dectype.ResolvedLocalTypeContext, decshared.DecoratedError,
@@ -323,13 +310,13 @@ func ConcretizeLocalTypeContextUsingArguments(localTypeNameContext *dectype.Loca
 	case *dectype.FunctionTypeReference:
 		return handleFunction(t.FunctionAtom(), localTypeNameContext, concreteArguments)
 	case *dectype.CustomTypeAtom:
-		//return handleCustomType(t, localTypeNameContext, concreteArguments)
 		break
 	case *dectype.RecordAtom:
 		//return handleRecordAtom(t, localTypeNameContext, concreteArguments)
 		break
 	case *dectype.PrimitiveAtom:
 		//return handlePrimitive(t, localTypeNameContext, concreteArguments)
+		break
 	default:
 		return nil, decorated.NewInternalError(fmt.Errorf("not sure what this is %T", t))
 	}

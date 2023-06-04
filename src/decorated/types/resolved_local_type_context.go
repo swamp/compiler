@@ -83,9 +83,6 @@ func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeName
 	}
 
 	for index, resolvedType := range types {
-		if IsLocalType(resolvedType) {
-			panic(fmt.Errorf("must have concrete types in a resolved type context %T", resolvedType))
-		}
 		foundName := contextRefThatWantsResolvedTypes.nameContext.Definitions()[index]
 		log.Printf("resolved '%s' <- %T %v", foundName.identifier.Name(), resolvedType, resolvedType)
 		newLocalTypeDef := NewResolvedLocalType(foundName, resolvedType)

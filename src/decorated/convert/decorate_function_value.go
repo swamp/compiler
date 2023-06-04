@@ -78,7 +78,7 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType)
 	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType)
 
-	log.Printf("calculated dec expr %s", decoratedExpression)
+	log.Printf("calculated dec expr %s", debug.TreeString(decoratedExpression))
 
 	var constructingTypes []dtype.Type
 	for i := 0; i < len(targetFunctionNamedValue.Value().Parameters()); i += 1 {

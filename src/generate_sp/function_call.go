@@ -161,7 +161,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 		}
 	} else {
 		if callSelf {
-			returnSize, _ := dectype.GetMemorySizeAndAlignment(insideFunction.UnaliasedDeclaredFunctionType().ReturnType())
+			returnSize, _ := dectype.GetMemorySizeAndAlignment(dectype.ResolveToFunctionAtom(insideFunction.Type()).ReturnType())
 			pos := dectype.MemoryOffset(returnSize)
 			pos = align(pos, argumentsAlign[0])
 			firstArgumentStackPosition := assembler_sp.TargetStackPos(pos)

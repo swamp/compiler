@@ -1443,6 +1443,8 @@ drawSprite : (Int) -> Bool =
 drawSprites : (sprites: List Int) -> List Bool =
     List.map drawSprite sprites
 `, `
+[ModuleDef $drawSprite = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [Bool true]]]
+[ModuleDef $drawSprites = [FunctionValue [FunctionType [[ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]] [ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]] ([[Param $sprites : [ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]]) -> [FnCall [FunctionType [[FunctionType [[Primitive Int] [Primitive Bool]]] [Primitive List<[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]>] [Primitive List<[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef b]]>]]] [FunctionRef [NamedDefinitionReference List/map]] [[FunctionRef [NamedDefinitionReference /drawSprite]] [ParamRef [Param $sprites : [ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]]]]]]
 `)
 }
 
@@ -1532,8 +1534,8 @@ simple : (List a) -> a =
 main : (Bool) -> Int =
     simple [ 1, 2, 3 ]
 `, `
-[ModuleDef $simple = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]] [LocalTypeNameRef a]]]] ([[Param $_ : [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]) -> [Integer 2]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[Primitive List<[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]>] [Primitive Int]]] [FunctionRef [NamedDefinitionReference /simple]] [[ListLiteral [[Integer 1] [Integer 2] [Integer 3]]]]]]]
+[ModuleDef $simple = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]] [LocalTypeNameRef a]]]] ([[Param $_ : [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]]) -> [Integer 2]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[Primitive List<[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]>] [Primitive Int]]] [FunctionRef [NamedDefinitionReference /simple]] [[ListLiteral [[Integer 1] [Integer 2] [Integer 3]]]]]]]
 `)
 }
 
@@ -1553,8 +1555,8 @@ main : (Bool) -> Bool =
     simple intConvert [ 1, 2, 3 ]
 `, `
 [ModuleDef $intConvert = [FunctionValue [FunctionType [[ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]]) -> [Bool true]]]
-[ModuleDef $simple = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[FunctionType [[LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] ([[Param $_ : [FunctionType [[LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] [Param $_ : [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]) -> [Bool true]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[FunctionType [[Primitive List<[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]>] [Primitive Bool]]] [Primitive List<[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]>] [Primitive Bool]]] [FunctionRef [NamedDefinitionReference /simple]] [[FunctionRef [NamedDefinitionReference /intConvert]] [ListLiteral [[Integer 1] [Integer 2] [Integer 3]]]]]]]
+[ModuleDef $simple = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[FunctionType [[ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] ([[Param $_ : [FunctionType [[ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] [Param $_ : [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $List]] [LocalTypeNameOnlyContext a => [Primitive List<[LocalTypeNameRef a]>]]]]]]) -> [Bool true]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [FnCall [FunctionType [[FunctionType [[Primitive List<[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]>] [Primitive Bool]]] [Primitive List<[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]>] [Primitive Bool]]] [FunctionRef [NamedDefinitionReference /simple]] [[FunctionRef [NamedDefinitionReference /intConvert]] [ListLiteral [[Integer 1] [Integer 2] [Integer 3]]]]]]]
 `)
 }
 
@@ -2095,4 +2097,30 @@ tester : (b: String) -> Bool =
         |> second b
         |> third
 `, &decorated.FunctionArgumentTypeMismatch{})
+}
+
+func TestTypeRefGeneric(t *testing.T) {
+	testDecorateWithoutDefault(t, `
+getComponent : (TypeRef a) -> Maybe a
+
+
+main : Int =
+    let
+        maybeBool = getComponent $Bool
+    in
+    case maybeBool of
+        Just a -> a
+
+        Nothing -> false
+`, ``)
+}
+
+func TestTypeRefGeneric2(t *testing.T) {
+	testDecorateWithoutDefault(t, `
+getComponent : (TypeRef a) -> a
+
+
+main : Int =
+    getComponent $Int
+`, ``)
 }

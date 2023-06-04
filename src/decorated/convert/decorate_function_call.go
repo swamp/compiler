@@ -200,6 +200,12 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		concreteArguments = append([]dtype.Type(nil), decoratedEncounteredArgumentTypes...)
 		concreteArguments = append(concreteArguments, dectype.NewAnyType())
 
+		log.Printf("calling localNameOnly:\n%s\n%s", debug.TreeString(localNameOnlyContext), localNameOnlyContext)
+
+		for index, decoratedEncounteredArgumentType := range decoratedEncounteredArgumentTypes {
+			log.Printf("call with argument %d: %s", index, debug.TreeString(decoratedEncounteredArgumentType))
+		}
+
 		localNameOnlyContextRef := dectype.NewLocalTypeNameContextReference(nil, localNameOnlyContext)
 		resolvedContext, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(
 			localNameOnlyContextRef, concreteArguments,
@@ -207,6 +213,9 @@ func decorateFunctionCall(d DecorateStream, call *ast.FunctionCall, context *Var
 		if concreteErr != nil {
 			return nil, concreteErr
 		}
+
+		log.Printf("concrete result was %T\n%s", resolvedContext, debug.TreeString(resolvedContext))
+
 		resolvedAtom, resolveErr := resolvedContext.Resolve()
 		if resolveErr != nil {
 			return nil, decorated.NewInternalError(resolveErr)

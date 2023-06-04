@@ -12,7 +12,7 @@ import (
 )
 
 type TupleType struct {
-	types      []Type
+	types      []Type `debug:"true"`
 	inclusive  token.SourceFileReference
 	startParen token.ParenToken
 	endParen   token.ParenToken
@@ -51,7 +51,8 @@ func (i *TupleType) EndParen() token.ParenToken {
 }
 
 func NewTupleType(startParen token.ParenToken, endParen token.ParenToken, types []Type) *TupleType {
-	inclusive := token.MakeInclusiveSourceFileReference(startParen.FetchPositionLength(), endParen.FetchPositionLength())
+	inclusive := token.MakeInclusiveSourceFileReference(startParen.FetchPositionLength(),
+		endParen.FetchPositionLength())
 	return &TupleType{
 		types:      types,
 		startParen: startParen,

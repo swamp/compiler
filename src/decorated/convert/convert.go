@@ -61,11 +61,14 @@ func ConvertFromAstToDecorated(astType ast.Type,
 	switch info := astType.(type) {
 	case *ast.FunctionType:
 		var convertedParameters []dtype.Type
-		for _, a := range info.FunctionParameters() {
+		for index, a := range info.FunctionParameters() {
+
 			convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
+
 			if convertedParameterErr != nil {
 				return nil, convertedParameterErr
 			}
+			log.Printf("%d converted from %T %s\n to \n%s", index, a, a, convertedParameter)
 			convertedParameters = append(convertedParameters, convertedParameter)
 		}
 		functionType := dectype.NewFunctionAtom(info, convertedParameters)
@@ -87,6 +90,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if subTypeErr != nil {
 			return nil, subTypeErr
 		}
+		log.Printf("subtype: \n%s", debug.TreeString(subType))
 		decContext.SetType(subType)
 
 		return decContext, nil
@@ -160,15 +164,14 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			}
 		}
 
-		if !dectype.IsSomeLocalType(types) {
-			if nameOnlyContextRef != nil {
-				newType, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(nameOnlyContextRef, types)
-				if concreteErr != nil {
-					return nil, concreteErr
-				}
-				return newType, nil
+		if nameOnlyContextRef != nil {
+			newType, concreteErr := concretize.ConcretizeLocalTypeContextUsingArguments(nameOnlyContextRef, types)
+			if concreteErr != nil {
+				return nil, concreteErr
 			}
-		} else {
+			return newType, nil
+		}
+		/*else {
 			var astNames []*ast.LocalTypeName
 			for _, argType := range info.Arguments() {
 				localTypeName, isLocalTypeName := argType.(*ast.LocalTypeNameReference)
@@ -180,11 +183,7 @@ func ConvertFromAstToDecorated(astType ast.Type,
 			newContext.SetType(foundType)
 
 			return newContext, nil
-		}
-
-		if nameOnlyContextRef != nil {
-			return nameOnlyContextRef, nil
-		}
+		}*/
 
 		return foundType, nil
 	//case *ast.LocalTypeName:

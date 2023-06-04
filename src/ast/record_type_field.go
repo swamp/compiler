@@ -10,13 +10,14 @@ import (
 )
 
 type RecordTypeField struct {
-	symbol            *VariableIdentifier
-	userType          Type
+	symbol            *VariableIdentifier `debug:"true"`
+	userType          Type                `debug:"true"`
 	index             int
 	precedingComments *MultilineComment
 }
 
-func NewRecordTypeField(index int, variable *VariableIdentifier, userType Type, precedingComments *MultilineComment) *RecordTypeField {
+func NewRecordTypeField(index int, variable *VariableIdentifier, userType Type,
+	precedingComments *MultilineComment) *RecordTypeField {
 	return &RecordTypeField{index: index, symbol: variable, userType: userType, precedingComments: precedingComments}
 }
 
