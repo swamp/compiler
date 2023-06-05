@@ -642,7 +642,10 @@ tester : (String) -> Bool =
 func TestOperatorPipeLeft(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-first : (a: Int) -> Int =
+initial : (a: Int) -> String =
+    "hej"
+
+first : (a: Int, String) -> Int =
     a * a
 
 
@@ -651,7 +654,7 @@ second : (a: Int) -> Bool =
 
 
 tester : (String) -> Bool =
-    second <| first (2 + 2)
+    second <| first (2 + 2) <| initial 2
 `, `
 [ModuleDef $first = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([[Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> (Arithmetic [ParamRef [Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] MULTIPLY [ParamRef [Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]])]]
 [ModuleDef $second = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]) -> [BoolOp [ParamRef [Param $a : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] GR [Integer 25]]]]

@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -211,6 +212,44 @@ func resolveToFunctionAtom(leftDecorated decorated.Expression) *dectype.Function
 				}
 
 			} else {
+				leftFunctionCurry, _ := leftDecorated.(*decorated.CurryFunction)
+				if leftFunctionCurry != nil {
+					return leftFunctionCurry.FunctionAtom()
+				}
+				panic(fmt.Errorf("could not do it %T %v", leftDecorated, leftDecorated))
+			}
+		}
+	} else {
+		leftSmashedFunctionType = leftFunctionCall.ConcretizedFunctionType()
+	}
+
+	return leftSmashedFunctionType
+}
+
+func resolveToFunctionAtomRight(leftDecorated decorated.Expression) *dectype.FunctionAtom {
+	var leftSmashedFunctionType *dectype.FunctionAtom
+	leftFunctionCall, _ := leftDecorated.(*decorated.FunctionCall)
+	if leftFunctionCall == nil {
+		//		x :=
+		pipeRightOperator, _ := leftDecorated.(*decorated.PipeRightOperator)
+		if pipeRightOperator != nil {
+			leftSmashedFunctionType = resolveToFunctionAtom(pipeRightOperator.Left())
+			if leftSmashedFunctionType == nil {
+				panic(fmt.Errorf("this should have leftFunctionCall or node:%T", pipeRightOperator))
+			}
+		} else {
+			pipeLeftOperator, _ := leftDecorated.(*decorated.PipeLeftOperator)
+			if pipeLeftOperator != nil {
+				var wasOk bool
+				leftSmashedFunctionType, wasOk = pipeLeftOperator.Type().(*dectype.FunctionAtom)
+				if !wasOk {
+					panic(fmt.Errorf("problem"))
+				}
+				if leftSmashedFunctionType == nil {
+					panic(fmt.Errorf("this should have leftFunctionCall or node:%T", pipeRightOperator))
+				}
+
+			} else {
 				panic(fmt.Errorf("could not do it %T %v", leftDecorated, leftDecorated))
 			}
 		}
@@ -272,6 +311,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 	}
 
 	leftSmashedFunctionType := resolveToFunctionAtom(leftDecorated)
+	log.Printf("leftFunctionNode %v %s", left, debug.TreeString(leftSmashedFunctionType))
 	leftSideReturns := leftSmashedFunctionType.ReturnType()
 	var resultingFunctionType *dectype.FunctionAtom
 
@@ -291,6 +331,7 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		allTypes = append(allTypes, rightSideParameterTypes[:len(rightSideParameterTypes)-1]...)
 		allTypes = append(allTypes, leftSideReturns)
 		allTypes = append(allTypes, originalReturn)
+		log.Printf("right CurryFunction %v %v", left, right)
 	case *decorated.FunctionReference:
 		originalRightFunctionAtom = t.FunctionValue().Type().(*dectype.FunctionAtom)
 		rightFunctionAtom = dectype.ResolveToFunctionAtom(t.FunctionValue().Type())
@@ -298,16 +339,17 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		allTypes = append(allTypes, rightParameterTypes[:len(rightParameterTypes)-1]...)
 		allTypes = append(allTypes, leftSideReturns)
 		allTypes = append(allTypes, originalRightReturn)
+		log.Printf("right funcRef %v %v", left, right)
 	default:
 		panic(fmt.Errorf("unknown right decorated %T", rightDecorated))
 	}
-	resultingFunctionType = dectype.NewFunctionAtom(rightFunctionAtom.AstFunction(), allTypes)
+	resultingReturnType := allTypes[len(allTypes)-1]
+	log.Printf("right returns  %s", debug.TreeString(resultingReturnType))
 
+	resultingFunctionType = dectype.NewFunctionAtom(rightFunctionAtom.AstFunction(), allTypes)
 	if err := dectype.CompatibleTypes(originalRightFunctionAtom, resultingFunctionType); err != nil {
 		return nil, decorated.NewInternalError(err)
 	}
-
-	resultingReturnType := allTypes[len(allTypes)-1]
 
 	return decorated.NewPipeRightOperator(leftDecorated, rightDecorated, resultingReturnType), nil
 }
@@ -357,8 +399,10 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 		allTypes = append(allTypes, leftParameterTypes[:len(leftParameterTypes)-1]...)
 		allTypes = append(allTypes, rightSideReturns)
 		allTypes = append(allTypes, originalLeftReturn)
+	case *decorated.FunctionCall:
+		originalLeftFunctionAtom = t.ConcretizedFunctionType()
 	default:
-		panic(fmt.Errorf("unknown right decorated %T", rightDecorated))
+		panic(fmt.Errorf("unknown left decorated %T", leftDecorated))
 	}
 
 	resultingFunctionType = dectype.NewFunctionAtom(leftFunctionAtom.AstFunction(), allTypes)
