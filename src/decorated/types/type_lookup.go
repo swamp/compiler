@@ -133,7 +133,7 @@ func ResolveToRecordType(expectedRecord dtype.Type) (*RecordAtom, error) {
 
 	recordAtom, wasRecord := atom.(*RecordAtom)
 	if !wasRecord {
-		return nil, fmt.Errorf("resolved to something else than a record %T", atom)
+		return nil, fmt.Errorf("resolved to something else than a record %T %v", atom, atom)
 	}
 
 	return recordAtom, nil

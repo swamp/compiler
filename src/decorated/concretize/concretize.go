@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -119,8 +120,11 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type,
 
 	//log.Printf("concrete: \n %v\n %v\n    %v\n<-  %v\n (%v %v)", reference.HumanReadable(), concrete.HumanReadable(), reference, concrete, reference.FetchPositionLength().ToStandardReferenceString(), concrete.FetchPositionLength().ToCompleteReferenceString())
 
-	switch t := reference.(type) {
+	if dectype.IsAny(concrete) {
+		return nil
+	}
 
+	switch t := reference.(type) {
 	case *dectype.FunctionTypeReference:
 		return FillContextFromFunction(
 			t.FunctionAtom(), concrete.(*dectype.FunctionTypeReference).FunctionAtom().FunctionParameterTypes(),
@@ -130,14 +134,22 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type,
 		return FillContextFromFunction(
 			t, concrete.(*dectype.FunctionAtom).FunctionParameterTypes(), resolveLocalTypeNames,
 		)
+	case *dectype.TupleTypeAtom:
+		log.Printf("%s", debug.TreeString(concrete))
+		return FillContextFromTuple(
+			t, concrete.(*dectype.TupleTypeAtom).ParameterTypes(), resolveLocalTypeNames,
+		)
 	case *dectype.ResolvedLocalTypeContext:
 		return ConcreteTypeIfNeeded(t.Next(), concrete, resolveLocalTypeNames)
 	case *dectype.PrimitiveTypeReference:
-		concreteAtom, _ := concrete.(*dectype.PrimitiveAtom)
+		concreteUnalias := dectype.Unalias(concrete)
+		concreteAtom, _ := concreteUnalias.(*dectype.PrimitiveAtom)
 		if concreteAtom == nil {
-			ref, _ := concrete.(*dectype.PrimitiveTypeReference)
+			ref, _ := concreteUnalias.(*dectype.PrimitiveTypeReference)
 			if ref != nil {
 				concreteAtom = ref.PrimitiveAtom()
+			} else {
+				panic(fmt.Errorf("can not get to the concrete primitive atom %T", concrete))
 			}
 		}
 		return FillContextFromPrimitive(t.PrimitiveAtom(), concreteAtom.ParameterTypes(), resolveLocalTypeNames)
@@ -156,8 +168,15 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type,
 				panic(fmt.Errorf("what is this:%T %v", concrete, concrete))
 			}
 		}
+	case *dectype.AliasReference:
+		return ConcreteTypeIfNeeded(t.Next(), concrete, resolveLocalTypeNames)
+	case *dectype.Alias:
+		return ConcreteTypeIfNeeded(t.Next(), concrete, resolveLocalTypeNames)
+	case *dectype.UnmanagedType:
+		// UnmanagedTypes can not be concrete
+		return nil
 	default:
-		log.Printf("concrete: what is this %T", reference)
+		panic(fmt.Errorf("concrete: what is this %T", reference))
 	}
 
 	return nil
@@ -213,10 +232,29 @@ func FillLocalTypesFromSlice(references []dtype.Type, concretes []dtype.Type,
 	return nil
 }
 
+func FillContextFromTuple(reference *dectype.TupleTypeAtom, encounteredArguments []dtype.Type,
+	resolver *dectype.DynamicLocalTypeResolver) decshared.DecoratedError {
+	if len(encounteredArguments) != reference.ParameterCount() {
+		err := fmt.Errorf("not good, wrong count %v %v %s %s",
+			encounteredArguments[0].FetchPositionLength().ToCompleteReferenceString(), reference,
+			debug.TreeString(reference), debug.TreeString(encounteredArguments))
+		log.Panicf("%v", err)
+		return decorated.NewInternalError(err)
+	}
+
+	err := FillLocalTypesFromSlice(reference.ParameterTypes(), encounteredArguments, resolver)
+
+	return err
+}
+
 func FillContextFromFunction(reference *dectype.FunctionAtom, encounteredArguments []dtype.Type,
 	resolver *dectype.DynamicLocalTypeResolver) decshared.DecoratedError {
 	if len(encounteredArguments) != reference.ParameterCount() {
-		return decorated.NewInternalError(fmt.Errorf("not good, wrong count %v", reference))
+		err := fmt.Errorf("not good, wrong count %v %v %s %s",
+			encounteredArguments[0].FetchPositionLength().ToCompleteReferenceString(), reference,
+			debug.TreeString(reference), debug.TreeString(encounteredArguments))
+		log.Panicf("%v", err)
+		return decorated.NewInternalError(err)
 	}
 
 	if hasAnyMatching, startIndex := dectype.HasAnyMatchingTypes(reference.FunctionParameterTypes()); hasAnyMatching {

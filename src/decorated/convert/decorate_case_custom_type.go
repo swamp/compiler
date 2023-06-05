@@ -6,8 +6,6 @@
 package decorator
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -26,6 +24,7 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 	//log.Printf("after %v", decoratedTest)
 
 	pureTestType := dectype.ResolveToAtom(decoratedTest.Type())
+
 	testType := pureTestType
 
 	customType, _ := testType.(*dectype.CustomTypeAtom)
@@ -69,11 +68,9 @@ func decorateCaseCustomType(d DecorateStream, caseExpression *ast.CaseForCustomT
 				)
 			}
 
-			log.Printf("type for found variant: %T %v", customType, customType)
 			for index, argumentType := range foundVariant.ParameterTypes() {
 				ident := consequenceField.Arguments()[index]
 				param := decorated.NewCaseConsequenceParameterForCustomType(ident, argumentType)
-				log.Printf("param: %T %v", argumentType, argumentType)
 				fakeNamedExpression := decorated.NewNamedDecoratedExpression(
 					ident.Name(), nil,
 					param,

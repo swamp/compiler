@@ -7,10 +7,8 @@ package decorator
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
-	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/parser"
 
 	"github.com/swamp/compiler/src/ast"
@@ -151,19 +149,9 @@ func (g *RootStatementHandler) convertFunctionStatement(d DecorateStream,
 
 	*/
 
-	shouldDebugOutput := assignment.Identifier().Name() == "map"
-
-	if shouldDebugOutput {
-		log.Printf("before: %s", debug.TreeString(assignment.FunctionValue().Type()))
-	}
-
 	declaredFunctionTypeLike, convertedTypeErr := g.findTypeFromAstType(assignment.FunctionValue().Type())
 	if convertedTypeErr != nil {
 		return nil, decorated.NewUnknownAnnotationTypeReference(assignment.Identifier(), convertedTypeErr)
-	}
-
-	if shouldDebugOutput {
-		log.Printf("after concretize: %s", debug.TreeString(declaredFunctionTypeLike))
 	}
 
 	if declaredFunctionTypeLike == nil {

@@ -9,12 +9,14 @@ import (
 	"log"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *VariableContext) (*decorated.RecordLookups, decshared.DecoratedError) {
+func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *VariableContext) (*decorated.RecordLookups,
+	decshared.DecoratedError) {
 	expressionToLookup, expressionLookUpErr := context.ResolveVariable(lookups.ContextIdentifier())
 	if expressionLookUpErr != nil {
 		return nil, expressionLookUpErr
@@ -30,7 +32,9 @@ func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *Vari
 	for _, lookupIdentifier := range lookups.FieldNames() {
 		recordTypeToCheck, lookupErr := dectype.ResolveToRecordType(typeToLookup)
 		if lookupErr != nil {
-			log.Panicf("can not resolve this to a record: %v\n%v\n%w", expressionToLookup.FetchPositionLength().ToCompleteReferenceString(), typeToLookup, lookupErr)
+			log.Panicf("can not resolve this to a record: %v %T\n%s\n%w",
+				expressionToLookup.FetchPositionLength().ToCompleteReferenceString(), expressionToLookup.Type(),
+				debug.TreeString(expressionToLookup.Type()), lookupErr)
 			return nil, decorated.NewUnMatchingTypes(nil, nil, nil, lookupErr)
 		}
 
@@ -40,7 +44,8 @@ func decorateRecordLookups(d DecorateStream, lookups *ast.Lookups, context *Vari
 			return nil, decorated.NewCouldNotFindFieldInLookup(lookups, lookupIdentifier, typeToLookup)
 		}
 
-		recordFieldReference := decorated.NewRecordFieldReference(lookupIdentifier, aliasedTypeToLookup, recordTypeToCheck, foundRecordTypeField)
+		recordFieldReference := decorated.NewRecordFieldReference(lookupIdentifier, aliasedTypeToLookup,
+			recordTypeToCheck, foundRecordTypeField)
 		fakeLookupField := decorated.NewLookupField(recordFieldReference)
 		lookupFields = append(lookupFields, fakeLookupField)
 		aliasedTypeToLookup = foundRecordTypeField.Type()

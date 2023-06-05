@@ -116,6 +116,37 @@ func Collapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type, error)
 	return newType, err
 }
 
+func collapseTypeContext(context *ResolvedLocalTypeContext, lookup LookupTypeName) (*ResolvedLocalTypeContext, bool,
+	error) {
+	var newResolved []dtype.Type
+	wasAltered := false
+	for _, resolvedLocalType := range context.definitions {
+		switch t := resolvedLocalType.referencedType.(type) {
+		case *LocalTypeNameReference:
+			newType, err := lookup.LookupTypeRef(t)
+			if err != nil {
+				return nil, false, err
+			}
+
+			newResolved = append(newResolved, newType)
+			wasAltered = true
+		default:
+			newResolved = append(newResolved, resolvedLocalType.referencedType)
+		}
+	}
+
+	if wasAltered {
+		newContext, contextErr := NewResolvedLocalTypeContext(context.contextRefThatWantsResolvedTypes, newResolved)
+		if contextErr != nil {
+			return nil, false, contextErr
+		}
+
+		return newContext, true, nil
+	}
+
+	return context, false, nil
+}
+
 func internalCollapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type, bool, error) {
 	switch t := typeToCheck.(type) {
 	case *LocalTypeNameReference:
@@ -141,11 +172,14 @@ func internalCollapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type
 		return internalCollapse(t.Next(), lookup)
 	case *UnmanagedType:
 		return typeToCheck, false, nil
-	//return replaceLocalNameInNameOnlyContext(t, lookup)
 	case *LocalTypeNameOnlyContext:
 		return internalCollapse(t.Next(), lookup)
 	case *ResolvedLocalTypeContext:
-		return internalCollapse(t.Next(), t)
+		newContext, _, err := collapseTypeContext(t, lookup)
+		if err != nil {
+			return nil, false, err
+		}
+		return internalCollapse(t.Next(), newContext)
 	default:
 		panic(fmt.Errorf("collapse not implemented for %T", typeToCheck))
 		return typeToCheck, false, nil

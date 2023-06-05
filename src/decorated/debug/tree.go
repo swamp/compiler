@@ -76,6 +76,15 @@ func writeAllSingleFieldStructs(fieldValue reflect.Value, structField reflect.St
 	return fieldValue, true
 }
 
+func getTrueTypeName(reflectValue reflect.Value) string {
+	if reflectValue.Kind() == reflect.Interface {
+		elemValue := reflectValue.Elem()
+		reflectValue = elemValue
+	}
+
+	return reflectValue.Type().String()
+}
+
 func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 	if reflectValue.Kind() == reflect.Interface {
 		reflectValue = reflectValue.Elem()
@@ -131,7 +140,7 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 		for i := 0; i < reflectValue.Len(); i++ {
 			fmt.Fprintf(writer, "\n%s", tabs)
 			item := reflectValue.Index(i)
-			fmt.Fprintf(writer, "%d: (%s)", i, item.Type().String())
+			fmt.Fprintf(writer, "%d: (%s)", i, getTrueTypeName(item))
 			tree(item, tab+1, writer)
 		}
 
@@ -150,7 +159,8 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 
 func Tree(expr interface{}, writer io.Writer) {
 	subType := reflect.ValueOf(expr)
-	tree(subType, 0, writer)
+	//	fmt.Fprintf(writer, "\n%s", getTrueTypeName(subType))
+	tree(subType, 1, writer)
 }
 
 func TreeString(expr interface{}) string {

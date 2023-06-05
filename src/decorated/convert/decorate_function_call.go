@@ -126,9 +126,6 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall,
 	expectedArgumentTypes := completeCalledFunctionType.FunctionParameterTypes()
 	for index, encounteredArgumentType := range encounteredArgumentTypes {
 		expectedArgumentType := expectedArgumentTypes[index]
-		log.Printf("compare argument %T (%v) vs %T (%v) %v", expectedArgumentType, expectedArgumentType.HumanReadable(),
-			encounteredArgumentType, encounteredArgumentType.HumanReadable(),
-			expectedArgumentType.FetchPositionLength().ToCompleteReferenceString())
 		compatibleErr := dectype.CompatibleTypes(expectedArgumentType, encounteredArgumentType)
 		if compatibleErr != nil {
 			log.Printf("func:%s expected:%s\nencountered:\n%s", functionValueExpression,

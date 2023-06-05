@@ -145,7 +145,6 @@ func GetMemorySizeAndAlignmentInternal(atom dtype.Atom) (MemorySize, MemoryAlign
 	case *TupleTypeAtom:
 		return t.MemorySize(), t.MemoryAlignment()
 	case *LocalTypeNameOnlyContext:
-		log.Printf("LocalTypeNameOnlyContext: %v", t)
 		return 0, 8
 	default:
 		panic(fmt.Errorf("calc: do not know memory size of %v %T", atom, atom))

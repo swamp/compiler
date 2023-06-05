@@ -136,7 +136,6 @@ func (t *DynamicLocalTypeResolver) SpecialSet(name string, resolved dtype.Type) 
 				}
 			}
 
-			log.Printf("%s <- %T %v", name, resolved, resolved)
 			t.resolvedArguments[index] = resolved
 
 			return nil

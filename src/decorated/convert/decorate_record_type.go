@@ -6,8 +6,6 @@
 package decorator
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/ast"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
@@ -22,10 +20,6 @@ func DecorateRecordType(info *ast.Record, t decorated.TypeAddAndReferenceMaker) 
 		if convertedFieldTypeErr != nil {
 			return nil, convertedFieldTypeErr
 		}
-		log.Printf(
-			"encountered %T %v", convertedFieldType,
-			convertedFieldType.FetchPositionLength().ToCompleteReferenceString(),
-		)
 		fieldName := dectype.NewRecordFieldName(field.VariableIdentifier())
 		convertedField := dectype.NewRecordField(fieldName, convertedFieldType)
 		convertedFields = append(convertedFields, convertedField)

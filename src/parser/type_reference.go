@@ -6,10 +6,7 @@
 package parser
 
 import (
-	"log"
-
 	"github.com/swamp/compiler/src/ast"
-	"github.com/swamp/compiler/src/decorated/debug"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 	"github.com/swamp/compiler/src/token"
 )
@@ -80,8 +77,6 @@ func parseTypeReference(p ParseStream, keywordIndentation int,
 				}
 			}
 			newFunctionType := ast.NewFunctionType(functionTypes)
-
-			log.Printf("newFunctionType:%s\n%s", functionTypes, debug.TreeString(functionTypes))
 
 			return newFunctionType, nil
 		}
