@@ -7,11 +7,9 @@ package decorator
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
-	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
@@ -61,14 +59,11 @@ func ConvertFromAstToDecorated(astType ast.Type,
 	switch info := astType.(type) {
 	case *ast.FunctionType:
 		var convertedParameters []dtype.Type
-		for index, a := range info.FunctionParameters() {
-
+		for _, a := range info.FunctionParameters() {
 			convertedParameter, convertedParameterErr := ConvertFromAstToDecorated(a, t)
-
 			if convertedParameterErr != nil {
 				return nil, convertedParameterErr
 			}
-			log.Printf("%d converted from %T %s\n to \n%s", index, a, a, convertedParameter)
 			convertedParameters = append(convertedParameters, convertedParameter)
 		}
 		functionType := dectype.NewFunctionAtom(info, convertedParameters)
@@ -90,7 +85,6 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if subTypeErr != nil {
 			return nil, subTypeErr
 		}
-		log.Printf("subtype: \n%s", debug.TreeString(subType))
 		decContext.SetType(subType)
 
 		return decContext, nil
@@ -117,10 +111,6 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		if findErr != nil {
 			return nil, findErr
 		}
-		if info.Name() == "b" {
-			log.Printf("found it")
-		}
-		log.Printf("looking up '%s' and found: %s", info.Name(), debug.TreeString(foundType))
 		return foundType, findErr
 
 	case *ast.TypeReferenceScoped:
@@ -140,13 +130,6 @@ func ConvertFromAstToDecorated(astType ast.Type,
 		}
 		if foundType == nil {
 			return nil, decorated.NewInternalError(fmt.Errorf("couldn't find type reference %v", refName))
-		}
-
-		log.Printf("arguments: %s", debug.TreeString(info.Arguments()))
-		if len(info.Arguments()) == 1 {
-			if info.Arguments()[0].Name() == "b" {
-				log.Printf("found something\n")
-			}
 		}
 
 		types, sliceErr := ConvertFromAstToDecoratedSlice(info.Arguments(), t)

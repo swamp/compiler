@@ -2112,7 +2112,10 @@ main : Int =
         Just a -> a
 
         Nothing -> false
-`, ``)
+`, `
+[ModuleDef $getComponent = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]] [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $Maybe]] [LocalTypeNameOnlyContext a => [CustomType Maybe [[Variant $Nothing] [Variant $Just [[LocalTypeNameRef a]]]]]]]]]]] ([[Param $_ : [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([]) -> [Let [[LetAssign [[LetVar $maybeBool]] = [FnCall [FunctionType [[Primitive TypeRef<[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]>] [CustomType Maybe [[Variant $Nothing] [Variant $Just [[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]]]]]]] [FunctionRef [NamedDefinitionReference /getComponent]] [[TypeIdLiteral [ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]]]]]]] in [dcase: [LetVarRef $maybeBool] of [dcasecons [VariantRef [NamedDefTypeRef :[TypeReference $Just]] [Variant $Just [[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]]]] ([[dcaseparm $a type:[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]]]) => [functionparamref $a [dcaseparm $a type:[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]]]];[dcasecons [VariantRef [NamedDefTypeRef :[TypeReference $Nothing]] [Variant $Nothing]] ([]) => [Bool false]]]]]]
+`)
 }
 
 func TestTypeRefGeneric2(t *testing.T) {
@@ -2122,5 +2125,8 @@ getComponent : (TypeRef a) -> a
 
 main : Int =
     getComponent $Int
-`, ``)
+`, `
+[ModuleDef $getComponent = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]] [LocalTypeNameRef a]]]] ([[Param $_ : [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] ([]) -> [FnCall [FunctionType [[Primitive TypeRef<[ConcreteGenericRef [GenericParam a] => [LocalTypeNameRef a]]>] [Primitive Int]]] [FunctionRef [NamedDefinitionReference /getComponent]] [[TypeIdLiteral [ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]]]]]]]
+`)
 }

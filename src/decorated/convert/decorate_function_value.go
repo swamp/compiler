@@ -66,9 +66,6 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 		log.Printf("%v %T\n", decoratedExpressionType, decoratedExpressionType)
 	}
 
-	log.Printf("decorated Expression %s turns out to %T %s", decoratedExpression, decoratedExpressionType,
-		decoratedExpressionType)
-
 	targetFunctionNamedValue.DefineExpression(decoratedExpression)
 
 	if targetFunctionValue.IsSomeKindOfExternal() {
@@ -77,8 +74,6 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 
 	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType)
 	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType)
-
-	log.Printf("calculated dec expr %s", debug.TreeString(decoratedExpression))
 
 	var constructingTypes []dtype.Type
 	for i := 0; i < len(targetFunctionNamedValue.Value().Parameters()); i += 1 {
@@ -92,9 +87,6 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 	targetFunctionParameters := dectype.NonResolvedFunctionParameters(targetFunctionValue.Type())
 	targetFunctionDeclaredReturn := targetFunctionParameters[len(targetFunctionParameters)-1]
 
-	log.Printf("checking decorated expression inside function with expected function type:\n%s\nvs\n%s",
-		debug.TreeString(expectedFunctionType),
-		debug.TreeString(encounteredFunctionType))
 	compatibleErr := dectype.CompatibleTypes(
 		expectedFunctionType, encounteredFunctionType,
 	)

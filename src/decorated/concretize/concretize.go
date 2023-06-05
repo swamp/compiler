@@ -147,24 +147,13 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type,
 			resolveLocalTypeNames.SetType(t.LocalTypeName(), concrete)
 		}
 	case *dectype.LocalTypeNameOnlyContextReference:
-		typeId, wasTypeId := dectype.TryTypeIdRef(t.Next().Next())
-		if wasTypeId {
-			log.Printf("concrete: IsTypeIdRef detected %T", concrete)
-			firstShouldAlwaysBeTypeName, _ := typeId.ParameterTypes()[0].(*dectype.LocalTypeNameReference)
-			if firstShouldAlwaysBeTypeName == nil {
-				panic("internal error")
-			}
-			resolveLocalTypeNames.SetType(firstShouldAlwaysBeTypeName.LocalTypeName(), concrete)
-			return nil
+		resolvedContext, _ := concrete.(*dectype.ResolvedLocalTypeContext)
+		if resolvedContext != nil {
+			fillContextFromLocalContext(t.LocalTypeNameContext(), resolvedContext,
+				resolveLocalTypeNames)
 		} else {
-			resolvedContext, _ := concrete.(*dectype.ResolvedLocalTypeContext)
-			if resolvedContext != nil {
-				fillContextFromLocalContext(t.LocalTypeNameContext(), resolvedContext,
-					resolveLocalTypeNames)
-			} else {
-				if !dectype.IsAny(concrete) {
-					panic(fmt.Errorf("what is this:%T %v", concrete, concrete))
-				}
+			if !dectype.IsAny(concrete) {
+				panic(fmt.Errorf("what is this:%T %v", concrete, concrete))
 			}
 		}
 	default:
@@ -299,8 +288,6 @@ func ConcretizeLocalTypeContextUsingArguments(localTypeNameContext *dectype.Loca
 	concreteArguments []dtype.Type) (
 	*dectype.ResolvedLocalTypeContext, decshared.DecoratedError,
 ) {
-	log.Printf("concrete %T %v %v", localTypeNameContext.Next().Next(), localTypeNameContext.Next().Next(),
-		concreteArguments)
 	if localTypeNameContext == nil {
 		panic(fmt.Errorf("localTypeNameContext is nil"))
 	}
