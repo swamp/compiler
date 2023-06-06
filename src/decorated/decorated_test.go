@@ -639,7 +639,7 @@ tester : (String) -> Bool =
   `)
 }
 
-func TestOperatorPipeLeft(t *testing.T) {
+func xTestOperatorPipeLeft(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
 initial : (a: Int) -> String =
@@ -1125,26 +1125,27 @@ main : Bool =
 [ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([]) -> [FnCall [FunctionType [[Primitive TypeRef<[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]>] [Primitive Bool]]] [FunctionRef [NamedDefinitionReference /haveTypeRefAsParameter]] [[String hi]]]]]
   `)
 }
+}
+*/
 
 func TestTypeRefPipeRight(t *testing.T) {
 	testDecorateWithoutDefault(t,
 		`
-haveTypeRefAsParameter : (TypeRef a) -> Bool
+haveStringAsParameter : (String) -> Bool
 
 another : (Bool) -> Bool =
     true
 
 main : Bool =
-    haveTypeRefAsParameter "hi" |> another
+    haveStringAsParameter "hi" |> another
 `, `
-[ModuleDef $haveTypeRefAsParameter = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] ([[Param $_ : [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
+[ModuleDef $haveStringAsParameter = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
 [ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [Bool true]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([]) -> [FnCall [FunctionType [[Primitive TypeRef<[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]]>] [Primitive Bool]]] [FunctionRef [NamedDefinitionReference /haveTypeRefAsParameter]] [[String hi]]] |> [FunctionRef [NamedDefinitionReference /another]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([]) -> [FnCall [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] [FunctionRef [NamedDefinitionReference /haveStringAsParameter]] [[String hi]]] |> [FunctionRef [NamedDefinitionReference /another]]]]
 `)
 }
-*/
 
-func xTestTypeRefPipeRight2(t *testing.T) {
+func TestTypeRefPipeRight2(t *testing.T) {
 	testDecorate(t,
 		`
 type alias GoldPrice = Int

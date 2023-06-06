@@ -250,7 +250,7 @@ func FillContextFromTuple(reference *dectype.TupleTypeAtom, encounteredArguments
 func FillContextFromFunction(reference *dectype.FunctionAtom, encounteredArguments []dtype.Type,
 	resolver *dectype.DynamicLocalTypeResolver) decshared.DecoratedError {
 	if len(encounteredArguments) != reference.ParameterCount() {
-		err := fmt.Errorf("not good, wrong count %v %v %s %s",
+		err := fmt.Errorf("not good, wrong count %s %v %v %s %s", reference.AstFunction().Name(),
 			encounteredArguments[0].FetchPositionLength().ToCompleteReferenceString(), reference,
 			debug.TreeString(reference), debug.TreeString(encounteredArguments))
 		log.Panicf("%v", err)
