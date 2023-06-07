@@ -8,8 +8,6 @@ package decorated
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/decorated/dtype"
-
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -17,10 +15,10 @@ type PipeRightOperator struct {
 	BinaryOperator
 }
 
-func NewPipeRightOperator(left Expression, right Expression, resolvedType dtype.Type) *PipeRightOperator {
+func NewPipeRightOperator(left Expression, right *IncompleteFunctionCall) *PipeRightOperator {
 	return &PipeRightOperator{
 		BinaryOperator: BinaryOperator{
-			ExpressionNode: ExpressionNode{decoratedType: resolvedType},
+			ExpressionNode: ExpressionNode{decoratedType: right.Type()},
 			left:           left,
 			right:          right,
 		},

@@ -548,6 +548,12 @@ func expand(node Node, parentNode *ExpandedNode) {
 		expandBinaryOperator(t, newParentNode)
 	case *RecordLookups:
 		expandRecordLookups(t, newParentNode)
+	case *IncompleteFunctionCall:
+		expand(t.functionValueExpression, newParentNode)
+		for _, argument := range t.Arguments() {
+			expand(argument, newParentNode)
+		}
+
 	case *ExternalFunctionDeclarationExpression:
 
 	case *dectype.ResolvedLocalType:

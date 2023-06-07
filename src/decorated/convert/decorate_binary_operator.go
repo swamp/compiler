@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/concretize"
 	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
 	"github.com/swamp/compiler/src/decorated/dtype"
@@ -96,10 +97,12 @@ func tryConvertCastOperator(infix *ast.BinaryOperator, left decorated.Expression
 	return a, nil
 }
 
-func concretizeFunctionLike(functionLike decorated.Expression, singleArgumentType dtype.Type) (
+func concretizeFunctionLike(functionLike decorated.Expression, argumentTypes []dtype.Type) (
 	dtype.Type, decshared.DecoratedError,
 ) {
 	var returnType dtype.Type
+
+	lastArgumentType := argumentTypes[len(argumentTypes)-1]
 
 	switch t := functionLike.(type) {
 	case *decorated.CurryFunction:
@@ -109,26 +112,84 @@ func concretizeFunctionLike(functionLike decorated.Expression, singleArgumentTyp
 		}
 		returnType = functionAtom.ReturnType()
 		indexToCheck := len(t.ArgumentsToSave())
-		compareErr := dectype.CompatibleTypes(functionAtom.FunctionParameterTypes()[indexToCheck], singleArgumentType)
+		compareErr := dectype.CompatibleTypes(functionAtom.FunctionParameterTypes()[indexToCheck], lastArgumentType)
 		if compareErr != nil {
 			return nil, decorated.NewInternalError(compareErr)
 		}
-		log.Printf("CurryFunction %v %v %v", functionAtom, singleArgumentType, returnType)
+		log.Printf("CurryFunction %v %v %v", functionAtom, lastArgumentType, returnType)
 	case *decorated.FunctionReference:
-		originalRightFunctionAtom := t.FunctionValue().Type().(*dectype.FunctionAtom)
-		returnType = originalRightFunctionAtom.ReturnType()
-		indexToCheck := 0
-		compareErr := dectype.CompatibleTypes(originalRightFunctionAtom.FunctionParameterTypes()[indexToCheck],
-			singleArgumentType)
-		if compareErr != nil {
-			return nil, decorated.NewInternalError(compareErr)
+		switch u := t.FunctionValue().Type().(type) {
+		case *dectype.LocalTypeNameOnlyContext:
+			ref := dectype.NewLocalTypeNameContextReference(nil, u)
+			addedAnyAtEnd := append([]dtype.Type{}, argumentTypes...)
+			addedAnyAtEnd = append(addedAnyAtEnd, dectype.NewAnyType())
+			resolved, err := concretize.ConcretizeLocalTypeContextUsingArguments(ref,
+				addedAnyAtEnd)
+			if err != nil {
+				return nil, err
+			}
+			return resolved, nil
+		case *dectype.FunctionAtom:
+			returnType = u.ReturnType()
+			indexToCheck := len(argumentTypes) - 1
+			compareErr := dectype.CompatibleTypes(u.FunctionParameterTypes()[indexToCheck],
+				lastArgumentType)
+			if compareErr != nil {
+				return nil, decorated.NewInternalError(compareErr)
+			}
+			log.Printf("right funcRef  %v %v %v", u, lastArgumentType, returnType)
 		}
-		log.Printf("right funcRef  %v %v %v", originalRightFunctionAtom, singleArgumentType, returnType)
 	default:
 		panic(fmt.Errorf("unknown function like decorated %T", functionLike))
 	}
 
 	return returnType, nil
+}
+
+func generateFunctionCall(d DecorateStream, nonComplete ast.Expression, lastArgumentType dtype.Type,
+	context *VariableContext) (*decorated.IncompleteFunctionCall,
+	decshared.DecoratedError) {
+	functionValueExpression := nonComplete
+
+	var argumentTypes []dtype.Type
+
+	var arguments []decorated.Expression
+
+	switch t := nonComplete.(type) {
+	case *ast.FunctionCall:
+		functionValueExpression = t.FunctionExpression()
+		for _, astArg := range t.Arguments() {
+			decArg, err := DecorateExpression(d, astArg, context)
+			if err != nil {
+				return nil, err
+			}
+			arguments = append(arguments, decArg)
+			argumentTypes = append(argumentTypes, decArg.Type())
+		}
+	}
+
+	decoratedFunctionValueExpression, functionErr := DecorateExpression(d, functionValueExpression, context)
+	if functionErr != nil {
+		return nil, functionErr
+	}
+	argumentTypes = append(argumentTypes, lastArgumentType)
+
+	correctReturnType, err := concretizeFunctionLike(decoratedFunctionValueExpression, argumentTypes)
+	if err != nil {
+		return nil, err
+	}
+
+	return decorated.NewIncompleteFunctionCall(decoratedFunctionValueExpression, arguments, correctReturnType), nil
+}
+
+type Node interface {
+	FetchPositionLength() token.SourceFileReference
+	String() string
+}
+
+type Expression interface {
+	Node
+	Type() dtype.Type
 }
 
 func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (
@@ -142,20 +203,20 @@ func decoratePipeRight(d DecorateStream, infix *ast.BinaryOperator, context *Var
 		return nil, leftErr
 	}
 
-	rightDecorated, rightErr := DecorateExpression(d, right, context)
-	if rightErr != nil {
-		return nil, rightErr
+	leftSideReturns := leftDecorated.Type()
+
+	log.Printf("leftReturns %v %s", left, debug.TreeString(leftSideReturns))
+	incompleteRightFunctionCall, genErr := generateFunctionCall(d, right, leftSideReturns, context)
+	if genErr != nil {
+		return nil, genErr
 	}
 
-	leftSideReturns := leftDecorated.Type()
+	log.Printf("rightIncompleteReturns %v %s", incompleteRightFunctionCall,
+		debug.TreeString(incompleteRightFunctionCall.Type()))
+
 	log.Printf("leftFunctionNode %v %s", left, debug.TreeString(leftSideReturns))
 
-	resultingReturnType, concreteErr := concretizeFunctionLike(rightDecorated, leftSideReturns)
-	if concreteErr != nil {
-		return nil, concreteErr
-	}
-
-	return decorated.NewPipeRightOperator(leftDecorated, rightDecorated, resultingReturnType), nil
+	return decorated.NewPipeRightOperator(leftDecorated, incompleteRightFunctionCall), nil
 }
 
 func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (
@@ -176,15 +237,16 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 
 	log.Printf("pipeLeft\nleft:\n %s\nright:\n %s", debug.TreeString(leftDecorated), debug.TreeString(rightDecorated))
 
-	rightSideReturns := rightDecorated.Type()
+	//rightSideReturns := rightDecorated.Type()
 	//log.Printf("pipeLeft %v %s", right, debug.TreeString(rightSideReturns))
 
-	resultingReturnType, concreteErr := concretizeFunctionLike(leftDecorated, rightSideReturns)
-	if concreteErr != nil {
-		return nil, concreteErr
-	}
+	//	resultingReturnType, concreteErr := concretizeFunctionLike(leftDecorated, rightSideReturns)
+	//	if concreteErr != nil {
+	//		return nil, concreteErr
+	//	}
 
-	return decorated.NewPipeLeftOperator(leftDecorated, rightDecorated, resultingReturnType), nil
+	//	return decorated.NewPipeLeftOperator(leftDecorated, rightDecorated, resultingReturnType), nil
+	return nil, nil
 }
 
 func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (

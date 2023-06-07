@@ -165,7 +165,7 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type,
 				resolveLocalTypeNames)
 		} else {
 			if !dectype.IsAny(concrete) {
-				panic(fmt.Errorf("what is this:%T %v", concrete, concrete))
+				//				panic(fmt.Errorf("what is this:%T %v", concrete, concrete))
 			}
 		}
 	case *dectype.AliasReference:
@@ -250,7 +250,9 @@ func FillContextFromTuple(reference *dectype.TupleTypeAtom, encounteredArguments
 func FillContextFromFunction(reference *dectype.FunctionAtom, encounteredArguments []dtype.Type,
 	resolver *dectype.DynamicLocalTypeResolver) decshared.DecoratedError {
 	if len(encounteredArguments) != reference.ParameterCount() {
-		err := fmt.Errorf("not good, wrong count %s %v %v %s %s", reference.AstFunction().Name(),
+		err := fmt.Errorf("not good, wrong count. expected %d but got %d.\n %s %v %v %s %s", reference.ParameterCount(),
+			len(encounteredArguments),
+			reference.AstFunction().Name(),
 			encounteredArguments[0].FetchPositionLength().ToCompleteReferenceString(), reference,
 			debug.TreeString(reference), debug.TreeString(encounteredArguments))
 		log.Panicf("%v", err)

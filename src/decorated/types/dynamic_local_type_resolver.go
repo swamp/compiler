@@ -122,7 +122,7 @@ func (t *DynamicLocalTypeResolver) LookupType(name string) (dtype.Type, error) {
 */
 
 func (t *DynamicLocalTypeResolver) SpecialSet(name string, resolved dtype.Type) error {
-	if IsLocalType(resolved) || IsAny(resolved) {
+	if IsLocalType(resolved) {
 		panic(fmt.Errorf("must be set with a concrete type %T %v", resolved, resolved))
 	}
 	for index, foundParam := range t.argumentNames {
