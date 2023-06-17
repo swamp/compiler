@@ -142,6 +142,9 @@ func concretizeFunctionLike(functionLike decorated.Expression, argumentTypes []d
 			if err != nil {
 				return nil, err
 			}
+
+			log.Printf("LocalTypeNameOnlyContext resolved to %v", debug.TreeString(resolved))
+
 			return resolved, nil
 		case *dectype.FunctionAtom:
 			returnType = u.ReturnType()
@@ -155,6 +158,8 @@ func concretizeFunctionLike(functionLike decorated.Expression, argumentTypes []d
 					return nil, decorated.NewInternalError(compareErr)
 				}
 			*/
+		default:
+			panic(fmt.Errorf("unknown function ref decorated %T", t.FunctionValue().Type()))
 		}
 	default:
 		panic(fmt.Errorf("unknown function like decorated %T", functionLike))
@@ -172,17 +177,13 @@ func generateFunctionCall(d DecorateStream, nonComplete ast.Expression, lastArgu
 
 	var arguments []decorated.Expression
 
-	var lastArgumentType dtype.Type
+	lastArgumentType := lastArgumentThatMightBeNonComplete
 
 	unaliasNonComplete := dectype.Unalias(lastArgumentThatMightBeNonComplete)
 	switch t := unaliasNonComplete.(type) {
 	case *dectype.FunctionAtom:
 		log.Printf("function %T", t)
 		lastArgumentType = t.FunctionParameterTypes()[len(t.FunctionParameterTypes())-1]
-	}
-	if lastArgumentType == nil {
-		panic(fmt.Errorf("what is this that we cant get argument type from: %T %s", unaliasNonComplete,
-			nonComplete.FetchPositionLength().ToCompleteReferenceString()))
 	}
 
 	switch t := nonComplete.(type) {

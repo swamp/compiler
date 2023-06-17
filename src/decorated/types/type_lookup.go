@@ -7,8 +7,10 @@ package dectype
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
@@ -18,6 +20,7 @@ type TypeReferenceScopedOrNormal interface {
 }
 
 func compareAtoms(pureExpected dtype.Atom, pureActual dtype.Atom) error {
+	log.Printf("compare %v and %v", debug.TreeString(pureExpected), debug.TreeString(pureActual))
 	expectedIsAny := IsAtomAny(pureExpected)
 	actualIsAny := IsAtomAny(pureActual)
 

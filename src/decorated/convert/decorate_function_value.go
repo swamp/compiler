@@ -11,11 +11,9 @@ import (
 	"strings"
 
 	"github.com/swamp/compiler/src/decorated/debug"
-	"github.com/swamp/compiler/src/decorated/dtype"
-	dectype "github.com/swamp/compiler/src/decorated/types"
-
 	"github.com/swamp/compiler/src/decorated/decshared"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
+	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
 /*
@@ -75,29 +73,19 @@ func DefineExpressionInPreparedFunctionValue(d DecorateStream, targetFunctionNam
 	//	log.Printf("checking return type of %v : %v %T %T", targetFunctionNamedValue.FunctionName(), targetFunctionValue, targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType)
 	//log.Printf("checking return type of '%v'\n  %v\n  %v", targetFunctionNamedValue.FunctionName(), targetFunctionValue.UnaliasedDeclaredFunctionType().ReturnType(), decoratedExpressionType)
 
-	var constructingTypes []dtype.Type
-	for i := 0; i < len(targetFunctionNamedValue.Value().Parameters()); i += 1 {
-		constructingTypes = append(constructingTypes, dectype.NewAnyType())
-	}
-	constructingTypes = append(constructingTypes, decoratedExpressionType)
-	encounteredFunctionType := dectype.NewFunctionAtom(nil, constructingTypes)
-
-	expectedFunctionType := targetFunctionNamedValue.Value().Type()
-
-	targetFunctionParameters := dectype.NonResolvedFunctionParameters(targetFunctionValue.Type())
-	targetFunctionDeclaredReturn := targetFunctionParameters[len(targetFunctionParameters)-1]
-
+	expectedFunctionType_ := dectype.Unalias(targetFunctionNamedValue.Value().Type())
+	expectedFunctionTypeParameters := dectype.NonResolvedFunctionParameters(expectedFunctionType_)
+	expectedReturnType := expectedFunctionTypeParameters[len(expectedFunctionTypeParameters)-1]
 	compatibleErr := dectype.CompatibleTypes(
-		expectedFunctionType, encounteredFunctionType,
+		expectedReturnType, decoratedExpressionType,
 	)
-
 	if compatibleErr != nil {
 		var writer strings.Builder
 		fmt.Fprintf(&writer, "\n\ntargetType: %v", targetFunctionNamedValue.FunctionName())
-		debug.Tree(targetFunctionDeclaredReturn, &writer)
+		debug.Tree(expectedReturnType, &writer)
 
 		fmt.Fprintf(&writer, "\n\nencounteredType:")
-		debug.Tree(decoratedExpression, &writer)
+		debug.Tree(decoratedExpressionType, &writer)
 
 		log.Println(writer.String())
 

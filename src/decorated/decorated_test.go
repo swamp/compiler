@@ -701,7 +701,7 @@ tester : (String) -> Bool =
 `)
 }
 
-func xTestOperatorPipeLeftFail(t *testing.T) {
+func TestOperatorPipeLeftFail(t *testing.T) {
 	testDecorateWithoutDefaultFail(t,
 		`
 first : (a: Int, String) -> Int =
@@ -1244,7 +1244,7 @@ GoldPrice : [Alias GoldPrice [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference 
 `)
 }
 
-func xTestTypeRefPipeRight2(t *testing.T) {
+func TestTypeRefPipeRight2(t *testing.T) {
 	testDecorate(t,
 		`
 type alias GoldPrice = Int
@@ -1253,12 +1253,13 @@ type alias GoldPrice = Int
 haveTypeRefAsParameter : (TypeRef a) -> Maybe a
 
 
-main : Maybe GoldPrice =
-    haveTypeRefAsParameter $GoldPrice |> Maybe.withDefault Nothing
+main : GoldPrice =
+    haveTypeRefAsParameter $GoldPrice |> Maybe.withDefault 0
 `, `
-[ModuleDef $haveTypeRefAsParameter = [FunctionValue [LocalTypeNameContext a = [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $TypeRef]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $TypeRef]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
-[ModuleDef $another = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]] [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([[Param $_ : [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]]) -> [Bool true]]]
-[ModuleDef $main = [FunctionValue [FunctionType [[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Bool]]]]] ([]) -> [FnCall [FunctionType [[ConcreteGenericRef [GenericParam a] => [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $String]]]] [Primitive Bool]]] [FunctionRef [NamedDefinitionReference /haveTypeRefAsParameter]] [[String hi]]] |> [FunctionRef [NamedDefinitionReference /another]]]]
+GoldPrice : [Alias GoldPrice [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]
+
+[ModuleDef $haveTypeRefAsParameter = [FunctionValue [LocalTypeNameOnlyContext a => [FunctionType [[ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]] [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $Maybe]] [LocalTypeNameOnlyContext a => [CustomType Maybe [[Variant $Nothing] [Variant $Just [[LocalTypeNameRef a]]]]]]]]]]] ([[Param $_ : [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]]]]) -> [ExternalFunctionDeclarationExpression [FnDeclExpr 0] [Primitive Any]]]]
+[ModuleDef $main = [FunctionValue [FunctionType [[AliasRef [Alias GoldPrice [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]] ([]) -> [FnCall [FunctionType [[Primitive TypeRef<[ConcreteGenericRef [GenericParam a] => [ConcreteGenericRef [GenericParam a] => [AliasRef [Alias GoldPrice [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]>] [CustomType Maybe [[Variant $Nothing] [Variant $Just [[ConcreteGenericRef [GenericParam a] => [ConcreteGenericRef [GenericParam a] => [AliasRef [Alias GoldPrice [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]]]]]]]]]] [FunctionRef [NamedDefinitionReference /haveTypeRefAsParameter]] [[TypeIdLiteral [ResolvedContext a:[AliasRef [Alias GoldPrice [PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]]]] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $TypeRef]] [LocalTypeNameOnlyContext a => [Primitive TypeRef<[LocalTypeNameRef a]>]]]]]]] |> [IncompleteFnCall [FunctionRef [NamedDefinitionReference Maybe/withDefault]] [[Integer 0]]] ([ResolvedContext a:[PrimitiveTypeRef [NamedDefTypeRef :[TypeReference $Int]]] => [LocalTypeNameOnlyContextReference <nil> [LocalTypeNameOnlyContext a => [FunctionType [[LocalTypeNameRef a] [ResolvedContext a:[LocalTypeNameRef a] => [LocalTypeNameOnlyContextReference [NamedDefTypeRef :[TypeReference $Maybe]] [LocalTypeNameOnlyContext a => [CustomType Maybe [[Variant $Nothing] [Variant $Just [[LocalTypeNameRef a]]]]]]]] [LocalTypeNameRef a]]]]]])]]
 `)
 }
 
@@ -2125,7 +2126,7 @@ main : (ints: Array Int) -> Int =
 `)
 }
 
-func xTestArrayIntGetWithMaybeFail(t *testing.T) {
+func TestArrayIntGetWithMaybeFail(t *testing.T) {
 	testDecorateFail(t,
 		`
 
@@ -2141,7 +2142,7 @@ main : (ints: Array Int) -> Int =
     in
     extractedInt
 `,
-		&decorated.CouldNotSmashFunctions{})
+		&decorated.FunctionArgumentTypeMismatch{})
 }
 
 func TestArrayFromNothing(t *testing.T) {
