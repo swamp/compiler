@@ -82,10 +82,14 @@ func internalDecorateExpression(d DecorateStream, e ast.Expression, context *Var
 	}
 }
 
+var G_depth int
+
 func DecorateExpression(d DecorateStream, e ast.Expression, context *VariableContext) (
 	decorated.Expression, decshared.DecoratedError,
 ) {
+	G_depth++
 	expr, exprErr := internalDecorateExpression(d, e, context)
+	G_depth--
 	if exprErr != nil {
 		d.AddDecoratedError(exprErr)
 		return nil, exprErr

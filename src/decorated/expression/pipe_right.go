@@ -31,5 +31,5 @@ func (b *PipeRightOperator) FetchPositionLength() token.SourceFileReference {
 }
 
 func (b *PipeRightOperator) String() string {
-	return fmt.Sprintf("%v |> %v", b.left, b.right)
+	return fmt.Sprintf("%v |> %v (%v)", b.left, b.right, b.BinaryOperator.Type())
 }

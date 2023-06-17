@@ -278,6 +278,19 @@ func [constantfn DynPos 0008:104 func:tester]
 `)
 }
 
+func TestDeclaredOnly(t *testing.T) {
+	testGenerate(t,
+		`
+a = 2
+
+
+fn : List Int =
+    []
+`, `
+
+`)
+}
+
 func TestCasePatternMatchingString(t *testing.T) {
 	testGenerateWithoutCores(t,
 		`

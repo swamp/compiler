@@ -8,8 +8,6 @@ package decorated
 import (
 	"fmt"
 
-	"github.com/swamp/compiler/src/decorated/dtype"
-
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -17,11 +15,11 @@ type PipeLeftOperator struct {
 	BinaryOperator
 }
 
-func NewPipeLeftOperator(left Expression, right Expression, resolvedType dtype.Type) *PipeLeftOperator {
+func NewPipeLeftOperator(incompleteLeft *IncompleteFunctionCall, right Expression) *PipeLeftOperator {
 	return &PipeLeftOperator{
 		BinaryOperator: BinaryOperator{
-			ExpressionNode: ExpressionNode{decoratedType: resolvedType},
-			left:           left,
+			ExpressionNode: ExpressionNode{decoratedType: incompleteLeft.Type()},
+			left:           incompleteLeft,
 			right:          right,
 		},
 	}
@@ -33,5 +31,5 @@ func (b *PipeLeftOperator) FetchPositionLength() token.SourceFileReference {
 }
 
 func (b *PipeLeftOperator) String() string {
-	return fmt.Sprintf("%v <| %v", b.left, b.right)
+	return fmt.Sprintf("[%v <| %v (%v)]", b.left, b.right, b.BinaryOperator.Type())
 }

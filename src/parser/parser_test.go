@@ -745,7 +745,8 @@ func TestModuleReferenceWithType(t *testing.T) {
 	testParse(t,
 		`
 a : (Bool) -> FirstModule.SecondMod.ThisIsAType
-`, "[FnDef $a = [Fn [FnType [TypeReference $Bool] -> [ScopedTypeReference FirstModule.SecondMod.$ThisIsAType]] (_) = [FnDeclExpr 0]]]")
+`,
+		"[FnDef $a = [Fn [FnType [TypeReference $Bool] -> [ScopedTypeReference FirstModule.SecondMod.$ThisIsAType]] (_) = [FnDeclExpr 0]]]")
 }
 
 func TestModuleReferenceWithInitializer(t *testing.T) {
@@ -766,14 +767,16 @@ func TestTwoListType(t *testing.T) {
 	testParse(t,
 		`
 someFunc : (List Sprite) -> List Another
-`, "[FnDef $someFunc = [Fn [FnType [TypeReference $List [[TypeReference $Sprite]]] -> [TypeReference $List [[TypeReference $Another]]]] (_) = [FnDeclExpr 0]]]")
+`,
+		"[FnDef $someFunc = [Fn [FnType [TypeReference $List [[TypeReference $Sprite]]] -> [TypeReference $List [[TypeReference $Another]]]] (_) = [FnDeclExpr 0]]]")
 }
 
 func TestMultipleListType(t *testing.T) {
 	testParse(t,
 		`
 someFunc : (List Sprite -> List Another) -> List Something
-`, "[FnDef $someFunc = [Fn [FnType [FnType [TypeReference $List [[TypeReference $Sprite]]] -> [TypeReference $List [[TypeReference $Another]]]] -> [TypeReference $List [[TypeReference $Something]]]] (_) = [FnDeclExpr 0]]]")
+`,
+		"[FnDef $someFunc = [Fn [FnType [FnType [TypeReference $List [[TypeReference $Sprite]]] -> [TypeReference $List [[TypeReference $Another]]]] -> [TypeReference $List [[TypeReference $Something]]]] (_) = [FnDeclExpr 0]]]")
 }
 
 func TestListLiteral(t *testing.T) {
@@ -805,7 +808,8 @@ someFunc : Int =
         call (i + j)
     else
         3
-`, "[FnDef $someFunc = [Fn [FnType [TypeReference $Int]] () = [Let: [[LetAssign [$i] = #3] [LetAssign [$j] = #4]] in [If ($i >= #6) then [Call $call [($i + $j)]] else #3]]]]")
+`,
+		"[FnDef $someFunc = [Fn [FnType [TypeReference $Int]] () = [Let: [[LetAssign [$i] = #3] [LetAssign [$j] = #4]] in [If ($i >= #6) then [Call $call [($i + $j)]] else #3]]]]")
 }
 
 func TestMoreMultipleStatements(t *testing.T) {
@@ -889,7 +893,8 @@ let
     zarg = 8 * 99
 in
 x + y
-`, "[Let: [[LetAssign [$x] = [Call $callme [(#4 + #4)]]] [LetAssign [$y] = #3] [LetAssign [$zarg] = (#8 * #99)]] in ($x + $y)]")
+`,
+		"[Let: [[LetAssign [$x] = [Call $callme [(#4 + #4)]]] [LetAssign [$y] = #3] [LetAssign [$zarg] = (#8 * #99)]] in ($x + $y)]")
 }
 
 func TestLetSubSameLine(t *testing.T) { // --- FIXME
@@ -902,7 +907,8 @@ let
     bogus = 4
 in
 x + y * bogus
-`, "[Let: [[LetAssign [$x] = [Call $callme [(#4 + #5)]]]] in [Let: [[LetAssign [$bogus] = #4]] in ($x + ($y * $bogus))]]")
+`,
+		"[Let: [[LetAssign [$x] = [Call $callme [(#4 + #5)]]]] in [Let: [[LetAssign [$bogus] = #4]] in ($x + ($y * $bogus))]]")
 }
 
 func TestPyth(t *testing.T) { // --- FIXME
@@ -937,7 +943,8 @@ case x of
     Int i -> itoa i
 
     String s -> s
-`, "[CaseCustomType $x of [CaseConsCustomType $Int ([$i]) => [Call $itoa [$i]]];[CaseConsCustomType $String ([$s]) => $s]]")
+`,
+		"[CaseCustomType $x of [CaseConsCustomType $Int ([$i]) => [Call $itoa [$i]]];[CaseConsCustomType $String ([$s]) => $s]]")
 }
 
 func TestAlias(t *testing.T) {
@@ -978,7 +985,8 @@ type SomeEnum =
     | Anon
     | Second Int
 
-`, "[CustomTypeStatement [CustomType $SomeEnum [[Variant $First [[TypeReference $String]]] [Variant $Anon []] [Variant $Second [[TypeReference $Int]]]]]]")
+`,
+		"[CustomTypeStatement [CustomType $SomeEnum [[Variant $First [[TypeReference $String]]] [Variant $Anon []] [Variant $Second [[TypeReference $Int]]]]]]")
 }
 
 func TestCustomTypeNewFormatting(t *testing.T) {
@@ -989,7 +997,8 @@ type SomeEnum =
     | Anon
     | Second Int
 
-`, "[CustomTypeStatement [CustomType $SomeEnum [[Variant $First [[TypeReference $String]]] [Variant $Anon []] [Variant $Second [[TypeReference $Int]]]]]]")
+`,
+		"[CustomTypeStatement [CustomType $SomeEnum [[Variant $First [[TypeReference $String]]] [Variant $Anon []] [Variant $Second [[TypeReference $Int]]]]]]")
 }
 
 func TestModuleVariantConstructor(t *testing.T) { // --- FIXME
@@ -1045,20 +1054,37 @@ func TestMinusAssociativity(t *testing.T) {
 `, "((#5 - #1) - #2)")
 }
 
-func TestPipeForward(t *testing.T) { // --- FIXME
+func TestPipeRight1(t *testing.T) { // --- FIXME
 	testParseExpression(t,
 		`
 call param1 param2
     |> anotherCall anotherParam1
     |> third (2 * 3 + 5 * 66)
-`, "(([Call $call [$param1 $param2]] |> [Call $anotherCall [$anotherParam1]]) |> [Call $third [((#2 * #3) + (#5 * #66))]])")
+`,
+		"(([Call $call [$param1 $param2]] |> [Call $anotherCall [$anotherParam1]]) |> [Call $third [((#2 * #3) + (#5 * #66))]])")
 }
 
-func TestPipeBackward(t *testing.T) { // --- FIXME
+func TestPipeLeft(t *testing.T) { // --- FIXME
 	testParseExpression(t,
 		`
 call param1 param2 <| laterCall this <| third (2 * 3 + 5 * 66)
-`, "(([Call $call [$param1 $param2]] <| [Call $laterCall [$this]]) <| [Call $third [((#2 * #3) + (#5 * #66))]])")
+`, "([Call $call [$param1 $param2]] <| ([Call $laterCall [$this]] <| [Call $third [((#2 * #3) + (#5 * #66))]]))")
+}
+
+func TestPipeLeftPrecedence(t *testing.T) {
+	testParseExpression(t,
+		`
+2 <| 3 <| 4
+`,
+		`(#2 <| (#3 <| #4))`)
+}
+
+func TestPipeRightPrecedence(t *testing.T) {
+	testParseExpression(t,
+		`
+2 |> 3 |> 4
+`,
+		`((#2 |> #3) |> #4)`)
 }
 
 func TestPipeRight(t *testing.T) {
@@ -1141,7 +1167,8 @@ type alias Tinkering t =
     , cool : Something t
     }
 
-`, "[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[LocalTypeNameRef t]]]]]]]]")
+`,
+		"[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $cool [TypeReference $Something [[LocalTypeNameRef t]]]]]]]]")
 }
 
 func TestMultipleGenerics(t *testing.T) {
@@ -1195,7 +1222,8 @@ func TestGenericsCustomType(t *testing.T) {
 type Maybe a =
     Nothing
     | Just a
-`, `[CustomTypeStatement [TypeParamContext [a] +> [CustomType $Maybe [[Variant $Nothing []] [Variant $Just [[LocalTypeNameRef a]]]]]]]
+`,
+		`[CustomTypeStatement [TypeParamContext [a] +> [CustomType $Maybe [[Variant $Nothing []] [Variant $Just [[LocalTypeNameRef a]]]]]]]
 `)
 }
 
@@ -1242,7 +1270,8 @@ type alias Tinkering t =
     { solder : Bool
     , secret : t
     }
-`, "[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]")
+`,
+		"[AliasType $Tinkering [TypeParamContext [t] +> [RecordType [[Field: $solder [TypeReference $Bool]] [Field: $secret [LocalTypeNameRef t]]]]]]")
 }
 
 func TestCaseNewLine(t *testing.T) {

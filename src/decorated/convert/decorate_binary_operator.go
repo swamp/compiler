@@ -8,6 +8,7 @@ package decorator
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/swamp/compiler/src/ast"
 	"github.com/swamp/compiler/src/decorated/concretize"
@@ -102,7 +103,17 @@ func concretizeFunctionLike(functionLike decorated.Expression, argumentTypes []d
 ) {
 	var returnType dtype.Type
 
-	lastArgumentType := argumentTypes[len(argumentTypes)-1]
+	argumentTypeCount := len(argumentTypes)
+	lastArgumentType := argumentTypes[argumentTypeCount-1]
+	if lastArgumentType == nil {
+		log.Printf("argumentType is nil")
+	}
+
+	log.Printf("concretize with lastArgumentType : %T %s %d", lastArgumentType,
+		debug.TreeString(lastArgumentType), argumentTypeCount)
+
+	log.Printf("concretize with lastArgumentType '%s' %T %s", debug.TreeString(functionLike.Type()), lastArgumentType,
+		debug.TreeString(lastArgumentType))
 
 	switch t := functionLike.(type) {
 	case *decorated.CurryFunction:
@@ -112,17 +123,20 @@ func concretizeFunctionLike(functionLike decorated.Expression, argumentTypes []d
 		}
 		returnType = functionAtom.ReturnType()
 		indexToCheck := len(t.ArgumentsToSave())
+		log.Printf("CurryFunction %v %v %v", functionAtom, lastArgumentType, returnType)
 		compareErr := dectype.CompatibleTypes(functionAtom.FunctionParameterTypes()[indexToCheck], lastArgumentType)
 		if compareErr != nil {
 			return nil, decorated.NewInternalError(compareErr)
 		}
-		log.Printf("CurryFunction %v %v %v", functionAtom, lastArgumentType, returnType)
 	case *decorated.FunctionReference:
 		switch u := t.FunctionValue().Type().(type) {
 		case *dectype.LocalTypeNameOnlyContext:
 			ref := dectype.NewLocalTypeNameContextReference(nil, u)
 			addedAnyAtEnd := append([]dtype.Type{}, argumentTypes...)
 			addedAnyAtEnd = append(addedAnyAtEnd, dectype.NewAnyType())
+			log.Printf("LocalTypeNameOnlyContext %v %v %v %v", u, lastArgumentType, returnType,
+				functionLike.FetchPositionLength().ToCompleteReferenceString())
+
 			resolved, err := concretize.ConcretizeLocalTypeContextUsingArguments(ref,
 				addedAnyAtEnd)
 			if err != nil {
@@ -131,13 +145,16 @@ func concretizeFunctionLike(functionLike decorated.Expression, argumentTypes []d
 			return resolved, nil
 		case *dectype.FunctionAtom:
 			returnType = u.ReturnType()
-			indexToCheck := len(argumentTypes) - 1
-			compareErr := dectype.CompatibleTypes(u.FunctionParameterTypes()[indexToCheck],
-				lastArgumentType)
-			if compareErr != nil {
-				return nil, decorated.NewInternalError(compareErr)
-			}
-			log.Printf("right funcRef  %v %v %v", u, lastArgumentType, returnType)
+			/*
+				indexToCheck := len(argumentTypes) - 1
+				parameterToCheck := u.FunctionParameterTypes()[indexToCheck]
+				log.Printf("right funcRef  %T %d %s", parameterToCheck, indexToCheck, debug.TreeString(lastArgumentType))
+				compareErr := dectype.CompatibleTypes(parameterToCheck,
+					lastArgumentType)
+				if compareErr != nil {
+					return nil, decorated.NewInternalError(compareErr)
+				}
+			*/
 		}
 	default:
 		panic(fmt.Errorf("unknown function like decorated %T", functionLike))
@@ -146,7 +163,7 @@ func concretizeFunctionLike(functionLike decorated.Expression, argumentTypes []d
 	return returnType, nil
 }
 
-func generateFunctionCall(d DecorateStream, nonComplete ast.Expression, lastArgumentType dtype.Type,
+func generateFunctionCall(d DecorateStream, nonComplete ast.Expression, lastArgumentThatMightBeNonComplete dtype.Type,
 	context *VariableContext) (*decorated.IncompleteFunctionCall,
 	decshared.DecoratedError) {
 	functionValueExpression := nonComplete
@@ -155,29 +172,53 @@ func generateFunctionCall(d DecorateStream, nonComplete ast.Expression, lastArgu
 
 	var arguments []decorated.Expression
 
+	var lastArgumentType dtype.Type
+
+	unaliasNonComplete := dectype.Unalias(lastArgumentThatMightBeNonComplete)
+	switch t := unaliasNonComplete.(type) {
+	case *dectype.FunctionAtom:
+		log.Printf("function %T", t)
+		lastArgumentType = t.FunctionParameterTypes()[len(t.FunctionParameterTypes())-1]
+	}
+	if lastArgumentType == nil {
+		panic(fmt.Errorf("what is this that we cant get argument type from: %T %s", unaliasNonComplete,
+			nonComplete.FetchPositionLength().ToCompleteReferenceString()))
+	}
+
 	switch t := nonComplete.(type) {
 	case *ast.FunctionCall:
 		functionValueExpression = t.FunctionExpression()
-		for _, astArg := range t.Arguments() {
+		for index, astArg := range t.Arguments() {
 			decArg, err := DecorateExpression(d, astArg, context)
 			if err != nil {
 				return nil, err
 			}
+			log.Printf("generateFunctionCall lookup arg %d %v %s", index, astArg, debug.TreeString(decArg))
 			arguments = append(arguments, decArg)
 			argumentTypes = append(argumentTypes, decArg.Type())
 		}
+	default:
+		log.Printf("what is this %T %v", nonComplete, nonComplete)
 	}
+	tabs := strings.Repeat("..", G_depth)
+	log.Printf("%s decorating functionvalue %T", tabs, functionValueExpression)
 
 	decoratedFunctionValueExpression, functionErr := DecorateExpression(d, functionValueExpression, context)
 	if functionErr != nil {
 		return nil, functionErr
 	}
+
+	log.Printf("generateFunctionCall function value %v %s", functionValueExpression,
+		debug.TreeString(decoratedFunctionValueExpression))
+
 	argumentTypes = append(argumentTypes, lastArgumentType)
 
 	correctReturnType, err := concretizeFunctionLike(decoratedFunctionValueExpression, argumentTypes)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("correctReturntype: %s", debug.TreeString(correctReturnType))
 
 	return decorated.NewIncompleteFunctionCall(decoratedFunctionValueExpression, arguments, correctReturnType), nil
 }
@@ -225,28 +266,28 @@ func decoratePipeLeft(d DecorateStream, infix *ast.BinaryOperator, context *Vari
 	left := infix.Left()
 	right := infix.Right()
 
-	leftDecorated, leftErr := DecorateExpression(d, left, context)
-	if leftErr != nil {
-		return nil, leftErr
-	}
+	tabs := strings.Repeat("..", G_depth)
 
+	log.Printf("%s pipeLeft: decorating right %T", tabs, right)
 	rightDecorated, rightErr := DecorateExpression(d, right, context)
 	if rightErr != nil {
 		return nil, rightErr
 	}
 
-	log.Printf("pipeLeft\nleft:\n %s\nright:\n %s", debug.TreeString(leftDecorated), debug.TreeString(rightDecorated))
+	rightSideReturns := rightDecorated.Type()
+	log.Printf("%s pipeLeft: rightReturns %v %s", tabs, right, debug.TreeString(rightSideReturns))
+	incompleteLeftFunctionCall, genErr := generateFunctionCall(d, left, rightSideReturns, context)
+	if genErr != nil {
+		log.Printf("err: %v", genErr)
+		return nil, genErr
+	}
 
-	//rightSideReturns := rightDecorated.Type()
-	//log.Printf("pipeLeft %v %s", right, debug.TreeString(rightSideReturns))
+	log.Printf("%s pipeLeft: rightIncompleteReturns %v %s", tabs, incompleteLeftFunctionCall.Type(),
+		debug.TreeString(incompleteLeftFunctionCall.Type()))
 
-	//	resultingReturnType, concreteErr := concretizeFunctionLike(leftDecorated, rightSideReturns)
-	//	if concreteErr != nil {
-	//		return nil, concreteErr
-	//	}
+	log.Printf("%s pipeLeft:  rightFunctionNode %v %s", tabs, right, debug.TreeString(rightSideReturns))
 
-	//	return decorated.NewPipeLeftOperator(leftDecorated, rightDecorated, resultingReturnType), nil
-	return nil, nil
+	return decorated.NewPipeLeftOperator(incompleteLeftFunctionCall, rightDecorated), nil
 }
 
 func decorateBinaryOperator(d DecorateStream, infix *ast.BinaryOperator, context *VariableContext) (

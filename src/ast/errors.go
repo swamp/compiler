@@ -11,14 +11,21 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
+type Error interface {
+	FetchPositionLength() token.SourceFileReference
+	Error() string
+}
+
 type ExtraTypeParametersError struct {
 	extraParameter []*LocalTypeNameDefinition
 	searchedType   Type
 	inclusive      token.SourceFileReference
 }
 
-func NewExtraTypeNameParametersError(extraParameter []*LocalTypeNameDefinition, searchedType Type) *ExtraTypeParametersError {
-	inclusive := token.MakeInclusiveSourceFileReference(extraParameter[0].FetchPositionLength(), extraParameter[len(extraParameter)-1].FetchPositionLength())
+func NewExtraTypeNameParametersError(extraParameter []*LocalTypeNameDefinition,
+	searchedType Type) *ExtraTypeParametersError {
+	inclusive := token.MakeInclusiveSourceFileReference(extraParameter[0].FetchPositionLength(),
+		extraParameter[len(extraParameter)-1].FetchPositionLength())
 	return &ExtraTypeParametersError{extraParameter: extraParameter, searchedType: searchedType, inclusive: inclusive}
 }
 

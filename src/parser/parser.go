@@ -40,7 +40,7 @@ var precedences = map[token.Type]Precedence{
 	token.OperatorUpdate:            UPDATE,
 	token.OperatorAssign:            ASSIGN,
 	token.OperatorPipeRight:         PIPE,
-	token.OperatorPipeLeft:          PIPE,
+	token.OperatorPipeLeft:          PIPE_LEFT,
 }
 
 type Parser struct {

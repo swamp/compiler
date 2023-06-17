@@ -52,7 +52,7 @@ func (c *IncompleteFunctionCall) Type() dtype.Type {
 
 func (c *IncompleteFunctionCall) String() string {
 	return fmt.Sprintf(
-		"[IncompleteFnCall %v %v %v]", c.functionValueExpression, c.arguments,
+		"[IncompleteFnCall %v %v]", c.functionValueExpression, c.arguments,
 	) // c.functionValueExpression, c.arguments)
 }
 

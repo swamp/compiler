@@ -233,35 +233,56 @@ func (t *AliasType) HumanReadableExpanded() string {
 	return fmt.Sprintf("%s => %v", t.name, t.realType.HumanReadable())
 }
 
-type LocalType struct {
+type LocalTypeNameOnly struct {
 	Type
-	name     string
-	realType InfoType
+	name string
 }
 
-func NewLocalType(name string, realType InfoType) *LocalType {
-	return &LocalType{
-		Type:     Type{},
-		name:     name,
-		realType: realType,
+func NewLocalType(name string) *LocalTypeNameOnly {
+	return &LocalTypeNameOnly{
+		Type: Type{},
+		name: name,
 	}
 }
 
-func (t *LocalType) String() string {
+func (t *LocalTypeNameOnly) String() string {
 	return t.name
 }
 
-func (t *LocalType) HumanReadable() string {
+func (t *LocalTypeNameOnly) HumanReadable() string {
 	return t.name
+}
+
+type LocalTypeNamesOnlyCollection struct {
+	Type
+	LocalTypes []*LocalTypeNameOnly
+	realType   InfoType
+}
+
+func (t *LocalTypeNamesOnlyCollection) Add(localType *LocalTypeNameOnly) {
+	t.LocalTypes = append(t.LocalTypes, localType)
+}
+
+func (t *LocalTypeNamesOnlyCollection) String() string {
+	return fmt.Sprintf("[localTypes %v]", t.LocalTypes)
+}
+
+func (t *LocalTypeNamesOnlyCollection) HumanReadable() string {
+	return fmt.Sprintf("[localTypes %v]", t.LocalTypes)
+}
+
+func NewLocalTypeNamesOnlyCollection(realType InfoType, names []*dtype.LocalTypeName) *LocalTypeNamesOnlyCollection {
+	var localTypeNameOnlys []*LocalTypeNameOnly
+	for _, name := range names {
+		localTypeNameOnlys = append(localTypeNameOnlys, NewLocalType(name.Name()))
+	}
+	return &LocalTypeNamesOnlyCollection{realType: realType, LocalTypes: localTypeNameOnlys}
 }
 
 type LocalTypesCollection struct {
 	Type
-	LocalTypes []*LocalType
-}
-
-func (t *LocalTypesCollection) Add(localType *LocalType) {
-	t.LocalTypes = append(t.LocalTypes, localType)
+	LocalTypes []InfoType
+	realType   InfoType
 }
 
 func (t *LocalTypesCollection) String() string {
@@ -270,6 +291,10 @@ func (t *LocalTypesCollection) String() string {
 
 func (t *LocalTypesCollection) HumanReadable() string {
 	return fmt.Sprintf("[localTypes %v]", t.LocalTypes)
+}
+
+func NewLocalTypesCollection(realType InfoType, localTypes []InfoType) *LocalTypesCollection {
+	return &LocalTypesCollection{realType: realType, LocalTypes: localTypes}
 }
 
 type RecordField struct {
@@ -353,7 +378,8 @@ func Refs(types []InfoType) string {
 }
 
 func (t *Variant) String() string {
-	return fmt.Sprintf("variant index:%d %s  (inside:%d) parameters:%v", t.Type.index, t.name, t.inCustomType.Index(), t.fields)
+	return fmt.Sprintf("variant index:%d %s  (inside:%d) parameters:%v", t.Type.index, t.name, t.inCustomType.Index(),
+		t.fields)
 }
 
 func (t *Variant) HumanReadable() string {
@@ -1210,7 +1236,7 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 }
 
 func (c *Chunk) consumeLocalType(localType *dectype.ResolvedLocalType) (InfoType, error) {
-	return &LocalType{
+	return &LocalTypeNameOnly{
 		Type: Type{},
 		name: localType.Identifier().Name(),
 	}, nil
@@ -1245,14 +1271,41 @@ func (c *Chunk) consumeAlias(alias *dectype.Alias) (InfoType, error) {
 	return proposedNewAlias, nil
 }
 
-func (c *Chunk) consumeTypeNameContext(localTypeNameContext *dectype.LocalTypeNameOnlyContext) (InfoType, error) {
+func (c *Chunk) consumeTypeNameOnlyContext(localTypeNameOnlyContext *dectype.LocalTypeNameOnlyContext) (InfoType,
+	error) {
+	realType, err := c.ConsumeType(localTypeNameOnlyContext.Next())
+	if err != nil {
+		return nil, err
+	}
+	collection := NewLocalTypeNamesOnlyCollection(realType, localTypeNameOnlyContext.Names())
 	// TODO: PROPER IMPLEMENTATION
-	return c.ConsumeType(localTypeNameContext.Next())
+	log.Printf("name only %v", localTypeNameOnlyContext)
+	return collection, nil
 }
 
-func (c *Chunk) consumeResolveLocalTypeContext(localTypeNameContext *dectype.ResolvedLocalTypeContext) (InfoType, error) {
+func (c *Chunk) consumeResolvedLocalTypeContext(localTypeNameContext *dectype.ResolvedLocalTypeContext) (InfoType,
+	error) {
+	var consumedTypes []InfoType
+
+	for _, resolved := range localTypeNameContext.Definitions() {
+		consumedType, err := c.Consume(resolved)
+		if err != nil {
+			return nil, err
+		}
+		consumedTypes = append(consumedTypes, consumedType)
+	}
+
+	next, nextErr := c.Consume(localTypeNameContext.Next())
+	if nextErr != nil {
+		return nil, nextErr
+	}
+
 	// TODO: PROPER IMPLEMENTATION
-	return c.ConsumeType(localTypeNameContext.Next())
+	newType := NewLocalTypesCollection(next, consumedTypes)
+
+	log.Printf("resolved %v", newType)
+
+	return newType, nil
 }
 
 func (c *Chunk) ConsumeAtom(a dtype.Atom) (InfoType, error) {
@@ -1297,6 +1350,7 @@ func (c *Chunk) Lookup(d dtype.Type) (int, error) {
 }
 
 func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
+	log.Printf("consume %T", p)
 	atom, isAtom := p.(dtype.Atom)
 	if isAtom {
 		return c.ConsumeAtom(atom)
@@ -1305,20 +1359,18 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 	case *dectype.Alias:
 		return c.consumeAlias(t)
 	case *dectype.LocalTypeNameOnlyContext:
-		return c.consumeTypeNameContext(t)
+		return c.consumeTypeNameOnlyContext(t)
 	case *dectype.LocalTypeNameOnlyContextReference:
-		return c.consumeTypeNameContext(t.LocalTypeNameContext())
+		return c.consumeTypeNameOnlyContext(t.LocalTypeNameContext())
 	case *dectype.ResolvedLocalTypeContext:
-		return c.consumeResolveLocalTypeContext(t)
+		return c.consumeResolvedLocalTypeContext(t)
 	case *dectype.ResolvedLocalTypeReference:
 		return c.Consume(t.Next())
 	case *dectype.FunctionTypeReference:
 		return c.Consume(t.Next())
 	case *dectype.CustomTypeVariantReference:
-		// intentionally ignore
 		return c.Consume(t.Next())
 	case *dectype.ResolvedLocalType:
-		// intentionally ignore
 		return c.Consume(t.Next())
 	case *dectype.PrimitiveTypeReference:
 		return c.Consume(t.Next())
@@ -1328,7 +1380,6 @@ func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
 		return c.Consume(t.Next())
 	case *dectype.LocalTypeNameReference:
 		return c.Consume(t.Next())
-
 	}
 
 	err := fmt.Errorf("chunk: consume: unknown thing %T", p)

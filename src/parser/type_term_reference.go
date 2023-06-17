@@ -10,7 +10,6 @@ import (
 	"reflect"
 
 	"github.com/swamp/compiler/src/ast"
-	decorated "github.com/swamp/compiler/src/decorated/expression"
 	parerr "github.com/swamp/compiler/src/parser/errors"
 )
 
@@ -44,7 +43,8 @@ func parseTypeTermReference(p ParseStream, keywordIndentation int,
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, true, precedingComments)
 }
 
-func parseTypeVariantParameter(p ParseStream, keywordIndentation int, typeParameterContext *ast.LocalTypeNameDefinitionContext) (
+func parseTypeVariantParameter(p ParseStream, keywordIndentation int,
+	typeParameterContext *ast.LocalTypeNameDefinitionContext) (
 	ast.Type, parerr.ParseError,
 ) {
 	return internalParseTypeTermReference(p, keywordIndentation, typeParameterContext, false, nil)
@@ -115,7 +115,7 @@ func internalParseTypeTermReference(p ParseStream, keywordIndentation int,
 	} else if ident, wasVariableIdentifier := p.wasVariableIdentifier(); wasVariableIdentifier {
 		typeParameter, refErr := typeParameterContext.GetOrCreateReferenceFromName(ast.NewLocalTypeName(ident))
 		if refErr != nil {
-			return nil, decorated.NewInternalError(refErr)
+			return nil, refErr
 		}
 		return typeParameter, nil
 	} else if asterisk, wasAsterisk := p.maybeAsterisk(); wasAsterisk {

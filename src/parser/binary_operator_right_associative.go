@@ -11,14 +11,11 @@ import (
 	"github.com/swamp/compiler/src/token"
 )
 
-func parseBinaryOperator(p ParseStream, startIndentation int, infixToken token.OperatorToken, precedence Precedence,
-	left ast.Expression) (ast.Expression, parerr.ParseError) {
+func parseBinaryOperatorRightAssociative(p ParseStream, startIndentation int, infixToken token.OperatorToken,
+	precedence Precedence, left ast.Expression) (ast.Expression, parerr.ParseError) {
 	newIndentation, _, eatErr := p.eatContinuationReturnIndentation(startIndentation)
 	if eatErr != nil {
 		return nil, parerr.NewExpectedOneSpaceAfterBinaryOperator(eatErr)
-	}
-	if infixToken.Type() == token.OperatorPipeLeft {
-		precedence = LOWEST
 	}
 	right, rightErr := p.parseExpression(precedence, newIndentation)
 	if rightErr != nil {

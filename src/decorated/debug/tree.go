@@ -82,6 +82,10 @@ func getTrueTypeName(reflectValue reflect.Value) string {
 		reflectValue = elemValue
 	}
 
+	if !reflectValue.IsValid() {
+		return "NIL"
+	}
+
 	return reflectValue.Type().String()
 }
 
@@ -94,6 +98,11 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 	}
 
 	tabs := strings.Repeat("..", tab)
+
+	if !reflectValue.IsValid() {
+		fmt.Fprintf(writer, "nil\n")
+		return
+	}
 
 	switch reflectValue.Kind() {
 	case reflect.Struct:
@@ -159,7 +168,7 @@ func tree(reflectValue reflect.Value, tab int, writer io.Writer) {
 
 func Tree(expr interface{}, writer io.Writer) {
 	subType := reflect.ValueOf(expr)
-	//	fmt.Fprintf(writer, "\n%s", getTrueTypeName(subType))
+	fmt.Fprintf(writer, "\n%s", getTrueTypeName(subType))
 	tree(subType, 1, writer)
 }
 

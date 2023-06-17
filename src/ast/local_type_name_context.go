@@ -13,7 +13,7 @@ import (
 )
 
 type LocalTypeNameDefinitionContextDynamic interface {
-	GetOrCreateReferenceFromName(parameter *LocalTypeName) (*LocalTypeNameReference, error)
+	GetOrCreateReferenceFromName(parameter *LocalTypeName) (*LocalTypeNameReference, Error)
 }
 
 type LocalTypeNameDefinitionContext struct {
@@ -43,8 +43,7 @@ func (t *LocalTypeNameDefinitionContext) DebugString() string {
 }
 
 func (t *LocalTypeNameDefinitionContext) GetOrCreateReferenceFromName(parameter *LocalTypeName) (
-	*LocalTypeNameReference, error,
-) {
+	*LocalTypeNameReference, Error) {
 	if t == nil {
 		panic(fmt.Errorf("no local type name definition context"))
 	}
@@ -82,8 +81,7 @@ func (t *LocalTypeNameDefinitionContext) NotReferencedNames() []*LocalTypeNameDe
 }
 
 func (t *LocalTypeNameDefinitionContext) ParseReferenceFromName(parameter *LocalTypeName) (
-	*LocalTypeNameReference, error,
-) {
+	*LocalTypeNameReference, Error) {
 	definition, foundDefinition := t.lookup[parameter.Identifier().Name()]
 	if !foundDefinition {
 		return nil, NewUnknownTypeParameterError(parameter, t)

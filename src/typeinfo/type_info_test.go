@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/swamp/compiler/src/ast"
-	"github.com/swamp/compiler/src/decorated/dtype"
-	dectype "github.com/swamp/compiler/src/decorated/types"
 	"github.com/swamp/compiler/src/token"
 )
 
@@ -22,7 +20,8 @@ func MakeFakeLocalTypeName(name string) *ast.LocalTypeName {
 }
 
 func MakeFakeLocalTypeNameReference(name string) *ast.LocalTypeNameReference {
-	return ast.NewLocalTypeNameReference(MakeFakeLocalTypeName(name), ast.NewLocalTypeNameDefinition(MakeFakeLocalTypeName(name)))
+	return ast.NewLocalTypeNameReference(MakeFakeLocalTypeName(name),
+		ast.NewLocalTypeNameDefinition(MakeFakeLocalTypeName(name)))
 }
 
 func MakeFakeTypeIdentifier(name string) *ast.TypeIdentifier {
@@ -38,14 +37,5 @@ func MakeFakeAstTypeReferenceWithLocalTypeNames(name string, arguments []string)
 }
 
 func test(t *testing.T) {
-	c := &Chunk{}
-
-	context := dectype.NewResolvedLocalTypeContext()
-
-	typeDef := dectype.NewResolvedLocalType(dtype.NewLocalTypeName(MakeFakeLocalTypeName("a")))
-
-	context.SetType(), dectype.NewPrimitiveType(MakeFakeTypeIdentifier("Int"), nil))
-
-	c.Consume(context)
 
 }

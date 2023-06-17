@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
+	"log"
 )
 
 type SwtiType uint8
@@ -349,6 +350,7 @@ func writeCustom(writer io.Writer, custom *CustomType) error {
 }
 
 func writeInfoType(writer io.Writer, entry InfoType) error {
+	log.Printf("write Info Type %T", entry)
 	switch t := entry.(type) {
 	case *ListType:
 		return writeList(writer, t)
@@ -414,6 +416,7 @@ func writeVersion(writer io.Writer) error {
 }
 
 func Serialize(c *Chunk, writer io.Writer) error {
+	log.Printf("serialize type info chunk")
 	if err := writeVersion(writer); err != nil {
 		return err
 	}
