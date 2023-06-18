@@ -32,7 +32,7 @@ func NewRecordConstructorFromParameters(astConstructorCall *ast.ConstructorCall,
 		panic("can not be nil")
 	}
 
-	inclusive := token.MakeInclusiveSourceFileReference(astConstructorCall.FetchPositionLength(),
+	inclusive := token.MakeInclusiveSourceFileReference(recordAliasReference.FetchPositionLength(),
 		parseOrderArguments[len(parseOrderArguments)-1].FetchPositionLength())
 	return &RecordConstructorFromParameters{astConstructorCall: astConstructorCall,
 		recordAliasReference: recordAliasReference, arguments: arguments, parseOrderArguments: parseOrderArguments,

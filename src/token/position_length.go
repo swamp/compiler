@@ -7,7 +7,6 @@ package token
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"strings"
 	"unicode"
@@ -101,7 +100,6 @@ func (s SourceFileReference) Verify() bool {
 	r := s.Range
 
 	if r.Position().line == 0 && r.Position().column == 0 {
-		log.Printf("suspicious source file reference")
 		return false
 	}
 
@@ -150,7 +148,8 @@ func (s SourceFileReference) ToStartAndEndReferenceString() string {
 	if s.Document == nil {
 		panic(fmt.Errorf("document is nil in sourcefilereference %T"))
 	}
-	return fmt.Sprintf("%v:%d:%d (%d:%d)", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
+	return fmt.Sprintf("%v:%d:%d (%d:%d)", s.Document.Uri, s.Range.start.line+1, s.Range.start.column+1,
+		s.Range.end.line+1, s.Range.end.column+1)
 }
 
 func (s SourceFileReference) ToCompleteReferenceString() string {
@@ -166,7 +165,8 @@ func (s SourceFileReference) ToCompleteReferenceString() string {
 	if localPath == "" {
 		localPath = string(uri)
 	}
-	return fmt.Sprintf("%v:%d:%d - %d:%d:", localPath, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1, s.Range.end.column+1)
+	return fmt.Sprintf("%v:%d:%d - %d:%d:", localPath, s.Range.start.line+1, s.Range.start.column+1, s.Range.end.line+1,
+		s.Range.end.column+1)
 }
 
 func (s SourceFileReference) ToStandardReferenceString() string {
@@ -216,14 +216,16 @@ func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileR
 	}
 }
 
-func MakeInclusiveSourceFileReferenceFlipIfNeeded(start SourceFileReference, end SourceFileReference) SourceFileReference {
+func MakeInclusiveSourceFileReferenceFlipIfNeeded(start SourceFileReference,
+	end SourceFileReference) SourceFileReference {
 	if start.Range.IsAfter(end.Range) {
 		return MakeInclusiveSourceFileReference(end, start)
 	}
 	return MakeInclusiveSourceFileReference(start, end)
 }
 
-func MakeInclusiveSourceFileReferenceWithoutCheck(start SourceFileReference, end SourceFileReference) SourceFileReference {
+func MakeInclusiveSourceFileReferenceWithoutCheck(start SourceFileReference,
+	end SourceFileReference) SourceFileReference {
 	tokenRange := MakeInclusiveRangeWithoutCheck(start.Range, end.Range)
 	if start.Document == nil {
 		panic("start document can not be nil")

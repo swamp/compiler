@@ -12,6 +12,10 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
+type DynamicResolver interface {
+	SetType(defRef *LocalTypeName, definedType dtype.Type) error
+}
+
 type DynamicLocalTypeResolver struct {
 	argumentNames     []*dtype.LocalTypeName
 	resolvedArguments []dtype.Type
@@ -90,50 +94,21 @@ func (t *DynamicLocalTypeResolver) FillOutTheRestWithAny() {
 	}
 }
 
-/*
+func (t *DynamicLocalTypeResolver) specialSet(name string, resolved dtype.Type) error {
+	log.Printf("setting '%s' to %v", name, resolved)
 
-func (t *DynamicLocalTypeResolver) LookupTypeFromName(name string) dtype.Type {
-	if len(t.argumentNames) == 0 {
-		panic("strange, you can not lookup if it is empty")
-	}
-	for index, foundParam := range t.argumentNames {
-		if foundParam.Name() == name {
-			existing := t.localTypeNamesMap[index]
-			if existing == nil {
-				panic(fmt.Errorf("how can existing be nil '%v' %v", name, foundParam))
-			}
-
-			return existing
-		}
-	}
-	return nil
-}
-
-func (t *DynamicLocalTypeResolver) LookupType(name string) (dtype.Type, error) {
-	foundType := t.LookupTypeFromName(name)
-	if foundType == nil {
-		log.Printf("couldn't find '%v'\n%v", name, t.DebugString())
-		return nil, fmt.Errorf("couldn't find the name %v", name)
-	}
-
-	return foundType, nil
-}
-
-*/
-
-func (t *DynamicLocalTypeResolver) SpecialSet(name string, resolved dtype.Type) error {
-	if IsLocalType(resolved) {
-		panic(fmt.Errorf("must be set with a concrete type %T %v", resolved, resolved))
-	}
 	for index, foundParam := range t.argumentNames {
 		if foundParam.Name() == name {
 			existing := t.resolvedArguments[index]
-			if existing != nil {
-				compatibleErr := CompatibleTypes(existing, resolved)
-				if compatibleErr != nil {
-					log.Printf("not compatible!!!\n")
-					return fmt.Errorf("it didn't work %w", compatibleErr)
-				}
+			if existing != nil { /*
+					compatibleErr := CompatibleTypes(existing, resolved)
+					if compatibleErr != nil {
+						log.Printf("not compatible!!! %v %s\n%v\n%v", compatibleErr,
+							resolved.FetchPositionLength().ToCompleteReferenceString(), existing, resolved)
+						return fmt.Errorf("it didn't work %w", compatibleErr)
+					}*/
+
+				return nil
 			}
 
 			t.resolvedArguments[index] = resolved
@@ -146,7 +121,7 @@ func (t *DynamicLocalTypeResolver) SpecialSet(name string, resolved dtype.Type) 
 }
 
 func (t *DynamicLocalTypeResolver) SetType(defRef *LocalTypeName, definedType dtype.Type) error {
-	return t.SpecialSet(defRef.Name(), definedType)
+	return t.specialSet(defRef.Name(), definedType)
 }
 
 func (t *DynamicLocalTypeResolver) Verify() error {

@@ -16,8 +16,8 @@ import (
 
 type LocalTypeNameOnlyContext struct {
 	localTypeNamesMap             map[string]*LocalTypeName
-	localTypeNames                []*LocalTypeName
-	typeThatIsReferencingTheNames dtype.Type `debug:"true"`
+	localTypeNames                []*LocalTypeName `debug:"true"`
+	typeThatIsReferencingTheNames dtype.Type       `debug:"true"`
 }
 
 func (t *LocalTypeNameOnlyContext) DeclareString() string {

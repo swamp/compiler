@@ -213,8 +213,8 @@ func expandRecordConstructor(constructor *RecordConstructorFromParameters, list 
 		//		list.AddNode(optionalModuleRef)
 	}
 
-	for _, arg := range constructor.arguments {
-		expand(arg.Expression(), list)
+	for _, arg := range constructor.parseOrderArguments {
+		expand(arg, list)
 	}
 }
 
@@ -354,8 +354,9 @@ func (n *ExpandedNode) addChild(expandedNode *ExpandedNode) {
 	//log.Printf("adding %T %v", expandedNode.node, nodeRange)
 
 	if !n.node.FetchPositionLength().Range.ContainsRange(nodeRange) {
-		err := fmt.Errorf("can not add a child that is not within the range of the parent %v %v (%T and %T)",
-			n.node.FetchPositionLength().Range, nodeRange, n.node, expandedNode.node)
+		err := fmt.Errorf("can not add a child that is not within the range of the parent %v %v %s %s (%T and %T)",
+			n.node.FetchPositionLength().Range, nodeRange, n.node.FetchPositionLength().ToCompleteReferenceString(),
+			expandedNode.node.FetchPositionLength().ToCompleteReferenceString(), n.node, expandedNode.node)
 		log.Print(err)
 		panic(err)
 	}
@@ -436,7 +437,8 @@ func expand(node Node, parentNode *ExpandedNode) {
 		panic("can not be nil")
 	}
 
-	//	log.Printf("%v expand %T (%v) parent: %T (%v)", node.FetchPositionLength().ToCompleteReferenceString(), node, node, parentNode, parentNode)
+	//log.Printf("%v expand %T  parent: %T ", node.FetchPositionLength().ToCompleteReferenceString(), node,
+	//	parentNode)
 	newParentNode := parentNode.NewGroupNode(node)
 	switch t := node.(type) {
 	case *ModuleReference:

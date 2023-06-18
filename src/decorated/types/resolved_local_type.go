@@ -13,8 +13,8 @@ import (
 )
 
 type ResolvedLocalType struct {
-	debugLocalTypeName *LocalTypeName `debug:"true"`
-	referencedType     dtype.Type     `debug:"true"`
+	debugLocalTypeName *LocalTypeNameReference `debug:"true"`
+	referencedType     dtype.Type              `debug:"true"`
 	wasReferenced      bool
 	references         []*ResolvedLocalTypeReference
 }
@@ -38,7 +38,7 @@ func (u *ResolvedLocalType) HumanReadable() string {
 	return fmt.Sprintf("%v", u.referencedType.HumanReadable())
 }
 
-func (u *ResolvedLocalType) Identifier() *LocalTypeName {
+func (u *ResolvedLocalType) Identifier() *LocalTypeNameReference {
 	return u.debugLocalTypeName
 }
 
@@ -95,10 +95,10 @@ func (u *ResolvedLocalType) SetDefinition(localTypeName dtype.Type) error {
 }
 */
 
-func NewResolvedLocalType(localTypeName *LocalTypeName,
+func NewResolvedLocalType(localTypeName *LocalTypeNameReference,
 	referencedType dtype.Type) *ResolvedLocalType {
 	localIdent := localTypeName.identifier
-	if !localIdent.LocalType().FetchPositionLength().Verify() {
+	if !localIdent.FetchPositionLength().Verify() {
 		panic(fmt.Errorf("wrong localTypeName"))
 	}
 	x := &ResolvedLocalType{debugLocalTypeName: localTypeName, referencedType: referencedType}

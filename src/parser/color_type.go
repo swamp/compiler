@@ -140,7 +140,7 @@ func colorPrimitive(primitive *dectype.PrimitiveAtom, indentation int, inside bo
 }
 
 func colorLocalType(primitive *dectype.ResolvedLocalType, indentation int, inside bool, colorer coloring.Colorer) {
-	colorer.LocalType(primitive.Identifier().LocalTypeName().LocalType().Identifier().Symbol())
+	colorer.LocalType(primitive.Identifier().LocalTypeName().LocalTypeName().LocalType().Identifier().Symbol())
 }
 
 func colorAny(indentation int, inside bool, colorer coloring.Colorer) {

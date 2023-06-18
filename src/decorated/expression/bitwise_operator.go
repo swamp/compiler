@@ -59,5 +59,6 @@ func (a *BitwiseOperator) String() string {
 }
 
 func (a *BitwiseOperator) FetchPositionLength() token.SourceFileReference {
-	return a.left.FetchPositionLength()
+	inclusive := token.MakeInclusiveSourceFileReference(a.left.FetchPositionLength(), a.right.FetchPositionLength())
+	return inclusive
 }

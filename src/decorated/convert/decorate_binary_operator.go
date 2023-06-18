@@ -111,7 +111,7 @@ func concretizeFunctionLike(functionLike decorated.Expression, argumentTypes []d
 
 	switch t := functionLike.(type) {
 	case *decorated.CurryFunction:
-		functionAtom := t.OriginalFunctionType()
+		functionAtom := t.FunctionAtom()
 		if functionAtom == nil {
 			panic(fmt.Errorf("can not convert to function type:%v", t.Type()))
 		}

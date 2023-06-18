@@ -142,7 +142,8 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall,
 		providedArgumentCount := len(decoratedEncounteredArgumentExpressions)
 		allFunctionTypes := functionValueExpressionFunctionType.FunctionParameterTypes()
 		curryFunctionTypes := allFunctionTypes[providedArgumentCount:]
-		curryFunctionType := dectype.NewFunctionAtom(nil, curryFunctionTypes)
+		curryFunctionType := dectype.NewFunctionAtom(functionValueExpressionFunctionType.AstFunction(),
+			curryFunctionTypes)
 
 		return decorated.NewCurryFunction(
 			call, curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions,

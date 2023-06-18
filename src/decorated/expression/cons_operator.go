@@ -56,5 +56,6 @@ func (a *ConsOperator) String() string {
 }
 
 func (a *ConsOperator) FetchPositionLength() token.SourceFileReference {
-	return a.Left().FetchPositionLength()
+	inclusive := token.MakeInclusiveSourceFileReference(a.left.FetchPositionLength(), a.right.FetchPositionLength())
+	return inclusive
 }

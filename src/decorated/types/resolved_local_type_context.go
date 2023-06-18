@@ -84,7 +84,13 @@ func NewResolvedLocalTypeContext(contextRefThatWantsResolvedTypes *LocalTypeName
 
 	for index, resolvedType := range types {
 		foundName := contextRefThatWantsResolvedTypes.nameContext.Definitions()[index]
-		newLocalTypeDef := NewResolvedLocalType(foundName, resolvedType)
+		astNameDef := ast.NewLocalTypeNameDefinition(foundName.identifier.LocalType())
+		astNameRef := ast.NewLocalTypeNameReference(foundName.identifier.LocalType(), astNameDef)
+		resolved, err := contextRefThatWantsResolvedTypes.nameContext.LookupNameReference(astNameRef)
+		if err != nil {
+			return nil, err
+		}
+		newLocalTypeDef := NewResolvedLocalType(resolved, resolvedType)
 		t.resolvedArguments[foundName.identifier.Name()] = newLocalTypeDef
 		t.definitions = append(t.definitions, newLocalTypeDef)
 	}
@@ -163,7 +169,7 @@ func (t *ResolvedLocalTypeContext) LookupTypeAstRef(astReference *ast.LocalTypeN
 		return nil, NewCouldNotFindLocalTypeName(astReference, fmt.Errorf("could not find %v", astReference.Name()))
 	}
 
-	return NewResolvedLocalTypeReference(definition.debugLocalTypeName, definition), nil
+	return NewResolvedLocalTypeReference(definition.debugLocalTypeName.localTypeName, definition), nil
 }
 
 func (t *ResolvedLocalTypeContext) LookupTypeRef(decReference *LocalTypeNameReference) (

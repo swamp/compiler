@@ -24,10 +24,12 @@ func NewVariableContext(parentDefinitions *decorated.ModuleDefinitionsCombine) *
 	if parentDefinitions == nil {
 		panic("parentDefinitions nil")
 	}
-	return &VariableContext{parent: nil, parentDefinitions: parentDefinitions, lookup: make(map[string]*decorated.NamedDecoratedExpression)}
+	return &VariableContext{parent: nil, parentDefinitions: parentDefinitions,
+		lookup: make(map[string]*decorated.NamedDecoratedExpression)}
 }
 
-func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression decorated.Expression, module *decorated.Module) (decorated.Expression, decshared.DecoratedError) {
+func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression decorated.Expression,
+	module *decorated.Module) (decorated.Expression, decshared.DecoratedError) {
 	if expression == nil {
 		panic("reference from variable can not be nil")
 	}
@@ -40,12 +42,12 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 			moduleRef = decorated.NewModuleReference(scoped.ModuleReference(), module)
 		} else {
 			path := module.FullyQualifiedModuleName().Path()
-			var astModuleRef *ast.ModuleReference
+			//var astModuleRef *ast.ModuleReference
 
 			if path != nil {
-				astModuleRef = ast.NewModuleReference(path.Parts())
-				moduleRef = decorated.NewModuleReference(astModuleRef, module)
+				//	astModuleRef = ast.NewModuleReference(path.Parts())
 			}
+			moduleRef = nil // decorated.NewModuleReference(astModuleRef, module)
 		}
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)
@@ -76,7 +78,8 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 	}
 }
 
-func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression, decshared.DecoratedError) {
+func (c *VariableContext) ResolveVariable(name *ast.VariableIdentifier) (decorated.Expression,
+	decshared.DecoratedError) {
 	def := c.FindNamedDecoratedExpression(name)
 	if def == nil {
 		return nil, decorated.NewUnknownVariable(name)
@@ -170,5 +173,6 @@ func (c *VariableContext) String() string {
 }
 
 func (c *VariableContext) MakeVariableContext() *VariableContext {
-	return &VariableContext{parent: c, lookup: make(map[string]*decorated.NamedDecoratedExpression), parentDefinitions: c.parentDefinitions}
+	return &VariableContext{parent: c, lookup: make(map[string]*decorated.NamedDecoratedExpression),
+		parentDefinitions: c.parentDefinitions}
 }

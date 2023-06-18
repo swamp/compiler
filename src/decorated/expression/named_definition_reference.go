@@ -15,13 +15,31 @@ import (
 type NamedDefinitionReference struct {
 	optionalModuleReference *ModuleReference
 	ident                   ast.ScopedOrNormalVariableIdentifier `debug:"true"`
+	inclusive               token.SourceFileReference
 }
 
 func NewNamedDefinitionReference(optionalModuleReference *ModuleReference,
 	ident ast.ScopedOrNormalVariableIdentifier) *NamedDefinitionReference {
+
+	inclusive := ident.FetchPositionLength()
+	if !inclusive.Verify() {
+		panic(fmt.Errorf("wrong thing here"))
+	}
+	if optionalModuleReference != nil {
+		inclusive = token.MakeInclusiveSourceFileReference(optionalModuleReference.FetchPositionLength(),
+			ident.FetchPositionLength())
+		if !inclusive.Verify() {
+			panic(fmt.Errorf("wrong thing here %s %v %s",
+				optionalModuleReference.FetchPositionLength().ToCompleteReferenceString(),
+				optionalModuleReference.AstModuleReference().ModuleName(),
+				ident.FetchPositionLength().ToCompleteReferenceString()))
+		}
+	}
+
 	return &NamedDefinitionReference{
 		optionalModuleReference: optionalModuleReference,
 		ident:                   ident,
+		inclusive:               inclusive,
 	}
 }
 
@@ -65,5 +83,5 @@ func (r *NamedDefinitionReference) DebugString() string {
 }
 
 func (r *NamedDefinitionReference) FetchPositionLength() token.SourceFileReference {
-	return r.ident.FetchPositionLength()
+	return r.inclusive
 }
