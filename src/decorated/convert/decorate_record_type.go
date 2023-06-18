@@ -25,7 +25,7 @@ func DecorateRecordType(info *ast.Record, t decorated.TypeAddAndReferenceMaker) 
 		convertedFields = append(convertedFields, convertedField)
 	}
 
-	record := dectype.NewRecordType(info, convertedFields)
+	record := dectype.NewRecordType(info, convertedFields, nil)
 
 	return record, nil
 }

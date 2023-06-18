@@ -94,7 +94,7 @@ func replaceLocalNamesInRecordAtomIfNeeded(recordType *RecordAtom, lookup Lookup
 		return recordType, false, nil
 	}
 
-	newRecord := NewRecordType(recordType.AstRecord(), newRecordFields)
+	newRecord := NewRecordType(recordType.AstRecord(), newRecordFields, nil)
 
 	return newRecord, true, nil
 }
@@ -180,6 +180,8 @@ func internalCollapse(typeToCheck dtype.Type, lookup LookupTypeName) (dtype.Type
 			return nil, false, err
 		}
 		return internalCollapse(t.Next(), newContext)
+	case *AnyMatchingTypes:
+		return typeToCheck, false, nil
 	default:
 		panic(fmt.Errorf("collapse not implemented for %T", typeToCheck))
 		return typeToCheck, false, nil

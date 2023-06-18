@@ -10,13 +10,17 @@ import (
 	"log"
 
 	"github.com/swamp/compiler/src/ast"
+	"github.com/swamp/compiler/src/decorated/concretize"
+	"github.com/swamp/compiler/src/decorated/debug"
 	"github.com/swamp/compiler/src/decorated/decshared"
+	"github.com/swamp/compiler/src/decorated/dtype"
 	decorated "github.com/swamp/compiler/src/decorated/expression"
 	dectype "github.com/swamp/compiler/src/decorated/types"
 )
 
-func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
-	var decoratedExpressions []decorated.Expression
+func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall,
+	context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+	var decoratedArgumentExpressions []decorated.Expression
 
 	for _, rawExpression := range call.Arguments() {
 		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, rawExpression, context)
@@ -24,13 +28,20 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 			return nil, decoratedExpressionErr
 		}
 
-		decoratedExpressions = append(decoratedExpressions, decoratedExpression)
+		decoratedArgumentExpressions = append(decoratedArgumentExpressions, decoratedExpression)
+	}
+
+	var argumentTypes []dtype.Type
+	for _, argExpression := range decoratedArgumentExpressions {
+		argumentTypes = append(argumentTypes, argExpression.Type())
 	}
 
 	variantConstructor, err := d.TypeReferenceMaker().CreateSomeTypeReference(call.TypeReference().SomeTypeIdentifier())
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("variantConstructor: %T", variantConstructor)
+	// 	concretize.ConcretizeLocalTypeContextUsingArguments()
 
 	unaliasedConstructor := dectype.Unalias(variantConstructor)
 
@@ -44,11 +55,12 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 
 			e, wasRecordType := unaliasedConstructor.(*dectype.RecordAtom)
 			if !wasRecordType {
-				return nil, decorated.NewInternalError(fmt.Errorf("variantconstructor was not a record atom %T", unaliasedConstructor))
+				return nil, decorated.NewInternalError(fmt.Errorf("variantconstructor was not a record atom %T",
+					unaliasedConstructor))
 			}
-			argumentCount := len(decoratedExpressions)
+			argumentCount := len(decoratedArgumentExpressions)
 			if argumentCount == 1 {
-				first := decoratedExpressions[0]
+				first := decoratedArgumentExpressions[0]
 				recordLiteral, wasRecord := first.(*decorated.RecordLiteral)
 				if wasRecord {
 					compatibleErr := dectype.CompatibleTypes(recordLiteral.Type(), e)
@@ -58,7 +70,7 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				}
 			}
 
-			if len(decoratedExpressions) != len(e.ParseOrderedFields()) {
+			if len(decoratedArgumentExpressions) != len(e.ParseOrderedFields()) {
 				return nil, decorated.NewWrongNumberOfFieldsInConstructor(e, call)
 			}
 
@@ -66,9 +78,9 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				return nil, decorated.NewInternalError(fmt.Errorf("maximum of 4 constructor arguments"))
 			}
 
-			alphaOrderedAssignments := make([]*decorated.RecordLiteralAssignment, len(decoratedExpressions))
-			parsedOrderedAssignments := make([]*decorated.RecordLiteralAssignment, len(decoratedExpressions))
-			for index, expr := range decoratedExpressions {
+			alphaOrderedAssignments := make([]*decorated.RecordLiteralAssignment, len(decoratedArgumentExpressions))
+			parsedOrderedAssignments := make([]*decorated.RecordLiteralAssignment, len(decoratedArgumentExpressions))
+			for index, expr := range decoratedArgumentExpressions {
 				field := e.ParseOrderedFields()[index]
 				targetIndex := field.Index()
 				literalField := decorated.NewRecordLiteralField(field.VariableIdentifier())
@@ -83,17 +95,29 @@ func decorateConstructorCall(d DecorateStream, call *ast.ConstructorCall, contex
 				}
 			}
 
-			return decorated.NewRecordConstructorFromParameters(call, t, e, alphaOrderedAssignments, decoratedExpressions), nil
+			return decorated.NewRecordConstructorFromParameters(call, t, e, alphaOrderedAssignments,
+				decoratedArgumentExpressions), nil
 		}
+	case *dectype.CustomTypeVariantReference:
+		localTypeContext, _ := t.Next().(*dectype.LocalTypeNameOnlyContextReference)
+		var variantRef *dectype.CustomTypeVariantReference
+		log.Printf("variant ref: %T", t.Next())
+		if localTypeContext != nil {
+			concrete, resolveErr := concretize.ConcretizeLocalTypeContextUsingArguments(localTypeContext, argumentTypes)
+			if resolveErr != nil {
+				return nil, resolveErr
+			}
+			log.Printf("resolved to %s", debug.TreeString(concrete))
+		} else {
+			variantRef = t
+		}
+		return decorated.NewCustomTypeVariantConstructor(variantRef, decoratedArgumentExpressions), nil
+	default:
+		panic(fmt.Errorf("not sure what it is now %T", variantConstructor))
 	}
 
 	switch unaliasedConstructor.(type) {
 	case *dectype.CustomTypeVariantAtom:
-		variantRef, wasVariantRef := variantConstructor.(*dectype.CustomTypeVariantReference)
-		if !wasVariantRef {
-			panic("can not create variant constructor")
-		}
-		return decorated.NewCustomTypeVariantConstructor(variantRef, decoratedExpressions), nil
 	case *dectype.RecordAtom:
 
 	default:

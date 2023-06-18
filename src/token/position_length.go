@@ -197,7 +197,7 @@ func MakeSourceFileReference(uri *SourceFileDocument, tokenRange Range) SourceFi
 }
 
 func MakeInclusiveSourceFileReference(start SourceFileReference, end SourceFileReference) SourceFileReference {
-	tokenRange := MakeInclusiveRange(start.Range, end.Range)
+	tokenRange := MakeInclusiveRange(start.Range, end.Range, start)
 	if start.Document == nil {
 		panic("start document can not be nil")
 	}
@@ -329,9 +329,10 @@ func (p Range) IsEqual(other Range) bool {
 	return p.start.line == other.start.line && p.start.column == other.start.column && p.end.line == other.end.line && p.end.column == other.end.column
 }
 
-func MakeInclusiveRange(start Range, end Range) Range {
+func MakeInclusiveRange(start Range, end Range, debug SourceFileReference) Range {
 	if !end.End().IsOnOrAfter(start.Start()) {
-		panic(fmt.Errorf("wrong inclusive range %v : %v", start.Start(), end.End()))
+		panic(fmt.Errorf("wrong inclusive range %v : %v %s", start.Start(), end.End(),
+			debug.ToCompleteReferenceString()))
 	}
 	return Range{
 		start: start.Start(),

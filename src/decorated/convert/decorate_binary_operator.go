@@ -195,7 +195,7 @@ func generateFunctionCall(d DecorateStream, nonComplete ast.Expression, lastArgu
 			argumentTypes = append(argumentTypes, decArg.Type())
 		}
 	default:
-		log.Printf("what is this %T %v", nonComplete, nonComplete)
+		log.Printf("what is this non complete %T %v", nonComplete, nonComplete)
 	}
 
 	decoratedFunctionValueExpression, functionErr := DecorateExpression(d, functionValueExpression, context)

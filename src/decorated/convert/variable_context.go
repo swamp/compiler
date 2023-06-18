@@ -42,12 +42,10 @@ func ReferenceFromVariable(name ast.ScopedOrNormalVariableIdentifier, expression
 			moduleRef = decorated.NewModuleReference(scoped.ModuleReference(), module)
 		} else {
 			path := module.FullyQualifiedModuleName().Path()
-			//var astModuleRef *ast.ModuleReference
-
 			if path != nil {
-				//	astModuleRef = ast.NewModuleReference(path.Parts())
+				astModuleRef := ast.NewModuleReference(path.Parts())
+				moduleRef = decorated.NewModuleReference(astModuleRef, module)
 			}
-			moduleRef = nil // decorated.NewModuleReference(astModuleRef, module)
 		}
 		nameWithModuleRef := decorated.NewNamedDefinitionReference(moduleRef, name)
 		functionReference := decorated.NewFunctionReference(nameWithModuleRef, t)

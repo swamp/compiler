@@ -139,7 +139,6 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type,
 			t, concrete.(*dectype.TupleTypeAtom).ParameterTypes(), resolveLocalTypeNames,
 		)
 	case *dectype.RecordAtom:
-		log.Printf("%s", debug.TreeString(concrete))
 		unaliasRecordAtom := dectype.Unalias(concrete)
 		return FillContextFromRecordAtom(t, unaliasRecordAtom.(*dectype.RecordAtom), resolveLocalTypeNames)
 	case *dectype.ResolvedLocalTypeContext:
@@ -147,7 +146,6 @@ func ConcreteTypeIfNeeded(reference dtype.Type, concrete dtype.Type,
 		for _, mappedDefinition := range t.Definitions() {
 			localTypeNameRef, wasLocalTypeNameRef := mappedDefinition.ReferencedType().(*dectype.LocalTypeNameReference)
 			if wasLocalTypeNameRef {
-				log.Printf("resolved: %v", localTypeNameRef.LocalTypeName().Name())
 				reverseLookup[mappedDefinition.Identifier().LocalTypeName().Name()] = localTypeNameRef
 			}
 		}
@@ -288,15 +286,6 @@ func FillContextFromRecordAtom(reference *dectype.RecordAtom, encounteredRecord 
 
 func FillContextFromFunction(reference *dectype.FunctionAtom, encounteredArguments []dtype.Type,
 	resolver dectype.DynamicResolver) decshared.DecoratedError {
-	if len(encounteredArguments) != reference.ParameterCount() {
-		err := fmt.Errorf("not good, wrong count. expected %d but got %d.\n %s %v %v %s %s", reference.ParameterCount(),
-			len(encounteredArguments),
-			reference.AstFunction().Name(),
-			encounteredArguments[0].FetchPositionLength().ToCompleteReferenceString(), reference,
-			debug.TreeString(reference), debug.TreeString(encounteredArguments))
-		log.Panicf("%v", err)
-		return decorated.NewInternalError(err)
-	}
 
 	if hasAnyMatching, startIndex := dectype.HasAnyMatchingTypes(reference.FunctionParameterTypes()); hasAnyMatching {
 		originalInitialCount := startIndex
@@ -320,8 +309,18 @@ func FillContextFromFunction(reference *dectype.FunctionAtom, encounteredArgumen
 
 		//created := dectype.NewFunctionAtom(reference.AstFunction(), allConverted)
 
-		return FillContextFromFunction(reference, allConverted, resolver)
+		return FillLocalTypesFromSlice(allConverted, encounteredArguments, resolver)
 	} else {
+		if len(encounteredArguments) != reference.ParameterCount() {
+			err := fmt.Errorf("not good, wrong count. expected %d but got %d.\n %s %v %v %s %s",
+				reference.ParameterCount(),
+				len(encounteredArguments),
+				reference.AstFunction().Name(),
+				encounteredArguments[0].FetchPositionLength().ToCompleteReferenceString(), reference,
+				debug.TreeString(reference), debug.TreeString(encounteredArguments))
+			log.Panicf("%v", err)
+			return decorated.NewInternalError(err)
+		}
 		if len(reference.FunctionParameterTypes()) < len(encounteredArguments) {
 			return decorated.NewInternalError(fmt.Errorf("too few parameter types"))
 		}
@@ -361,18 +360,11 @@ func handleFunction(functionAtom *dectype.FunctionAtom,
 		return nil, err
 	}
 
-	var first dtype.Type
-	if len(concreteArguments) > 0 {
-		first = concreteArguments[0]
+	context, resolveErr := createResolvedFromDynamic(localTypeNameContextRef, resolver)
+	if resolveErr != nil {
+		log.Printf("problem resolving %s", concreteArguments[0].FetchPositionLength().ToCompleteReferenceString())
 	}
-	if first != nil {
-		log.Printf("handleFunction %s %s", functionAtom.FetchPositionLength().ToCompleteReferenceString(),
-			first.FetchPositionLength().ToCompleteReferenceString())
-	} else {
-		log.Printf("handleFunction %s %s", functionAtom.FetchPositionLength().ToCompleteReferenceString())
-	}
-
-	return createResolvedFromDynamic(localTypeNameContextRef, resolver)
+	return context, resolveErr
 }
 
 func ConcretizeLocalTypeContextUsingArguments(localTypeNameContext *dectype.LocalTypeNameOnlyContextReference,

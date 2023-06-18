@@ -9,33 +9,10 @@ import (
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
 
-func TypesIsTemplateHasLocalTypes(p []dtype.Type) bool {
-	for _, x := range p {
-		if TypeIsTemplateHasLocalTypes(x) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func TypeIsTemplateHasLocalTypes(p dtype.Type) bool {
-	atom := ResolveToAtom(p)
-	switch t := atom.(type) {
-	case *CustomTypeAtom:
-		for _, variant := range t.Variants() {
-			if TypesIsTemplateHasLocalTypes(variant.ParameterTypes()) {
-				return true
-			}
-		}
-	case *CustomTypeVariantAtom:
-		if TypesIsTemplateHasLocalTypes(t.ParameterTypes()) {
-			return true
-		}
-	case *FunctionAtom:
-		if TypesIsTemplateHasLocalTypes(t.FunctionParameterTypes()) && !IsAnyOrFunctionWithAnyMatching(t) {
-			return true
-		}
+	switch p.(type) {
+	case *LocalTypeNameOnlyContext:
+		return true
 	}
 
 	return false

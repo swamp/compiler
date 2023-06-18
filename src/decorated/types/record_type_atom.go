@@ -25,6 +25,7 @@ type RecordAtom struct {
 	record            *ast.Record
 	memorySize        MemorySize
 	memoryAlign       MemoryAlign
+	inclusive         token.SourceFileReference
 }
 
 func (s *RecordAtom) MemorySize() MemorySize {
@@ -56,13 +57,8 @@ func (s *RecordAtom) HumanReadable() string {
 }
 
 func (s *RecordAtom) FetchPositionLength() token.SourceFileReference {
-	if len(s.parsedOrderFields) == 0 {
-		panic(fmt.Errorf("not allowed to have zero record"))
-	}
-	lastType := s.parsedOrderFields[len(s.parsedOrderFields)-1].fieldType
-	inclusive := token.MakeInclusiveSourceFileReference(s.parsedOrderFields[0].name.FetchPositionLength(),
-		lastType.FetchPositionLength())
-	return inclusive
+
+	return s.inclusive
 }
 
 func TypeChain(p dtype.Type, tabs int) {
@@ -198,9 +194,10 @@ func (a ByFieldName) Len() int           { return len(a) }
 func (a ByFieldName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByFieldName) Less(i, j int) bool { return a[i].Name() < a[j].Name() }
 
-func NewRecordType(info *ast.Record, fields []*RecordField) *RecordAtom {
-	sortedFields := make([]*RecordField, len(fields))
-	copy(sortedFields, fields)
+func NewRecordType(info *ast.Record, parseOrderedFields []*RecordField,
+	reference *token.SourceFileReference) *RecordAtom {
+	sortedFields := make([]*RecordField, len(parseOrderedFields))
+	copy(sortedFields, parseOrderedFields)
 	sort.Sort(ByFieldName(sortedFields))
 
 	nameToField := make(map[string]*RecordField)
@@ -233,9 +230,23 @@ func NewRecordType(info *ast.Record, fields []*RecordField) *RecordAtom {
 
 	memorySize, memoryAlign := calculateFieldOffsetsAndRecordMemorySizeAndAlign(sortedFields)
 
+	if len(parseOrderedFields) == 0 {
+		panic(fmt.Errorf("not allowed to have zero record"))
+	}
+
+	var inclusive token.SourceFileReference
+	if reference != nil {
+		inclusive = *reference
+	} else {
+		lastType := parseOrderedFields[len(parseOrderedFields)-1].fieldType
+		inclusive = token.MakeInclusiveSourceFileReference(parseOrderedFields[0].name.FetchPositionLength(),
+			lastType.FetchPositionLength())
+	}
+
 	return &RecordAtom{
-		sortedFields: sortedFields, record: info, parsedOrderFields: fields,
+		sortedFields: sortedFields, record: info, parsedOrderFields: parseOrderedFields,
 		nameToField: nameToField,
+		inclusive:   inclusive,
 		memorySize:  memorySize, memoryAlign: memoryAlign,
 	}
 }

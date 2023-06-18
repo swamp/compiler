@@ -7,7 +7,6 @@ package ast
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/token"
 )
@@ -60,7 +59,6 @@ func NewGuardExpression(items []GuardItem, defaultItem *GuardDefault) *GuardExpr
 	}
 	start := items[0].GuardToken.FetchPositionLength()
 	inclusive := token.MakeInclusiveSourceFileReference(start, lastRange)
-	log.Printf("guard expression: %T %v (%v)", items[0].Condition, start.ToStartAndEndReferenceString(), items[0])
 	return &GuardExpression{items: items, defaultItem: defaultItem, inclusive: inclusive}
 }
 

@@ -181,6 +181,19 @@ func IsAnyOrFunctionWithAnyMatching(p dtype.Type) bool {
 	return false
 }
 
+func IsFunctionTypeWithAnyMatching(unalias dtype.Atom) bool {
+	functionAtom, wasFunctionAtom := unalias.(*FunctionAtom)
+	if wasFunctionAtom {
+		for _, param := range functionAtom.FunctionParameterTypes() {
+			_, isAnyMatching := param.(*AnyMatchingTypes)
+			if isAnyMatching {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func IsAtomAny(checkType dtype.Atom) bool {
 	primitive, wasPrimitive := checkType.(*PrimitiveAtom)
 	if !wasPrimitive {

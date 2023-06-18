@@ -25,17 +25,18 @@ func NewNamedDefinitionReference(optionalModuleReference *ModuleReference,
 	if !inclusive.Verify() {
 		panic(fmt.Errorf("wrong thing here"))
 	}
-	if optionalModuleReference != nil {
-		inclusive = token.MakeInclusiveSourceFileReference(optionalModuleReference.FetchPositionLength(),
-			ident.FetchPositionLength())
-		if !inclusive.Verify() {
-			panic(fmt.Errorf("wrong thing here %s %v %s",
-				optionalModuleReference.FetchPositionLength().ToCompleteReferenceString(),
-				optionalModuleReference.AstModuleReference().ModuleName(),
-				ident.FetchPositionLength().ToCompleteReferenceString()))
+	/*
+		if optionalModuleReference != nil {
+			inclusive = token.MakeInclusiveSourceFileReference(ident.FetchPositionLength(),
+				ident.FetchPositionLength())
+			if !inclusive.Verify() {
+				panic(fmt.Errorf("wrong thing here %s %v %s",
+					optionalModuleReference.FetchPositionLength().ToCompleteReferenceString(),
+					optionalModuleReference.AstModuleReference().ModuleName(),
+					ident.FetchPositionLength().ToCompleteReferenceString()))
+			}
 		}
-	}
-
+	*/
 	return &NamedDefinitionReference{
 		optionalModuleReference: optionalModuleReference,
 		ident:                   ident,

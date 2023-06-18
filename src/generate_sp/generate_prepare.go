@@ -7,6 +7,7 @@ package generate_sp
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/swamp/assembler/lib/assembler_sp"
 	"github.com/swamp/compiler/src/decorated/decshared"
@@ -43,6 +44,7 @@ func preparePackageConstants(compiledPackage *loader.Package, packageConstants *
 						}
 						continue
 					}
+					log.Printf("resolve '%s' %T", named.Identifier().Name(), maybeFunction.Type())
 					returnSize, _ := dectype.GetMemorySizeAndAlignment(dectype.ResolveToFunctionAtom(maybeFunction.Type()).ReturnType())
 					returnPosRange := assembler_sp.SourceStackPosRange{
 						Pos:  assembler_sp.SourceStackPos(pos),

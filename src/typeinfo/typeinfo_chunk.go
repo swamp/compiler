@@ -1238,7 +1238,7 @@ func (c *Chunk) consumePrimitive(primitive *dectype.PrimitiveAtom) (InfoType, er
 func (c *Chunk) consumeLocalType(localType *dectype.ResolvedLocalType) (InfoType, error) {
 	return &LocalTypeNameOnly{
 		Type: Type{},
-		name: localType.Identifier().Name(),
+		name: localType.Identifier().LocalTypeName().Name(),
 	}, nil
 }
 
@@ -1279,7 +1279,6 @@ func (c *Chunk) consumeTypeNameOnlyContext(localTypeNameOnlyContext *dectype.Loc
 	}
 	collection := NewLocalTypeNamesOnlyCollection(realType, localTypeNameOnlyContext.Names())
 	// TODO: PROPER IMPLEMENTATION
-	log.Printf("name only %v", localTypeNameOnlyContext)
 	return collection, nil
 }
 
@@ -1302,8 +1301,6 @@ func (c *Chunk) consumeResolvedLocalTypeContext(localTypeNameContext *dectype.Re
 
 	// TODO: PROPER IMPLEMENTATION
 	newType := NewLocalTypesCollection(next, consumedTypes)
-
-	log.Printf("resolved %v", newType)
 
 	return newType, nil
 }
@@ -1350,7 +1347,6 @@ func (c *Chunk) Lookup(d dtype.Type) (int, error) {
 }
 
 func (c *Chunk) Consume(p dtype.Type) (InfoType, error) {
-	log.Printf("consume %T", p)
 	atom, isAtom := p.(dtype.Atom)
 	if isAtom {
 		return c.ConsumeAtom(atom)

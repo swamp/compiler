@@ -123,31 +123,33 @@ func decorateFunctionCallInternal(d DecorateStream, call *ast.FunctionCall,
 
 	*/
 
-	expectedArgumentTypes := completeCalledFunctionType.FunctionParameterTypes()
-	for index, encounteredArgumentType := range encounteredArgumentTypes {
-		expectedArgumentType := expectedArgumentTypes[index]
-		compatibleErr := dectype.CompatibleTypes(expectedArgumentType, encounteredArgumentType)
-		if compatibleErr != nil {
-			log.Printf("func:%s expected:%s\nencountered:\n%s", functionValueExpression,
-				debug.TreeString(expectedArgumentTypes),
-				debug.TreeString(encounteredArgumentType))
-			return nil, decorated.NewFunctionArgumentTypeMismatch(call.FetchPositionLength(), nil, nil,
-				expectedArgumentType, encounteredArgumentType,
-				fmt.Errorf("%v %v", completeCalledFunctionType, compatibleErr))
+	if hasAnyMatching, _ := dectype.HasAnyMatchingTypes(completeCalledFunctionType.FunctionParameterTypes()); !hasAnyMatching {
+		expectedArgumentTypes := completeCalledFunctionType.FunctionParameterTypes()
+		for index, encounteredArgumentType := range encounteredArgumentTypes {
+			expectedArgumentType := expectedArgumentTypes[index]
+			compatibleErr := dectype.CompatibleTypes(expectedArgumentType, encounteredArgumentType)
+			if compatibleErr != nil {
+				log.Printf("func:%s expected:%s\nencountered:\n%s", functionValueExpression,
+					debug.TreeString(expectedArgumentTypes),
+					debug.TreeString(encounteredArgumentType))
+				return nil, decorated.NewFunctionArgumentTypeMismatch(call.FetchPositionLength(), nil, nil,
+					expectedArgumentType, encounteredArgumentType,
+					fmt.Errorf("%v %v", completeCalledFunctionType, compatibleErr))
+			}
 		}
-	}
 
-	isCurrying := len(decoratedEncounteredArgumentExpressions) < completeCalledFunctionType.ParameterCount()-1
-	if isCurrying {
-		providedArgumentCount := len(decoratedEncounteredArgumentExpressions)
-		allFunctionTypes := functionValueExpressionFunctionType.FunctionParameterTypes()
-		curryFunctionTypes := allFunctionTypes[providedArgumentCount:]
-		curryFunctionType := dectype.NewFunctionAtom(functionValueExpressionFunctionType.AstFunction(),
-			curryFunctionTypes)
+		isCurrying := len(decoratedEncounteredArgumentExpressions) < completeCalledFunctionType.ParameterCount()-1
+		if isCurrying {
+			providedArgumentCount := len(decoratedEncounteredArgumentExpressions)
+			allFunctionTypes := functionValueExpressionFunctionType.FunctionParameterTypes()
+			curryFunctionTypes := allFunctionTypes[providedArgumentCount:]
+			curryFunctionType := dectype.NewFunctionAtom(functionValueExpressionFunctionType.AstFunction(),
+				curryFunctionTypes)
 
-		return decorated.NewCurryFunction(
-			call, curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions,
-		), nil
+			return decorated.NewCurryFunction(
+				call, curryFunctionType, functionValueExpression, decoratedEncounteredArgumentExpressions,
+			), nil
+		}
 	}
 
 	return decorated.NewFunctionCall(

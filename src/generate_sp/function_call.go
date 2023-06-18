@@ -24,12 +24,14 @@ func align(offset dectype.MemoryOffset, memoryAlign dectype.MemoryAlign) dectype
 
 func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, isLeafNode bool,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
-	functionAtom := dectype.ResolveToAtom(call.ConcretizedFunctionType()).(*dectype.FunctionAtom)
-	maybeOriginalFunctionType := dectype.ResolveToAtom(call.FunctionExpression().Type())
-	originalFunctionType, _ := maybeOriginalFunctionType.(*dectype.FunctionAtom)
+	concretizeFunctionType := dectype.ResolveToAtom(call.ConcretizedFunctionType())
+	functionAtom := concretizeFunctionType.(*dectype.FunctionAtom)
 	if dectype.TypeIsTemplateHasLocalTypes(functionAtom) {
 		panic(fmt.Errorf("we can not call functions that has local types %v %v",
 			call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), functionAtom))
+	}
+	if functionAtom == nil {
+		panic(fmt.Errorf("can not handle function call, what is this: %T", concretizeFunctionType))
 	}
 
 	fn := call.FunctionExpression()
@@ -68,7 +70,7 @@ func handleFunctionCall(code *assembler_sp.Code, call *decorated.FunctionCall, i
 	var arguments []assembler_sp.TargetStackPosRange
 	var argumentsAlign []dectype.MemoryAlign
 
-	expectedParameters, _ := originalFunctionType.ParameterAndReturn()
+	expectedParameters, _ := functionAtom.ParameterAndReturn()
 	if len(expectedParameters) < len(call.Arguments()) {
 		panic(fmt.Errorf("wrong parameters %v %v",
 			call.AstFunctionCall().FetchPositionLength().ToCompleteReferenceString(), call.AstFunctionCall()))

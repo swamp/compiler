@@ -133,6 +133,10 @@ func (u *FunctionAtom) IsEqual(other_ dtype.Atom) error {
 		return fmt.Errorf("different argument count ")
 	}
 
+	if found, _ := HasAnyMatchingTypes(u.parameterTypes); found {
+		return nil
+	}
+
 	for index, parameter := range u.parameterTypes {
 		equalErr := CompatibleTypes(parameter, otherParams[index])
 		if equalErr != nil {

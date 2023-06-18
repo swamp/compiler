@@ -1209,7 +1209,7 @@ func (e *MultiErrors) add(decoratedError decshared.DecoratedError) {
 		panic("can not add self")
 	}
 	if decoratedError.FetchPositionLength().Document == nil {
-		panic(fmt.Errorf("error %T must provide a valid document %v", decoratedError, decoratedError))
+		//panic(fmt.Errorf("error %T must provide a valid document %v", decoratedError, decoratedError))
 	}
 
 	e.errors = append(e.errors, decoratedError)

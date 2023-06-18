@@ -141,7 +141,7 @@ func [constantfn DynPos 0008:104 func:a]
 `)
 }
 
-func xTestMaybeInt(t *testing.T) {
+func TestMaybeInt(t *testing.T) {
 	testGenerateWithoutCores(t,
 		`
 main : (Bool) -> Maybe Int =

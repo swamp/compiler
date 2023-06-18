@@ -88,19 +88,13 @@ func NewCustomTypeVariant(index int, inCustomType *CustomTypeAtom, astCustomType
 			panic("paramtype is nil")
 		}
 
-		_, wasLocalType := paramType.(*LocalTypeNameReference)
 		var memorySize MemorySize
 		var memoryAlign MemoryAlign
 
-		if wasLocalType {
-			memorySize = 0
-			memoryAlign = 0
-		} else {
-			memorySize, memoryAlign = GetMemorySizeAndAlignment(paramType)
-			rest := pos % MemoryOffset(memoryAlign)
-			if rest != 0 {
-				pos += MemoryOffset(uint(memoryAlign) - uint(rest))
-			}
+		memorySize, memoryAlign = GetMemorySizeAndAlignment(paramType)
+		rest := pos % MemoryOffset(memoryAlign)
+		if rest != 0 {
+			pos += MemoryOffset(uint(memoryAlign) - uint(rest))
 		}
 
 		if memoryAlign > biggestMemoryAlign {
@@ -226,11 +220,11 @@ func (s *CustomTypeVariantAtom) String() string {
 }
 
 func (s *CustomTypeVariantAtom) MemorySize() MemorySize {
-	return s.inCustomType.MemorySize()
+	return s.debugMemorySize
 }
 
 func (s *CustomTypeVariantAtom) MemoryAlignment() MemoryAlign {
-	return s.inCustomType.MemoryAlignment()
+	return s.debugMemoryAlign
 }
 
 func (s *CustomTypeVariantAtom) HumanReadable() string {

@@ -18,6 +18,9 @@ type TypeReferenceScopedOrNormal interface {
 }
 
 func compareAtoms(pureExpected dtype.Atom, pureActual dtype.Atom) error {
+	if IsFunctionTypeWithAnyMatching(pureExpected) {
+		return nil
+	}
 	expectedIsAny := IsAtomAny(pureExpected)
 	actualIsAny := IsAtomAny(pureActual)
 

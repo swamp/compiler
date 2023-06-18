@@ -19,7 +19,7 @@ func generateCustomTypeVariantConstructor(code *assembler_sp.Code, target assemb
 	unaliasedTypeVariant := dectype.ResolveToAtom(constructor.Type())
 	smashedVariant := unaliasedTypeVariant.(*dectype.CustomTypeVariantAtom)
 
-	variantMemorySize, _ := dectype.GetMemorySizeAndAlignment(smashedVariant.InCustomType())
+	variantMemorySize, _ := dectype.GetMemorySizeAndAlignment(smashedVariant)
 	if uint(variantMemorySize) > uint(target.Size) {
 		log.Printf("smashedVariant:%v\n\nsmashedCustomType:%v\n\n", smashedVariant, smashedVariant.InCustomType())
 		return fmt.Errorf("internal error, target size is not exactly right at %v, target is:%v and unionMemorySize is:%v",
@@ -50,7 +50,7 @@ func handleCustomTypeVariantConstructor(code *assembler_sp.Code,
 	genContext *generateContext) (assembler_sp.SourceStackPosRange, error) {
 	unaliasedTypeVariant := dectype.ResolveToAtom(customTypeVariantConstructor.Type())
 	smashedVariant := unaliasedTypeVariant.(*dectype.CustomTypeVariantAtom)
-	posRange := allocMemoryForType(genContext.context.stackMemory, smashedVariant.InCustomType(),
+	posRange := allocMemoryForType(genContext.context.stackMemory, smashedVariant,
 		"variant constructor target")
 	if err := generateCustomTypeVariantConstructor(code, posRange, customTypeVariantConstructor,
 		genContext); err != nil {

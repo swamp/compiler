@@ -21,9 +21,10 @@ func findField(name string, fields []*dectype.RecordField) *dectype.RecordField 
 	return nil
 }
 
-func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context *VariableContext) (decorated.Expression, decshared.DecoratedError) {
+func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context *VariableContext) (decorated.Expression,
+	decshared.DecoratedError) {
 	var sortedRecordAssignment []*decorated.RecordLiteralAssignment
-	var recordTypeFields []*dectype.RecordField
+	var parseOrderedFields []*dectype.RecordField
 	var decoratedRecordLiteralExpression decorated.Expression
 	var decoratedRecordLiteralExpressionErr decshared.DecoratedError
 
@@ -34,7 +35,8 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 	if record.TemplateExpression() != nil {
 		allowToAddFields = false
 
-		decoratedRecordLiteralExpression, decoratedRecordLiteralExpressionErr = DecorateExpression(d, record.TemplateExpression(), context)
+		decoratedRecordLiteralExpression, decoratedRecordLiteralExpressionErr = DecorateExpression(d,
+			record.TemplateExpression(), context)
 		if decoratedRecordLiteralExpressionErr != nil {
 			return nil, decoratedRecordLiteralExpressionErr
 		}
@@ -46,34 +48,37 @@ func decorateRecordLiteral(d DecorateStream, record *ast.RecordLiteral, context 
 
 		foundTemplateRecord = templateRecord
 
-		recordTypeFields = append(recordTypeFields, templateRecord.SortedFields()...)
+		parseOrderedFields = append(parseOrderedFields, templateRecord.ParseOrderedFields()...)
 	}
 
-	for _, assignment := range record.SortedAssignments() {
+	for _, assignment := range record.ParseOrderedAssignments() {
 		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, assignment.Expression(), context)
 		if decoratedExpressionErr != nil {
 			return nil, decoratedExpressionErr
 		}
 		encounteredFieldType := decoratedExpression.Type()
 		name := assignment.Identifier().Name()
-		existingField := findField(name, recordTypeFields)
+		existingField := findField(name, parseOrderedFields)
 		fieldExists := existingField != nil
 		if !fieldExists {
 			if allowToAddFields {
 				fieldName := dectype.NewRecordFieldName(assignment.Identifier())
 				recordTypeField := dectype.NewRecordField(fieldName, encounteredFieldType)
-				recordTypeFields = append(recordTypeFields, recordTypeField)
+				parseOrderedFields = append(parseOrderedFields, recordTypeField)
 			} else {
 				return nil, decorated.NewNewRecordLiteralFieldNotInType(assignment, foundTemplateRecord)
 			}
 		} else {
-			if compatibleErr := dectype.CompatibleTypes(encounteredFieldType, existingField.Type()); compatibleErr != nil {
-				return nil, decorated.NewRecordLiteralFieldTypeMismatch(assignment, existingField, encounteredFieldType, compatibleErr)
+			if compatibleErr := dectype.CompatibleTypes(encounteredFieldType,
+				existingField.Type()); compatibleErr != nil {
+				return nil, decorated.NewRecordLiteralFieldTypeMismatch(assignment, existingField, encounteredFieldType,
+					compatibleErr)
 			}
 		}
 	}
 
-	recordType := dectype.NewRecordType(nil, recordTypeFields) // TODO: FIX
+	ref := record.FetchPositionLength()
+	recordType := dectype.NewRecordType(nil, parseOrderedFields, &ref)
 
 	for _, assignment := range record.ParseOrderedAssignments() {
 		decoratedExpression, decoratedExpressionErr := DecorateExpression(d, assignment.Expression(), context)

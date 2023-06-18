@@ -7,7 +7,6 @@ package dectype
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/swamp/compiler/src/decorated/dtype"
 )
@@ -95,8 +94,6 @@ func (t *DynamicLocalTypeResolver) FillOutTheRestWithAny() {
 }
 
 func (t *DynamicLocalTypeResolver) specialSet(name string, resolved dtype.Type) error {
-	log.Printf("setting '%s' to %v", name, resolved)
-
 	for index, foundParam := range t.argumentNames {
 		if foundParam.Name() == name {
 			existing := t.resolvedArguments[index]
